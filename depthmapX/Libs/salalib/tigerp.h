@@ -1,0 +1,62 @@
+// sala - a component of the Depthmap - spatial network analysis platform
+// Copyright (C) 2000-2010 University College London, Alasdair Turner 
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is my code to make a set of axial lines from a set of boundary lines
+
+#ifndef __TIGERP_H__
+#define __TIGERP_H__
+
+// look up is the tiger (major) line category:
+// string is A1, A2, A3 (road types) or B1, B2 (railroad types)
+// C,D etc are not currently parsed, but given the nice file format 
+// (thank you US Census Bureau!) they can easily be added
+
+class TigerChain : public pvecline
+{
+public:
+   TigerChain() {;}
+};
+
+class TigerCategory : public prefvec<TigerChain>
+{
+public:
+   TigerCategory() {;}
+};
+
+class TigerMap : public pqmap<pstring,TigerCategory>
+{
+protected:
+   QtRegion m_region;
+   bool m_init;
+public:
+   TigerMap() { m_init = false;}
+
+   // Modified by Dream
+#if defined(_WIN32)
+   void parse(const pqvector<wstring>& fileset, Communicator *communicator);
+#else
+   void parse(const pqvector<string>& fileset, Communicator *communicator);
+#endif
+
+   Point2f getBottomLeft()
+   { return m_region.bottom_left; }
+   Point2f getTopRight()
+   { return m_region.top_right; }
+   QtRegion getRegion()
+   { return m_region; }
+};
+
+#endif
