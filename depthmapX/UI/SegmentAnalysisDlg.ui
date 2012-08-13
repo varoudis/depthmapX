@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CSegmentAnalysisDlg</class>
+ <widget class="QDialog" name="CSegmentAnalysisDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>319</width>
+    <height>501</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Segment Analysis Options</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Analysis Type</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="c_analysis_type">
+        <property name="text">
+         <string>Tulip Analysis (Faster)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Tulip Bins (4 to 1024)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="c_tulip_bins"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>(1024 approximates full angular analysis)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="c_choice">
+        <property name="text">
+         <string>Include choice (betweenness)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="c_radio2">
+        <property name="text">
+         <string>Full Angular (Slower)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Radius Type</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QRadioButton" name="c_radius_type">
+        <property name="text">
+         <string>Segment Steps</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QRadioButton" name="radioButton">
+          <property name="text">
+           <string>Metric</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="c_radio3">
+          <property name="text">
+           <string>Angular</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Radius / List of radii</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="c_radius"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Weighted measures</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <widget class="QCheckBox" name="c_weighted">
+        <property name="text">
+         <string>Include weighted measures</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Weight by</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="c_attribute"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="c_ok">
+       <property name="text">
+        <string>OK</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="c_cancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>c_analysis_type</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnAnalysisType(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>170</x>
+     <y>44</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>332</x>
+     <y>64</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_radio2</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnAnalysisTulip(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>82</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>328</x>
+     <y>184</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_radius</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnUpdateRadius(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>328</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_weighted</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnWeighted(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>196</x>
+     <y>358</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>327</x>
+     <y>361</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_ok</sender>
+   <signal>clicked()</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnOK()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>151</x>
+     <y>460</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>63</x>
+     <y>455</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>CSegmentAnalysisDlg</receiver>
+   <slot>OnCancel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>225</x>
+     <y>466</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>314</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnAnalysisType(bool)</slot>
+  <slot>OnAnalysisTulip(bool)</slot>
+  <slot>OnUpdateRadius(QString)</slot>
+  <slot>OnWeighted(bool)</slot>
+  <slot>OnOK()</slot>
+  <slot>OnCancel()</slot>
+ </slots>
+</ui>

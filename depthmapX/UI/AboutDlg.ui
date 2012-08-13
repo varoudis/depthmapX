@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CAboutDlg</class>
+ <widget class="QDialog" name="CAboutDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>499</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About depthmapX</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>461</width>
+     <height>381</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>depthmapX</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="c_version_info">
+      <property name="text">
+       <string>Version information</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="c_copyright">
+      <property name="text">
+       <string>Copyright message (overwritten at runtime)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Original Depthmap developed by Alasdair Turner.</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://en.wikipedia.org/wiki/Alasdair_Turner&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://en.wikipedia.org/wiki/Alasdair_Turner&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="c_agreement">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>For more information or to submit a bug see:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="c_vrlink">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/SpaceGroupUCL/depthmapX&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/SpaceGroupUCL/depthmapX&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="c_ok">
+      <property name="text">
+       <string>OK</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>c_ok</sender>
+   <signal>clicked()</signal>
+   <receiver>CAboutDlg</receiver>
+   <slot>OnOK()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>103</x>
+     <y>374</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>209</x>
+     <y>329</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnOK()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CColourScaleDlg</class>
+ <widget class="QDialog" name="CColourScaleDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>347</width>
+    <height>376</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string> depthmapX - Set Colour Scale</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QComboBox" name="c_color_type">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSlider" name="c_blue_slider_ctrl">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="c_blue">
+       <property name="text">
+        <string>Blue</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="c_blue_value_window">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QSlider" name="c_red_slider_ctrl">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="c_red">
+       <property name="text">
+        <string>Red</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="c_red_value_window">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QCheckBox" name="c_show_lines">
+       <property name="text">
+        <string>Show polygon edges</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="c_show_centroids">
+       <property name="text">
+        <string>Show polygon centroids</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="c_show_fill">
+       <property name="text">
+        <string>Show polygons filled</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="c_ok">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="c_applytoall">
+       <property name="text">
+        <string>Apply to All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="c_cancel">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>c_blue_value_window</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnChangeBlueValue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>166</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>184</x>
+     <y>78</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_red_value_window</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnChangeRedValue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>204</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>258</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_red_slider_ctrl</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnReleasedRedSlider(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>41</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>51</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_blue_slider_ctrl</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnReleasedBlueSlider(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>101</x>
+     <y>70</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>116</x>
+     <y>80</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_color_type</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnSelchangeColor(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
+     <y>29</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>256</x>
+     <y>47</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_show_lines</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnBnClickedShowLines(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>111</x>
+     <y>237</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>301</x>
+     <y>248</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_show_fill</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnBnClickedShowFill(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>179</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>308</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_show_centroids</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnBnClickedShowCentroids(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>335</x>
+     <y>275</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_applytoall</sender>
+   <signal>clicked()</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnBnClickedApplytoall()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>142</x>
+     <y>337</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>15</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_ok</sender>
+   <signal>clicked()</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnOK()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>23</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>c_cancel</sender>
+   <signal>clicked()</signal>
+   <receiver>CColourScaleDlg</receiver>
+   <slot>OnCancel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>242</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>349</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnChangeBlueValue()</slot>
+  <slot>OnChangeRedValue()</slot>
+  <slot>OnReleasedRedSlider()</slot>
+  <slot>OnReleasedBlueSlider()</slot>
+  <slot>OnSelchangeColor(int)</slot>
+  <slot>OnBnClickedShowLines(bool)</slot>
+  <slot>OnBnClickedShowFill(bool)</slot>
+  <slot>OnBnClickedShowCentroids(bool)</slot>
+  <slot>OnBnClickedApplytoall()</slot>
+  <slot>OnOK()</slot>
+  <slot>OnCancel()</slot>
+ </slots>
+</ui>

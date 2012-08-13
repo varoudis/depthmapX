@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CDepthmapAlert</class>
+ <widget class="QDialog" name="CDepthmapAlert">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>515</width>
+    <height>263</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string> depthmapX Alert</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QTextEdit" name="c_message"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>To see this and other depthmapX alerts, please visit:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="c_alert_link">
+       <property name="text">
+        <string>(Not USED!) http://www.vr.ucl.ac.uk/depthmap/alerts</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="c_read_it">
+       <property name="text">
+        <string>I have read this message, please do not display it again</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="c_ok">
+       <property name="text">
+        <string>Continue</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>c_ok</sender>
+   <signal>clicked()</signal>
+   <receiver>CDepthmapAlert</receiver>
+   <slot>OnOK()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>259</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>171</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>OnOK()</slot>
+ </slots>
+</ui>
