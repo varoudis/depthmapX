@@ -2790,10 +2790,15 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                int row = m_attributes.getRowid(curs);
                // only set to single float precision after divide
                // note -- total_nodes includes this one -- mean depth as per p.108 Social Logic of Space
-               m_attributes.setValue(row, count_col, float(total_nodes) ); // note: total nodes includes this one
+               if(!simple_version) {
+                    m_attributes.setValue(row, count_col, float(total_nodes) ); // note: total nodes includes this one
+               }
+               // ERROR !!!!!!
                if (total_nodes > 1) {
                   double mean_depth = double(total_depth) / double(total_nodes - 1);
-                  m_attributes.setValue(row, depth_col, float(mean_depth) );
+                  if(!simple_version) {
+                        m_attributes.setValue(row, depth_col, float(mean_depth) );
+                  }
                   // total nodes > 2 to avoid divide by 0 (was > 3)
                   if (total_nodes > 2 && mean_depth > 1.0) {
                      double ra = 2.0 * (mean_depth - 1.0) / double(total_nodes - 2);
@@ -2802,18 +2807,26 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                      double rra_p = ra / pvalue(total_nodes);
                      double integ_tk = teklinteg(total_nodes, total_depth);
                      m_attributes.setValue(row,integ_dv_col,float(1.0/rra_d));
-                     m_attributes.setValue(row,integ_pv_col,float(1.0/rra_p));
+                     if(!simple_version) {
+                          m_attributes.setValue(row,integ_pv_col,float(1.0/rra_p));
+                     }
                      if (total_depth - total_nodes + 1 > 1) {
-                        m_attributes.setValue(row,integ_tk_col,float(integ_tk));
+                        if(!simple_version) {
+                            m_attributes.setValue(row,integ_tk_col,float(integ_tk));
+                        }
                      }
                      else {
-                        m_attributes.setValue(row,integ_tk_col,-1.0f);
+                        if(!simple_version) {
+                            m_attributes.setValue(row,integ_tk_col,-1.0f);
+                        }
                      }
                   }
                   else {
                      m_attributes.setValue(row,integ_dv_col,(float)-1);
-                     m_attributes.setValue(row,integ_pv_col,(float)-1);
-                     m_attributes.setValue(row,integ_tk_col,(float)-1);
+                     if(!simple_version) {
+                        m_attributes.setValue(row,integ_pv_col,(float)-1);
+                        m_attributes.setValue(row,integ_tk_col,(float)-1);
+                     }
                   }
                   double entropy = 0.0, rel_entropy = 0.0, factorial = 1.0;
                   // n.b., this distribution contains the root node itself in distribution[0]
@@ -2828,13 +2841,17 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                         rel_entropy += (float) prob * log2( prob / q );
                      }
                   }
-                  m_attributes.setValue(row, entropy_col, float(entropy) );
-                  m_attributes.setValue(row, rel_entropy_col, float(rel_entropy) );
+                  if(!simple_version) {
+                    m_attributes.setValue(row, entropy_col, float(entropy) );
+                    m_attributes.setValue(row, rel_entropy_col, float(rel_entropy) );
+                  }
                }
                else {
-                  m_attributes.setValue(row, depth_col,(float)-1);
-                  m_attributes.setValue(row, entropy_col,(float)-1);
-                  m_attributes.setValue(row, rel_entropy_col,(float)-1);
+                  if(!simple_version) {
+                    m_attributes.setValue(row, depth_col,(float)-1);
+                    m_attributes.setValue(row, entropy_col,(float)-1);
+                    m_attributes.setValue(row, rel_entropy_col,(float)-1);
+                  }
                }
             }
             if (options.local) {
