@@ -27,8 +27,9 @@ CAboutDlg::CAboutDlg(QWidget *parent)
 	QString m_copyright;
     m_copyright = QString(tr("Copyright (C) 2012 Tasos Varoudis"));
 	QString m_agreement;
-    //m_agreement = QString(tr("This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\x0D\x0D\x0A\x0D\x0D\x0AThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\x0D\x0D\x0A\x0D\x0D\x0AYou should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>."));
-    m_agreement = QString(tr("For Internal Use Only - DO NOT DISTRIBUTE\n\nThe program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."));
+    m_agreement = QString(tr("This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\x0D\x0D\x0A\x0D\x0D\x0AThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\x0D\x0D\x0A\x0D\x0D\x0AYou should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>."));
+    //m_agreement = QString(tr("Tasos Varouds / GPLv3"));
+
     c_version_info->setText(m_version_info);
 	c_copyright->setText(m_copyright);
 	c_agreement->setText(m_agreement);
