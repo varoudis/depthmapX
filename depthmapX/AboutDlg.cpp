@@ -15,7 +15,7 @@
 
 #include "AboutDlg.h"
 
-#define DEPTHMAPX_VERSION 0.25
+#define DEPTHMAPX_VERSION 0.26
 #define DEPTHMAPX_MINOR_VERSION "b"   // b Beta version, r is standard release, s is stable release, W - M - L for single OS
 
 CAboutDlg::CAboutDlg(QWidget *parent)

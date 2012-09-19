@@ -40,6 +40,7 @@ CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *pare
 	else {
 		m_formula_text = table->getColumnFormula(m_col);
 	}
+	c_use_column->setEnabled(true);
 }
 
 void CInsertColumnDlg::OnUseAttribute()
@@ -117,7 +118,7 @@ void CInsertColumnDlg::showEvent(QShowEvent * event)
 	}
 	c_formula->setPlainText(QString(m_formula_text.c_str()));
 	c_column_names->setCurrentRow(-1);
-	c_use_column->setEnabled(false);
+	//c_use_column->setEnabled(false);
 
 	if (m_col == -1) {
 		// use for selection query

@@ -25,7 +25,7 @@
 #include "GraphDoc.h"
 #include "ColourScaleDlg.h"
 
-#define DEPTHMAPX_VERSION 0.25          //
+#define DEPTHMAPX_VERSION 0.26          //
 #define DEPTHMAPX_MINOR_VERSION "b"
 #define DEPTHMAP_MODULE_VERSION 10.04
 

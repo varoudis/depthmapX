@@ -60,6 +60,9 @@
        <property name="text">
         <string>&lt;&lt; Use attribute</string>
        </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>
