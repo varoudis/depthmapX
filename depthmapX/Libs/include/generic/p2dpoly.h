@@ -313,7 +313,14 @@ public:
    double height() const
       { return top_right.y - bottom_left.y; }
    double width() const
-      { return top_right.x - bottom_left.x; }
+   // The assumption that top_right.x is always > bottom_left.x is not always true.
+   // Returning a negative value here causes an infinite loop at axialmap.cpp line 3106
+   // after overlapdist is assigned a negative value at axialmap.cpp line 3084.
+   // height() above could also be changed for this reason, but this is a band-aid
+   // fix for the real problem, which is why the top_right > bottom_left assumption
+   // is assumed to be 100% valid but is, in some instances, not valid.
+   // { return top_right.x - bottom_left.x; }
+      { return fabs(top_right.x - bottom_left.x); }
    double area() const
       { return height() * width(); }
    void normalScale( const QtRegion& r )
