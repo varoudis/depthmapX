@@ -38,36 +38,6 @@ HEADERS       = depthmapView.h \
     AttributeChooserDlg.h \
     AgentAnalysisDlg.h \
     AboutDlg.h \
-# UI files compiled by hand (uic)
-	CompiledUI/ui_TopoMetDlg.h \
-    CompiledUI/ui_SegmentAnalysisDlg.h \
-    CompiledUI/ui_RenameObjectDlg.h \
-    CompiledUI/ui_PushDialog.h \
-    CompiledUI/ui_PromptReplace.h \
-    CompiledUI/ui_OptionsDlg.h \
-    CompiledUI/ui_NewLayerDlg.h \
-    CompiledUI/ui_MakeOptionsDlg.h \
-    CompiledUI/ui_MakeLayerDlg.h \
-    CompiledUI/ui_LicenceDialog.h \
-    CompiledUI/ui_LayerChooserDlg.h \
-    CompiledUI/ui_IsovistPathDlg.h \
-    CompiledUI/ui_InsertColumnDlg.h \
-    CompiledUI/ui_GridDialog.h \
-    CompiledUI/ui_FindLocDlg.h \
-    CompiledUI/ui_FilePropertiesDlg.h \
-    CompiledUI/ui_FewestLineOptionsDlg.h \
-    CompiledUI/ui_EditConnectionsDlg.h \
-    CompiledUI/ui_DepthmapOptionsDlg.h \
-    CompiledUI/ui_DepthmapAlert.h \
-    CompiledUI/ui_ConvertShapesDlg.h \
-    CompiledUI/ui_ColumnPropertiesDlg.h \
-    CompiledUI/ui_ColourScaleDlg.h \
-    CompiledUI/ui_AxialAnalysisOptionsDlg.h \
-    CompiledUI/ui_AttributeSummary.h \
-    CompiledUI/ui_AttributeChooserDlg.h \
-    CompiledUI/ui_AgentAnalysisDlg.h \
-    CompiledUI/ui_AboutDlg.h \
-#
     Libs/include/generic/xmlparse.h \
     Libs/include/generic/paftl.h \
     Libs/include/generic/paftl_old.h \

@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_DepthmapOptionsDlg.h"
+#include "ui_DepthmapOptionsDlg.h"
 
 class CDepthmapOptionsDlg : public QDialog, public Ui::CDepthmapOptionsDlg
 {

@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_FindLocDlg.h"
+#include "ui_FindLocDlg.h"
 
 class CFindLocDlg : public QDialog, public Ui::CFindLocDlg
 {

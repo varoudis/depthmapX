@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_NewLayerDlg.h"
+#include "ui_NewLayerDlg.h"
 
 class CNewLayerDlg : public QDialog, public Ui::CNewLayerDlg
 {

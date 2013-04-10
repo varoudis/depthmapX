@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_GridDialog.h"
+#include "ui_GridDialog.h"
 #include <sala/mgraph.h>
 #include <sala/attributes.h>
 #include <sala/shapemap.h>
