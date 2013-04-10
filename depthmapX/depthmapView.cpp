@@ -196,7 +196,18 @@ int QDepthmapView::OnRedraw(int wParam, int lParam)
 static QPoint hit_point;
 bool QDepthmapView::eventFilter(QObject *object, QEvent *e)
 {
-	if(e->type() == QEvent::ToolTip)
+    // Get the keyboard modifiers and set them in pressed_nFlags.
+    switch ( e->type() ) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+            Qt::KeyboardModifiers keyMods = QApplication::keyboardModifiers();
+            pressed_nFlags = ( keyMods & Qt::ShiftModifier ) ? pressed_nFlags |= MK_SHIFT : pressed_nFlags &= ~MK_SHIFT;
+            pressed_nFlags = ( keyMods & Qt::ControlModifier ) ? pressed_nFlags |= MK_CONTROL : pressed_nFlags &= ~MK_CONTROL;
+    }
+
+    if(e->type() == QEvent::ToolTip)
 	{
 		if (!pDoc->m_communicator)
 		{
