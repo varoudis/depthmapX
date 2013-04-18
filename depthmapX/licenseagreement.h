@@ -17,7 +17,7 @@
 #define LICENSEAGREEMENT_H
 
 #include <QDialog>
-#include "CompiledUI/ui_licenseagreement.h"
+#include "ui_licenseagreement.h"
 
 namespace Ui {
 class LicenseAgreement;

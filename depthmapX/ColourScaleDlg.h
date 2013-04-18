@@ -16,7 +16,7 @@
 #ifndef ColourScaleDlg_H
 #define ColourScaleDlg_H
 
-#include "CompiledUI/ui_ColourScaleDlg.h"
+#include "ui_ColourScaleDlg.h"
 #include "GraphDoc.h"
 
 class CColourScaleDlg : public QDialog, public Ui::CColourScaleDlg

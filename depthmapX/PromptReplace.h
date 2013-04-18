@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_PromptReplace.h"
+#include "ui_PromptReplace.h"
 
 class CPromptReplace : public QDialog, public Ui::CPromptReplace
 {

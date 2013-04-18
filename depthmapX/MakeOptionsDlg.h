@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "CompiledUI/ui_MakeOptionsDlg.h"
+#include "ui_MakeOptionsDlg.h"
 
 class CMakeOptionsDlg : public QDialog, public Ui::CMakeOptionsDlg
 {
