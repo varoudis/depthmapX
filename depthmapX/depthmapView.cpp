@@ -17,6 +17,8 @@
 #include <QtGui>
 #include <QToolBar>
 #include <QEvent>
+#include <QMessageBox>
+#include <QStandardPaths>
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -134,7 +136,7 @@ QDepthmapView::QDepthmapView(QWidget *parent)
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
    // TV - dX Simple
-   m_settingsFile = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) + ":/depthmapXsettings.ini";
+   m_settingsFile = QStandardPaths::DocumentsLocation + ":/depthmapXsettings.ini";
    QSettings settings(m_settingsFile, QSettings::NativeFormat);
    //QSettings settings("QT-KCC", "depthmapX");
    m_initialSize = settings.value(QLatin1String("initialSize"), QSize(2000, 2000)).toSize();
@@ -1231,7 +1233,7 @@ bool QDepthmapView::loadFile(const QString &fileName)
 {
 	m_open_file_name = fileName;
 	m_redraw_all = 1;
-	if(pDoc->OnOpenDocument(fileName.toAscii().data()))
+    if(pDoc->OnOpenDocument(fileName.toUtf8().data() ))
 	{
 		setWindowTitle(pDoc->m_base_title+":Map View");
 		return true;
@@ -2444,10 +2446,10 @@ void QDepthmapView::OnEditSave()
    
    if(outfile.isEmpty()) return;
 
-  FILE* fp = fopen(outfile.toAscii(), "wb");
+  FILE* fp = fopen(outfile.toUtf8().data(), "wb");
   fclose(fp);
 
-  ofstream stream( outfile.toAscii() );
+  ofstream stream( outfile.toUtf8().data() );
   if (stream.fail()) {
      QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open ") + outfile + tr(" for writing"), QMessageBox::Ok, QMessageBox::Ok );
 	 return;

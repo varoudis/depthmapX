@@ -21,7 +21,7 @@
 #include <QtGui>
 #include <QtOpenGL>
 #include <QTimer>
-#include <QtGui/QFileDialog>
+#include <QtWidgets/QFileDialog>
 #include <generic/xmlparse.h>
 #include "mainwindow.h"
 #include "3DView.h"
@@ -527,7 +527,7 @@ void Q3DView::OnToolsAgentLoadProgram()
 	   return;
    }
 
-   pstring filename = pstring(infiles[0].toAscii());
+   pstring filename = pstring(infiles[0].toStdString().data());
    
    if (!filename.empty()) {
       m_animating = false;
@@ -1148,7 +1148,7 @@ void Q3DView::OnToolsImportTraces()
 	   return;
    }
 
-   pstring filename = pstring(infiles[0].toAscii());
+   pstring filename = pstring(infiles[0].toStdString().data());
    
    if (!filename.empty()) {
       m_animating = false;

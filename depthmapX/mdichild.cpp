@@ -15,6 +15,9 @@
 
 
 #include <QtGui>
+#include <QMessageBox>
+#include <QApplication>
+#include <QFileDialog>
 
 #include "mdichild.h"
 

@@ -1,4 +1,7 @@
-QT            += core gui opengl
+QT += widgets
+QT += core gui opengl
+QT += printsupport
+
 DEFINES       += _DEPTHMAP
 TEMPLATE      = app
 TARGET        = depthmapX

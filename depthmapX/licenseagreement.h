@@ -17,6 +17,7 @@
 #define LICENSEAGREEMENT_H
 
 #include <QDialog>
+#include <QTextEdit>
 #include "ui_licenseagreement.h"
 
 namespace Ui {

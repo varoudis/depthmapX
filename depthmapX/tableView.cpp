@@ -17,12 +17,12 @@
 #include <QtCore/QEvent>
 #include <QtCore/QDebug>
 
-#include <QtGui/QMenu>
-#include <QtGui/QLayout>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QLayout>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QMessageBox>
-#include <QtGui/QHeaderView>
-#include <QtGui/QTableWidgetItem>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QTableWidgetItem>
 #include <QtGui/QFocusEvent>
 
 #include "mainwindow.h"

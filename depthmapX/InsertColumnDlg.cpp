@@ -32,7 +32,7 @@ CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *pare
 			MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 			if (mainWin)
 			{
-				m_formula_text = pstring(mainWin->m_formula_cache.toAscii());
+                m_formula_text = pstring(mainWin->m_formula_cache.toStdString().data());
 				break;
 			}
 		}
@@ -82,7 +82,7 @@ void CInsertColumnDlg::OnOK()
 		}
 	}
 
-	m_formula_text = pstring(text.toAscii());
+    m_formula_text = pstring(text.toStdString().data());
 
 	// note formula text for column will have to be updated by calling function
 	accept();
