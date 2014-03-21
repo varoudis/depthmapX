@@ -473,13 +473,13 @@ bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer 
       int count;
       stream.read( (char *) &count, sizeof(count) );
       for (int i = 0; i < count; i++) {
-         push_back(T());
+         SpacePixelGroup<T>::push_back(T());
          prefvec<T>::tail().read(stream,version,true);
       }
    }
    else {
       m_name = "<unknown>";
-      push_back(T());
+      SpacePixelGroup<T>::push_back(T());
       prefvec<T>::tail().read(stream,version,true);
       m_region = prefvec<T>::tail().getRegion();
    }

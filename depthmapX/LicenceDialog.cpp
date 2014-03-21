@@ -15,17 +15,7 @@
 
 #include "LicenceDialog.h"
 
-const char *g_agreement =
-"This program is free software: you can redistribute it and/or modify "
-"it under the terms of the GNU General Public License as published by "
-"the Free Software Foundation, either version 3 of the License, or "
-"(at your option) any later version.\x0D\x0D\x0A\x0D\x0D\x0A"
-"This program is distributed in the hope that it will be useful, "
-"but WITHOUT ANY WARRANTY; without even the implied warranty of "
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
-"GNU General Public License for more details.\x0D\x0D\x0A\x0D\x0D\x0A"
-"You should have received a copy of the GNU General Public License "
-"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+const char *g_agreement = "see http://www.gnu.org/licenses/";
 
 CLicenceDialog::CLicenceDialog(QWidget *parent)
 : QDialog(parent)
@@ -65,10 +55,10 @@ void CLicenceDialog::showEvent(QShowEvent * event)
 	setWindowTitle(m_title);
 
 	m_message =
-		tr("By clicking on the 'Accept' button below, you agree to be bound by the following terms and conditions:");
+        tr("old");
 	m_agreement = 
-		QString("Copyright (C) 2000-2011 ") + tr("University College London, Alasdair Turner, Eva Friedrich") +
-		QString("\x0D\x0D\x0A\x0D\x0D\x0A") + g_agreement;
+        QString("old") + tr("old") +
+        QString("old") + g_agreement;
 
 	UpdateData(false);
 }
