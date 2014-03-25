@@ -1200,9 +1200,9 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                data = evaluate(pointer,p_obj) / evaluate(pointer,p_obj);
 #else
 	       {
-	    	    SalaObj tmp1 = evaluate(pointer,p_obj);
-	    	    SalaObj tmp2 = evaluate(pointer,p_obj);
-            	    data = tmp1 / tmp2;
+                SalaObj tmp1 = evaluate(pointer,p_obj);
+                SalaObj tmp2 = evaluate(pointer,p_obj);
+                    data = tmp2 / tmp1;
                }
 #endif               
                break;
