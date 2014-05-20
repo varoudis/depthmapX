@@ -605,7 +605,7 @@ public:
 template <class T>
 size_t ShapeMaps<T>::addMap(const pstring& name, int type)
 {
-   push_back(T(name,type));
+   ShapeMaps<T>::push_back(T(name,type));
    setDisplayedMapRef(pmemvec<T*>::size()-1);
    return (pmemvec<T*>::size()-1);
 }
@@ -657,7 +657,7 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
       }
    }
    for (size_t j = 0; j < size_t(count); j++) {
-      push_back(T());
+      ShapeMaps<T>::push_back(T());
       prefvec<T>::tail().read(stream,version);
    }
    return true;
