@@ -1229,9 +1229,11 @@ void QDepthmapView::saveToFile()
 
 bool QDepthmapView::loadFile(const QString &fileName)
 {
-	m_open_file_name = fileName;
+    m_open_file_name = fileName;
 	m_redraw_all = 1;
-	if(pDoc->OnOpenDocument(fileName.toAscii().data()))
+    QByteArray ba = fileName.toUtf8(); // quick fix for weird chars (russian filename bug report)
+    char *file = ba.data(); // quick fix for weird chars (russian filename bug report)
+    if(pDoc->OnOpenDocument(file)) // quick fix for weird chars (russian filename bug report)
 	{
 		setWindowTitle(pDoc->m_base_title+":Map View");
 		return true;
