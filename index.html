@@ -28,16 +28,13 @@
 
     <div class="container">
       <section id="main_content">
-        <h3>
+        <p><img src="http://archtech.gr/varoudis/depthmapX/Images/Agents1.png" alt="Agent based modelling in depthmapX ">
+Exosomatic visual agents running on depthmapX. </p>
+
+<h3>
 <a name="get-the-latest-macosx-and-windows-version-here" class="anchor" href="#get-the-latest-macosx-and-windows-version-here"><span class="octicon octicon-link"></span></a>Get the latest MacOSX and Windows version <a href="https://github.com/varoudis/depthmapX/wiki/Download-and-Install">HERE</a>!</h3>
 
 <p>depthmapX is a multi-platform  software platform to perform a set of spatial network analyses designed to understand social processes within the built environment. It works at a variety of scales from building through small urban to whole cities or states. At each scale, the aim of the software is to produce a map of open space elements, connect them via some relationship (for example, intervisibility or overlap) and then perform graph analysis of the resulting network. The objective of the analysis is to derive variables which may have social or experiential significance.</p>
-
-<p>At the building or small urban scale, depthmapX can be used to assess the visual accessibility in a number of ways. It can produce point isovists, that is, polygons representing the visually accessible area from a location, along with measures of those polygons (such as perimeter, area and so on), or it can further join a dense grid of isovists into a visibility graph of intervisible points (with graphs of up to about 1000000 point locations). The visibility graph may then be analysed directly using graph measures, or used as the core of an agent-based analysis. In the agent-based analysis a number of software agents representing pedestrians are released into the environment. Each software agent is able to access the visual accessibility information for its current location from the visibility graph, and this informs its choice of next destination. The numbers of agents passing through gates can be counted, and compared to actual numbers of pedestrians passing through gates.</p>
-
-<p>At the small to medium urban scale, depthmapX can be used to derive an ‘axial map’ of a layout. That is, derive a reduced straight-line network of the open space in an environment. The axial map has been the staple of space syntax research for many years, but the mathematical derivation of it is novel. The automatic derivation allows an objective map for research into city form and function. Once the map has been generated, it may be analysed using graph measures, and the measures may be transferred to gate layers in order to compare with indicators of pedestrian or social behaviour. For larger systems where the derivation algorithm becomes cumbersome, pre-drawn axial maps may be imported.</p>
-
-<p>Axial maps may be broken into segment maps, or segment maps, such as road-centre line maps, may be imported directly. These may be analysed using a variety of techniques, such as according to angular separation, road distance, or segment steps. For example, number of shortest angular paths through a segment may be calculated, or the average road distance from each segment to all others may be calculated.</p>
 
 <h3>
 <a name="download-the-source-code" class="anchor" href="#download-the-source-code"><span class="octicon octicon-link"></span></a>Download the source code</h3>
@@ -55,13 +52,106 @@ $ git clone git://github.com/varoudis/depthmapX.git
 
 <p>For the less adventurous, <a href="http://archtech.gr/varoudis/depthmapX/">download the latest compiled version</a> and 'unzip' it, then just double-click ... (after version 0.27, Windows and MacOSX users don't need to install any additional libraries)</p>
 
+<p><img src="http://archtech.gr/varoudis/depthmapX/Images/Segment1.png" alt="Betweenness Centrality - Segment Analysis">
+Betweenness Centrality analysis on road central line network - Segment Analysis on depthmapX</p>
+
+<p><img src="http://archtech.gr/varoudis/depthmapX/Images/VGA1.png" alt="Visibility Graph Analysis on depthmapX">
+Preparation for Visibility Graph Analysis on depthmapX</p>
+
 <h3>
 <a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
 <p>Having trouble with depthmapX? Check out the depthmapX mailing list on: <a href="http://www.jiscmail.ac.uk/lists/DEPTHMAP.html">www.jiscmail.ac.uk/lists/DEPTHMAP.html</a></p>
+
+<p><a href="http://archtech.gr/varoudis/">Tasos Varoudis</a>,
+dont spam: varoudis |that weird email symbol| archtech |dot| gr</p>
+
+<h3>
+<a name="tutorials-from-older-versions-but-very-useful" class="anchor" href="#tutorials-from-older-versions-but-very-useful"><span class="octicon octicon-link"></span></a>Tutorials (from older versions but very useful)</h3>
+
+<p>Many features are covered in this tutorial by Joao Pinelo. You may also find tutorials for 7.12.00 and 8.15.00 useful.</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/introduction_depthmap-v10-website.pdf">Introduction to version 10 (4.0MB)</a></p>
+
+<p>Older tutorials</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/depthmapbasics.pdf">depthmap basics including VGA</a>
+import geometry and visibility graph analysis (1.1MB)</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/depthmap7axial.pdf">depthmap axial analysis</a>
+import, generate or hand-draw an axial map, including linking and unlinking lines (1.3MB)</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/depthmap7convex.pdf">depthmap convex analysis</a>
+hand-draw a convex map, including linking spaces and analysing the map (0.8MB)</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/depthmap7data.pdf">depthmap data analysis</a>
+entering observation data, pushing values to layers, showing scatter plots, calculating correlation coefficients and exporting to spreadsheet programs (1.9MB)</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/advanceddepthmap.pdf">Advanced depthmap presentation</a>
+discussion of advanced segment analysis topics in depthmap. Note that "Topomet" is included with depthmap and does not need to be installed separately (1.8MB)</p>
+
+<p>Extra Materials - DXF files used in these tutorials are:</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/gallery.dxf">gallery.dxf</a>
+<a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/barnsbury_centre.dxf">barnsbury_centre.dxf</a>
+<a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/barnsbury_axial.dxf">barnsbury_axial.dxf</a>
+Barnsbury original map data copyright © Cambridge University Press 1984, reproduced here with kind permission. Original drawings by J Hanson, digitised by A Turner.</p>
+
+<p>In addition <a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/gallery.zip">gallery.zip</a> contains a VGA analysis of gallery.dxf, and example mif/mid files. </p>
+
+<h3>
+<a name="a-researchers-handbook" class="anchor" href="#a-researchers-handbook"><span class="octicon octicon-link"></span></a>A Researcher's Handbook</h3>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/depthmap4r1.pdf">Depthmap 4 – A Researcher's Handbook (revision 1) (pdf)</a></p>
+
+<h3>
+<a name="scripting" class="anchor" href="#scripting"><span class="octicon octicon-link"></span></a>Scripting</h3>
+
+<p>Scripts can be used to create user-defined formulae and simple graph measures.
+These examples are used in the <a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/salascript.pdf">SalaScript Manual</a>.</p>
+
+<p><a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/total_depth.sala.pdf">total_depth.sala</a>
+Calculate total depth for each node in a VGA, axial or convex map
+<a href="http://archtech.gr/varoudis/depthmapX/LearningMaterial/shortest_cycle.sala.pdf">shortest_cycle.sala</a>
+Calculate the shortest cycle for each node in an axial or convex map</p>
+
+<h3>
+<a name="more-about-depthmapx-and-the-theories-behind-it" class="anchor" href="#more-about-depthmapx-and-the-theories-behind-it"><span class="octicon octicon-link"></span></a>More about depthmapX and the theories behind it</h3>
+
+<p>depthmapX is dedicated to Alasdair Turner.</p>
+
+<p>At the building or small urban scale, depthmapX can be used to assess the visual accessibility in a number of ways. It can produce point isovists, that is, polygons representing the visually accessible area from a location, along with measures of those polygons (such as perimeter, area and so on), or it can further join a dense grid of isovists into a visibility graph of intervisible points (with graphs of up to about 1000000 point locations). The visibility graph may then be analysed directly using graph measures, or used as the core of an agent-based analysis. In the agent-based analysis a number of software agents representing pedestrians are released into the environment. Each software agent is able to access the visual accessibility information for its current location from the visibility graph, and this informs its choice of next destination. The numbers of agents passing through gates can be counted, and compared to actual numbers of pedestrians passing through gates.</p>
+
+<p>At the small to medium urban scale, depthmapX can be used to derive an ‘axial map’ of a layout. That is, derive a reduced straight-line network of the open space in an environment. The axial map has been the staple of space syntax research for many years, but the mathematical derivation of it is novel. The automatic derivation allows an objective map for research into city form and function. Once the map has been generated, it may be analysed using graph measures, and the measures may be transferred to gate layers in order to compare with indicators of pedestrian or social behaviour. For larger systems where the derivation algorithm becomes cumbersome, pre-drawn axial maps may be imported.</p>
+
+<p>Axial maps may be broken into segment maps, or segment maps, such as road-centre line maps, may be imported directly. These may be analysed using a variety of techniques, such as according to angular separation, road distance, or segment steps. For example, number of shortest angular paths through a segment may be calculated, or the average road distance from each segment to all others may be calculated.</p>
+
+<h3>
+<a name="models-for-spatial-analysis" class="anchor" href="#models-for-spatial-analysis"><span class="octicon octicon-link"></span></a>Models for spatial analysis</h3>
+
+<p>The software covers two separate models for spatial analysis; the Space Syntax model and the Agent model. These two models are theoretically different in spite of the fact that they agree on the principal relationship between space and society. They start from different representations, and they diverge at the point of modelling. The agent model represents an emergent process that leads to form aggregate patterns of movement activity. Through its ability to display movement data in relation to aggregate patterns of agents, depthmapX’s agents have proven to be an effective tool to simulate natural movement. Space Syntax builds on a synchronic reduction of spatial relationships in the built environment. Mapping this reduction into networks of longest and fewest lines, depthmapX’s axial and segment analyses are powerful methods for predicting to-movement and through-movement in cities. On the scale of buildings, spatial analysis using depthmapX can reveal relational structures that convey how social organisations occupy spaces. depthmapX is a platform that brings together these too models to be tested in an analytical approach. It also affords experimental and developer approaches.</p>
+
+<p>The current usage of this software has proven to engage different types of academic communities that have a language in common with the notion of space. These communities range between planners, designers, social scientists, anthropologists, crime scientists, geographers, computer scientists and economists. In general terms, all what brings together the social and the spatial. In different contexts, spatial modelling using depthmapX can help forming assumptions about social behaviour in space and model spatial and social relationships. Moreover, depthmapX significance exceeds its common usage as an analytical tool to understand the built environment on different scales and go beyond that to act as a design and decision making support tool. The intelligent usage of software will deploy it in supporting design process with a knowledge-base that is suggested to make designs more responsive towards the real settings of the built environment. In simple terms, depthmapX is increasingly used as a tool for design thinking. By using it efficiently, the software helps on sparing time and cost, particularly on the scale of complex buildings and large scale urban planning.</p>
+
+<p>For more information about some of the theories behind depthmapX join the discussion on the <a href="https://www.jiscmail.ac.uk/cgi-bin/webadmin?A0=spacesyntax">Space Syntax Mail-List</a>.</p>
+
+<blockquote>
+<p>Everyhting here Open-Source and under GPLv3 licence. Have fun and share your ideas! 
+Thanks, Tasos</p>
+</blockquote>
       </section>
     </div>
 
-    
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-18619298-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
