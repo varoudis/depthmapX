@@ -1,7 +1,7 @@
 ## depthmapX - multi-platform spatial network analyses software ##
 
-## Get the latest MacOSX and Windows version from:
-## ## https://github.com/varoudis/depthmapX/wiki/Download-and-Install
+## Get the latest MacOSX/Windows version and learn more about depthmapX: 
+## ## http://varoudis.github.io/depthmapX/
 ##
 
 depthmapX is a multi-platform  software platform to perform a set of spatial network analyses designed to understand social processes within the built environment. It works at a variety of scales from building through small urban to whole cities or states. At each scale, the aim of the software is to produce a map of open space elements, connect them via some relationship (for example, intervisibility or overlap) and then perform graph analysis of the resulting network. The objective of the analysis is to derive variables which may have social or experiential significance.
