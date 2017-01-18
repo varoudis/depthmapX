@@ -3684,12 +3684,7 @@ void ShapeMap::ozlemSpecial(ShapeMap& output)
                ang -= 1;
             }
             
-            // Quick mod - TV
-#if defined(_WIN32)            
-            bins64[round(ang * 16) % 16] += len;
-#else
-	    bins64[(int)(round(ang * 16)) % 16] += len;
-#endif            
+      	    bins64[(int)(round(ang * 16)) % 16] += len;
          }
          start = end;
       }
@@ -4011,11 +4006,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
          pstring blah = pstringify(featcode,"Error: wasn't expecting feature code %d");
          // Quick mod - TV
          // MessageBox(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#if defined(_WIN32)         
-         MessageBoxA(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#else
-	 fprintf(stderr, "%s --- %s\n", blah.c_str(), "Error: ozlemSpecial5");
-#endif         
+         fprintf(stderr, "%s --- %s\n", blah.c_str(), "Error: ozlemSpecial5");
          return;
       }
    }
@@ -4028,11 +4019,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
    else {
       // Quick mod - TV
       // MessageBox(NULL,"Error: no PolyID column found in the lines table","Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#if defined(_WIN32)      
-      MessageBoxA(NULL,"Error: no PolyID column found in the lines table","Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#else
       fprintf(stderr, "%s --- %s\n", "Error: no PolyID column found in the lines table", "Error: ozlemSpecial5");
-#endif      
       return;
    }
    //
@@ -4049,22 +4036,14 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
    else {
       // Quick mod - TV
       // MessageBox(NULL,"Error: no PolyID column found in the buildings table","Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#if defined(_WIN32)      
-      MessageBoxA(NULL,"Error: no PolyID column found in the buildings table","Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#else
       fprintf(stderr, "%s --- %s\n", "Error: no PolyID column found in the buildings table","Error: ozlemSpecial5");
-#endif      
       return;
    }
 
 
    // Quick mod - TV
    // MessageBox(NULL,"Message: about to start main loop","Message: ozlemSpecial5",MB_OK|MB_ICONINFORMATION);
-#if defined(_WIN32)   
-   MessageBoxA(NULL,"Message: about to start main loop","Message: ozlemSpecial5",MB_OK|MB_ICONINFORMATION);
-#else
    fprintf(stderr, "%s --- %s\n", "Message: about to start main loop","Message: ozlemSpecial5");
-#endif   
 
    int start = 0;
    for (size_t i = 1; i <= idxlines.size(); i++) {
@@ -4076,11 +4055,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
             pstring blah = pstringify(idxlines[start].value,"Error: couldn't find PolyID %d in Buildings table");
             // Quick mod - TV
             // MessageBox(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#if defined(_WIN32)            
-            MessageBoxA(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
-#else
     	    fprintf(stderr, "%s --- %s\n",blah.c_str(),"Error: ozlemSpecial5");
-#endif            
             return;
          }
          int browid = idxbuildings[idxb].index;
@@ -4173,11 +4148,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
 
    // Quick mod - TV
    // MessageBox(NULL,"Message: finished main loop","Message: ozlemSpecial5",MB_OK|MB_ICONINFORMATION);
-#if defined(_WIN32)   
-   MessageBoxA(NULL,"Message: finished main loop","Message: ozlemSpecial5",MB_OK|MB_ICONINFORMATION);
-#else
    fprintf(stderr, "%s --- %s\n","Message: finished main loop","Message: ozlemSpecial5");
-#endif   
 
    buildings.m_displayed_attribute = -2;
    buildings.setDisplayedAttribute(outtypecol);
@@ -4224,11 +4195,7 @@ void ShapeMap::ozlemSpecial6() // ShapeMap& border)
 
    // Quick mod - TV
    // MessageBox(NULL,blah.c_str(),"Message: ozlemSpecial6",MB_OK|MB_ICONINFORMATION);
-#if defined(_WIN32)   
-   MessageBoxA(NULL,blah.c_str(),"Message: ozlemSpecial6",MB_OK|MB_ICONINFORMATION);
-#else
    fprintf(stderr, "%s --- %s\n",blah.c_str(),"Message: ozlemSpecial6");
-#endif   
 
    /*
    pvecint removelist;

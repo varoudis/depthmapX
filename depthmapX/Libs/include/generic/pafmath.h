@@ -44,14 +44,6 @@ inline int sgn(double a)
    return (a < 0) ? -1 : 1;
 }
 
-#ifdef _MSC_VER
-// not sure why this isn't in math.h for MSVC
-inline int round(double a)
-{
-   return (int)floor(a+0.5);
-}
-#endif
-
 #ifndef M_ROOT_1_2
 #define M_ROOT_1_2 0.70710678118654752440084436210485
 #endif

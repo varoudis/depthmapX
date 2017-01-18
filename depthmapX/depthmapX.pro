@@ -1,4 +1,4 @@
-QT            += core gui opengl
+QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
 TEMPLATE      = app
 TARGET        = depthmapX
@@ -133,6 +133,8 @@ RESOURCES     = resource.qrc
 !win32:!macx:LIBS += -L/usr/lib/i386-linux-gnu/
 
 !win32:!macx:LIBS = -lGL -lGLU
+
+win32:LIBS += -lOpenGl32 -lglu32 -lgdi32
 
 OTHER_FILES += \
     Libs/include/generic/lgpl.txt

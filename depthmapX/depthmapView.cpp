@@ -17,6 +17,7 @@
 #include <QtGui>
 #include <QToolBar>
 #include <QEvent>
+#include <QtWidgets/QMessageBox>
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -34,11 +35,6 @@
 #include "depthmapView.h"
 
 class QToolBar;
-
-#define LOBYTE(w)           ((unsigned char)((w) & 0xff))
-#define GetRValue(rgb)      (LOBYTE(rgb))
-#define GetGValue(rgb)      (LOBYTE((rgb) >> 8))
-#define GetBValue(rgb)      (LOBYTE((rgb)>>16))
 
 #define DMP_TIMER_SPLASH      1
 #define DMP_TIMER_REDRAW      2
@@ -134,7 +130,7 @@ QDepthmapView::QDepthmapView(QWidget *parent)
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
    // TV - dX Simple
-   m_settingsFile = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) + ":/depthmapXsettings.ini";
+   m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).first() + ":/depthmapXsettings.ini";
    QSettings settings(m_settingsFile, QSettings::NativeFormat);
    //QSettings settings("QT-KCC", "depthmapX");
    m_initialSize = settings.value(QLatin1String("initialSize"), QSize(2000, 2000)).toSize();
@@ -1191,7 +1187,7 @@ void QDepthmapView::wheelEvent(QWheelEvent *e)
       ZoomOut();
    }
    else {
-	  QPoint pta = this->rect().center();
+      QPoint pta = this->rect().center();
       ZoomIn(1.0 + double(zDelta) / double(120), LogicalUnits(pta));
    }
 }
@@ -2446,10 +2442,10 @@ void QDepthmapView::OnEditSave()
    
    if(outfile.isEmpty()) return;
 
-  FILE* fp = fopen(outfile.toAscii(), "wb");
+  FILE* fp = fopen(outfile.toLatin1(), "wb");
   fclose(fp);
 
-  ofstream stream( outfile.toAscii() );
+  ofstream stream( outfile.toLatin1() );
   if (stream.fail()) {
      QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open ") + outfile + tr(" for writing"), QMessageBox::Ok, QMessageBox::Ok );
 	 return;

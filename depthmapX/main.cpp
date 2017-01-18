@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 
     MainWindow mainWin;
 
-    while(end < start+2) end = wait.secsTo(QDateTime::currentDateTime());
+    //while(end < start+2) end = wait.secsTo(QDateTime::currentDateTime());
 
     mainWin.show();
 

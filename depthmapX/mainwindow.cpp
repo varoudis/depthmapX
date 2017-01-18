@@ -16,6 +16,16 @@
 
 #include <QtGui>
 #include <QDesktopServices>
+#include <QtWidgets/QMdiArea>
+#include <QtWidgets/QDockWidget>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QMdiSubWindow>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QMenuBar>
 
 #include "mainwindow.h"
 #include "depthmapView.h"
@@ -82,7 +92,7 @@ MainWindow::MainWindow()
     AttributesListDock->setWidget(setupAttributesListWidget());
     addDockWidget(Qt::LeftDockWidgetArea, AttributesListDock);
 
-    m_settingsFile = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) +  "/depthmapXsettings.ini";
+    m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).first() +  "/depthmapXsettings.ini";
     // QApplication::applicationDirPath() + ":/depthmapXsettings.ini";
 
     simple_version = true;
@@ -1720,7 +1730,7 @@ void MainWindow::StepDepthTriggered()
 
 void MainWindow::zoomButtonTriggered()
 {
-    int id = qVariantValue<int>(zoomInAct->data());
+    int id = zoomInAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ZOOM_IN)
         activeQDepthmapView()->OnViewZoomIn();
     else
@@ -1732,10 +1742,10 @@ void MainWindow::FillButtonTriggered()
     int id;// = qVariantValue<int>(STDFillColorAct->data());
     if( qobject_cast<QAction *>(sender()) ) { // Not sure // Hack TV
         QAction* temp = qobject_cast<QAction *>(sender());
-        id = qVariantValue<int>(temp->data());
+        id = temp->data().value<int>();
         delete temp;
     } else {
-        id = qVariantValue<int>(STDFillColorAct->data());
+        id = STDFillColorAct->data().value<int>();
     }
 
     if(id == ID_MAPBAR_ITEM_FILL)
@@ -1748,7 +1758,7 @@ void MainWindow::FillButtonTriggered()
 
 void MainWindow::LineButtonTriggered()
 {
-    int id = qVariantValue<int>(SelectLineAct->data());
+    int id = SelectLineAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_LINETOOL)
         activeQDepthmapView()->OnEditLineTool();
     else
@@ -1757,7 +1767,7 @@ void MainWindow::LineButtonTriggered()
 
 void MainWindow::isoButtonTriggered()
 {
-    int id = qVariantValue<int>(MakeIosAct->data());
+    int id = MakeIosAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ISOVIST)
         activeQDepthmapView()->OnModeIsovist();
     else
@@ -1766,7 +1776,7 @@ void MainWindow::isoButtonTriggered()
 
 void MainWindow::joinButtonTriggered()
 {
-    int id = qVariantValue<int>(JoinAct->data());
+    int id = JoinAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_JOIN)
         activeQDepthmapView()->OnModeJoin();
     else

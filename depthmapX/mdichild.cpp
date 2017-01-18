@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#include <QtGui>
-
+#include <QtGui/QCloseEvent>
+#include <QtWidgets/QMessageBox>
+#include <QtCore/QTextStream>
+#include <QtCore/QFile>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QFileDialog>
 #include "mdichild.h"
 
 MdiChild::MdiChild()

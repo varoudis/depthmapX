@@ -82,9 +82,9 @@ void CGridDialog::OnOK()
 			formatmax = tr("%.0f");
 		}
 		QString absminstr, minstr, maxstr;
-		absminstr.sprintf(formatabsmin.toAscii(), truemin/10);
-		minstr.sprintf(formatmin.toAscii(), truemin);
-		maxstr.sprintf(formatmax.toAscii(), truemax);
+        absminstr.sprintf(formatabsmin.toLatin1(), truemin/10);
+        minstr.sprintf(formatmin.toLatin1(), truemin);
+        maxstr.sprintf(formatmax.toLatin1(), truemax);
 		if (m_spacing >= truemin / 10 && m_spacing < truemin) {
 			QString msg;
 			msg = tr("You are below the suggested minimum grid spacing of ") + minstr + tr(".  If you use this grid spacing, it may cause processing problems.\nAre you sure you want to proceed with this grid spacing?");
