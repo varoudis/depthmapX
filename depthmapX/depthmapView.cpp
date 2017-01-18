@@ -1180,15 +1180,31 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 	char key = e->key();
 }
 
+namespace
+{
+    QPoint calculateCenter(QPoint point, const QPoint &oldCentre, double factor)
+    {
+        int diffX = oldCentre.x() - point.x();
+        int diffY = oldCentre.y() - point.y();
+        point.rx() += diffX * factor;
+        point.ry() += diffY * factor;
+        return point;
+    }
+}
+
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
+   QPoint centre = this->rect().center();
+   QPoint position = e->pos();
    if (zDelta < 0) {
-      ZoomOut();
+       ZoomOut(LogicalUnits(calculateCenter(position,centre,2.0)));
    }
    else {
-      QPoint pta = this->rect().center();
-      ZoomIn(1.0 + double(zDelta) / double(120), LogicalUnits(pta));
+      QPoint centre = this->rect().center();
+      QPoint position = e->pos();
+      auto zoomFactor = 1.0 + double(zDelta) / 120.0;
+      ZoomIn(zoomFactor, LogicalUnits(calculateCenter(position, centre, 1.0/zoomFactor)));
    }
 }
 
@@ -1206,12 +1222,18 @@ void QDepthmapView::ZoomIn(double ratio, const Point2f& point)
 
 void QDepthmapView::ZoomOut()
 {
-   m_unit *= 2;
-   m_invalidate = 0;
- 
-   // Redraw scene
-   m_redraw_all = true;
-   update();
+    m_unit *= 2;
+    m_invalidate = 0;
+
+    // Redraw scene
+    m_redraw_all = true;
+    update();
+}
+
+void QDepthmapView::ZoomOut(Point2f centre)
+{
+   m_centre = centre;
+   ZoomOut();
 }
 
 QSize QDepthmapView::sizeHint() const

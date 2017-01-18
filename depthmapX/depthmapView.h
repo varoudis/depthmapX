@@ -181,6 +181,7 @@ private:
 
    void ZoomIn(double ratio, const Point2f& point);
    void ZoomOut();
+   void ZoomOut(Point2f centre);
 
    void InitViewport(const QRect& phys_bounds, QGraphDoc *pDoc);
    QtRegion LogicalViewport(const QRect& phys_bounds, QGraphDoc *pDoc);
