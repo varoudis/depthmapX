@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     LicenseAgreement dummy;
     dummy.setModal(true);
-    dummy.setWindowTitle("depthmapX 0.30 - Tasos Varoudis");
+    dummy.setWindowTitle("depthmapX 0.31");
     dummy.exec();
     if ( dummy.result() == dummy.Rejected ) return 0;
 

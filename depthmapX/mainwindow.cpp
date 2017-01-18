@@ -35,7 +35,7 @@
 #include "DepthmapOptionsDlg.h"
 #include "AboutDlg.h"
 
-#define TITLE_BASE tr("depthmapX 0.30 - Tasos Varoudis")
+#define TITLE_BASE tr("depthmapX 0.31")
 
 static int current_view_type = 0;
 enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_TYPES = 5};
