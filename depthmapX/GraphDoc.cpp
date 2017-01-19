@@ -53,6 +53,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include "compatibilitydefines.h"
 #endif
 
 QT_BEGIN_NAMESPACE

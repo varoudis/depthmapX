@@ -59,7 +59,8 @@ HEADERS       = depthmapView.h \
     Libs/include/sala/connector.h \
     Libs/include/sala/axialmap.h \
     Libs/include/sala/attributes.h \
-    licenseagreement.h
+    licenseagreement.h \
+    compatibilitydefines.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \

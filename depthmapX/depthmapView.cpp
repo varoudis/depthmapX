@@ -37,6 +37,10 @@
 
 class QToolBar;
 
+#ifndef _WIN32
+#include "compatibilitydefines.h"
+#endif
+
 #define DMP_TIMER_SPLASH      1
 #define DMP_TIMER_REDRAW      2
 #define DMP_TIMER_HOVER       3
