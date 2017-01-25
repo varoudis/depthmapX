@@ -1,6 +1,8 @@
+include(../defaults.pri)
 QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
-TEMPLATE      = app
+TEMPLATE      = lib
+CONFIG        += staticlib
 TARGET        = depthmapX
 HEADERS       = depthmapView.h \
                 GraphDoc.h \
@@ -65,7 +67,6 @@ HEADERS       = depthmapView.h \
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
                 indexWidget.cpp \
-                main.cpp \
                 mainwindow.cpp \
                 mdichild.cpp \
                 renderthread.cpp \
@@ -128,14 +129,7 @@ SOURCES       = depthmapView.cpp \
     Libs/salalib/vertex.cpp \
     licenseagreement.cpp
 
-INCLUDEPATH   += Libs/include
 RESOURCES     = resource.qrc
-
-!win32:!macx:LIBS += -L/usr/lib/i386-linux-gnu/
-
-!win32:!macx:LIBS = -lGL -lGLU
-
-win32:LIBS += -lOpenGl32 -lglu32 -lgdi32
 
 OTHER_FILES += \
     Libs/include/generic/lgpl.txt
