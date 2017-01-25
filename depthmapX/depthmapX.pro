@@ -62,7 +62,8 @@ HEADERS       = depthmapView.h \
     Libs/include/sala/axialmap.h \
     Libs/include/sala/attributes.h \
     licenseagreement.h \
-    compatibilitydefines.h
+    compatibilitydefines.h \
+    mainwindowfactory.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -127,7 +128,8 @@ SOURCES       = depthmapView.cpp \
     Libs/salalib/tigerp.cpp \
     Libs/salalib/topomet.cpp \
     Libs/salalib/vertex.cpp \
-    licenseagreement.cpp
+    licenseagreement.cpp \
+    mainwindowfactory.cpp
 
 RESOURCES     = resource.qrc
 

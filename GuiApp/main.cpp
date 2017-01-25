@@ -21,8 +21,7 @@
 #include <QDesktopWidget>
 #include <QDateTime>
 
-#include "mainwindow.h"
-#include "licenseagreement.h"
+#include "mainwindowfactory.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -38,11 +37,11 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    LicenseAgreement dummy;
-    dummy.setModal(true);
-    dummy.setWindowTitle("depthmapX 0.31");
-    dummy.exec();
-    if ( dummy.result() == dummy.Rejected ) return 0;
+    LicenseAgreementHolder dummy;
+    dummy.get().setModal(true);
+    dummy.get().setWindowTitle("depthmapX 0.31");
+    dummy.get().exec();
+    if ( dummy.get().result() == dummy.get().Rejected ) return 0;
 
 	QSplashScreen *splash = 0;
     int screenId = QApplication::desktop()->screenNumber();
@@ -58,11 +57,11 @@ int main(int argc, char *argv[])
 	int end, start = wait.secsTo(QDateTime::currentDateTime());
 	end = 0;
 
-    MainWindow mainWin;
+    MainWindowHolder mainWindow;
 
     //while(end < start+2) end = wait.secsTo(QDateTime::currentDateTime());
 
-    mainWin.show();
+    mainWindow.get().show();
 
     //splash->finish(&mainWin);
     return app.exec();
