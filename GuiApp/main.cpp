@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -53,14 +54,7 @@ int main(int argc, char *argv[])
     }
     //splash->show();
 
-	QDateTime wait;
-	int end, start = wait.secsTo(QDateTime::currentDateTime());
-	end = 0;
-
     MainWindowHolder mainWindow;
-
-    //while(end < start+2) end = wait.secsTo(QDateTime::currentDateTime());
-
     mainWindow.get().show();
 
     //splash->finish(&mainWin);
