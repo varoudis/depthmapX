@@ -133,9 +133,10 @@ QDepthmapView::QDepthmapView(QWidget *parent)
 
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
+   // TODO get rid of this - setting should be handled in one place and be passed around
    // TV - dX Simple
-   m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).first() + ":/depthmapXsettings.ini";
-   QSettings settings(m_settingsFile, QSettings::NativeFormat);
+   m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).first() + ":/depthmapXsettings.ini";
+   QSettings settings(m_settingsFile, QSettings::IniFormat);
    //QSettings settings("QT-KCC", "depthmapX");
    m_initialSize = settings.value(QLatin1String("initialSize"), QSize(2000, 2000)).toSize();
 

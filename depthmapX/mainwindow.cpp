@@ -92,7 +92,7 @@ MainWindow::MainWindow()
     AttributesListDock->setWidget(setupAttributesListWidget());
     addDockWidget(Qt::LeftDockWidgetArea, AttributesListDock);
 
-    m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation).first() +  "/depthmapXsettings.ini";
+    m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).first() +  "/depthmapXsettings.ini";
     // QApplication::applicationDirPath() + ":/depthmapXsettings.ini";
 
     simple_version = true;
@@ -1977,16 +1977,7 @@ void MainWindow::readSettings()
     QCoreApplication::setOrganizationDomain("depthmap.org");
     QCoreApplication::setApplicationName("depthmapX");
 
-    bool newfile = true;
-    QFile opt(m_settingsFile);
-    if(opt.exists()) newfile = false;
-
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
-    //QSettings settings;
-    //settings.setPath(QSettings::NativeFormat,QSettings::UserScope,m_settingsFile);
-
-    //settings(m_settingsFile, QSettings::NativeFormat);
-    //QSettings settings("QT-KCC", "depthmapX");
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     m_foreground = settings.value("forColor", qRgb(128,255,128)).toInt();
@@ -2001,7 +1992,7 @@ void MainWindow::writeSettings()
     QCoreApplication::setOrganizationDomain("depthmap.org");
     QCoreApplication::setApplicationName("depthmapX");
 
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
     settings.setValue("pos", pos());
     settings.setValue("size", size());
@@ -2011,7 +2002,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::setCurrentFile(const QString &fileName)
 {
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
     QStringList files = settings.value("recentFileList").toStringList();
     files.removeAll(fileName);
@@ -2022,17 +2013,11 @@ void MainWindow::setCurrentFile(const QString &fileName)
     settings.setValue("recentFileList", files);
 
     updateRecentFileActions();
-/*
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
-        if (mainWin)
-            mainWin->updateRecentFileActions();
-    }*/
 }
 
 void MainWindow::updateRecentFileActions()
 {
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
     QStringList files = settings.value("recentFileList").toStringList();
 
