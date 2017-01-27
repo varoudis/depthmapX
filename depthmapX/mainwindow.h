@@ -24,6 +24,7 @@
 #include "treeWindow.h"
 #include "GraphDoc.h"
 #include "ColourScaleDlg.h"
+#include "compatibilitydefines.h"
 
 #define DEPTHMAPX_VERSION 0.27          //
 #define DEPTHMAPX_MINOR_VERSION "b"

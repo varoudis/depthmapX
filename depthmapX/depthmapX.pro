@@ -63,7 +63,8 @@ HEADERS       = depthmapView.h \
     Libs/include/sala/attributes.h \
     licenseagreement.h \
     compatibilitydefines.h \
-    mainwindowfactory.h
+    mainwindowfactory.h \
+    viewhelpers.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \

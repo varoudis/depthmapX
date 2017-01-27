@@ -34,6 +34,7 @@
 
 #include "mainwindow.h"
 #include "depthmapView.h"
+#include "viewhelpers.h"
 
 class QToolBar;
 
@@ -1183,31 +1184,19 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 	char key = e->key();
 }
 
-namespace
-{
-    QPoint calculateCenter(QPoint point, const QPoint &oldCentre, double factor)
-    {
-        int diffX = oldCentre.x() - point.x();
-        int diffY = oldCentre.y() - point.y();
-        point.rx() += diffX * factor;
-        point.ry() += diffY * factor;
-        return point;
-    }
-}
-
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
    QPoint centre = this->rect().center();
    QPoint position = e->pos();
    if (zDelta < 0) {
-       ZoomOut(LogicalUnits(calculateCenter(position,centre,2.0)));
+       ZoomOut(LogicalUnits(ViewHelpers::calculateCenter(position,centre,2.0)));
    }
    else {
       QPoint centre = this->rect().center();
       QPoint position = e->pos();
       auto zoomFactor = 1.0 + double(zDelta) / 120.0;
-      ZoomIn(zoomFactor, LogicalUnits(calculateCenter(position, centre, 1.0/zoomFactor)));
+      ZoomIn(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position, centre, 1.0/zoomFactor)));
    }
 }
 

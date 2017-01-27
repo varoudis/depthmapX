@@ -1,8 +1,3 @@
-#include <QCoreApplication>
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
-
-    return a.exec();
-}
