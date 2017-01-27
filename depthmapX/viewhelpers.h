@@ -1,0 +1,4 @@
+#ifndef VIEWHELPERS_H
+#define VIEWHELPERS_H
+
+#endif // VIEWHELPERS_H
