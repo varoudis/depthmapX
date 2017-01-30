@@ -26,7 +26,7 @@
 #include "ColourScaleDlg.h"
 #include "compatibilitydefines.h"
 
-#define DEPTHMAPX_VERSION 0.27          //
+#define DEPTHMAPX_VERSION 0.31          //
 #define DEPTHMAPX_MINOR_VERSION "b"
 #define DEPTHMAP_MODULE_VERSION 10.04
 
@@ -83,7 +83,7 @@ enum {
    ID_MAPBAR_ITEM_AUGMENT_FILL = 18 // AV test - TV
 };
 
-enum { MaxRecentFiles = 5 };
+const int  MaxRecentFiles = 5;
 
 enum { FOCUSGRAPH = 1001, AllTransactionsDone = 1002 };
 
@@ -351,7 +351,7 @@ private:
     QAction *printAct;
     QAction *printPreviewAct;
     QAction *printSetupAct;
-    QAction *recentFileActs[5];
+    QAction *recentFileActs[MaxRecentFiles];
     QAction *separatorAct;
     QAction *exitAct;
 
