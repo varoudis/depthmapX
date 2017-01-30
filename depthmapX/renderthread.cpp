@@ -82,7 +82,7 @@ void RenderThread::run()
 
    if (comm) {
        // move simple setting to comm
-       comm->simple_version = pMain->simple_version;
+       comm->simple_version = pMain->m_simpleVersion;
 
       int ok;
       switch (comm->GetFunction()) 

@@ -108,7 +108,7 @@ public:
     QRgb m_foreground;
     QRgb m_background;
 
-    bool simple_version;  // bool that replaces compile defines
+    bool m_simpleVersion;  // bool that replaces compile defines
 
     void RedoPlotViewMenu(QGraphDoc* pDoc);
     void updateToolbar();
