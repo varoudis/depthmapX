@@ -49,6 +49,7 @@ namespace SettingTag
     const QString foregroundColour = "forColor";
     const QString backgroundColour = "backColor";
     const QString simpleVersion = "simple";
+    const QString recentFileList = "recentFileList";
 
     template<class ValueType> void saveSettings( const QString& settingsFilename, const QString& settingName, const ValueType& value )
     {
@@ -2017,13 +2018,13 @@ void MainWindow::setCurrentFile(const QString &fileName)
 {
     QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 
-    settings.setValue("recentFileList", files);
+    settings.setValue(SettingTag::recentFileList, files);
 
     updateRecentFileActions();
 }
@@ -2032,7 +2033,7 @@ void MainWindow::updateRecentFileActions()
 {
     QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
 
     int numRecentFiles = qMin(files.size(), MaxRecentFiles);
 
