@@ -14,6 +14,13 @@ TEMPLATE = app
 SOURCES += main.cpp \
     testviewhelpers.cpp
 
+win32:Release:LIBS += -L../depthmapX/release
+win32:Debug:LIBS += -L../depthmapX/debug
+!win32:LIBS += -L../depthmapX
+
+LIBS += -ldepthmapX
+
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the

@@ -50,6 +50,7 @@ namespace SettingTag
     const QString backgroundColour = "backColor";
     const QString simpleVersion = "simple";
     const QString recentFileList = "recentFileList";
+    const QString mwMaximised = "mainWindowMaximised";
 
     template<class ValueType> void saveSettings( const QString& settingsFilename, const QString& settingName, const ValueType& value )
     {
@@ -112,7 +113,6 @@ MainWindow::MainWindow()
 
     readSettings(); // read setting or generate default
     setWindowTitle(TITLE_BASE);
-    setWindowState(Qt::WindowMaximized);
 
     createActions();
     createMenus();
@@ -704,10 +704,10 @@ void MainWindow::OnAppAbout()
 
 QDepthmapView *MainWindow::createQDepthmapView()
 {
-    QGraphDoc* doc = new QGraphDoc();
+    QGraphDoc* doc = new QGraphDoc("", "");
     doc->m_mainFrame = this;
 
-    QDepthmapView *child = new QDepthmapView;
+    QDepthmapView *child = new QDepthmapView(m_settingsFile);
     child->pDoc = doc;
 
     mdiArea->addSubWindow(child);
@@ -1998,8 +1998,14 @@ void MainWindow::readSettings()
     m_foreground = settings.value(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
     m_background = settings.value(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
     m_simpleVersion = settings.value(SettingTag::simpleVersion, true).toBool();
-    move(pos);
-    resize(size);
+    if (settings.value(SettingTag::mwMaximised, true).toBool())
+    {
+         setWindowState(Qt::WindowMaximized);
+    }
+    else{
+        move(pos);
+        resize(size);
+    }
 }
 
 void MainWindow::writeSettings()
@@ -2012,6 +2018,7 @@ void MainWindow::writeSettings()
 
     settings.setValue(SettingTag::position, pos());
     settings.setValue(SettingTag::size, size());
+    settings.setValue(SettingTag::mwMaximised, windowState() == Qt::WindowMaximized);
 }
 
 void MainWindow::setCurrentFile(const QString &fileName)

@@ -130,7 +130,8 @@ SOURCES       = depthmapView.cpp \
     Libs/salalib/topomet.cpp \
     Libs/salalib/vertex.cpp \
     licenseagreement.cpp \
-    mainwindowfactory.cpp
+    mainwindowfactory.cpp \
+    viewhelpers.cpp
 
 RESOURCES     = resource.qrc
 

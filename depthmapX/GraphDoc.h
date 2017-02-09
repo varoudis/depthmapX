@@ -174,7 +174,7 @@ class QGraphDoc : public QWidget
 	Q_OBJECT
 
 public:
-   QGraphDoc();
+   QGraphDoc(const QString &author, const QString &organisation);
    CMSCommunicator *m_communicator;
 
    int m_make_algorithm;   // algorithm to make graph

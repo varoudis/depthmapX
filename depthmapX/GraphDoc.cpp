@@ -17,7 +17,6 @@
 #include <QMessageBox>
 #include <QString>
 #include <QFile>
-#include <QSettings>
 #include <QtCore/QFile>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
@@ -50,6 +49,7 @@
 #include "TopoMetDlg.h"
 #include "AttributeSummary.h"
 #include "depthmapView.h"
+#include "viewhelpers.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QGraphDoc::QGraphDoc()
+QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 {
    m_opened_name = "";
    m_flag_lock = false;
@@ -83,14 +83,10 @@ QGraphDoc::QGraphDoc()
    m_step = 0;
    m_num_records = 0;
 
-    // TV need work
-   QSettings settings("QT-KCC", "depthmapX");
-   QString name = settings.value(QLatin1String("Name"), "Registered").toChar();
-   QString organization = settings.value(QLatin1String("Organization"), "Copyright").toChar();
-   QString date = "11-2-3";
+   pstring date = ViewHelpers::getCurrentDate();
    QString version = QString("depthmapX v%1.%2").arg(DEPTHMAPX_VERSION).arg(DEPTHMAPX_MINOR_VERSION);
 
-   m_meta_graph->setProperties(pstring(name.toLatin1()),pstring(organization.toLatin1()),pstring(date.toLatin1()),pstring(version.toLatin1()));
+   m_meta_graph->setProperties(pstring(author.toLatin1()),pstring(organisation.toLatin1()),date,pstring(version.toLatin1()));
 
 }
 

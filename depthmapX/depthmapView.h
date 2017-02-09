@@ -35,7 +35,7 @@ class QDepthmapView : public QWidget
 public:
 	QGraphDoc* pDoc;
 
-    QDepthmapView(QWidget *parent = 0);
+    QDepthmapView(const QString &settingFilename);
     ~QDepthmapView();
     QSize sizeHint() const;
 	void SetRedrawflag();
@@ -45,8 +45,7 @@ public:
 	QString m_open_file_name;
 	QString currentFile() {return m_open_file_name;}
 
-    // Settings Files // Used in dX simple too! // TV
-    QString m_settingsFile;
+    const QString &m_settingsFile;
 
 	int m_curr_seleted;
 	bool m_showgrid;

@@ -27,10 +27,10 @@
 #include <qpainter.h>
 #include <qevent.h>
 #include <qfiledialog.h>
-#include <qsettings.h>
 #include <qmenu.h>
 #include <qactiongroup.h>
 #include <qdebug.h>
+#include <qsettings.h>
 
 #include "mainwindow.h"
 #include "depthmapView.h"
@@ -94,8 +94,8 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
    return (color & 0x006f6f6f) | (mergecolor & 0x00a0a0a0);
 }
 
-QDepthmapView::QDepthmapView(QWidget *parent)
-    : QWidget(parent)
+QDepthmapView::QDepthmapView(const QString &settingsFile )
+    : QWidget(0), m_settingsFile(settingsFile)
 {
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);
@@ -133,12 +133,8 @@ QDepthmapView::QDepthmapView(QWidget *parent)
 
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
-   // TODO get rid of this - setting should be handled in one place and be passed around
-   // TV - dX Simple
-   m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).first() + ":/depthmapXsettings.ini";
    QSettings settings(m_settingsFile, QSettings::IniFormat);
-   //QSettings settings("QT-KCC", "depthmapX");
-   m_initialSize = settings.value(QLatin1String("initialSize"), QSize(2000, 2000)).toSize();
+   m_initialSize = settings.value(QLatin1String("depthmapViewSize"), QSize(2000, 2000)).toSize();
 
    installEventFilter(this);
 
@@ -149,9 +145,8 @@ QDepthmapView::QDepthmapView(QWidget *parent)
 
 QDepthmapView::~QDepthmapView()
 {
-    QSettings settings("QT-KCC", "depthmapX");
-    settings.setValue(QLatin1String("initialSize"), size());
-    settings.setValue(QLatin1String("position"), pos());
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
+    settings.setValue(QLatin1String("depthmapViewSize"), size());
 }
 
 int QDepthmapView::OnRedraw(int wParam, int lParam)
