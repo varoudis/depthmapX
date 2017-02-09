@@ -8,11 +8,11 @@ TARGET     =depthmapX
 SOURCES    = main.cpp
 
 
-win32:Release:LIBS += -L../depthmapX/release
-win32:Debug:LIBS += -L../depthmapX/debug
-!win32:LIBS += -L../depthmapX
+win32:Release:LIBS += -L../depthmapX/release -L../genlib/release -L../salalib/release
+win32:Debug:LIBS += -L../depthmapX/debug -L../genlib/debug -L../salalib/debug
+!win32:LIBS += -L../depthmapX -L../genlib -L../salalib
 
-LIBS += -ldepthmapX
+LIBS += -ldepthmapX -lgenlib -lsalalib
 
 !win32:!macx:LIBS += -L/usr/lib/i386-linux-gnu/
 

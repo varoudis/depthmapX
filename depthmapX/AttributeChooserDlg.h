@@ -14,10 +14,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui_AttributeChooserDlg.h"
-#include <sala/mgraph.h>
-#include <sala/attributes.h>
-#include <sala/shapemap.h>
-#include <sala/axialmap.h>
+#include <salalib/mgraph.h>
+#include <salalib/attributes.h>
+#include <salalib/shapemap.h>
+#include <salalib/axialmap.h>
 
 class CAttributeChooserDlg : public QDialog, public Ui::CAttributeChooserDlg
 {

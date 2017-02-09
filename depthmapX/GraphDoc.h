@@ -30,13 +30,13 @@
 #include <sstream>
 #include <math.h>
 #include <float.h>
-#include <generic/paftl.h>
-#include <generic/comm.h>
+#include <genlib/paftl.h>
+#include <genlib/comm.h>
 // Sala
-#include <sala/mgraph.h>
-#include "sala/salaprogram.h"
-#include <idepthmap.h>
-#include <sala/idepthmapx.h>
+#include <salalib/mgraph.h>
+#include "salalib/salaprogram.h"
+#include <salalib/idepthmap.h>
+#include <salalib/idepthmapx.h>
 
 
 QT_BEGIN_NAMESPACE

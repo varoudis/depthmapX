@@ -18,7 +18,7 @@
 #define DEPTHMAPX_VIEWHELPERS_H
 
 #include <QPoint>
-#include "Libs/include/generic/paftl.h"
+#include "genlib/paftl.h"
 
 namespace ViewHelpers
 {

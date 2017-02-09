@@ -23,7 +23,7 @@
 #include <QPoint>
 #include <QSize>
 #include "GraphDoc.h"
-#include <sala/nagent.h>
+#include <salalib/nagent.h>
 
 #define ID_ADD_AGENT                    32947
 #define ID_3D_PAN                       32948

@@ -1,4 +1,4 @@
-INCLUDEPATH += $$PWD/depthmapX $$PWD/depthmapX/Libs/include
+INCLUDEPATH += $$PWD/depthmapX $$PWD
 
 Release:DESTDIR = release
 Release:OBJECTS_DIR = release/.obj
