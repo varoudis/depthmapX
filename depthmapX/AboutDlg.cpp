@@ -14,9 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "AboutDlg.h"
-
-#define DEPTHMAPX_VERSION 0.31
-#define DEPTHMAPX_MINOR_VERSION "b"   // b Beta version, r is standard release, s is stable release, W - M - L for single OS
+#include "version.h"
 
 CAboutDlg::CAboutDlg(QWidget *parent)
 : QDialog(parent)

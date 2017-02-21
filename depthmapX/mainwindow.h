@@ -26,9 +26,7 @@
 #include "ColourScaleDlg.h"
 #include "compatibilitydefines.h"
 
-#define DEPTHMAPX_VERSION 0.31          //
-#define DEPTHMAPX_MINOR_VERSION "b"
-#define DEPTHMAP_MODULE_VERSION 10.04
+#include "version.h"
 
 class ItemTreeEntry
 {

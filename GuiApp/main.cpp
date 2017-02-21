@@ -23,6 +23,7 @@
 #include <QDateTime>
 
 #include "mainwindowfactory.h"
+#include "version.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 
     LicenseAgreementHolder dummy;
     dummy.get().setModal(true);
-    dummy.get().setWindowTitle("depthmapX 0.31");
+    dummy.get().setWindowTitle(TITLE_BASE);
     dummy.get().exec();
     if ( dummy.get().result() == dummy.get().Rejected ) return 0;
 

@@ -43,7 +43,8 @@ HEADERS       = depthmapView.h \
     licenseagreement.h \
     compatibilitydefines.h \
     mainwindowfactory.h \
-    viewhelpers.h
+    viewhelpers.h \
+    version.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
