@@ -123,5 +123,5 @@ FORMS += \
     UI/AttributeChooserDlg.ui \
     UI/AgentAnalysisDlg.ui \
     UI/AboutDlg.ui \
- UI/licenseagreement.ui
+    UI/licenseagreement.ui
 
