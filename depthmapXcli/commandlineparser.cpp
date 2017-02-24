@@ -1,7 +1,9 @@
 #include "commandlineparser.h"
+#include "exceptions.h"
 #include <iostream>
 #include <sstream>
 
+using namespace depthmapX;
 
 void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
@@ -27,7 +29,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
 {
     if (argc <= 1)
     {
-        throw std::exception("No commandline parameters provided - don't know what to do");
+        throw CommandLineException("No commandline parameters provided - don't know what to do");
     }
     _valid = true;
     for ( size_t i = 1; i < argc;  )
@@ -41,7 +43,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw std::exception("-m requires an argument");
+                throw CommandLineException("-m requires an argument");
             }
             if ( strcmp(argv[i], "VGA") == 0 )
             {
@@ -49,14 +51,14 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
             }
             else
             {
-                throw std::exception(std::string(std::string("Invalid mode: ") + argv[i]).c_str());
+                throw CommandLineException(std::string("Invalid mode: ") + argv[i]);
             }
         }
         else if ( strcmp ("-f", argv[i]) == 0)
         {
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw std::exception("-f requires an argument");
+                throw CommandLineException("-f requires an argument");
             }
             _fileName = argv[i];
         }
@@ -64,7 +66,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw std::exception("-o requires an argument");
+                throw CommandLineException("-o requires an argument");
             }
             _outputFile = argv[i];
         }
@@ -76,11 +78,11 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if (_vgaMode != VgaMode::NONE_VGA)
             {
-                throw std::exception("-vm can only be used once, modes are mutually exclusive");
+                throw CommandLineException("-vm can only be used once, modes are mutually exclusive");
             }
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw std::exception("-vm requires an argument");
+                throw CommandLineException("-vm requires an argument");
             }
             if ( strcmp(argv[i], "isovist") == 0 )
             {
@@ -100,7 +102,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
             }
             else
             {
-                throw std::exception(std::string(std::string("Invalid VGA mode: ") + argv[i]).c_str());
+                throw CommandLineException(std::string("Invalid VGA mode: ") + argv[i]);
             }
         }
         else if ( strcmp(argv[i], "-vg") == 0 )
@@ -115,7 +117,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw std::exception("-vr requires an argument");
+                throw CommandLineException("-vr requires an argument");
             }
             _radius = argv[i];
         }
@@ -124,15 +126,15 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
 
     if (_mode == DepthmapMode::NONE)
     {
-        throw std::exception("-m for mode is required");
+        throw CommandLineException("-m for mode is required");
     }
     if (_fileName.empty())
     {
-        throw std::exception("-f for input file is required");
+        throw CommandLineException("-f for input file is required");
     }
     if (_outputFile.empty())
     {
-        throw std::exception("-o for output file is required");
+        throw CommandLineException("-o for output file is required");
     }
 
     if (_mode == DepthmapMode::VGA_ANALYSIS)
@@ -146,13 +148,13 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if (_radius.empty())
             {
-                throw std::exception("Global measures in VGA/visibility analysis require a radius, use -vr <radius>");
+                throw CommandLineException("Global measures in VGA/visibility analysis require a radius, use -vr <radius>");
             }
             if (_radius != "n" && !has_only_digits(_radius))
             {
                 std::stringstream message;
                 message << "Radius must be a positive integer number or n, got " << _radius << std::flush;
-                throw std::exception(message.str().c_str());
+                throw CommandLineException(message.str().c_str());
             }
 
         }
@@ -160,7 +162,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             if (_radius.empty())
             {
-                throw std::exception("Metric vga requires a radius, use -vr <radius>");
+                throw CommandLineException("Metric vga requires a radius, use -vr <radius>");
             }
         }
     }

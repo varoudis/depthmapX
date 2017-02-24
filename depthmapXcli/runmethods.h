@@ -5,6 +5,11 @@
 #include "radiusconverter.h"
 
 namespace dm_runmethods{
+    class RuntimeException : public std::exception
+    {
+
+    };
+
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter);
 }
 #endif // RUNMETHODS_H

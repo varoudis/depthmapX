@@ -1,7 +1,10 @@
 #include "radiusconverter.h"
+#include "exceptions.h"
 #include <sstream>
 #include <cstdlib>
 #include <cmath>
+
+using namespace depthmapX;
 
 double RadiusConverter::ConvertForVisibility(const std::string &radius) const
 {
@@ -13,9 +16,7 @@ double RadiusConverter::ConvertForVisibility(const std::string &radius) const
     long rad = std::strtol(radius.c_str(), &end, 10);
     if (rad < 1 || rad > 99)
     {
-        std::stringstream message;
-        message << "Radius for visibility analysis must be n for the whole range or an integer between 1 and 99 inclusive. Got " << radius << std::flush;
-        throw std::exception(message.str().c_str());
+        throw SetupCheckException(std::string("Radius for visibility analysis must be n for the whole range or an integer between 1 and 99 inclusive. Got ") + radius);
     }
     return static_cast<double>(rad);
 }
@@ -30,17 +31,15 @@ double RadiusConverter::ConvertForMetric(const std::string &radius) const
     double rad = strtod(radius.c_str(), &end);
     if ( rad <= 0 )
     {
-        std::stringstream message;
-        message << "Radius for metric vga must be n for the whole range or a positive number. Got " << radius << std::flush;
-        throw std::exception(message.str().c_str());
+        throw SetupCheckException(std::string("Radius for metric vga must be n for the whole range or a positive number. Got ") + radius);
     }
     if (isnan(rad))
     {
-        throw std::exception("Radius NaN?! Really?");
+        throw SetupCheckException("Radius NaN?! Really?");
     }
     if (isinf(rad))
     {
-        throw std::exception("Radius inf?! Who are you kidding?");
+        throw SetupCheckException("Radius inf?! Who are you kidding?");
     }
 
     return rad;

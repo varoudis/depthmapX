@@ -1,6 +1,7 @@
 #include "runmethods.h"
 #include "salalib/mgraph.h"
 #include "radiusconverter.h"
+#include "exceptions.h"
 #include <memory>
 #include <sstream>
 
@@ -15,7 +16,7 @@ void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
     {
         std::stringstream message;
         message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
-        throw std::exception(message.str().c_str());
+        throw depthmapX::RuntimeException(message.str().c_str());
     }
     std::unique_ptr<Communicator> comm(new ICommunicator());
     std::unique_ptr<Options> options(new Options());
@@ -38,7 +39,7 @@ void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
         case VgaMode::ISOVIST:
             options->output_type = Options::OUTPUT_ISOVIST;
         default:
-            throw std::exception("Unsupported VGA mode");
+            throw depthmapX::SetupCheckException("Unsupported VGA mode");
     }
     mgraph.analyseGraph(comm.get(), *options, cmdP.simpleMode() );
     mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
