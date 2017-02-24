@@ -9,8 +9,10 @@ SOURCES += main.cpp \
     ../depthmapXcli/commandlineparser.cpp \
     testcommandlineparser.cpp \
     testradiusconverter.cpp \
-    ../depthmapXcli/radiusconverter.cpp
+    ../depthmapXcli/radiusconverter.cpp \
+    testsimpletimer.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \
-    ../depthmapXcli/radiusconverter.h
+    ../depthmapXcli/radiusconverter.h \
+    ../depthmapXcli/simpletimer.h

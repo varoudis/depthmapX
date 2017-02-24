@@ -13,7 +13,8 @@ HEADERS += \
     commandlineparser.h \
     runmethods.h \
     radiusconverter.h \
-    exceptions.h
+    exceptions.h \
+    simpletimer.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
