@@ -1,5 +1,6 @@
 #include "vgaparser.h"
 #include "exceptions.h"
+#include <cstring>
 
 using namespace depthmapX;
 

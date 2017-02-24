@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "argumentholder.h"
+#include <cstring>
 
 
 
