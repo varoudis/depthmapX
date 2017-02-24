@@ -7,14 +7,16 @@ CONFIG -= qt
 SOURCES += main.cpp \
     commandlineparser.cpp \
     runmethods.cpp \
-    radiusconverter.cpp
+    radiusconverter.cpp \
+    vgaparser.cpp
 
 HEADERS += \
     commandlineparser.h \
     runmethods.h \
     radiusconverter.h \
     exceptions.h \
-    simpletimer.h
+    simpletimer.h \
+    vgaparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug

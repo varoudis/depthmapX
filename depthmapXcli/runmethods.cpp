@@ -22,22 +22,22 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
-        switch(cmdP.getVgaMode())
+        switch(cmdP.vgaOptions().getVgaMode())
         {
-            case VgaMode::VISBILITY:
+            case VgaParser::VgaMode::VISBILITY:
                 options->output_type = Options::OUTPUT_VISUAL;
-                options->local = cmdP.localMeasures();
-                options->global = cmdP.globalMeasures();
-                options->radius = converter.ConvertForVisibility(cmdP.getRadius());
+                options->local = cmdP.vgaOptions().localMeasures();
+                options->global = cmdP.vgaOptions().globalMeasures();
+                options->radius = converter.ConvertForVisibility(cmdP.vgaOptions().getRadius());
                 break;
-            case VgaMode::METRIC:
+            case VgaParser::VgaMode::METRIC:
                 options->output_type = Options::OUTPUT_METRIC;
-                options->radius = converter.ConvertForMetric(cmdP.getRadius());
+                options->radius = converter.ConvertForMetric(cmdP.vgaOptions().getRadius());
                 break;
-            case VgaMode::ANGULAR:
+            case VgaParser::VgaMode::ANGULAR:
                 options->output_type = Options::OUTPUT_ANGULAR;
                 break;
-            case VgaMode::ISOVIST:
+            case VgaParser::VgaMode::ISOVIST:
                 options->output_type = Options::OUTPUT_ISOVIST;
             default:
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");

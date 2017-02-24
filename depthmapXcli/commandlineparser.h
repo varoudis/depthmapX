@@ -2,20 +2,14 @@
 #define COMMANDLINEPARSER_H
 
 #include <string>
-
+#include "vgaparser.h"
 
 enum DepthmapMode{
     NONE = 0,
     VGA_ANALYSIS
 };
 
-enum VgaMode{
-    NONE_VGA,
-    ISOVIST,
-    VISBILITY,
-    METRIC,
-    ANGULAR
-};
+
 
 class CommandLineParser
 {
@@ -26,12 +20,7 @@ public:
     const std::string &getOuputFile() const {return _outputFile;}
     bool isValid() const { return _valid; }
     bool simpleMode() const { return _simpleMode; }
-
-    // vga options
-    VgaMode getVgaMode() const { return _vgaMode; }
-    bool localMeasures() const { return _localMeasures; }
-    bool globalMeasures() const { return _globalMeasures; }
-    const std::string & getRadius() const { return _radius; }
+    const VgaParser& vgaOptions() const;
 
     static void printHelp();
 
@@ -42,11 +31,8 @@ private:
     bool _valid;
     bool _simpleMode;
 
-    // vga options
-    VgaMode _vgaMode;
-    bool _localMeasures;
-    bool _globalMeasures;
-    std::string _radius;
+    const VgaParser * _vgaParser;
+
 };
 
 #endif // COMMANDLINEPARSER_H

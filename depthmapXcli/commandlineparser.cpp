@@ -20,13 +20,9 @@ void CommandLineParser::printHelp(){
 }
 
 
-namespace {
-    bool has_only_digits(const std::string &s){
-      return s.find_first_not_of( "0123456789" ) == std::string::npos;
-    }
-}
 
-CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(DepthmapMode::NONE), _simpleMode(false), _vgaMode(VgaMode::NONE_VGA)
+CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
+    : _mode(DepthmapMode::NONE), _simpleMode(false), _vgaParser(nullptr)
 {
     if (argc <= 1)
     {
@@ -75,53 +71,6 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
         {
             _simpleMode = true;
         }
-        else if ( strcmp ("-vm", argv[i]) == 0)
-        {
-            if (_vgaMode != VgaMode::NONE_VGA)
-            {
-                throw CommandLineException("-vm can only be used once, modes are mutually exclusive");
-            }
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-vm requires an argument");
-            }
-            if ( strcmp(argv[i], "isovist") == 0 )
-            {
-                _vgaMode = VgaMode::ISOVIST;
-            }
-            else if ( strcmp(argv[i], "visibility") == 0 )
-            {
-                _vgaMode = VgaMode::VISBILITY;
-            }
-            else if ( strcmp(argv[i], "metric") == 0 )
-            {
-                _vgaMode = VgaMode::METRIC;
-            }
-            else if ( strcmp(argv[i], "angular") == 0 )
-            {
-                _vgaMode = VgaMode::ANGULAR;
-            }
-            else
-            {
-                throw CommandLineException(std::string("Invalid VGA mode: ") + argv[i]);
-            }
-        }
-        else if ( strcmp(argv[i], "-vg") == 0 )
-        {
-            _globalMeasures = true;
-        }
-        else if ( strcmp(argv[i], "-vl") == 0 )
-        {
-            _globalMeasures = true;
-        }
-        else if (strcmp(argv[i], "-vr") == 0)
-        {
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-vr requires an argument");
-            }
-            _radius = argv[i];
-        }
         ++i;
     }
 
@@ -140,31 +89,15 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
 
     if (_mode == DepthmapMode::VGA_ANALYSIS)
     {
-        if(_vgaMode == VgaMode::NONE_VGA)
-        {
-            _vgaMode = VgaMode::ISOVIST;
-        }
-
-        if (_vgaMode == VgaMode::VISBILITY && _globalMeasures)
-        {
-            if (_radius.empty())
-            {
-                throw CommandLineException("Global measures in VGA/visibility analysis require a radius, use -vr <radius>");
-            }
-            if (_radius != "n" && !has_only_digits(_radius))
-            {
-                throw CommandLineException(std::string("Radius must be a positive integer number or n, got ") + _radius);
-            }
-
-        }
-        else if (_vgaMode == VgaMode::METRIC)
-        {
-            if (_radius.empty())
-            {
-                throw CommandLineException("Metric vga requires a radius, use -vr <radius>");
-            }
-        }
+        _vgaParser = new VgaParser(argc, argv);
     }
+}
 
-
+const VgaParser& CommandLineParser::vgaOptions() const
+{
+    if ( _vgaParser == nullptr )
+    {
+        throw CommandLineException("VGA options are not available when mode is not VGA");
+    }
+    return *_vgaParser;
 }

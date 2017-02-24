@@ -10,9 +10,14 @@ SOURCES += main.cpp \
     testcommandlineparser.cpp \
     testradiusconverter.cpp \
     ../depthmapXcli/radiusconverter.cpp \
-    testsimpletimer.cpp
+    testsimpletimer.cpp \
+    testvgaparser.cpp \
+    ../depthmapXcli/vgaparser.cpp \
+    testargumentholder.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \
     ../depthmapXcli/radiusconverter.h \
-    ../depthmapXcli/simpletimer.h
+    ../depthmapXcli/simpletimer.h \
+    ../depthmapXcli/vgaparser.h \
+    argumentholder.h
