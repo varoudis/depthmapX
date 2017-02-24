@@ -24,8 +24,6 @@
 
 #include "isovist.h"
 
-#include <QtGlobal>
-
 ///////////////////////////////////////////////////////////////////////
 
 // Interestingly, apparently ray tracing is faster using voxel techniques than octrees etc:

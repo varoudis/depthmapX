@@ -7,10 +7,12 @@ include(../defaults.pri)
 
 
 QT       -= qt
+CONFIG   -= qt
+CONFIG   -= app_bundle
 DEFINES       += _DEPTHMAP
 TARGET = salalib
 TEMPLATE = lib
-CONFIG        += staticlib
+CONFIG        += staticlib c++11
 
 DEFINES += SALALIB_LIBRARY
 

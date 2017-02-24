@@ -33,8 +33,6 @@
 #include <salalib/mgraph.h>
 #include <salalib/ngraph.h>
 
-#include <QtGlobal>
-
 /////////////////////////////////////////////////////////////////////////////////
 
 Point::~Point()

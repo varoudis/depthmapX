@@ -6,10 +6,11 @@
 include(../defaults.pri)
 
 QT       -= qt
+CONFIG   -= qt app_bundle
 
 TARGET = genlib
 TEMPLATE = lib
-CONFIG        += staticlib
+CONFIG        += staticlib c++11
 
 DEFINES += GENLIB_LIBRARY
 
