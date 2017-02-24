@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "../depthmapXcli/commandlineparser.h"
+#include <cstring>
 
 class ArgumentHolder{
 public:

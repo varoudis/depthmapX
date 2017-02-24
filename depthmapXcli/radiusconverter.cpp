@@ -33,11 +33,11 @@ double RadiusConverter::ConvertForMetric(const std::string &radius) const
     {
         throw SetupCheckException(std::string("Radius for metric vga must be n for the whole range or a positive number. Got ") + radius);
     }
-    if (isnan(rad))
+    if (std::isnan(rad))
     {
         throw SetupCheckException("Radius NaN?! Really?");
     }
-    if (isinf(rad))
+    if (std::isinf(rad))
     {
         throw SetupCheckException("Radius inf?! Who are you kidding?");
     }

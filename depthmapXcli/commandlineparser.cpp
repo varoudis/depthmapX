@@ -1,7 +1,8 @@
 #include "commandlineparser.h"
 #include "exceptions.h"
 #include <iostream>
-#include <sstream>
+//#include <sstream>
+#include <cstring>
 
 using namespace depthmapX;
 
@@ -25,7 +26,7 @@ namespace {
     }
 }
 
-CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(DepthmapMode::NONE), _vgaMode(VgaMode::NONE_VGA), _simpleMode(false)
+CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(DepthmapMode::NONE), _simpleMode(false), _vgaMode(VgaMode::NONE_VGA)
 {
     if (argc <= 1)
     {
@@ -152,9 +153,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] ) : _mode(Depthm
             }
             if (_radius != "n" && !has_only_digits(_radius))
             {
-                std::stringstream message;
-                message << "Radius must be a positive integer number or n, got " << _radius << std::flush;
-                throw CommandLineException(message.str().c_str());
+                throw CommandLineException(std::string("Radius must be a positive integer number or n, got ") + _radius);
             }
 
         }

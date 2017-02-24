@@ -12,7 +12,7 @@ namespace depthmapX
         BaseException(std::string message) : _message(message)
         {}
     public:
-        virtual const char * what() const
+        virtual const char * what() const noexcept
         {
             return _message.c_str();
         }
