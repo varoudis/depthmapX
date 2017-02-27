@@ -62,6 +62,7 @@ TEST_CASE("VGA args valid", "valid")
         REQUIRE(cmdP.getVgaMode() == VgaParser::VgaMode::VISBILITY);
         REQUIRE_FALSE(cmdP.localMeasures());
         REQUIRE_FALSE(cmdP.globalMeasures());
+        REQUIRE(cmdP.getRadius().empty());
     }
 
     {

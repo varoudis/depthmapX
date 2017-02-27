@@ -15,6 +15,8 @@ class CommandLineParser
 {
 public:
     CommandLineParser(size_t argc, char *argv[]);
+    ~CommandLineParser();
+
     DepthmapMode getMode() const { return _mode; }
     const std::string &getFileName() const { return _fileName; }
     const std::string &getOuputFile() const {return _outputFile;}
@@ -23,6 +25,8 @@ public:
     const VgaParser& vgaOptions() const;
 
     static void printHelp();
+
+
 
 private:
     DepthmapMode _mode;

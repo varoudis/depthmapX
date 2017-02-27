@@ -101,3 +101,11 @@ const VgaParser& CommandLineParser::vgaOptions() const
     }
     return *_vgaParser;
 }
+
+CommandLineParser::~CommandLineParser()
+{
+    if ( _vgaParser != nullptr)
+    {
+        delete _vgaParser;
+    }
+}
