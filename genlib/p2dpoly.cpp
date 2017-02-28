@@ -16,7 +16,7 @@
 
 // 2d polygons (and line sets too...)
 
-#include <math.h>
+#include <cmath>
 #include <float.h>
 
 #include <genlib/paftl.h>
