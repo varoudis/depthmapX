@@ -26,7 +26,6 @@
 // Using doubles right the way through can really eat memory for isovist
 // polygon files, thus we use a defined type, change as appropriate:
 
-#include <math.h>
 #include <algorithm>
 #include <genlib/pafmath.h>
 #include <genlib/comm.h> // communicator used in BSP tree construction
