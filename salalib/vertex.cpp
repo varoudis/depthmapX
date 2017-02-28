@@ -110,11 +110,7 @@ unsigned char htmlByte(double colorByte)
 PafColor& PafColor::makeColor(double field, DisplayParams dp)
 {
    // Quick mod - TV
-#if defined(_WIN32)   
-   if (field == -1.0 || _isnan(field)) {
-#else
-   if (field == -1.0 || isnan(field)) {
-#endif   
+   if (field == -1.0 || std::isnan(field)) {
       // -1.0 is (currently) a nan value, set alpha channel to 0 (transparent)
       switch (dp.colorscale) {
          case DisplayParams::MONOCHROME:
@@ -139,11 +135,7 @@ PafColor& PafColor::makeColor(double field, DisplayParams dp)
    else {
       field = (field - dp.blue) / (dp.red - dp.blue);
       // Quick mod - TV
-#if defined(_WIN32)      
-      if (_isnan(field)) {
-#else
-      if (isnan(field)) {
-#endif      
+      if (std::isnan(field)) {
          field = 0.5;
       }
       if (field > 1.0) {
