@@ -23,10 +23,6 @@
 #include <genlib/comm.h> // used in BSP construction
 #include <genlib/p2dpoly.h>
 
-#ifdef _MSC_VER
-#define isnan _isnan
-#endif
-
 //////////////////////////////////////////////////////////////////////////////////////
 
 // gps2os: function to convert long-lat GPS coordinates to OS national grid
@@ -540,7 +536,7 @@ bool Line::intersect_line(const Line& l, int axis, double& loc) const
       else {
          // Standard:   (note: if m1 == m2, loc is NaN)
          loc = (constant(YAXIS) - l.constant(YAXIS)) / (l.grad(YAXIS) - grad(YAXIS));
-         if (isnan(loc)) {
+         if (std::isnan(loc)) {
             // lines are parallel --- are they coincident?
             // you must have checked the regions overlap first
             if (constant(YAXIS) == l.constant(YAXIS)) {
@@ -566,7 +562,7 @@ bool Line::intersect_line(const Line& l, int axis, double& loc) const
       else {
          // Standard:   (note: if m1 == m2, loc is NaN)
          loc = (constant(XAXIS) - l.constant(XAXIS)) / (l.grad(XAXIS) - grad(XAXIS));
-         if (isnan(loc)) {
+         if (std::isnan(loc)) {
             // lines are parallel --- are they coincident?
             // you must have checked the regions overlap first
             if (constant(XAXIS) == l.constant(XAXIS)) {
