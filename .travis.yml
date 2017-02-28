@@ -1,0 +1,14 @@
+sudo: required
+dist: trusty
+
+before_install:
+  - sudo add-apt-repository --yes ppa:beineri/opt-qt571-trusty
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get -y install qt57[QTPACKAGE]
+
+script:
+  - source /opt/qt57/bin/qt57-env.sh
+  - /opt/qt57/bin/qmake
+  - make
