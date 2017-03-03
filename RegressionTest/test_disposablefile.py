@@ -14,14 +14,41 @@ class TestDisposableFile(unittest.TestCase):
 
 class TestDisposableDirectory(unittest.TestCase):
     def testLifetime(self):
-        with disposablefile.DisposableDirectory("testdir1", true) as d:
+        with disposablefile.DisposableDirectory("testdir1", True) as d:
             self.assertEqual("testdir1", d.name())
             self.assertTrue(os.path.exists(d.name()))
-            self.assertTrue(os.path.isdirectory(d.name()))
+            self.assertTrue(os.path.isdir(d.name()))
             with open ( os.path.join(d.name(), "testfile.txt"), "w") as f:
                 f.write("123")
             self.assertTrue(os.path.exists(os.path.join(d.name(), "testfile.txt")))
         self.assertFalse(os.path.exists(d.name()))
+
+    def testNotAutomaticallyCreated(self):
+        with disposablefile.DisposableDirectory("testdir1", False) as d:
+            self.assertEqual("testdir1", d.name())
+            self.assertFalse(os.path.exists(d.name()))
+            os.makedirs(d.name())
+            self.assertTrue(os.path.exists(d.name()))
+            self.assertTrue(os.path.isdir(d.name()))
+            with open ( os.path.join(d.name(), "testfile.txt"), "w") as f:
+                f.write("123")
+            self.assertTrue(os.path.exists(os.path.join(d.name(), "testfile.txt")))
+        self.assertFalse(os.path.exists(d.name()))
+            
+    def testNeverCreated(self):
+        with disposablefile.DisposableDirectory("testdir1", False) as d:
+            self.assertEqual("testdir1", d.name())
+            self.assertFalse(os.path.exists(d.name()))
+        self.assertFalse(os.path.exists(d.name()))
+        
+    def testExceptions(self):
+        with self.assertRaises(disposablefile.DisposableDirectoryError) as cm:
+            disposablefile.DisposableDirectory(".")
+        self.assertEqual(cm.exception.message,"The disposable directory cannot be the current directory" )
+        with disposablefile.DisposableDirectory("testdir1", True) as d:
+            with self.assertRaises(disposablefile.DisposableDirectoryError) as cm:
+                disposablefile.DisposableDirectory(d.name())
+            self.assertEqual( cm.exception.message, "You can't make an existing directory disposable" )
 
 
 if __name__=="__main__":

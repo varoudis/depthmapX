@@ -34,7 +34,7 @@ class DisposableDirectory:
 
     def __exit__(self, exc_type, exc_value, backtrace):
         if os.path.exists(self.__directoryName):
-            shutil.rmtree(directoryName)
+            shutil.rmtree(self.__directoryName)
 
     def name(self):
         return self.__directoryName
