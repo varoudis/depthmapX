@@ -1,6 +1,7 @@
 import os.path
 import cmdlinewrapper
 import difflib
+import pprint
 
 class DepthmapRunner():
     def __init__(self, runFunc, binary ):
@@ -27,7 +28,7 @@ class DepthmapRegressionRunner():
         self.__workingDir = workingDir
 
     def runTestCase(self, name, infile, outfile, mode, simpleMode = False, subcmds = []):
-        cmd = commandlinewrapper.DepthmapCmd()
+        cmd = cmdlinewrapper.DepthmapCmd()
         cmd.infile = infile
         cmd.outfile = outfile
         cmd.mode = mode
@@ -37,26 +38,32 @@ class DepthmapRegressionRunner():
         baseDir = os.path.join(self.__workingDir, name + "_base")
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
         if not baseSuccess:
-            print("Baseline run failed with arguments " + cmd.toCmdArray())
+            print("Baseline run failed with arguments " + pprint.pformat(cmd.toCmdArray()))
             print(baseOut)
-            return False
+            return (False, "Baseline run failed")
         testDir = os.path.join(self.__workingDir, name + "_test")
-        (testSuccess, testOut) = self.__testRunner(cmd, testDir)
+        (testSuccess, testOut) = self.__testRunner.runDepthmap(cmd, testDir)
         if not testSuccess:
-            print("Test run failed with arguments " + cmd.toCmdArray())
+            print("Test run failed with arguments " + pprint.pformat(cmd.toCmdArray()))
             print(testOut)
-            return false
+            return (False, "Test run failed")
 
         baseFile = os.path.join(baseDir, outfile)
         testFile = os.path.join(testDir, outfile)
-        if not os.path.exist(baseFile):
-            print( "Baseline output {0} does not exist".format(baseFile))
-            return False
-        if not os.path.exist(testFile):
-            print( "Test output {0} does not exist".format(testFile))
-            return False
+        if not os.path.exists(baseFile):
+            message = "Baseline output {0} does not exist".format(baseFile)
+            print (message)
+            return (False, message)
+        if not os.path.exists(testFile):
+            message = "Test output {0} does not exist".format(testFile)
+            print(message)
+            return (False, message)
         
+        if not diffBinaryFiles(baseFile, testFile):
+            message = "Test outputs differ"
+            print (message)
+            return (False, message)
 
-        return True
+        return (True, "")
 
 
