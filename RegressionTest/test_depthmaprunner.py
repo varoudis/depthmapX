@@ -23,16 +23,17 @@ class DepthmapRunnerTest(unittest.TestCase):
         self.assertEqual(args, self.__args)
 
     def testDepthmapRunner(self):
-        cmd = DepthmapCmd()
-        cmd.infile = "foo"
-        cmd.outfile = "bar"
-        cmd.mode = "mode"
+        dcmd = DepthmapCmd()
+        dcmd.infile = "foo"
+        dcmd.outfile = "bar"
+        dcmd.mode = "mode"
+        dcmd.modeLines = []
 
         runner = depthmaprunner.DepthmapRunner(lambda d, a: self.runfunc(d, a), "bin")
         
         self.__args = ["bin", "-f", "foo", "-o", "bar", "-m", "mode"]
         self.__rundir = "dir"
-        runner.runDepthmap(cmd, "dir")
+        runner.runDepthmap(dcmd, "dir")
 
 class DepthmapRegressioRunnerTest(unittest.TestCase):
     def getOutfile(self, args):
