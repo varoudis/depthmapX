@@ -3,6 +3,7 @@ import runhelpers
 from disposablefile import DisposableDirectory
 import os
 import platform
+import sys
 
 class TestRunHelpers(unittest.TestCase):
     def test_prepareDirectory(self):
@@ -42,19 +43,19 @@ class TestRunHelpers(unittest.TestCase):
     
     def test_runExecutable(self):
         with DisposableDirectory("testdir", True) as d:
-            retcode, output = runhelpers.runExecutable( d.name(), ["python", "-c", "print('foo')"])
+            retcode, output = runhelpers.runExecutable( d.name(), [sys.executable, "-c", "print('foo')"])
             self.assertTrue(retcode)
             self.assertEqual(output, "foo\n")
 
     def test_runExecutableFail(self):
         with DisposableDirectory("testdir") as d:
-            retcode, output = runhelpers.runExecutable( d.name(), ["python", "-c", "exit(-1)"])
+            retcode, output = runhelpers.runExecutable( d.name(), [sys.executable, "-c", "exit(-1)"])
             self.assertFalse(retcode)
             self.assertEqual(output, "")
 
     def test_runExecutableException(self):
         with DisposableDirectory("testdir") as d:
-            retcode, output = runhelpers.runExecutable( d.name(), ["python", "-c", "raise Exception()"])
+            retcode, output = runhelpers.runExecutable( d.name(), [sys.executable, "-c", "raise Exception()"])
             self.assertFalse(retcode)
             self.assertEqual(output, 'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\nException\n')
             
