@@ -28,7 +28,10 @@ namespace dm_runmethods
                 options->output_type = Options::OUTPUT_VISUAL;
                 options->local = cmdP.vgaOptions().localMeasures();
                 options->global = cmdP.vgaOptions().globalMeasures();
-                options->radius = converter.ConvertForVisibility(cmdP.vgaOptions().getRadius());
+                if (options->global )
+                {
+                    options->radius = converter.ConvertForVisibility(cmdP.vgaOptions().getRadius());
+                }
                 break;
             case VgaParser::VgaMode::METRIC:
                 options->output_type = Options::OUTPUT_METRIC;
