@@ -1,7 +1,7 @@
 {
     "rundir": "rundir",
     "basebinlocation": "../../BaselineBinaries",
-    "testbinlocation": "../../..",
+    "testbinlocation": "../../../build",
     "testcases": {
         "visibility_local": {
             "infile": "../../../testdata/gallery_connected.graph",
