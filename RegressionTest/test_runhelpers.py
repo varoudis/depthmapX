@@ -28,7 +28,7 @@ class TestRunHelpers(unittest.TestCase):
         result = runhelpers.getExecutable("foo")
         sys = platform.system()
         if sys == "Windows":
-            self.assertEqual( result, "foo\\Windows\\release\\depthmapXcli.exe")
+            self.assertEqual( result, "foo\\Windows\\depthmapXcli.exe")
         else:
             self.assertEqual( result, "foo/" + sys + "/depthmapXcli" )
 
