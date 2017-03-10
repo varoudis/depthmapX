@@ -1,8 +1,7 @@
 import os
 import shutil
 import subprocess
-
-runDir = "./rundir"
+import platform
 
 def runTest():
    pass 
@@ -21,7 +20,6 @@ class cd:
 
 
 def prepareDirectory(dirname):
-    print(dirname)
     if os.path.exists( dirname ):
         shutil.rmtree(dirname)
     os.makedirs(dirname)
@@ -30,7 +28,6 @@ def runExecutable( workingDir, arguments ):
     """ Prepares a clean run directoy and runs the process in this """
     prepareDirectory(workingDir)
     with cd(workingDir):
-        print(arguments)
         with open("out.txt", "w") as outfile:
             result = subprocess.run(arguments, stdout = outfile, stderr = subprocess.STDOUT )
         output = ""
@@ -42,11 +39,18 @@ def runExecutable( workingDir, arguments ):
                 error = f.read();
         return (result.returncode == 0, output)
 
-if __name__ == "__main__":
-    prepareDirectory(runDir)
-    (success, output) = runExecutable(runDir, ["c:\\Msys64\\usr\\bin\\ls.exe"])
-    print(success)
-    print("output:")
-    print(output)
+def getExecutable(basedir):
+    sys = platform.system()
+    if sys == "Windows":
+        return os.path.join(basedir, sys, "release", "depthmapXcli.exe")
+    else:
+        return os.path.join(basedir, sys, "depthmapXcli")
+
+def getTestExecutable(basedir):
+    sys = platform.system()
+    if sys == "Windows":
+        return os.path.join(basedir, "release", "depthmapXcli.exe")
+    else:
+        return os.path.join(basedir, "depthmapXcli")
 
 

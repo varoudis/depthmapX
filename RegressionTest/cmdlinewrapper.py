@@ -4,11 +4,12 @@ class CommandLineError(Exception):
     
 
 class DepthmapCmd():
-    infile = None
-    outfile = None
-    simpleMode = False
-    mode = None
-    modeLines = []
+    def __init__(self):
+        self.infile = None
+        self.outfile = None
+        self.simpleMode = False
+        self.mode = None
+        self.modeLines = []
 
 
     def toCmdArray(self):
