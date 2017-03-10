@@ -29,7 +29,7 @@ class TestRunHelpers(unittest.TestCase):
         if sys == "Windows":
             self.assertEqual( result, "foo\\Windows\\release\\depthmapXcli.exe")
         else:
-            self.assertEqual( result, "foo/" + sys + "/depthmapXcli.exe" )
+            self.assertEqual( result, "foo/" + sys + "/depthmapXcli" )
 
     def test_getTestBinary(self):
         result = runhelpers.getTestExecutable("foo")
@@ -37,7 +37,7 @@ class TestRunHelpers(unittest.TestCase):
         if sys == "Windows":
             self.assertEqual( result, "foo\\release\\depthmapXcli.exe")
         else:
-            self.assertEqual( result, "foo/depthmapXcli.exe" )
+            self.assertEqual( result, "foo/depthmapXcli" )
 
     
     def test_runExecutable(self):
