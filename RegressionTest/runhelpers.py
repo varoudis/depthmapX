@@ -49,8 +49,8 @@ def getExecutable(basedir):
 def getTestExecutable(basedir):
     sys = platform.system()
     if sys == "Windows":
-        return os.path.join(basedir, "release", "depthmapXcli.exe")
+        return os.path.join(basedir, "depthmapXcli", "release", "depthmapXcli.exe")
     else:
-        return os.path.join(basedir, "depthmapXcli")
+        return os.path.join(basedir, "depthmapXcli", "depthmapXcli")
 
 
