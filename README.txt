@@ -1,5 +1,9 @@
 ## depthmapX - multi-platform spatial network analyses software ##
 
+## Get the latest MacOSX/Windows version and learn more about depthmapX: 
+## ## http://varoudis.github.io/depthmapX/
+##
+
 depthmapX is a multi-platform  software platform to perform a set of spatial network analyses designed to understand social processes within the built environment. It works at a variety of scales from building through small urban to whole cities or states. At each scale, the aim of the software is to produce a map of open space elements, connect them via some relationship (for example, intervisibility or overlap) and then perform graph analysis of the resulting network. The objective of the analysis is to derive variables which may have social or experiential significance.
 
 At the building or small urban scale, depthmapX can be used to assess the visual accessibility in a number of ways. It can produce point isovists, that is, polygons representing the visually accessible area from a location, along with measures of those polygons (such as perimeter, area and so on), or it can further join a dense grid of isovists into a visibility graph of intervisible points (with graphs of up to about 1000000 point locations). The visibility graph may then be analysed directly using graph measures, or used as the core of an agent-based analysis. In the agent-based analysis a number of software agents representing pedestrians are released into the environment. Each software agent is able to access the visual accessibility information for its current location from the visibility graph, and this informs its choice of next destination. The numbers of agents passing through gates can be counted, and compared to actual numbers of pedestrians passing through gates.

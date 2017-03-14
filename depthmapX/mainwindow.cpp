@@ -25,7 +25,7 @@
 #include "DepthmapOptionsDlg.h"
 #include "AboutDlg.h"
 
-#define TITLE_BASE tr("depthmapX 0.27beta")
+#define TITLE_BASE tr("depthmapX 0.30 - Tasos Varoudis")
 
 static int current_view_type = 0;
 enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_TYPES = 5};
@@ -2999,7 +2999,7 @@ void MainWindow::createActions()
     onlineScriptingManualAct->setStatusTip(tr("See the Original SalaScript web page"));
     connect(onlineScriptingManualAct, SIGNAL(triggered()), this, SLOT(OnHelpSalaManual()));
 
-    aboutDepthMapAct = new QAction(tr("About &Depthmap..."), this);
+    aboutDepthMapAct = new QAction(tr("About &depthmapX..."), this);
     aboutDepthMapAct->setStatusTip(tr("Display program information, version number and copyright\nAbout"));
     connect(aboutDepthMapAct, SIGNAL(triggered()), this, SLOT(OnAppAbout()));
 // ToolBar actions

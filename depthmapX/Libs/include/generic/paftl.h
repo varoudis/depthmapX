@@ -491,7 +491,7 @@ public:
    size_t searchfloorindex(const T& item) const;
    size_t searchceilindex(const T& item) const;
    void remove(const T& item)
-   { remove_at(searchindex(item)); }
+   { pmemvec<T>::remove_at(searchindex(item)); }
    // set operations (ordered vector)
    void operator += (const pvector<T>& v);
    // qsort algo:

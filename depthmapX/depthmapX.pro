@@ -130,7 +130,9 @@ SOURCES       = depthmapView.cpp \
 INCLUDEPATH   += Libs/include
 RESOURCES     = resource.qrc
 
-!win32:!macx: LIBS = -lGL -lGLU
+!win32:!macx:LIBS += -L/usr/lib/i386-linux-gnu/
+
+!win32:!macx:LIBS = -lGL -lGLU
 
 OTHER_FILES += \
     Libs/include/generic/lgpl.txt

@@ -89,7 +89,7 @@
    <property name="title">
     <string>Agent set parameters</string>
    </property>
-   <widget class="QRadioButton" name="c_release_location">
+   <widget class="QRadioButton" name="c_no_release_location">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -102,7 +102,7 @@
      <string>Release from any location</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="c_radio2">
+   <widget class="QRadioButton" name="c_release_location">
     <property name="geometry">
      <rect>
       <x>20</x>
