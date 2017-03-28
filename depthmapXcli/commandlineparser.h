@@ -20,6 +20,7 @@ public:
     DepthmapMode getMode() const { return _mode; }
     const std::string &getFileName() const { return _fileName; }
     const std::string &getOuputFile() const {return _outputFile;}
+    const std::string &getTimingFile() const {return _timingFile;}
     bool isValid() const { return _valid; }
     bool simpleMode() const { return _simpleMode; }
     const VgaParser& vgaOptions() const;
@@ -32,6 +33,7 @@ private:
     DepthmapMode _mode;
     std::string _fileName;
     std::string _outputFile;
+    std::string _timingFile;
     bool _valid;
     bool _simpleMode;
 

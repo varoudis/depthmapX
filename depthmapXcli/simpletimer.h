@@ -15,6 +15,11 @@ public:
         return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(t2-_startTime).count()) / 1000.0;
     }
 
+    void reset()
+    {
+        _startTime = std::chrono::high_resolution_clock::now();
+    }
+
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 };

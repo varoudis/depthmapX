@@ -25,6 +25,12 @@ TEST_CASE("Invalid Parser","Constructor"){
     }
 
     {
+        ArgumentHolder ah{"prog", "-t", "-o"};
+        REQUIRE_THROWS_WITH(auto cmdP = CommandLineParser(ah.argc(), ah.argv()), "-t requires an argument");
+    }
+
+
+    {
         ArgumentHolder ah{"prog", "-m", "-f"};
         REQUIRE_THROWS_WITH(auto cmdP = CommandLineParser(ah.argc(), ah.argv()), "-m requires an argument");
     }
@@ -56,10 +62,11 @@ TEST_CASE("Valid Parser","CheckValues"){
         REQUIRE_FALSE(cmdP.simpleMode());
     }
     {
-        ArgumentHolder ah{"prog", "-m", "VGA", "-f", "inputfile.graph", "-o", "outputfile.graph", "-s"};
+        ArgumentHolder ah{"prog", "-m", "VGA", "-f", "inputfile.graph", "-o", "outputfile.graph", "-s", "-t", "timings.csv"};
         CommandLineParser cmdP(ah.argc(), ah.argv());
         REQUIRE(cmdP.isValid());
         REQUIRE(cmdP.simpleMode());
+        REQUIRE(cmdP.getTimingFile() == "timings.csv");
     }
 
 }

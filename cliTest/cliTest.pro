@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     testsimpletimer.cpp \
     testvgaparser.cpp \
     ../depthmapXcli/vgaparser.cpp \
-    testargumentholder.cpp
+    testargumentholder.cpp \
+    testperformancewriter.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \

@@ -10,6 +10,7 @@ void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
+              << "-t <times.csv> enables output of runtimes as csv file"
               << "Possible modes are:\n  VGA\n"
               << "Mode options for VGA:\n"
               << "-vm <vga mode> one of isovist, visiblity, metric, angular\n"
@@ -66,6 +67,14 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
                 throw CommandLineException("-o requires an argument");
             }
             _outputFile = argv[i];
+        }
+        else if ( strcmp ("-t", argv[i]) == 0)
+        {
+            if ( ++i >= argc || argv[i][0] == '-'  )
+            {
+                throw CommandLineException("-t requires an argument");
+            }
+            _timingFile = argv[i];
         }
         else if ( strcmp("-s", argv[i]) == 0)
         {
