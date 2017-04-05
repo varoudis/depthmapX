@@ -37,8 +37,17 @@ enum {
 };
 
 class  Point2f;
-struct Line;
+bool approxeq(const Point2f& p1, const Point2f& p2, double tolerance = 0.0);
 class  QtRegion;
+bool intersect_region(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
+bool overlap_x(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
+bool overlap_y(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
+struct Line;
+bool intersect_line(const Line& a, const Line& b, double tolerance = 0.0);
+bool intersect_line_no_touch(const Line& a, const Line& b, double tolerance = 0.0);
+int  intersect_line_distinguish(const Line& a, const Line& b, double tolerance = 0.0);
+int  intersect_line_b(const Line& a, const Line& b, double tolerance = 0.0);
+Point2f intersection_point(const Line& a, const Line& b, double tolerance = 0.0);
 
 // NaN on Intel:
 // Quick mod - TV
@@ -90,7 +99,7 @@ public:
    friend double dist(const Point2f& p1, const Point2f& p2);
    friend double dist(const Point2f& point, const Line& line);
    friend double angle(const Point2f& p1, const Point2f& p2, const Point2f& p3);
-   friend bool approxeq(const Point2f& p1, const Point2f& p2, double tolerance = 0.0);
+   friend bool approxeq(const Point2f& p1, const Point2f& p2, double tolerance);
    friend Point2f pointfromangle(double angle);
    // a couple of useful tests
    bool intriangle(const Point2f& p1, const Point2f& p2, const Point2f& p3);
@@ -348,9 +357,9 @@ public:
    Point2f getEdgeUPoint(const EdgeU& eu);
    EdgeU getCutEdgeU(const Point2f& inside, const Point2f& outside);
    //
-   friend bool intersect_region(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
-   friend bool overlap_x(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
-   friend bool overlap_y(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
+   friend bool intersect_region(const QtRegion& a, const QtRegion& b, double tolerance);
+   friend bool overlap_x(const QtRegion& a, const QtRegion& b, double tolerance);
+   friend bool overlap_y(const QtRegion& a, const QtRegion& b, double tolerance);
    //
    // set functions
    friend QtRegion runion(const QtRegion& a, const QtRegion& b);
@@ -403,10 +412,10 @@ public:
    Line& operator = (const Line& l)
       { this->QtRegion::operator = (l); bits = l.bits; return *this; }
    //
-   friend bool intersect_line(const Line& a, const Line& b, double tolerance = 0.0);
-   friend bool intersect_line_no_touch(const Line& a, const Line& b, double tolerance = 0.0);
-   friend int  intersect_line_distinguish(const Line& a, const Line& b, double tolerance = 0.0);
-   friend int  intersect_line_b(const Line& a, const Line& b, double tolerance = 0.0);
+   friend bool intersect_line(const Line& a, const Line& b, double tolerance);
+   friend bool intersect_line_no_touch(const Line& a, const Line& b, double tolerance);
+   friend int  intersect_line_distinguish(const Line& a, const Line& b, double tolerance);
+   friend int  intersect_line_b(const Line& a, const Line& b, double tolerance);
    //
    // fills in the location along the axis where the intersection happens
    bool intersect_line(const Line& l, int axis, double& loc) const;
@@ -414,7 +423,7 @@ public:
    // this converts a loc retrieved from intersect line or intersection point back into a point:
    Point2f point_on_line(double loc, int axis) const;
    // ...and a quick do it all in one go:
-   friend Point2f intersection_point(const Line& a, const Line& b, double tolerance = 0.0);
+   friend Point2f intersection_point(const Line& a, const Line& b, double tolerance);
    //
    bool crop(const QtRegion& r);
    void ray(short dir, const QtRegion& r);
