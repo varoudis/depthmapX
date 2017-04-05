@@ -988,7 +988,7 @@ void PointMap::outputPoints(ostream& stream, char delim)
 
 void PointMap::outputMergeLines(ostream& stream, char delim)
 {
-   stream << "x1" << delim << "y1" << delim << "x1" << delim << "y1" << endl;
+   stream << "x1" << delim << "y1" << delim << "x2" << delim << "y2" << endl;
 
    stream.precision(12);
    for (size_t i = 0; i < m_merge_lines.size(); i++) {
