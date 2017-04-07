@@ -25,7 +25,7 @@ void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
-              << "Possible modes are:\n  VGA\n"
+              << "Possible modes are:\n  VGA\n  LINK\n"
               << "Mode options for VGA:\n"
               << "-vm <vga mode> one of isovist, visiblity, metric, angular\n"
               << "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"
@@ -60,6 +60,10 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
             if ( strcmp(argv[i], "VGA") == 0 )
             {
                 _mode = DepthmapMode::VGA_ANALYSIS;
+            }
+            else if ( strcmp(argv[i], "LINK") == 0 )
+            {
+                _mode = DepthmapMode::LINK_GRAPH;
             }
             else
             {

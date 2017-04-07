@@ -21,6 +21,7 @@
 
 enum DepthmapMode{
     NONE = 0,
+    LINK_GRAPH,
     VGA_ANALYSIS
 };
 
