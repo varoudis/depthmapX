@@ -20,9 +20,93 @@
 #include "simpletimer.h"
 #include <memory>
 #include <sstream>
+#include <vector>
 
 namespace dm_runmethods
 {
+
+    vector<PixelRefPair> getLinksFromStream(istream& links_stream, PointMap& current_map)
+    {
+        ShapeMap temp_shape_map = ShapeMap("temp_map", ShapeMap::LINEMAP);
+        temp_shape_map.importTxt(links_stream, false);
+
+        pqmap<int,SalaShape>& shapes = temp_shape_map.getAllShapes();
+        vector<PixelRefPair> merge_pixel_pairs;
+        for (size_t i = 0; i < shapes.size(); i++)
+        {
+            Line merge_line = shapes.value(i).getLine();
+            PixelRef a = current_map.pixelate(merge_line.start());
+            PixelRef b = current_map.pixelate(merge_line.end());
+
+            // check in limits:
+            if (!current_map.includes(a) || !current_map.getPoint(a).filled()
+                    || !current_map.includes(b) || !current_map.getPoint(b).filled())
+            {
+                std::stringstream message;
+                message << "Line ends not both on painted analysis space "
+                        << i << " ("
+                        << merge_line.start().x << ", "
+                        << merge_line.start().y << " -> "
+                        << merge_line.end().x << ", "
+                        << merge_line.end().y << ")" << flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+
+            // we probably need to check if we were given coordinates that
+            // fall on a previously given cell, in which case the newest given
+            // will replace the oldest and effectively delete the whole link
+            for (size_t j = 0; j < merge_pixel_pairs.size(); j++)
+            {
+                // PixelRefPair internal == operator only checks a with a and b with b
+                // but we also need to check the inverse
+                if(a == merge_pixel_pairs.at(j).a
+                        || b == merge_pixel_pairs.at(j).b
+                        || a == merge_pixel_pairs.at(j).b
+                        || b == merge_pixel_pairs.at(j).a)
+                {
+                    // one of the cells has already been seen.
+                    std::stringstream message;
+                    message << "Overlapping link found at line "
+                            << i << " ("
+                            << merge_line.start().x << ", "
+                            << merge_line.start().y << " -> "
+                            << merge_line.end().x << ", "
+                            << merge_line.end().y << ")" << flush;
+                    throw depthmapX::RuntimeException(message.str().c_str());
+                }
+            }
+
+            // TODO: the merge function will replace any links that already exist
+            // on the two locations, so we need to warn the user if this is the case
+
+            merge_pixel_pairs.push_back(PixelRefPair(a, b));
+        }
+        return merge_pixel_pairs;
+    }
+
+    void linkGraph(const CommandLineParser &cmdP)
+    {
+        std::stringstream links_stream = stringstream("x1\ty1\tx2\ty2\n1.16\t5.28\t3.28\t7.12\n1.32\t7.24\t4.88\t5.24");
+
+        MetaGraph mgraph;
+        auto result = mgraph.read(cmdP.getFileName().c_str());
+        if ( result != MetaGraph::OK)
+        {
+            std::stringstream message;
+            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+        PointMap& current_map = mgraph.getDisplayedPointMap();
+
+        vector<PixelRefPair> new_links = getLinksFromStream(links_stream, current_map);
+
+        for (size_t i = 0; i < new_links.size(); i++)
+        {
+            PixelRefPair link = new_links.at(i);
+            current_map.mergePixels(link.a,link.b);
+        }
+        mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+    }
 
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
     {

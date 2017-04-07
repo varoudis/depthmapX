@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
         {
             RadiusConverter converter;
             dm_runmethods::runVga(args, converter);
+        } else if ( args.getMode() == DepthmapMode::LINK_GRAPH)
+        {
+            dm_runmethods::linkGraph(args);
         }
 
     }
