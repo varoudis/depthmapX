@@ -18,6 +18,7 @@
 
 #include <string>
 #include "vgaparser.h"
+#include "linkparser.h"
 
 enum DepthmapMode{
     NONE = 0,
@@ -39,6 +40,7 @@ public:
     bool isValid() const { return _valid; }
     bool simpleMode() const { return _simpleMode; }
     const VgaParser& vgaOptions() const;
+    const LinkParser& linkOptions() const;
 
     static void printHelp();
 
@@ -51,6 +53,7 @@ private:
     bool _valid;
     bool _simpleMode;
 
+    const LinkParser * _linkParser;
     const VgaParser * _vgaParser;
 
 };

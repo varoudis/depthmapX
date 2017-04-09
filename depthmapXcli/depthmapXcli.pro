@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     commandlineparser.cpp \
     runmethods.cpp \
     radiusconverter.cpp \
-    vgaparser.cpp
+    vgaparser.cpp \
+    linkparser.cpp
 
 HEADERS += \
     commandlineparser.h \
@@ -16,7 +17,8 @@ HEADERS += \
     radiusconverter.h \
     exceptions.h \
     simpletimer.h \
-    vgaparser.h
+    vgaparser.h \
+    linkparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
