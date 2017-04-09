@@ -3,6 +3,26 @@
     "basebinlocation": "../../BaselineBinaries",
     "testbinlocation": "../../../build",
     "testcases": {
+        "links_manual": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "subcmds": {
+                "Link": {
+                    "manualLinks": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
+                }
+            }
+        },
+        "links_file": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "subcmds": {
+                "Link": {
+                    "linksFile": "../../../testdata/gallery_connected_merge_links.txt"
+                }
+            }
+        },
         "visibility_local": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
