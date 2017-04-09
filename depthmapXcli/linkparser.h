@@ -16,6 +16,7 @@
 #ifndef LINKPARSER_H
 #define LINKPARSER_H
 
+#include "salalib/mgraph.h"
 #include <string>
 #include <vector>
 
@@ -25,12 +26,10 @@ public:
     LinkParser(size_t argc, char *argv[]);
 
     //link options
-    const std::string & getLinksFile() const { return _linksFile; }
-    const std::vector<std::string> & getManualLinks() const { return _manualLinks; }
+    const vector<Line> & getMergeLines() const { return _mergeLines; }
 
 private:
-    std::string _linksFile;
-    std::vector<std::string> _manualLinks;
+    vector<Line> _mergeLines;
 };
 
 #endif // LINKPARSER_H
