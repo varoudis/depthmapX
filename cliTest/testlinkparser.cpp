@@ -1,0 +1,83 @@
+// Copyright (C) 2017 Petros Koutsolampros
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#include "catch.hpp"
+#include "../depthmapXcli/linkparser.h"
+#include "argumentholder.h"
+
+TEST_CASE("LINK args invalid", "")
+{
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf requires an argument"));
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lnk requires an argument"));
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf", "linksfile1", "-lf", "linksfile2"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf can only be used once at the moment"));
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf", "linksfile1", "-lnk", "0,0,0,0"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf can not be used in conjunction with -lnk"));
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "LaLaLaLa"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2;3.4;5.6;7.8"};
+        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
+    }
+}
+
+TEST_CASE("LINK args valid", "valid")
+{
+    // for this set of tests a difference less than 0.001 should
+    // suffice to signify that two floats are the same
+    const float EPSILON = 0.001;
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8"};
+        LinkParser cmdP(ah.argc(), ah.argv());
+        REQUIRE(cmdP.getMergeLines().size() == 1);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().x - 1.2) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().y - 3.4) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().x - 5.6) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().y - 7.8) < EPSILON);
+    }
+
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8", "-lnk", "0.1,0.2,0.3,0.4"};
+        LinkParser cmdP(ah.argc(), ah.argv());
+        REQUIRE(cmdP.getMergeLines().size() == 2);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().x - 1.2) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().y - 3.4) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().x - 5.6) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().y - 7.8) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(1).start().x - 0.1) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(1).start().y - 0.2) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(1).end().x - 0.3) < EPSILON);
+        REQUIRE(fabs(cmdP.getMergeLines().at(1).end().y - 0.4) < EPSILON);
+    }
+
+}
