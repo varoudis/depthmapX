@@ -45,3 +45,20 @@ class VisibilityCmd():
         if not self.radius == None:
             args.extend(["-vr", self.radius])
         return args
+        
+class LinkCmd():
+    linksFile = None
+    manualLinks = None
+
+    def toCmdArray(self):
+        if self.linksFile == None and self.manualLinks == None:
+            raise CommandLineError("links must be given as a file or each one manually")
+        if self.linksFile != None and self.manualLinks != None:
+            raise CommandLineError("links must be given as a file or each one manually")
+        args = [];
+        if self.manualLinks:
+            for manualLink in self.manualLinks:
+                args.extend(["-lnk", manualLink])
+        if self.linksFile:
+            args.extend(["-lf", self.linksFile]);
+        return args
