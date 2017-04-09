@@ -26,6 +26,10 @@ void CommandLineParser::printHelp(){
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
               << "Possible modes are:\n  VGA\n  LINK\n"
+              << "Mode options for LINK:\n"
+              << "-lf <links file>\n"
+              << "-lnk <single link coordinates> provided in csv (x1,y1,x2,y2) for example \"0.1,0.2,0.2,0.4\" "
+              << "to create a link from 0.1,0.2 to 0.2,0.4. Provide multiple times for multiple links\n"
               << "Mode options for VGA:\n"
               << "-vm <vga mode> one of isovist, visiblity, metric, angular\n"
               << "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"
@@ -37,7 +41,7 @@ void CommandLineParser::printHelp(){
 
 
 CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
-    : _mode(DepthmapMode::NONE), _simpleMode(false), _vgaParser(nullptr)
+    : _mode(DepthmapMode::NONE), _simpleMode(false), _linkParser(nullptr), _vgaParser(nullptr)
 {
     if (argc <= 1)
     {
@@ -110,6 +114,10 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
     {
         _vgaParser = new VgaParser(argc, argv);
     }
+    if (_mode == DepthmapMode::LINK_GRAPH)
+    {
+        _linkParser = new LinkParser(argc, argv);
+    }
 }
 
 const VgaParser& CommandLineParser::vgaOptions() const
@@ -120,11 +128,23 @@ const VgaParser& CommandLineParser::vgaOptions() const
     }
     return *_vgaParser;
 }
+const LinkParser& CommandLineParser::linkOptions() const
+{
+    if ( _linkParser == nullptr )
+    {
+        throw CommandLineException("LINK options are not available when mode is not LINK");
+    }
+    return *_linkParser;
+}
 
 CommandLineParser::~CommandLineParser()
 {
     if ( _vgaParser != nullptr)
     {
         delete _vgaParser;
+    }
+    if ( _linkParser != nullptr)
+    {
+        delete _linkParser;
     }
 }

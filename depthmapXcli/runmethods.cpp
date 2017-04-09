@@ -86,7 +86,6 @@ namespace dm_runmethods
 
     void linkGraph(const CommandLineParser &cmdP)
     {
-        std::stringstream links_stream = stringstream("x1\ty1\tx2\ty2\n1.16\t5.28\t3.28\t7.12\n1.32\t7.24\t4.88\t5.24");
 
         MetaGraph mgraph;
         auto result = mgraph.read(cmdP.getFileName().c_str());
@@ -98,7 +97,33 @@ namespace dm_runmethods
         }
         PointMap& current_map = mgraph.getDisplayedPointMap();
 
-        vector<PixelRefPair> new_links = getLinksFromStream(links_stream, current_map);
+        vector<PixelRefPair> new_links;
+        if(!cmdP.linkOptions().getLinksFile().empty())
+        {
+            std::ifstream links_stream(cmdP.linkOptions().getLinksFile());
+            if (!links_stream)
+            {
+                std::stringstream message;
+                message << "Failed to load file " << cmdP.linkOptions().getLinksFile() << ", error " << flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+            vector<PixelRefPair> links_from_file = getLinksFromStream(links_stream, current_map);
+            new_links.insert(new_links.end(), links_from_file.begin(), links_from_file.end());
+        }
+        else if(!cmdP.linkOptions().getManualLinks().empty())
+        {
+            std::stringstream links_stream;
+            links_stream << "x1\ty1\tx2\ty2";
+            for(size_t i = 0; i < cmdP.linkOptions().getManualLinks().size(); ++i)
+            {
+                links_stream << "\n";
+                std::string s = cmdP.linkOptions().getManualLinks().at(i);
+                std::replace( s.begin(), s.end(), ',', '\t');
+                links_stream << s;
+            }
+            vector<PixelRefPair> manual_links = getLinksFromStream(links_stream, current_map);
+            new_links.insert(new_links.end(), manual_links.begin(), manual_links.end());
+        }
 
         for (size_t i = 0; i < new_links.size(); i++)
         {
