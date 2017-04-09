@@ -30,6 +30,9 @@ namespace {
 
 LinkParser::LinkParser(size_t argc, char *argv[])
 {
+    std::string _linksFile;
+    std::vector<std::string> _manualLinks;
+
     for ( size_t i = 1; i < argc;  )
     {
         if ( strcmp ("-lf", argv[i]) == 0)
@@ -52,7 +55,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         {
             if (!_linksFile.empty())
             {
-                throw CommandLineException(std::string("-lnk can not be used in conjunction with -lf"));
+                throw CommandLineException(std::string("-lf can not be used in conjunction with -lnk"));
             }
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
@@ -60,7 +63,8 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             }
             if (!has_only_digits_dots_commas(argv[i]))
             {
-                throw CommandLineException(std::string("Invalid link provided: ") + argv[i]);
+                throw CommandLineException(std::string("Invalid link provided (") + argv[i]
+                                           + std::string("). Should only contain digits dots and commas"));
             }
             _manualLinks.push_back(argv[i]);
         }
@@ -69,5 +73,37 @@ LinkParser::LinkParser(size_t argc, char *argv[])
     if ( _manualLinks.size() == 0 && _linksFile.empty())
     {
         throw CommandLineException(std::string("one of -lf or -lnk must be provided"));
+    }
+
+    ShapeMap temp_shape_map = ShapeMap("temp_map", ShapeMap::LINEMAP);
+
+    if(!_linksFile.empty())
+    {
+        std::ifstream links_stream(_linksFile);
+        if (!links_stream)
+        {
+            std::stringstream message;
+            message << "Failed to load file " << _linksFile << ", error " << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+        temp_shape_map.importTxt(links_stream, false);
+    }
+    else if(!_manualLinks.empty())
+    {
+        std::stringstream links_stream;
+        links_stream << "x1\ty1\tx2\ty2";
+        for(size_t i = 0; i < _manualLinks.size(); ++i)
+        {
+            links_stream << "\n";
+            std::string s = _manualLinks.at(i);
+            std::replace( s.begin(), s.end(), ',', '\t');
+            links_stream << s;
+        }
+        temp_shape_map.importTxt(links_stream, false);
+    }
+    pqmap<int,SalaShape>& shapes = temp_shape_map.getAllShapes();
+    for (size_t i = 0; i < shapes.size(); i++)
+    {
+        _mergeLines.push_back(shapes.value(i).getLine());
     }
 }

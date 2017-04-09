@@ -25,16 +25,12 @@
 namespace dm_runmethods
 {
 
-    vector<PixelRefPair> getLinksFromStream(istream& links_stream, PointMap& current_map)
+    vector<PixelRefPair> getLinksFromMergeLines(const vector<Line>& merge_lines, PointMap& current_map)
     {
-        ShapeMap temp_shape_map = ShapeMap("temp_map", ShapeMap::LINEMAP);
-        temp_shape_map.importTxt(links_stream, false);
-
-        pqmap<int,SalaShape>& shapes = temp_shape_map.getAllShapes();
         vector<PixelRefPair> merge_pixel_pairs;
-        for (size_t i = 0; i < shapes.size(); i++)
+        for (size_t i = 0; i < merge_lines.size(); i++)
         {
-            Line merge_line = shapes.value(i).getLine();
+            Line merge_line = merge_lines.at(i);
             PixelRef a = current_map.pixelate(merge_line.start());
             PixelRef b = current_map.pixelate(merge_line.end());
 
@@ -97,33 +93,7 @@ namespace dm_runmethods
         }
         PointMap& current_map = mgraph.getDisplayedPointMap();
 
-        vector<PixelRefPair> new_links;
-        if(!cmdP.linkOptions().getLinksFile().empty())
-        {
-            std::ifstream links_stream(cmdP.linkOptions().getLinksFile());
-            if (!links_stream)
-            {
-                std::stringstream message;
-                message << "Failed to load file " << cmdP.linkOptions().getLinksFile() << ", error " << flush;
-                throw depthmapX::RuntimeException(message.str().c_str());
-            }
-            vector<PixelRefPair> links_from_file = getLinksFromStream(links_stream, current_map);
-            new_links.insert(new_links.end(), links_from_file.begin(), links_from_file.end());
-        }
-        else if(!cmdP.linkOptions().getManualLinks().empty())
-        {
-            std::stringstream links_stream;
-            links_stream << "x1\ty1\tx2\ty2";
-            for(size_t i = 0; i < cmdP.linkOptions().getManualLinks().size(); ++i)
-            {
-                links_stream << "\n";
-                std::string s = cmdP.linkOptions().getManualLinks().at(i);
-                std::replace( s.begin(), s.end(), ',', '\t');
-                links_stream << s;
-            }
-            vector<PixelRefPair> manual_links = getLinksFromStream(links_stream, current_map);
-            new_links.insert(new_links.end(), manual_links.begin(), manual_links.end());
-        }
+        vector<PixelRefPair> new_links = getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), current_map);
 
         for (size_t i = 0; i < new_links.size(); i++)
         {
