@@ -80,17 +80,21 @@ namespace dm_runmethods
         return merge_pixel_pairs;
     }
 
-    void linkGraph(const CommandLineParser &cmdP)
-    {
-
+    MetaGraph loadGraph(const pstring& filename) {
         MetaGraph mgraph;
-        auto result = mgraph.read(cmdP.getFileName().c_str());
+        auto result = mgraph.read(filename);
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
-            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            message << "Failed to load graph from file " << filename << ", error " << result << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
+        return mgraph;
+    }
+
+    void linkGraph(const CommandLineParser &cmdP)
+    {
+        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
         PointMap& current_map = mgraph.getDisplayedPointMap();
 
         vector<PixelRefPair> new_links = getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), current_map);
@@ -105,14 +109,8 @@ namespace dm_runmethods
 
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
     {
-        MetaGraph mgraph;
-        auto result = mgraph.read(cmdP.getFileName().c_str());
-        if ( result != MetaGraph::OK)
-        {
-            std::stringstream message;
-            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
-            throw depthmapX::RuntimeException(message.str().c_str());
-        }
+        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
+
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
