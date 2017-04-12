@@ -95,7 +95,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         for(size_t i = 0; i < _manualLinks.size(); ++i)
         {
             links_stream << "\n";
-            std::string s = _manualLinks.at(i);
+            std::string & s = _manualLinks.at(i);
             std::replace( s.begin(), s.end(), ',', '\t');
             links_stream << s;
         }
