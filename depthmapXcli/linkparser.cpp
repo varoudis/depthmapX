@@ -30,18 +30,18 @@ namespace {
 
 LinkParser::LinkParser(size_t argc, char *argv[])
 {
-    std::string _linksFile;
-    std::vector<std::string> _manualLinks;
+    std::string linksFile;
+    std::vector<std::string> manualLinks;
 
     for ( size_t i = 1; i < argc;  )
     {
         if ( strcmp ("-lf", argv[i]) == 0)
         {
-            if (!_linksFile.empty())
+            if (!linksFile.empty())
             {
                 throw CommandLineException(std::string("-lf can only be used once at the moment"));
             }
-            else if (_manualLinks.size() != 0)
+            else if (manualLinks.size() != 0)
             {
                 throw CommandLineException(std::string("-lf can not be used in conjunction with -lnk"));
             }
@@ -49,11 +49,11 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             {
                 throw CommandLineException(std::string("-lf requires an argument"));
             }
-            _linksFile = argv[i];
+            linksFile = argv[i];
         }
         else if ( strcmp ("-lnk", argv[i]) == 0)
         {
-            if (!_linksFile.empty())
+            if (!linksFile.empty())
             {
                 throw CommandLineException(std::string("-lf can not be used in conjunction with -lnk"));
             }
@@ -66,42 +66,42 @@ LinkParser::LinkParser(size_t argc, char *argv[])
                 throw CommandLineException(std::string("Invalid link provided (") + argv[i]
                                            + std::string("). Should only contain digits dots and commas"));
             }
-            _manualLinks.push_back(argv[i]);
+            manualLinks.push_back(argv[i]);
         }
         ++i;
     }
-    if ( _manualLinks.size() == 0 && _linksFile.empty())
+    if ( manualLinks.size() == 0 && linksFile.empty())
     {
         throw CommandLineException(std::string("one of -lf or -lnk must be provided"));
     }
 
-    ShapeMap temp_shape_map = ShapeMap("temp_map", ShapeMap::LINEMAP);
+    ShapeMap tempShapeMap = ShapeMap("temp_map", ShapeMap::LINEMAP);
 
-    if(!_linksFile.empty())
+    if(!linksFile.empty())
     {
-        std::ifstream links_stream(_linksFile);
-        if (!links_stream)
+        std::ifstream linksStream(linksFile);
+        if (!linksStream)
         {
             std::stringstream message;
-            message << "Failed to load file " << _linksFile << ", error " << flush;
+            message << "Failed to load file " << linksFile << ", error " << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        temp_shape_map.importTxt(links_stream, false);
+        tempShapeMap.importTxt(linksStream, false);
     }
-    else if(!_manualLinks.empty())
+    else if(!manualLinks.empty())
     {
-        std::stringstream links_stream;
-        links_stream << "x1\ty1\tx2\ty2";
-        for(size_t i = 0; i < _manualLinks.size(); ++i)
+        std::stringstream linksStream;
+        linksStream << "x1\ty1\tx2\ty2";
+        for(size_t i = 0; i < manualLinks.size(); ++i)
         {
-            links_stream << "\n";
-            std::string & s = _manualLinks.at(i);
+            linksStream << "\n";
+            std::string & s = manualLinks.at(i);
             std::replace( s.begin(), s.end(), ',', '\t');
-            links_stream << s;
+            linksStream << s;
         }
-        temp_shape_map.importTxt(links_stream, false);
+        tempShapeMap.importTxt(linksStream, false);
     }
-    pqmap<int,SalaShape>& shapes = temp_shape_map.getAllShapes();
+    pqmap<int,SalaShape>& shapes = tempShapeMap.getAllShapes();
     for (size_t i = 0; i < shapes.size(); i++)
     {
         _mergeLines.push_back(shapes.value(i).getLine());

@@ -25,49 +25,49 @@
 namespace dm_runmethods
 {
 
-    vector<PixelRefPair> getLinksFromMergeLines(const vector<Line>& merge_lines, PointMap& current_map)
+    vector<PixelRefPair> getLinksFromMergeLines(const vector<Line>& mergeLines, PointMap& currentMap)
     {
-        vector<PixelRefPair> merge_pixel_pairs;
-        for (size_t i = 0; i < merge_lines.size(); i++)
+        vector<PixelRefPair> mergePixelPairs;
+        for (size_t i = 0; i < mergeLines.size(); i++)
         {
-            const Line & merge_line = merge_lines.at(i);
-            const PixelRef & a = current_map.pixelate(merge_line.start());
-            const PixelRef & b = current_map.pixelate(merge_line.end());
+            const Line & mergeLine = mergeLines.at(i);
+            const PixelRef & a = currentMap.pixelate(mergeLine.start());
+            const PixelRef & b = currentMap.pixelate(mergeLine.end());
 
             // check in limits:
-            if (!current_map.includes(a) || !current_map.getPoint(a).filled()
-                    || !current_map.includes(b) || !current_map.getPoint(b).filled())
+            if (!currentMap.includes(a) || !currentMap.getPoint(a).filled()
+                    || !currentMap.includes(b) || !currentMap.getPoint(b).filled())
             {
                 std::stringstream message;
                 message << "Line ends not both on painted analysis space "
                         << i << " ("
-                        << merge_line.start().x << ", "
-                        << merge_line.start().y << " -> "
-                        << merge_line.end().x << ", "
-                        << merge_line.end().y << ")" << flush;
+                        << mergeLine.start().x << ", "
+                        << mergeLine.start().y << " -> "
+                        << mergeLine.end().x << ", "
+                        << mergeLine.end().y << ")" << flush;
                 throw depthmapX::RuntimeException(message.str().c_str());
             }
 
             // we probably need to check if we were given coordinates that
             // fall on a previously given cell, in which case the newest given
             // will replace the oldest and effectively delete the whole link
-            for (size_t j = 0; j < merge_pixel_pairs.size(); j++)
+            for (size_t j = 0; j < mergePixelPairs.size(); j++)
             {
                 // PixelRefPair internal == operator only checks a with a and b with b
                 // but we also need to check the inverse
-                if(a == merge_pixel_pairs.at(j).a
-                        || b == merge_pixel_pairs.at(j).b
-                        || a == merge_pixel_pairs.at(j).b
-                        || b == merge_pixel_pairs.at(j).a)
+                if(a == mergePixelPairs.at(j).a
+                        || b == mergePixelPairs.at(j).b
+                        || a == mergePixelPairs.at(j).b
+                        || b == mergePixelPairs.at(j).a)
                 {
                     // one of the cells has already been seen.
                     std::stringstream message;
                     message << "Overlapping link found at line "
                             << i << " ("
-                            << merge_line.start().x << ", "
-                            << merge_line.start().y << " -> "
-                            << merge_line.end().x << ", "
-                            << merge_line.end().y << ")" << flush;
+                            << mergeLine.start().x << ", "
+                            << mergeLine.start().y << " -> "
+                            << mergeLine.end().x << ", "
+                            << mergeLine.end().y << ")" << flush;
                     throw depthmapX::RuntimeException(message.str().c_str());
                 }
             }
@@ -75,9 +75,9 @@ namespace dm_runmethods
             // TODO: the merge function will replace any links that already exist
             // on the two locations, so we need to warn the user if this is the case
 
-            merge_pixel_pairs.push_back(PixelRefPair(a, b));
+            mergePixelPairs.push_back(PixelRefPair(a, b));
         }
-        return merge_pixel_pairs;
+        return mergePixelPairs;
     }
 
     MetaGraph loadGraph(const pstring& filename) {
@@ -95,14 +95,14 @@ namespace dm_runmethods
     void linkGraph(const CommandLineParser &cmdP)
     {
         MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
-        PointMap& current_map = mgraph.getDisplayedPointMap();
+        PointMap& currentMap = mgraph.getDisplayedPointMap();
 
-        vector<PixelRefPair> new_links = getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), current_map);
+        vector<PixelRefPair> newLinks = getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
 
-        for (size_t i = 0; i < new_links.size(); i++)
+        for (size_t i = 0; i < newLinks.size(); i++)
         {
-            PixelRefPair link = new_links.at(i);
-            current_map.mergePixels(link.a,link.b);
+            PixelRefPair link = newLinks.at(i);
+            currentMap.mergePixels(link.a,link.b);
         }
         mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
     }
