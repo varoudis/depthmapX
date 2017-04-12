@@ -60,24 +60,24 @@ TEST_CASE("LINK args valid", "valid")
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8"};
         LinkParser cmdP(ah.argc(), ah.argv());
         REQUIRE(cmdP.getMergeLines().size() == 1);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().x - 1.2) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().y - 3.4) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().x - 5.6) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().y - 7.8) < EPSILON);
+        REQUIRE(cmdP.getMergeLines().at(0).start().x == Approx(1.2).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).start().y == Approx(3.4).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).end().x == Approx(5.6).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).end().y == Approx(7.8).epsilon(EPSILON));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8", "-lnk", "0.1,0.2,0.3,0.4"};
         LinkParser cmdP(ah.argc(), ah.argv());
         REQUIRE(cmdP.getMergeLines().size() == 2);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().x - 1.2) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).start().y - 3.4) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().x - 5.6) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(0).end().y - 7.8) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(1).start().x - 0.1) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(1).start().y - 0.2) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(1).end().x - 0.3) < EPSILON);
-        REQUIRE(fabs(cmdP.getMergeLines().at(1).end().y - 0.4) < EPSILON);
+        REQUIRE(cmdP.getMergeLines().at(0).start().x == Approx(1.2).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).start().y == Approx(3.4).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).end().x == Approx(5.6).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(0).end().y == Approx(7.8).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(1).start().x == Approx(0.1).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(1).start().y == Approx(0.2).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(1).end().x == Approx(0.3).epsilon(EPSILON));
+        REQUIRE(cmdP.getMergeLines().at(1).end().y == Approx(0.4).epsilon(EPSILON));
     }
 
 }
