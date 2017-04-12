@@ -30,9 +30,9 @@ namespace dm_runmethods
         vector<PixelRefPair> merge_pixel_pairs;
         for (size_t i = 0; i < merge_lines.size(); i++)
         {
-            Line merge_line = merge_lines.at(i);
-            PixelRef a = current_map.pixelate(merge_line.start());
-            PixelRef b = current_map.pixelate(merge_line.end());
+            const Line & merge_line = merge_lines.at(i);
+            const PixelRef & a = current_map.pixelate(merge_line.start());
+            const PixelRef & b = current_map.pixelate(merge_line.end());
 
             // check in limits:
             if (!current_map.includes(a) || !current_map.getPoint(a).filled()
