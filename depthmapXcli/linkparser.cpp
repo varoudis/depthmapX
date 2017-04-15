@@ -85,7 +85,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             message << "Failed to load file " << linksFile << ", error " << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        vector<Line> lines = text_parser::parseLines(linksStream, '\t');
+        vector<Line> lines = textParser::parseLines(linksStream, '\t');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
     else if(!manualLinks.empty())
@@ -100,7 +100,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             std::replace( iter->begin(), iter->end(), ',', '\t'),
             linksStream << *iter;
         }
-        vector<Line> lines = text_parser::parseLines(linksStream, '\t');
+        vector<Line> lines = textParser::parseLines(linksStream, '\t');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
 }

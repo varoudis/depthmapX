@@ -22,7 +22,7 @@
 #include <iterator>
 #include <string>
 
-namespace text_parser {
+namespace textParser {
     std::vector<Line> parseLines(std::istream& stream, char delimiter);
 
     template<typename Out>
