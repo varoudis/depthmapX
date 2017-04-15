@@ -36,7 +36,8 @@ SOURCES += \
     sparksieve2.cpp \
     tigerp.cpp \
     topomet.cpp \
-    vertex.cpp
+    vertex.cpp \
+    textparser.cpp
 
 HEADERS += \
     attributes.h \
@@ -59,7 +60,8 @@ HEADERS += \
     tigerp.h \
     topomet.h \
     vertex.h \
-    idepthmap.h
+    idepthmap.h \
+    textparser.h
 
 DISTFILES += \
     salascript-tests.txt
