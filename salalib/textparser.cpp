@@ -16,14 +16,14 @@
 #include "textparser.h"
 #include <exception>
 
-std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter = '\t') {
+std::vector<Line> textParser::parseLines(std::istream& stream, char delimiter = '\t') {
 
     std::vector<Line> lines;
 
     std::string inputline;
     std::getline(stream, inputline);
 
-    std::vector<std::string> strings = text_parser::split(inputline, delimiter);
+    std::vector<std::string> strings = textParser::split(inputline, delimiter);
 
     if (strings.size() < 4)
     {
@@ -76,7 +76,7 @@ std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter =
     while (!stream.eof()) {
         std::getline(stream, inputline);
         if (!inputline.empty()) {
-            std::vector<std::string> strings = text_parser::split(inputline, delimiter);
+            std::vector<std::string> strings = textParser::split(inputline, delimiter);
             if (!strings.size())
             {
                 continue;
@@ -113,7 +113,7 @@ std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter =
 
 template<typename Out>
 
-void text_parser::split(const std::string &s, char delim, Out result)
+void textParser::split(const std::string &s, char delim, Out result)
 {
     std::stringstream ss;
     ss.str(s);
@@ -125,7 +125,7 @@ void text_parser::split(const std::string &s, char delim, Out result)
 }
 
 
-std::vector<std::string> text_parser::split(const std::string &s, char delim)
+std::vector<std::string> textParser::split(const std::string &s, char delim)
 {
     std::vector<std::string> elems;
     split(s, delim, std::back_inserter(elems));
@@ -133,7 +133,7 @@ std::vector<std::string> text_parser::split(const std::string &s, char delim)
 }
 
 // from: https://stackoverflow.com/questions/392981/how-can-i-convert-string-to-double-in-c
-double text_parser::stringToDouble( const std::string& s )
+double textParser::stringToDouble( const std::string& s )
 {
   std::istringstream i(s);
   double x;
