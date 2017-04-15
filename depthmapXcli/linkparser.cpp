@@ -15,6 +15,7 @@
 
 #include "linkparser.h"
 #include "salalib/mgraph.h"
+#include "salalib/textparser.h"
 #include "exceptions.h"
 #include <cstring>
 #include <memory>
@@ -75,8 +76,6 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         throw CommandLineException(std::string("one of -lf or -lnk must be provided"));
     }
 
-    ShapeMap tempShapeMap = ShapeMap("temp_map", ShapeMap::LINEMAP);
-
     if(!linksFile.empty())
     {
         std::ifstream linksStream(linksFile);
@@ -86,24 +85,22 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             message << "Failed to load file " << linksFile << ", error " << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        tempShapeMap.importTxt(linksStream, false);
+        vector<Line> lines = text_parser::parseLines(linksStream, '\t');
+        _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
     else if(!manualLinks.empty())
     {
         std::stringstream linksStream;
         linksStream << "x1\ty1\tx2\ty2";
-        for(size_t i = 0; i < manualLinks.size(); ++i)
+        std::vector<std::string>::iterator iter = manualLinks.begin(), end =
+        manualLinks.end();
+        for ( ; iter != end; ++iter )
         {
             linksStream << "\n";
-            std::string & s = manualLinks.at(i);
-            std::replace( s.begin(), s.end(), ',', '\t');
-            linksStream << s;
+            std::replace( iter->begin(), iter->end(), ',', '\t'),
+            linksStream << *iter;
         }
-        tempShapeMap.importTxt(linksStream, false);
-    }
-    pqmap<int,SalaShape>& shapes = tempShapeMap.getAllShapes();
-    for (size_t i = 0; i < shapes.size(); i++)
-    {
-        _mergeLines.push_back(shapes.value(i).getLine());
+        vector<Line> lines = text_parser::parseLines(linksStream, '\t');
+        _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
 }
