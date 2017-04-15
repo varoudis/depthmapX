@@ -28,7 +28,7 @@ namespace text_parser {
     template<typename Out>
     void split(const std::string &s, char delim, Out result);
     std::vector<std::string> split(const std::string &s, char delim);
-    double string_to_double( const std::string& s );
+    double stringToDouble( const std::string& s );
 }
 
 #endif // TEXTPARSER_H
