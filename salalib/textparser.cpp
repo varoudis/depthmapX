@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "textparser.h"
+#include <exception>
 
 std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter = '\t') {
 
@@ -27,8 +28,8 @@ std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter =
     if (strings.size() < 4)
     {
         //TODO error: badly formatted header (should contain x1, y1, x2 and y2)
-        cout << "badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-        return lines;
+        cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
+        throw std::exception();
     }
 
     size_t i;
@@ -66,8 +67,8 @@ std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter =
     {
         // TODO display some sort of error? exception? for now empty vector
         // badly formatted header (should contain x1, y1, x2 and y2)
-        cout << "badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-        return lines;
+        cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
+        throw std::exception();
     }
 
     Point2f p1, p2;
@@ -76,35 +77,32 @@ std::vector<Line> text_parser::parseLines(std::istream& stream, char delimiter =
         std::getline(stream, inputline);
         if (!inputline.empty()) {
             std::vector<std::string> strings = text_parser::split(inputline, delimiter);
-            if (!strings.size()) {
+            if (!strings.size())
+            {
                 continue;
+            }
+            if (strings.size() < 4)
+            {
+                cout << "Error parsing line: " << inputline << std::endl;
+                throw std::exception();
             }
             for (i = 0; i < strings.size(); i++)
             {
-                try
+                if (i == x1col)
                 {
-                    if (i == x1col)
-                    {
-                        p1.x = string_to_double(strings[i]);
-                    }
-                    else if (i == y1col)
-                    {
-                        p1.y = string_to_double(strings[i]);
-                    }
-                    else if (i == x2col)
-                    {
-                        p2.x = string_to_double(strings[i]);
-                    }
-                    else if (i == y2col)
-                    {
-                        p2.y = string_to_double(strings[i]);
-                    }
+                    p1.x = stringToDouble(strings[i]);
                 }
-                catch (pstring::exception)
+                else if (i == y1col)
                 {
-                    // TODO errror parsing line i
-                    cout << "error parsing line " << i << std::endl;
-                    return lines;
+                    p1.y = stringToDouble(strings[i]);
+                }
+                else if (i == x2col)
+                {
+                    p2.x = stringToDouble(strings[i]);
+                }
+                else if (i == y2col)
+                {
+                    p2.y = stringToDouble(strings[i]);
                 }
             }
             lines.push_back(Line(p1,p2));
@@ -134,11 +132,12 @@ std::vector<std::string> text_parser::split(const std::string &s, char delim)
     return elems;
 }
 
-double text_parser::string_to_double( const std::string& s )
+// from: https://stackoverflow.com/questions/392981/how-can-i-convert-string-to-double-in-c
+double text_parser::stringToDouble( const std::string& s )
 {
   std::istringstream i(s);
   double x;
   if (!(i >> x))
-    return 0;
+      throw std::exception();
   return x;
 }
