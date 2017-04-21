@@ -27,6 +27,7 @@ namespace dm_runmethods
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
     {
         MetaGraph mgraph;
+        std::cout << "Loading graph " << cmdP.getFileName() << std::flush;
         auto result = mgraph.read(cmdP.getFileName().c_str());
         if ( result != MetaGraph::OK)
         {
@@ -37,6 +38,7 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
+        cout << " ok\nGetting options..." << std::flush;
         switch(cmdP.vgaOptions().getVgaMode())
         {
             case VgaParser::VgaMode::VISBILITY:
@@ -60,10 +62,13 @@ namespace dm_runmethods
             default:
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");
         }
+        cout << " ok\nAnalysing graph..." << std::flush;
         SimpleTimer timer;
         mgraph.analyseGraph(comm.get(), *options, cmdP.simpleMode() );
-        std::cout << "Analysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
+        std::cout << " ok\nAnalysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
+        std::cout << "Writing out result..." << std::flush;
         mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+        std::cout << " ok" << std::endl;
     }
 
 }
