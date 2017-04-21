@@ -1498,7 +1498,7 @@ public:
       }
       return *this;
    }
-   ~keyvaluepairref()
+   virtual ~keyvaluepairref()
    { if (m_value) {delete m_value; m_value = NULL;} }
    T1& key() { return m_key; }
    const T1 key() const { return m_key; }
@@ -2103,7 +2103,7 @@ public:
                m_data[m_end] = '\0';
             }
          }
-         delete buf;
+         delete[] buf;
       }
    }
    // Changed 31.08.09 -- pstring no longer has a const char constructor
