@@ -317,7 +317,6 @@ public:
       { bottom_left = r.bottom_left; top_right = r.top_right; }
    QtRegion& operator = (const QtRegion& r)
       { bottom_left = r.bottom_left; top_right = r.top_right; return *this; }
-   virtual ~QtRegion(){}
    //
    double height() const
       { return top_right.y - bottom_left.y; }
