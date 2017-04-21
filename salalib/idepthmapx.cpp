@@ -24,7 +24,7 @@
 #include <salalib/mgraph.h>
 #include <salalib/ngraph.h>
 
-#include <idepthmap.h>
+#include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
 
 //////////////////////////////////////////////////////////////////////
