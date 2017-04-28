@@ -100,8 +100,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         manualLinks.end();
         for ( ; iter != end; ++iter )
         {
-            linksStream << "\n";
-            linksStream << *iter;
+            linksStream << "\n" << *iter;
         }
         vector<Line> lines = EntityParsing::parseLines(linksStream, ',');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
