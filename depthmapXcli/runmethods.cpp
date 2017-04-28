@@ -15,30 +15,54 @@
 
 #include "runmethods.h"
 #include "salalib/mgraph.h"
+#include "salalib/linkutils.h"
 #include "radiusconverter.h"
 #include "exceptions.h"
 #include "simpletimer.h"
 #include <memory>
 #include <sstream>
+#include <vector>
 
 namespace dm_runmethods
 {
 
-    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
-    {
+    MetaGraph loadGraph(const pstring& filename) {
         MetaGraph mgraph;
-        std::cout << "Loading graph " << cmdP.getFileName() << std::flush;
-        auto result = mgraph.read(cmdP.getFileName().c_str());
+        std::cout << "Loading graph " << filename << std::flush; 
+        auto result = mgraph.read(filename);
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
-            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            message << "Failed to load graph from file " << filename << ", error " << result << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
+        std::cout << " ok\n" << std::flush;
+        return mgraph;
+    }
+
+    void linkGraph(const CommandLineParser &cmdP)
+    {
+        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
+        PointMap& currentMap = mgraph.getDisplayedPointMap();
+
+        vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
+
+        for (size_t i = 0; i < newLinks.size(); i++)
+        {
+            PixelRefPair link = newLinks.at(i);
+            currentMap.mergePixels(link.a,link.b);
+        }
+        mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+    }
+
+    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
+    {
+        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
+
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
-        cout << " ok\nGetting options..." << std::flush;
+        cout << "Getting options..." << std::flush;
         switch(cmdP.vgaOptions().getVgaMode())
         {
             case VgaParser::VgaMode::VISBILITY:

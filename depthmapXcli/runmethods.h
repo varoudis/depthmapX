@@ -20,6 +20,7 @@
 #include "radiusconverter.h"
 
 namespace dm_runmethods{
+    void linkGraph(const CommandLineParser &cmdP);
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter);
 }
 #endif // RUNMETHODS_H
