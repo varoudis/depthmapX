@@ -37,7 +37,8 @@ SOURCES += \
     tigerp.cpp \
     topomet.cpp \
     vertex.cpp \
-    entityparsing.cpp
+    entityparsing.cpp \
+    linkutils.cpp
 
 HEADERS += \
     attributes.h \
@@ -61,7 +62,8 @@ HEADERS += \
     topomet.h \
     vertex.h \
     idepthmap.h \
-    entityparsing.h
+    entityparsing.h \
+    linkutils.h
 
 DISTFILES += \
     salascript-tests.txt
