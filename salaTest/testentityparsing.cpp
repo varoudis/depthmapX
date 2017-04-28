@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "catch.hpp"
-#include "salalib/textparser.h"
+#include "salalib/entityparsing.h"
 #include "genlib/p2dpoly.h"
 #include <sstream>
 #include <vector>
@@ -26,14 +26,14 @@ TEST_CASE("Failing line parser", "")
         // header only has 3 elements
         std::stringstream stream;
         stream << "x1,y1,x2" << std::endl;
-        REQUIRE_THROWS_WITH(textParser::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
     }
 
     {
         // header has y1 twice instead of y2
         std::stringstream stream;
         stream << "x1,y1,x2,y1" << std::endl;
-        REQUIRE_THROWS_WITH(textParser::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
     }
 
     {
@@ -41,7 +41,7 @@ TEST_CASE("Failing line parser", "")
         std::stringstream stream;
         stream << "x1,y1,x2,y2" << std::endl;
         stream << "1.2,3.4,5.6" << std::endl;
-        REQUIRE_THROWS_WITH(textParser::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
     }
 }
 TEST_CASE("Successful line parser", "")
@@ -51,7 +51,7 @@ TEST_CASE("Successful line parser", "")
         std::stringstream stream;
         stream << "x1,y1,x2,y2" << std::endl;
         stream << "1.2,3.4,5.6,7.8" << std::endl;
-        std::vector<Line> lines = textParser::parseLines(stream,',');
+        std::vector<Line> lines = EntityParsing::parseLines(stream,',');
         REQUIRE(lines.size() == 1);
         REQUIRE(lines[0].start().x == Approx(1.2).epsilon(EPSILON));
         REQUIRE(lines[0].start().y == Approx(3.4).epsilon(EPSILON));
@@ -63,7 +63,7 @@ TEST_CASE("Successful line parser", "")
         std::stringstream stream;
         stream << "x1\ty1\tx2\ty2" << std::endl;
         stream << "1.2\t3.4\t5.6\t7.8" << std::endl;
-        std::vector<Line> lines = textParser::parseLines(stream,'\t');
+        std::vector<Line> lines = EntityParsing::parseLines(stream,'\t');
         REQUIRE(lines.size() == 1);
         REQUIRE(lines[0].start().x == Approx(1.2).epsilon(EPSILON));
         REQUIRE(lines[0].start().y == Approx(3.4).epsilon(EPSILON));
@@ -76,7 +76,7 @@ TEST_CASE("Successful line parser", "")
         stream << "x1\ty1\tx2\ty2" << std::endl;
         stream << "1.2\t3.4\t5.6\t7.8" << std::endl;
         stream << "0.1\t0.2\t0.3\t0.4" << std::endl;
-        std::vector<Line> lines = textParser::parseLines(stream,'\t');
+        std::vector<Line> lines = EntityParsing::parseLines(stream,'\t');
         REQUIRE(lines.size() == 2);
         REQUIRE(lines[0].start().x == Approx(1.2).epsilon(EPSILON));
         REQUIRE(lines[0].start().y == Approx(3.4).epsilon(EPSILON));
@@ -92,28 +92,28 @@ TEST_CASE("Successful line parser", "")
 TEST_CASE("Tests for split function", "")
 {
     {
-        std::vector<std::string> stringParts = textParser::split("foo,bar",',');
+        std::vector<std::string> stringParts = EntityParsing::split("foo,bar",',');
         REQUIRE(stringParts.size() == 2);
         REQUIRE(stringParts[0] == "foo");
         REQUIRE(stringParts[1] == "bar");
     }
 
     {
-        std::vector<std::string> stringParts = textParser::split("0.5,1.2",',');
+        std::vector<std::string> stringParts = EntityParsing::split("0.5,1.2",',');
         REQUIRE(stringParts.size() == 2);
         REQUIRE(stringParts[0] == "0.5");
         REQUIRE(stringParts[1] == "1.2");
     }
 
     {
-        std::vector<std::string> stringParts = textParser::split("0.5\t1.2",'\t');
+        std::vector<std::string> stringParts = EntityParsing::split("0.5\t1.2",'\t');
         REQUIRE(stringParts.size() == 2);
         REQUIRE(stringParts[0] == "0.5");
         REQUIRE(stringParts[1] == "1.2");
     }
 
     {
-        std::vector<std::string> stringParts = textParser::split("0.5\t1.2\tfoo",'\t');
+        std::vector<std::string> stringParts = EntityParsing::split("0.5\t1.2\tfoo",'\t');
         REQUIRE(stringParts.size() == 3);
         REQUIRE(stringParts[0] == "0.5");
         REQUIRE(stringParts[1] == "1.2");
@@ -122,13 +122,13 @@ TEST_CASE("Tests for split function", "")
 
     {
         // skip last blank element
-        std::vector<std::string> stringParts = textParser::split("foo,bar,",',');
+        std::vector<std::string> stringParts = EntityParsing::split("foo,bar,",',');
         REQUIRE(stringParts.size() == 2);
     }
 
     {
         // do not skip middle blank element
-        std::vector<std::string> stringParts = textParser::split("foo,,bar",',');
+        std::vector<std::string> stringParts = EntityParsing::split("foo,,bar",',');
         REQUIRE(stringParts.size() == 3);
     }
 }
