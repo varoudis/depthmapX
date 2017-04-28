@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "textparser.h"
+#include "entityparsing.h"
 #include <exception>
 #include <cstdlib>
 #include <sstream>
 
-namespace textParser {
+namespace EntityParsing {
     std::vector<std::string> split(const std::string &s, char delim)
     {
         std::vector<std::string> elems;

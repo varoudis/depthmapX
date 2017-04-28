@@ -15,7 +15,7 @@
 
 #include "linkparser.h"
 #include "salalib/mgraph.h"
-#include "salalib/textparser.h"
+#include "salalib/entityparsing.h"
 #include "exceptions.h"
 #include <cstring>
 #include <memory>
@@ -85,7 +85,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             message << "Failed to load file " << linksFile << ", error " << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        vector<Line> lines = textParser::parseLines(linksStream, '\t');
+        vector<Line> lines = EntityParsing::parseLines(linksStream, '\t');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
     else if(!manualLinks.empty())
@@ -100,7 +100,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
             std::replace( iter->begin(), iter->end(), ',', '\t'),
             linksStream << *iter;
         }
-        vector<Line> lines = textParser::parseLines(linksStream, '\t');
+        vector<Line> lines = EntityParsing::parseLines(linksStream, '\t');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
 }

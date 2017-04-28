@@ -13,17 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef TEXTPARSER_H
-#define TEXTPARSER_H
+#ifndef ENTITYPARSING_H
+#define ENTITYPARSING_H
 
 #include "genlib/p2dpoly.h"
 #include <vector>
 #include <iostream>
 #include <string>
 
-namespace textParser {
+namespace EntityParsing {
     std::vector<std::string> split(const std::string &s, char delim);
     std::vector<Line> parseLines(std::istream& stream, char delimiter);
 }
 
-#endif // TEXTPARSER_H
+#endif // ENTITYPARSING_H
