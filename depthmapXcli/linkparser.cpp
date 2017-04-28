@@ -95,16 +95,15 @@ LinkParser::LinkParser(size_t argc, char *argv[])
     else if(!manualLinks.empty())
     {
         std::stringstream linksStream;
-        linksStream << "x1\ty1\tx2\ty2";
+        linksStream << "x1,y1,x2,y2";
         std::vector<std::string>::iterator iter = manualLinks.begin(), end =
         manualLinks.end();
         for ( ; iter != end; ++iter )
         {
             linksStream << "\n";
-            std::replace( iter->begin(), iter->end(), ',', '\t'),
             linksStream << *iter;
         }
-        vector<Line> lines = EntityParsing::parseLines(linksStream, '\t');
+        vector<Line> lines = EntityParsing::parseLines(linksStream, ',');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
 }
