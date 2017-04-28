@@ -82,6 +82,7 @@ namespace dm_runmethods
 
     MetaGraph loadGraph(const pstring& filename) {
         MetaGraph mgraph;
+        std::cout << "Loading graph " << filename << std::flush; 
         auto result = mgraph.read(filename);
         if ( result != MetaGraph::OK)
         {
@@ -89,6 +90,7 @@ namespace dm_runmethods
             message << "Failed to load graph from file " << filename << ", error " << result << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
+        std::cout << " ok\n" << std::flush;
         return mgraph;
     }
 
@@ -114,6 +116,7 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
+        cout << "Getting options..." << std::flush;
         switch(cmdP.vgaOptions().getVgaMode())
         {
             case VgaParser::VgaMode::VISBILITY:
@@ -137,10 +140,13 @@ namespace dm_runmethods
             default:
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");
         }
+        cout << " ok\nAnalysing graph..." << std::flush;
         SimpleTimer timer;
         mgraph.analyseGraph(comm.get(), *options, cmdP.simpleMode() );
-        std::cout << "Analysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
+        std::cout << " ok\nAnalysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
+        std::cout << "Writing out result..." << std::flush;
         mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+        std::cout << " ok" << std::endl;
     }
 
 }

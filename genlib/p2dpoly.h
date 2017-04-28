@@ -42,7 +42,7 @@ class  QtRegion;
 bool intersect_region(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
 bool overlap_x(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
 bool overlap_y(const QtRegion& a, const QtRegion& b, double tolerance = 0.0);
-struct Line;
+class Line;
 bool intersect_line(const Line& a, const Line& b, double tolerance = 0.0);
 bool intersect_line_no_touch(const Line& a, const Line& b, double tolerance = 0.0);
 int  intersect_line_distinguish(const Line& a, const Line& b, double tolerance = 0.0);

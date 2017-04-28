@@ -79,6 +79,7 @@ public:
    DxfTableRow( const pstring& name = "" );
    const pstring& getName() const
       { return m_name; }
+   virtual ~DxfTableRow(){}
 protected:
    virtual bool parse( const DxfToken& token, DxfParser *Parser );
 public:
@@ -101,6 +102,7 @@ protected:
 public:
    DxfEntity( int tag = -1 );
    void clear();  // for reuse when parsing
+   virtual ~DxfEntity(){}
 protected:
    virtual bool parse( const DxfToken& token, DxfParser *parser );
 };
