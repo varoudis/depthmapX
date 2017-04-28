@@ -38,4 +38,5 @@ HEADERS += \
     pafmath.h \
     paftl.h \
     paftl_old.h \
-    xmlparse.h
+    xmlparse.h \
+    exceptions.h
