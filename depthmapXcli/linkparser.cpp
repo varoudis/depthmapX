@@ -40,15 +40,15 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         {
             if (!linksFile.empty())
             {
-                throw CommandLineException(std::string("-lf can only be used once at the moment"));
+                throw CommandLineException("-lf can only be used once at the moment");
             }
             else if (manualLinks.size() != 0)
             {
-                throw CommandLineException(std::string("-lf can not be used in conjunction with -lnk"));
+                throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw CommandLineException(std::string("-lf requires an argument"));
+                throw CommandLineException("-lf requires an argument");
             }
             linksFile = argv[i];
         }
@@ -56,16 +56,20 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         {
             if (!linksFile.empty())
             {
-                throw CommandLineException(std::string("-lf can not be used in conjunction with -lnk"));
+                throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
-                throw CommandLineException(std::string("-lnk requires an argument"));
+                throw CommandLineException("-lnk requires an argument");
             }
             if (!has_only_digits_dots_commas(argv[i]))
             {
-                throw CommandLineException(std::string("Invalid link provided (") + argv[i]
-                                           + std::string("). Should only contain digits dots and commas"));
+                std::stringstream message;
+                message << "Invalid link provided ("
+                        << argv[i]
+                        << "). Should only contain digits dots and commas"
+                        << flush;
+                throw CommandLineException(message.str().c_str());
             }
             manualLinks.push_back(argv[i]);
         }
@@ -73,7 +77,7 @@ LinkParser::LinkParser(size_t argc, char *argv[])
     }
     if ( manualLinks.size() == 0 && linksFile.empty())
     {
-        throw CommandLineException(std::string("one of -lf or -lnk must be provided"));
+        throw CommandLineException("one of -lf or -lnk must be provided");
     }
 
     if(!linksFile.empty())
