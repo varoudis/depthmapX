@@ -18,17 +18,12 @@
 
 #include "genlib/p2dpoly.h"
 #include <vector>
-#include <sstream>
-#include <iterator>
+#include <iostream>
 #include <string>
 
 namespace textParser {
-    std::vector<Line> parseLines(std::istream& stream, char delimiter);
-
-    template<typename Out>
-    void split(const std::string &s, char delim, Out result);
     std::vector<std::string> split(const std::string &s, char delim);
-    double stringToDouble( const std::string& s );
+    std::vector<Line> parseLines(std::istream& stream, char delimiter);
 }
 
 #endif // TEXTPARSER_H
