@@ -26,14 +26,14 @@ TEST_CASE("Failing line parser", "")
         // header only has 3 elements
         std::stringstream stream;
         stream << "x1,y1,x2" << std::endl;
-        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains("Badly formatted header (should contain x1, y1, x2 and y2)"));
     }
 
     {
         // header has y1 twice instead of y2
         std::stringstream stream;
         stream << "x1,y1,x2,y1" << std::endl;
-        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains("Badly formatted header (should contain x1, y1, x2 and y2)"));
     }
 
     {
@@ -41,7 +41,7 @@ TEST_CASE("Failing line parser", "")
         std::stringstream stream;
         stream << "x1,y1,x2,y2" << std::endl;
         stream << "1.2,3.4,5.6" << std::endl;
-        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains(""));
+        REQUIRE_THROWS_WITH(EntityParsing::parseLines(stream,','), Catch::Contains("Error parsing line"));
     }
 }
 TEST_CASE("Successful line parser", "")

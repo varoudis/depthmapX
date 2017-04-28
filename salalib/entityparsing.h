@@ -17,11 +17,20 @@
 #define ENTITYPARSING_H
 
 #include "genlib/p2dpoly.h"
+#include "genlib/exceptions.h"
 #include <vector>
 #include <iostream>
 #include <string>
 
 namespace EntityParsing {
+
+    class EntityParseException : public depthmapX::BaseException
+    {
+    public:
+        EntityParseException(std::string message) : depthmapX::BaseException(message)
+        {}
+    };
+
     std::vector<std::string> split(const std::string &s, char delim);
     std::vector<Line> parseLines(std::istream& stream, char delimiter);
 }
