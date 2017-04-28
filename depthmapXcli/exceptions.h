@@ -13,49 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef EXCEPTIONS_H
-#define EXCEPTIONS_H
+#pragma once
 
-#include <exception>
+#include "genlib/exceptions.h"
+#include <string>
 
 namespace depthmapX
 {
-    class BaseException : public std::exception
-    {
-    protected:
-        BaseException(){}
-        BaseException(std::string message) : _message(message)
-        {}
-    public:
-        virtual const char * what() const noexcept
-        {
-            return _message.c_str();
-        }
-    private:
-        std::string _message;
-    };
-
-    class CommandLineException : public BaseException
+    class CommandLineException : public depthmapX::BaseException
     {
     public:
-        CommandLineException(std::string message) : BaseException(message)
+        CommandLineException(std::string message) : depthmapX::BaseException(message)
         {}
     };
 
-    class SetupCheckException : public BaseException
+    class SetupCheckException : public depthmapX::BaseException
     {
     public:
-        SetupCheckException(std::string message) : BaseException(message)
+        SetupCheckException(std::string message) : depthmapX::BaseException(message)
         {}
     };
-
-    class RuntimeException: public BaseException
-    {
-    public:
-        RuntimeException(std::string message) : BaseException(message)
-        {}
-    };
-
 }
-
-#endif // EXCEPTIONS_H
