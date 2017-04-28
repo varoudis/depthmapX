@@ -15,129 +15,116 @@
 
 #include "textparser.h"
 #include <exception>
+#include <cstdlib>
+#include <sstream>
 
-std::vector<Line> textParser::parseLines(std::istream& stream, char delimiter = '\t') {
-
-    std::vector<Line> lines;
-
-    std::string inputline;
-    std::getline(stream, inputline);
-
-    std::vector<std::string> strings = textParser::split(inputline, delimiter);
-
-    if (strings.size() < 4)
+namespace textParser {
+    std::vector<std::string> split(const std::string &s, char delim)
     {
-        //TODO error: badly formatted header (should contain x1, y1, x2 and y2)
-        cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-        throw std::exception();
+        std::vector<std::string> elems;
+        std::stringstream ss;
+        ss.str(s);
+        std::string item;
+        while (std::getline(ss, item, delim))
+        {
+            elems.push_back(item);
+        }
+
+        return elems;
     }
 
-    size_t i;
-    for (i = 0; i < strings.size(); i++)
-    {
-       if (!strings[i].empty())
-       {
-           std::transform(strings[i].begin(), strings[i].end(), strings[i].begin(), ::tolower);
-           //strings[i].ltrim('\"');
-           //strings[i].rtrim('\"');
-       }
-    }
+    std::vector<Line> parseLines(std::istream& stream, char delimiter = '\t') {
 
-    int x1col = -1, y1col = -1, x2col = -1, y2col = -1;
-    for (i = 0; i < strings.size(); i++) {
-        if (strings[i] == "x1")
-        {
-            x1col = i;
-        }
-        else if (strings[i] == "x2")
-        {
-            x2col = i;
-        }
-        else if (strings[i] == "y1")
-        {
-            y1col = i;
-        }
-        else if (strings[i] == "y2")
-        {
-            y2col = i;
-        }
-    }
+        std::vector<Line> lines;
 
-    if(x1col == -1 || y1col == -1 || x2col == -1 || y2col == -1)
-    {
-        // TODO display some sort of error? exception? for now empty vector
-        // badly formatted header (should contain x1, y1, x2 and y2)
-        cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-        throw std::exception();
-    }
-
-    Point2f p1, p2;
-
-    while (!stream.eof()) {
+        std::string inputline;
         std::getline(stream, inputline);
-        if (!inputline.empty()) {
-            std::vector<std::string> strings = textParser::split(inputline, delimiter);
-            if (!strings.size())
-            {
-                continue;
-            }
-            if (strings.size() < 4)
-            {
-                cout << "Error parsing line: " << inputline << std::endl;
-                throw std::exception();
-            }
-            for (i = 0; i < strings.size(); i++)
-            {
-                if (i == x1col)
-                {
-                    p1.x = stringToDouble(strings[i]);
-                }
-                else if (i == y1col)
-                {
-                    p1.y = stringToDouble(strings[i]);
-                }
-                else if (i == x2col)
-                {
-                    p2.x = stringToDouble(strings[i]);
-                }
-                else if (i == y2col)
-                {
-                    p2.y = stringToDouble(strings[i]);
-                }
-            }
-            lines.push_back(Line(p1,p2));
+
+        std::vector<std::string> strings = split(inputline, delimiter);
+
+        if (strings.size() < 4)
+        {
+            //TODO error: badly formatted header (should contain x1, y1, x2 and y2)
+            cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
+            throw std::exception();
         }
+
+        size_t i;
+        for (i = 0; i < strings.size(); i++)
+        {
+           if (!strings[i].empty())
+           {
+               std::transform(strings[i].begin(), strings[i].end(), strings[i].begin(), ::tolower);
+               //strings[i].ltrim('\"');
+               //strings[i].rtrim('\"');
+           }
+        }
+
+        int x1col = -1, y1col = -1, x2col = -1, y2col = -1;
+        for (i = 0; i < strings.size(); i++) {
+            if (strings[i] == "x1")
+            {
+                x1col = i;
+            }
+            else if (strings[i] == "x2")
+            {
+                x2col = i;
+            }
+            else if (strings[i] == "y1")
+            {
+                y1col = i;
+            }
+            else if (strings[i] == "y2")
+            {
+                y2col = i;
+            }
+        }
+
+        if(x1col == -1 || y1col == -1 || x2col == -1 || y2col == -1)
+        {
+            // TODO display some sort of error? exception? for now empty vector
+            // badly formatted header (should contain x1, y1, x2 and y2)
+            cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
+            throw std::exception();
+        }
+
+        Point2f p1, p2;
+
+        while (!stream.eof()) {
+            std::getline(stream, inputline);
+            if (!inputline.empty()) {
+                strings = split(inputline, delimiter);
+                if (!strings.size())
+                {
+                    continue;
+                }
+                if (strings.size() < 4)
+                {
+                    cout << "Error parsing line: " << inputline << std::endl;
+                    throw std::exception();
+                }
+                for (i = 0; i < strings.size(); i++)
+                {
+                    if (i == x1col)
+                    {
+                        p1.x = std::atof(strings[i].c_str());
+                    }
+                    else if (i == y1col)
+                    {
+                        p1.y = std::atof(strings[i].c_str());
+                    }
+                    else if (i == x2col)
+                    {
+                        p2.x = std::atof(strings[i].c_str());
+                    }
+                    else if (i == y2col)
+                    {
+                        p2.y = std::atof(strings[i].c_str());
+                    }
+                }
+                lines.push_back(Line(p1,p2));
+            }
+        }
+        return lines;
     }
-    return lines;
-}
-
-template<typename Out>
-
-void textParser::split(const std::string &s, char delim, Out result)
-{
-    std::stringstream ss;
-    ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim))
-    {
-        *(result++) = item;
-    }
-}
-
-
-std::vector<std::string> textParser::split(const std::string &s, char delim)
-{
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
-}
-
-// from: https://stackoverflow.com/questions/392981/how-can-i-convert-string-to-double-in-c
-double textParser::stringToDouble( const std::string& s )
-{
-  std::istringstream i(s);
-  double x;
-  if (!(i >> x))
-      throw std::exception();
-  return x;
 }

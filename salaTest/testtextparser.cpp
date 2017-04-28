@@ -89,56 +89,6 @@ TEST_CASE("Successful line parser", "")
     }
 }
 
-TEST_CASE("Tests for stringToDouble function", "")
-{
-    // adapted tests from
-    // https://stackoverflow.com/questions/392981/how-can-i-convert-string-to-double-in-c
-
-    {
-        //failing cases:
-        REQUIRE_THROWS_WITH(textParser::stringToDouble( "0.5a"   ), Catch::Contains(""));
-        REQUIRE_THROWS_WITH(textParser::stringToDouble( "foobar"  ), Catch::Contains(""));
-    }
-
-    {
-        // simple cases:
-        REQUIRE(0.5 == textParser::stringToDouble( "0.5"    ));
-        REQUIRE(1.2 == textParser::stringToDouble( "1.2"    ));
-    }
-
-    {
-        // blank space:
-        REQUIRE(0.5 == textParser::stringToDouble( "0.5 "   ));
-        REQUIRE(0.5 == textParser::stringToDouble( " 0.5"   ));
-    }
-
-    {
-        // different formatting
-        REQUIRE(0.5 == textParser::stringToDouble( ".5"    ));
-        REQUIRE(0 == textParser::stringToDouble( "0"       ));
-        REQUIRE(0 == textParser::stringToDouble( "0."      ));
-        REQUIRE(0 == textParser::stringToDouble( "0.0"     ));
-        REQUIRE(0 == textParser::stringToDouble( "0.00"    ));
-        REQUIRE(0 == textParser::stringToDouble( "0.0e0"   ));
-        REQUIRE(0 == textParser::stringToDouble( "0.0e-0"  ));
-        REQUIRE(0 == textParser::stringToDouble( "0.0e+0"  ));
-        REQUIRE(0 == textParser::stringToDouble( "+0"      ));
-        REQUIRE(0 == textParser::stringToDouble( "+0."     ));
-        REQUIRE(0 == textParser::stringToDouble( "+0.0"    ));
-        REQUIRE(0 == textParser::stringToDouble( "+0.00"   ));
-        REQUIRE(0 == textParser::stringToDouble( "+0.0e0"  ));
-        REQUIRE(0 == textParser::stringToDouble( "+0.0e-0" ));
-        REQUIRE(0 == textParser::stringToDouble( "+0.0e+0" ));
-        REQUIRE(0 == textParser::stringToDouble( "-0"      ));
-        REQUIRE(0 == textParser::stringToDouble( "-0."     ));
-        REQUIRE(0 == textParser::stringToDouble( "-0.0"    ));
-        REQUIRE(0 == textParser::stringToDouble( "-0.00"   ));
-        REQUIRE(0 == textParser::stringToDouble( "-0.0e0"  ));
-        REQUIRE(0 == textParser::stringToDouble( "-0.0e-0" ));
-        REQUIRE(0 == textParser::stringToDouble( "-0.0e+0" ));
-    }
-}
-
 TEST_CASE("Tests for split function", "")
 {
     {
