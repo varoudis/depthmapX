@@ -87,7 +87,7 @@ TEST_CASE("Test SuperSpacePixel construction", "")
     }
 
     // construct a sample pointMap
-    PointMap::PointMap pointMap("Test PointMap");
+    PointMap pointMap("Test PointMap");
 
     // assign the spacePixel
     bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
@@ -123,7 +123,7 @@ TEST_CASE("Test grid filling", "")
     }
 
     // construct a sample pointMap
-    PointMap::PointMap pointMap("Test PointMap");
+    PointMap pointMap("Test PointMap");
 
     // assign the spacePixel
     bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
