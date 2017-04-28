@@ -44,9 +44,7 @@ namespace EntityParsing {
 
         if (strings.size() < 4)
         {
-            //TODO error: badly formatted header (should contain x1, y1, x2 and y2)
-            cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-            throw std::exception();
+            throw EntityParseException("Badly formatted header (should contain x1, y1, x2 and y2)");
         }
 
         size_t i;
@@ -82,10 +80,7 @@ namespace EntityParsing {
 
         if(x1col == -1 || y1col == -1 || x2col == -1 || y2col == -1)
         {
-            // TODO display some sort of error? exception? for now empty vector
-            // badly formatted header (should contain x1, y1, x2 and y2)
-            cout << "Badly formatted header (should contain x1, y1, x2 and y2)" << std::endl;
-            throw std::exception();
+            throw EntityParseException("Badly formatted header (should contain x1, y1, x2 and y2)");
         }
 
         Point2f p1, p2;
@@ -100,8 +95,9 @@ namespace EntityParsing {
                 }
                 if (strings.size() < 4)
                 {
-                    cout << "Error parsing line: " << inputline << std::endl;
-                    throw std::exception();
+                    std::stringstream message;
+                    message << "Error parsing line: " << inputline << flush;
+                    throw EntityParseException(message.str().c_str());
                 }
                 for (i = 0; i < strings.size(); i++)
                 {
