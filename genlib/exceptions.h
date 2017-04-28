@@ -1,4 +1,5 @@
 // Copyright (C) 2017 Christian Sailer
+// Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,24 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#ifndef EXCEPTIONS_H
+#define EXCEPTIONS_H
 
-#include "genlib/exceptions.h"
-#include <string>
+#include <exception>
 
 namespace depthmapX
 {
-    class CommandLineException : public depthmapX::BaseException
+    class BaseException : public std::exception
     {
     public:
-        CommandLineException(std::string message) : depthmapX::BaseException(message)
+        BaseException(){}
+        BaseException(std::string message) : _message(message)
         {}
+        virtual const char * what() const noexcept
+        {
+            return _message.c_str();
+        }
+    private:
+        std::string _message;
     };
 
-    class SetupCheckException : public depthmapX::BaseException
+    class RuntimeException: public BaseException
     {
     public:
-        SetupCheckException(std::string message) : depthmapX::BaseException(message)
+        RuntimeException(std::string message) : BaseException(message)
         {}
     };
 }
+#endif // EXCEPTIONS_H
