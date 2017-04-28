@@ -123,4 +123,79 @@ namespace EntityParsing {
         }
         return lines;
     }
+
+    std::vector<Point2f> parsePoints(std::istream& stream, char delimiter = '\t') {
+
+        std::vector<Point2f> points;
+
+        std::string inputline;
+        std::getline(stream, inputline);
+
+        std::vector<std::string> strings = split(inputline, delimiter);
+
+        if (strings.size() < 2)
+        {
+            throw EntityParseException("Badly formatted header (should contain x and y)");
+        }
+
+        size_t i;
+        for (i = 0; i < strings.size(); i++)
+        {
+           if (!strings[i].empty())
+           {
+               std::transform(strings[i].begin(), strings[i].end(), strings[i].begin(), ::tolower);
+               //strings[i].ltrim('\"');
+               //strings[i].rtrim('\"');
+           }
+        }
+
+        int xcol = -1, ycol = -1;
+        for (i = 0; i < strings.size(); i++) {
+            if (strings[i] == "x")
+            {
+                xcol = i;
+            }
+            else if (strings[i] == "y")
+            {
+                ycol = i;
+            }
+        }
+
+        if(xcol == -1 || ycol == -1)
+        {
+            throw EntityParseException("Badly formatted header (should contain x and y)");
+        }
+
+        Point2f p;
+
+        while (!stream.eof()) {
+            std::getline(stream, inputline);
+            if (!inputline.empty()) {
+                strings = split(inputline, delimiter);
+                if (!strings.size())
+                {
+                    continue;
+                }
+                if (strings.size() < 2)
+                {
+                    std::stringstream message;
+                    message << "Error parsing line: " << inputline << flush;
+                    throw EntityParseException(message.str().c_str());
+                }
+                for (i = 0; i < strings.size(); i++)
+                {
+                    if (i == xcol)
+                    {
+                        p.x = std::atof(strings[i].c_str());
+                    }
+                    else if (i == ycol)
+                    {
+                        p.y = std::atof(strings[i].c_str());
+                    }
+                }
+                points.push_back(p);
+            }
+        }
+        return points;
+    }
 }

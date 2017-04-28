@@ -89,6 +89,67 @@ TEST_CASE("Successful line parser", "")
     }
 }
 
+TEST_CASE("Failing point parser", "")
+{
+    const float EPSILON = 0.001;
+    {
+        // header only has 3 elements
+        std::stringstream stream;
+        stream << "x" << std::endl;
+        REQUIRE_THROWS_WITH(EntityParsing::parsePoints(stream,','), Catch::Contains("Badly formatted header (should contain x and y)"));
+    }
+
+    {
+        // header has y1 twice instead of y2
+        std::stringstream stream;
+        stream << "x,x" << std::endl;
+        REQUIRE_THROWS_WITH(EntityParsing::parsePoints(stream,','), Catch::Contains("Badly formatted header (should contain x and y)"));
+    }
+
+    {
+        // error parsing line
+        std::stringstream stream;
+        stream << "x,y" << std::endl;
+        stream << "1.2" << std::endl;
+        REQUIRE_THROWS_WITH(EntityParsing::parsePoints(stream,','), Catch::Contains("Error parsing line"));
+    }
+}
+TEST_CASE("Successful point parser", "")
+{
+    const float EPSILON = 0.001;
+    {
+        std::stringstream stream;
+        stream << "x,y" << std::endl;
+        stream << "1.2,3.4" << std::endl;
+        std::vector<Point2f> points = EntityParsing::parsePoints(stream,',');
+        REQUIRE(points.size() == 1);
+        REQUIRE(points[0].x == Approx(1.2).epsilon(EPSILON));
+        REQUIRE(points[0].y == Approx(3.4).epsilon(EPSILON));
+    }
+
+    {
+        std::stringstream stream;
+        stream << "x\ty" << std::endl;
+        stream << "1.2\t3.4" << std::endl;
+        std::vector<Point2f> points = EntityParsing::parsePoints(stream,'\t');
+        REQUIRE(points.size() == 1);
+        REQUIRE(points[0].x == Approx(1.2).epsilon(EPSILON));
+        REQUIRE(points[0].y == Approx(3.4).epsilon(EPSILON));
+    }
+
+    {
+        std::stringstream stream;
+        stream << "x\ty" << std::endl;
+        stream << "1.2\t3.4" << std::endl;
+        stream << "0.1\t0.2" << std::endl;
+        std::vector<Point2f> points = EntityParsing::parsePoints(stream,'\t');
+        REQUIRE(points.size() == 2);
+        REQUIRE(points[0].x == Approx(1.2).epsilon(EPSILON));
+        REQUIRE(points[0].y == Approx(3.4).epsilon(EPSILON));
+        REQUIRE(points[1].x == Approx(0.1).epsilon(EPSILON));
+        REQUIRE(points[1].y == Approx(0.2).epsilon(EPSILON));
+    }
+}
 TEST_CASE("Tests for split function", "")
 {
     {
