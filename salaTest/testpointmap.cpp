@@ -197,6 +197,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region from origin to positive x, positive y quadrant")
     {
+        spacing = 0.5;
         bottomLeft.x = 0;
         bottomLeft.y = 0;
         topRight.x = 1;
@@ -205,6 +206,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region away from origin to positive x, positive y quadrant")
     {
+        spacing = 0.5;
         bottomLeft.x = 1;
         bottomLeft.y = 1;
         topRight.x = 2;
@@ -213,6 +215,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region from origin to negative x, negative y quadrant")
     {
+        spacing = 0.5;
         bottomLeft.x = -1;
         bottomLeft.y = -1;
         topRight.x = 0;
@@ -221,6 +224,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region in all quadrants")
     {
+        spacing = 0.5;
         bottomLeft.x = -1;
         bottomLeft.y = -1;
         topRight.x = 1;
@@ -229,6 +233,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region in positive x, positive y quadrant, non-rectangular")
     {
+        spacing = 0.5;
         bottomLeft.x = 1;
         bottomLeft.y = 2;
         topRight.x = 3;
@@ -237,6 +242,43 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     SECTION ("Region in positive x, positive y quadrant, floating-point limits")
     {
+        spacing = 0.5;
+        bottomLeft.x = 1.1;
+        bottomLeft.y = 2.2;
+        topRight.x = 3.3;
+        topRight.y = 4.4;
+    }
+
+    SECTION ("Region in positive x, positive y quadrant, floating-point limits")
+    {
+        spacing = 0.5;
+        bottomLeft.x = 0.1;
+        bottomLeft.y = 0.2;
+        topRight.x = 0.3;
+        topRight.y = 0.4;
+    }
+
+    SECTION ("Region in negative x, negative y quadrant, floating-point limits")
+    {
+        spacing = 0.5;
+        bottomLeft.x = -0.4;
+        bottomLeft.y = -0.3;
+        topRight.x = -0.2;
+        topRight.y = -0.1;
+    }
+
+    SECTION ("Region in all quadrants, floating-point limits")
+    {
+        spacing = 0.5;
+        bottomLeft.x = -1.1;
+        bottomLeft.y = -2.2;
+        topRight.x = 3.3;
+        topRight.y = 4.4;
+    }
+
+    SECTION ("Region in all quadrants, floating-point limits, smaller spacing")
+    {
+        spacing = 0.25;
         bottomLeft.x = 1.1;
         bottomLeft.y = 2.2;
         topRight.x = 3.3;
@@ -249,13 +291,11 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
     bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
     bool gridIsSet = pointMap.setGrid(spacing, offset);
 
-    int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing));
-    int bottomLeftPixelIndexY = int(floor(bottomLeft.y / spacing));
+    int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing - 0.5)) + 1;
+    int bottomLeftPixelIndexY = int(floor(bottomLeft.y / spacing - 0.5)) + 1;
 
-    int topRightPixelIndexX = int(floor(topRight.x / spacing));
-    int topRightPixelIndexY = int(floor(topRight.y / spacing));
-
-    int fill_type = 0; // = QDepthmapView::FULLFILL
+    int topRightPixelIndexX = int(floor(topRight.x / spacing - 0.5)) + 1;
+    int topRightPixelIndexY = int(floor(topRight.y / spacing - 0.5)) + 1;
 
     int numCellsX = topRightPixelIndexX - bottomLeftPixelIndexX + 1;
     int numCellsY = topRightPixelIndexY - bottomLeftPixelIndexY + 1;
@@ -267,12 +307,15 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
     Point2f gridBottomLeft(bottomLeftPixelIndexX * spacing - 0.5 * spacing,
                            bottomLeftPixelIndexY * spacing - 0.5 * spacing);
 
-    // check if the centre of the bottom-left pixel is as expected
+    // check if the bottom-left corner of the bottom-left pixel is as expected
     REQUIRE(pointMap.getRegion().bottom_left.x == Approx(gridBottomLeft.x).epsilon(EPSILON));
     REQUIRE(pointMap.getRegion().bottom_left.y == Approx(gridBottomLeft.y).epsilon(EPSILON));
 
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(numCellsX * 0.5) + 0.5),
                       gridBottomLeft.y + spacing * (floor(numCellsY * 0.5) + 0.5));
+
+    int fill_type = 0; // = QDepthmapView::FULLFILL
+
     bool pointsMade = pointMap.makePoints(midPoint, fill_type);
 
     // check if the grid is filled
