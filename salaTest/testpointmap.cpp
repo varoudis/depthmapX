@@ -245,10 +245,9 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
     spacePixel->m_region = QtRegion(bottomLeft, topRight);
-    PointMap::PointMap pointMap("Test PointMap");
+    PointMap pointMap("Test PointMap");
     bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
     bool gridIsSet = pointMap.setGrid(spacing, offset);
-
 
     int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing));
     int bottomLeftPixelIndexY = int(floor(bottomLeft.y / spacing));
