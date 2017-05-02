@@ -6,7 +6,8 @@ CONFIG -= qt
 INCLUDEPATH += ../ThirdParty/Catch
 
 SOURCES += main.cpp \
-    testentityparsing.cpp
+    testentityparsing.cpp \
+    testpointmap.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
