@@ -9,6 +9,7 @@ SOURCES += main.cpp \
     runmethods.cpp \
     radiusconverter.cpp \
     vgaparser.cpp \
+    linkparser.cpp \
     performancewriter.cpp
 
 HEADERS += \
@@ -18,6 +19,7 @@ HEADERS += \
     exceptions.h \
     simpletimer.h \
     vgaparser.h \
+    linkparser.h \
     performancewriter.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release

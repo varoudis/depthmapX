@@ -1,5 +1,7 @@
 #include "performancewriter.h"
 #include <sstream>
+#include <fstream>
+#include <algorithm>
 
 
 PerformanceWriter::PerformanceWriter(const std::string &filename) : _filename(filename)
@@ -7,7 +9,7 @@ PerformanceWriter::PerformanceWriter(const std::string &filename) : _filename(fi
 }
 
 
-void PerformanceWriter::AddData(const string &message, double time)
+void PerformanceWriter::AddData(const std::string &message, double time)
 {
     std::stringstream ss;
     ss << "\"" << message << ",\"" << time << "\n";
@@ -20,10 +22,7 @@ void PerformanceWriter::Write() const
     {
         std::ofstream outfile(_filename);
         outfile << "\"action\",\"duration\"\n";
-        foreach(line, _data)
-        {
-            outfile << line;
-        }
-        outfile << std::flush();
+        std::for_each(_data.begin(), _data.end(), [&outfile](auto line)mutable ->void{(outfile) << line;});
+        outfile << std::flush;
     }
 }

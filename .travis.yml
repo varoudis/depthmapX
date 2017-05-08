@@ -14,5 +14,5 @@ script:
   - mkdir build && cd build
   - /opt/qt57/bin/qmake ../depthmapX.pro
   - make
-  - ./cliTest/cliTest && ./GuiUnitTest/GuiUnitTest
+  - ./cliTest/cliTest && ./GuiUnitTest/GuiUnitTest && ./salaTest/salaTest
   - cd ../RegressionTest && python3.5 test_main.py && python3.5 RegressionTestRunner.py

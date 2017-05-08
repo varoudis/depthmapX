@@ -17,6 +17,13 @@ def buildSubCmd( subType, subConfig ):
         if "radius" in subConfig:
             scmd.radius = subConfig["radius"]
         return scmd;
+    elif subType == "Link":
+        scmd = cmdlinewrapper.LinkCmd()
+        if "linksFile" in subConfig:
+            scmd.linksFile = subConfig["linksFile"]
+        if "manualLinks" in subConfig:
+            scmd.manualLinks = subConfig["manualLinks"]
+        return scmd;
     else:
         raise ConfigError("Unknown sub commandline config " + subType)
     
