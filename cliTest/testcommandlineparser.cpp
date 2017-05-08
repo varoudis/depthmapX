@@ -71,6 +71,11 @@ TEST_CASE("Invalid Parser","Constructor"){
 
 TEST_CASE("Valid Parser","CheckValues"){
     {
+        ArgumentHolder ah{"prog", "-m", "LINK", "-f", "inputfile.graph", "-o", "outputfile.graph", "-lnk", "1.2,3.4,5.6,7.8"};
+        CommandLineParser cmdP(ah.argc(), ah.argv());
+        REQUIRE(cmdP.isValid());
+    }
+    {
         ArgumentHolder ah{"prog", "-m", "VGA", "-f", "inputfile.graph", "-o", "outputfile.graph"};
         CommandLineParser cmdP(ah.argc(), ah.argv());
         REQUIRE(cmdP.isValid());

@@ -11,7 +11,7 @@ private:
     std::string _filename;
 public:
     PerformanceWriter(const std::string &filename);
-    void AddData( const string &message, double time);
+    void AddData( const std::string &message, double time);
     void Write() const;
 };
 
