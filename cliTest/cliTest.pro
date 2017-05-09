@@ -16,7 +16,9 @@ SOURCES += main.cpp \
     testlinkparser.cpp \
     ../depthmapXcli/linkparser.cpp \
     testargumentholder.cpp \
-    testperformancewriter.cpp
+    ../depthmapXcli/performancewriter.cpp \
+    testperformancewriter.cpp \
+    testselfcleaningfile.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \
@@ -24,7 +26,9 @@ HEADERS += \
     ../depthmapXcli/simpletimer.h \
     ../depthmapXcli/vgaparser.h \
     ../depthmapXcli/linkparser.h \
-    argumentholder.h
+    ../depthmapXcli/permformancewriter.h \
+    argumentholder.h \
+    selfcleaningfile.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
