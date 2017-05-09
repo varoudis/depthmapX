@@ -22,7 +22,7 @@ void PerformanceWriter::Write() const
     {
         std::ofstream outfile(_filename);
         outfile << "\"action\",\"duration\"\n";
-        std::for_each(_data.begin(), _data.end(), [&outfile](auto line)mutable ->void{(outfile) << line;});
+        std::for_each(_data.begin(), _data.end(), [&outfile](const std::string& line)mutable ->void{(outfile) << line;});
         outfile << std::flush;
     }
 }

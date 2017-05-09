@@ -18,6 +18,28 @@
 #include "selfcleaningfile.h"
 #include <fstream>
 
+namespace
+{
+    bool fileExists(const std::string &filename)
+    {
+        std::ifstream f(filename.c_str());
+        return f.good();
+    }
+
+    bool writeToFile(const std::string &filename, const std::string &content)
+    {
+        std::ofstream f(filename.c_str());
+        if (!f.good())
+        {
+            return false;
+        }
+        f << content;
+        f.flush();
+        return true;
+    }
+}
+
+
 TEST_CASE("TestSelfCleaningFile", "Check it is deleted, doesn't fail when not present")
 {
     {
@@ -38,23 +60,3 @@ TEST_CASE("TestSelfCleaningFile", "Check it is deleted, doesn't fail when not pr
 
 }
 
-namespace
-{
-    bool fileExists(const::string &filename)
-    {
-        ifstream f(filename);
-        return f.good();
-    }
-
-    bool writeToFile(const std::string &filename, const std::string content)
-    {
-        ofstream f(filename);
-        if (f.good())
-        {
-            return false;
-        }
-        f << content;
-        f.flush;
-        return true;
-    }
-}
