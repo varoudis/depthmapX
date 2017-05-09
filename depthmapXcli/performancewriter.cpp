@@ -9,10 +9,10 @@ PerformanceWriter::PerformanceWriter(const std::string &filename) : _filename(fi
 }
 
 
-void PerformanceWriter::AddData(const std::string &message, double time)
+void PerformanceWriter::AddData(const std::string &message, double timeInMilliseconds)
 {
     std::stringstream ss;
-    ss << "\"" << message << ",\"" << time << "\n";
+    ss << "\"" << message << "\"," << timeInMilliseconds << "\n";
     _data.push_back(ss.str());
 }
 
