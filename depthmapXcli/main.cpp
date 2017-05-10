@@ -16,6 +16,7 @@
 #include <iostream>
 #include "commandlineparser.h"
 #include "runmethods.h"
+#include "performancewriter.h"
 
 using namespace std;
 
@@ -29,15 +30,18 @@ int main(int argc, char *argv[])
             return 0;
         }
 
+        PerformanceWriter perfWriter(args.getTimingFile());
+
         if ( args.getMode() == DepthmapMode::VGA_ANALYSIS)
         {
             RadiusConverter converter;
-            dm_runmethods::runVga(args, converter);
+            dm_runmethods::runVga(args, converter, perfWriter);
         }
         else if ( args.getMode() == DepthmapMode::LINK_GRAPH)
         {
-            dm_runmethods::linkGraph(args);
+            dm_runmethods::linkGraph(args, perfWriter);
         }
+        perfWriter.write();
 
     }
     catch( std::exception &e)

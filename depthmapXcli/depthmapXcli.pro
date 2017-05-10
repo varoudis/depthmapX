@@ -20,7 +20,8 @@ HEADERS += \
     simpletimer.h \
     vgaparser.h \
     linkparser.h \
-    performancewriter.h
+    performancewriter.h \
+    performancesink.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug

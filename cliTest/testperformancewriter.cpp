@@ -8,10 +8,10 @@ TEST_CASE("TestPerformanceWriting", "Simple test case")
     SelfCleaningFile scf("timertest.csv");
     PerformanceWriter writer(scf.Filename());
 
-    writer.AddData("test1", 100.0);
-    writer.AddData("test2", 200.0 );
+    writer.addData("test1", 100.0);
+    writer.addData("test2", 200.0 );
 
-    writer.Write();
+    writer.write();
 
     std::ifstream f(scf.Filename());
     REQUIRE(f.good());
@@ -32,10 +32,10 @@ TEST_CASE("TestPerformanceNotWriting", "No filename no writing")
     SelfCleaningFile scf("timertest.csv");
     PerformanceWriter writer("");
 
-    writer.AddData("test1", 100.0);
-    writer.AddData("test2", 200.0 );
+    writer.addData("test1", 100.0);
+    writer.addData("test2", 200.0 );
 
-    writer.Write();
+    writer.write();
 
     std::ifstream f(scf.Filename());
     REQUIRE_FALSE(f.good());
