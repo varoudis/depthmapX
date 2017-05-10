@@ -26,10 +26,19 @@
 namespace dm_runmethods
 {
 
-    std::unique_ptr<MetaGraph> loadGraph(const pstring& filename) {
+
+#define CONCAT_(x,y) x##y
+#define CONCAT(x,y) CONCAT_(x,y)
+#define DO_TIMED(message, code)\
+    SimpleTimer CONCAT(t_, __LINE__); \
+    code; \
+    perfWriter.addData(message, CONCAT(t_, __LINE__).getTimeInSeconds());
+
+
+    std::unique_ptr<MetaGraph> loadGraph(const pstring& filename, IPerformanceSink &perfWriter) {
         std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
-        std::cout << "Loading graph " << filename << std::flush; 
-        auto result = mgraph->read(filename);
+        std::cout << "Loading graph " << filename << std::flush;
+        DO_TIMED( "Load graph file", auto result = mgraph->read(filename);)
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
@@ -40,24 +49,25 @@ namespace dm_runmethods
         return mgraph;
     }
 
-    void linkGraph(const CommandLineParser &cmdP)
+    void linkGraph(const CommandLineParser &cmdP, IPerformanceSink &perfWriter)
     {
-        auto mgraph = loadGraph(cmdP.getFileName().c_str());
+        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
+        SimpleTimer t;
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
         vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
-
         for (size_t i = 0; i < newLinks.size(); i++)
         {
             PixelRefPair link = newLinks.at(i);
             currentMap.mergePixels(link.a,link.b);
         }
-        mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+        perfWriter.addData("Linking graph", t.getTimeInSeconds());
+        DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
 
-    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
+    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter, IPerformanceSink &perfWriter)
     {
-        auto mgraph = loadGraph(cmdP.getFileName().c_str());
+        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
@@ -87,11 +97,10 @@ namespace dm_runmethods
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");
         }
         cout << " ok\nAnalysing graph..." << std::flush;
-        SimpleTimer timer;
-        mgraph->analyseGraph(comm.get(), *options, cmdP.simpleMode() );
-        std::cout << " ok\nAnalysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
-        std::cout << "Writing out result..." << std::flush;
-        mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+
+        DO_TIMED("Run VGA", mgraph->analyseGraph(comm.get(), *options, cmdP.simpleMode() ))
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
         std::cout << " ok" << std::endl;
     }
 

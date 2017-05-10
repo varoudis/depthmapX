@@ -18,9 +18,10 @@
 #include <string>
 #include "commandlineparser.h"
 #include "radiusconverter.h"
+#include "performancesink.h"
 
 namespace dm_runmethods{
-    void linkGraph(const CommandLineParser &cmdP);
-    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter);
+    void linkGraph(const CommandLineParser &cmdP, IPerformanceSink &perfWriter );
+    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
 }
 #endif // RUNMETHODS_H

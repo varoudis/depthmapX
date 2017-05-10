@@ -12,23 +12,14 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#ifndef PERFORMANCEWRITER_H
-#define PERFORMANCEWRITER_H
 
-#include "performancesink.h"
-#include <vector>
+#pragma once
 #include <string>
 
-
-class PerformanceWriter : public IPerformanceSink
+//Interface for performance writers
+class IPerformanceSink
 {
-private:
-    std::vector<std::string> _data;
-    std::string _filename;
 public:
-    PerformanceWriter(const std::string &filename);
-    void addData( const std::string &message, double timeInSeconds);
-    void write() const;
+    virtual void addData(const std::string &message, double timeInSeconds) = 0;
+    virtual ~IPerformanceSink(){}
 };
-
-#endif // PERFORMANCEWRITER_H
