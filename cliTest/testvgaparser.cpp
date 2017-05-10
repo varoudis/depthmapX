@@ -89,5 +89,11 @@ TEST_CASE("VGA args valid", "valid")
         REQUIRE(cmdP.getRadius() == "4");
     }
 
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "VGA", "-vm", "thruvision"};
+        VgaParser cmdP(ah.argc(), ah.argv());
+        REQUIRE(cmdP.getVgaMode() == VgaParser::VgaMode::THRU_VISION);
+    }
+
 
 }

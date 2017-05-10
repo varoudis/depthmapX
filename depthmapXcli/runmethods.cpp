@@ -93,6 +93,10 @@ namespace dm_runmethods
                 break;
             case VgaParser::VgaMode::ISOVIST:
                 options->output_type = Options::OUTPUT_ISOVIST;
+                break;
+            case VgaParser::VgaMode::THRU_VISION:
+                options->output_type = Options::OUTPUT_THRU_VISION;
+                break;
             default:
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");
         }

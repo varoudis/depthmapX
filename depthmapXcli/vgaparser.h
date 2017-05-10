@@ -28,7 +28,8 @@ public:
         ISOVIST,
         VISBILITY,
         METRIC,
-        ANGULAR
+        ANGULAR,
+        THRU_VISION
     };
 
     // vga options

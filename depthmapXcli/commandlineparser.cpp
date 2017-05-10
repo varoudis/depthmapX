@@ -33,7 +33,7 @@ void CommandLineParser::printHelp(){
               << "-lnk <single link coordinates> provided in csv (x1,y1,x2,y2) for example \"0.1,0.2,0.2,0.4\" "
               << "to create a link from 0.1,0.2 to 0.2,0.4. Provide multiple times for multiple links\n"
               << "Mode options for VGA:\n"
-              << "-vm <vga mode> one of isovist, visiblity, metric, angular\n"
+              << "-vm <vga mode> one of isovist, visiblity, metric, angular, thruvision\n"
               << "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"
               << "-vl turn on local measures for visibility\n"
               << "-vr set visibility radius\n"
