@@ -57,6 +57,10 @@ VgaParser::VgaParser(size_t argc, char *argv[]) : _vgaMode(VgaMode::NONE), _glob
             {
                 _vgaMode = VgaMode::ANGULAR;
             }
+            else if ( strcmp(argv[i], "thruvision") == 0)
+            {
+                _vgaMode = VgaMode::THRU_VISION;
+            }
             else
             {
                 throw CommandLineException(std::string("Invalid VGA mode: ") + argv[i]);
