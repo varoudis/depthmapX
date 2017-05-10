@@ -33,6 +33,30 @@
                     "localMeasures": "1"
                 }
             }
+        },
+        "visibility_global_3": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "subcmds": {
+                "Visibility": {
+                    "visibilityMode": "visibility",
+                    "globalMeasures": "1",
+                    "radius": "3"
+                }
+            }
+        },
+        "visibility_local": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "subcmds": {
+                "Visibility": {
+                    "visibilityMode": "visibility",
+                    "globalMeasures": "1",
+                    "radius": "n"
+                }
+            }
         }
     }
 }
