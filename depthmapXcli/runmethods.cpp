@@ -26,10 +26,10 @@
 namespace dm_runmethods
 {
 
-    MetaGraph loadGraph(const pstring& filename) {
-        MetaGraph mgraph;
+    std::unique_ptr<MetaGraph> loadGraph(const pstring& filename) {
+        std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
         std::cout << "Loading graph " << filename << std::flush; 
-        auto result = mgraph.read(filename);
+        auto result = mgraph->read(filename);
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
@@ -42,8 +42,8 @@ namespace dm_runmethods
 
     void linkGraph(const CommandLineParser &cmdP)
     {
-        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
-        PointMap& currentMap = mgraph.getDisplayedPointMap();
+        auto mgraph = loadGraph(cmdP.getFileName().c_str());
+        PointMap& currentMap = mgraph->getDisplayedPointMap();
 
         vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
 
@@ -52,12 +52,12 @@ namespace dm_runmethods
             PixelRefPair link = newLinks.at(i);
             currentMap.mergePixels(link.a,link.b);
         }
-        mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+        mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
     }
 
     void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter)
     {
-        MetaGraph mgraph = loadGraph(cmdP.getFileName().c_str());
+        auto mgraph = loadGraph(cmdP.getFileName().c_str());
 
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
@@ -88,10 +88,10 @@ namespace dm_runmethods
         }
         cout << " ok\nAnalysing graph..." << std::flush;
         SimpleTimer timer;
-        mgraph.analyseGraph(comm.get(), *options, cmdP.simpleMode() );
+        mgraph->analyseGraph(comm.get(), *options, cmdP.simpleMode() );
         std::cout << " ok\nAnalysis took " << timer.getTimeInSeconds() << " seconds." << std::endl;
         std::cout << "Writing out result..." << std::flush;
-        mgraph.write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
+        mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);
         std::cout << " ok" << std::endl;
     }
 
