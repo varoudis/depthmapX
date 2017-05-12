@@ -14,6 +14,8 @@ class TestRegressionTestRunner(unittest.TestCase):
             os.makedirs(workingdir)
         with open(os.path.join(workingdir, "outfile.graph"), "w") as f:
             f.write("123")
+        with open(os.path.join(workingdir, "runtimes.csv"), "w") as f:
+            f.write("action,duration\n")
         return (True, "")    
         
 
