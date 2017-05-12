@@ -13,19 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RUNMETHODS_H
-#define RUNMETHODS_H
-#include <string>
-#include "commandlineparser.h"
-#include "radiusconverter.h"
+#pragma once
+
+// Interface to encapsulate handling command line and invoking the respective
+// depthmapX mode
+
 #include "performancesink.h"
-#include "vgaparser.h"
-#include <vector>
+#include "commandlineparser.h"
 
-class Line;
-
-namespace dm_runmethods{
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter );
-    void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
-}
-#endif // RUNMETHODS_H
+class IModeParser
+{
+public:
+    virtual std::string getModeName() const = 0;
+    virtual std::string getHelp() const = 0;
+    virtual void parse( int argc, char **argv) = 0;
+    virtual void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const = 0;
+    virtual ~IModeParser(){}
+};

@@ -15,6 +15,7 @@
 
 #include "catch.hpp"
 #include "../depthmapXcli/commandlineparser.h"
+#include "../depthmapXcli/imodeparser.h"
 #include <cstring>
 #include "argumentholder.h"
 
@@ -87,6 +88,7 @@ TEST_CASE("Valid Parser","CheckValues"){
         REQUIRE(cmdP.isValid());
         REQUIRE_FALSE(cmdP.simpleMode());
         REQUIRE(cmdP.getTimingFile().empty());
+        REQUIRE(cmdP.modeOptions().getModeName() == "VGA");
     }
     {
         ArgumentHolder ah{"prog", "-m", "VGA", "-f", "inputfile.graph", "-o", "outputfile.graph", "-s", "-t", "timings.csv"};

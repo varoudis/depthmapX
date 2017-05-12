@@ -18,7 +18,8 @@ SOURCES += main.cpp \
     testargumentholder.cpp \
     ../depthmapXcli/performancewriter.cpp \
     testperformancewriter.cpp \
-    testselfcleaningfile.cpp
+    testselfcleaningfile.cpp \
+    ../depthmapXcli/runmethods.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \

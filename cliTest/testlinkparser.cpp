@@ -21,32 +21,38 @@ TEST_CASE("LINK args invalid", "")
 {
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf requires an argument"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("-lf requires an argument"));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lnk requires an argument"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("-lnk requires an argument"));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf", "linksfile1", "-lf", "linksfile2"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf can only be used once at the moment"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("-lf can only be used once at the moment"));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lf", "linksfile1", "-lnk", "0,0,0,0"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("-lf can not be used in conjunction with -lnk"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("-lf can not be used in conjunction with -lnk"));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "LaLaLaLa"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
     }
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2;3.4;5.6;7.8"};
-        REQUIRE_THROWS_WITH(LinkParser(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
+        LinkParser p;
+        REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
     }
 }
 
@@ -58,7 +64,8 @@ TEST_CASE("LINK args valid", "valid")
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8"};
-        LinkParser cmdP(ah.argc(), ah.argv());
+        LinkParser cmdP;
+        cmdP.parse(ah.argc(), ah.argv());
         REQUIRE(cmdP.getMergeLines().size() == 1);
         REQUIRE(cmdP.getMergeLines().at(0).start().x == Approx(1.2).epsilon(EPSILON));
         REQUIRE(cmdP.getMergeLines().at(0).start().y == Approx(3.4).epsilon(EPSILON));
@@ -68,7 +75,8 @@ TEST_CASE("LINK args valid", "valid")
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8", "-lnk", "0.1,0.2,0.3,0.4"};
-        LinkParser cmdP(ah.argc(), ah.argv());
+        LinkParser cmdP;
+        cmdP.parse(ah.argc(), ah.argv());
         REQUIRE(cmdP.getMergeLines().size() == 2);
         REQUIRE(cmdP.getMergeLines().at(0).start().x == Approx(1.2).epsilon(EPSILON));
         REQUIRE(cmdP.getMergeLines().at(0).start().y == Approx(3.4).epsilon(EPSILON));

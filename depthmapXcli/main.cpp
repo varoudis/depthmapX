@@ -32,15 +32,7 @@ int main(int argc, char *argv[])
 
         PerformanceWriter perfWriter(args.getTimingFile());
 
-        if ( args.getMode() == DepthmapMode::VGA_ANALYSIS)
-        {
-            RadiusConverter converter;
-            dm_runmethods::runVga(args, converter, perfWriter);
-        }
-        else if ( args.getMode() == DepthmapMode::LINK_GRAPH)
-        {
-            dm_runmethods::linkGraph(args, perfWriter);
-        }
+        args.run(perfWriter);
         perfWriter.write();
 
     }
