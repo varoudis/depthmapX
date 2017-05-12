@@ -57,6 +57,26 @@
                     "radius": "n"
                 }
             }
+        },
+        "vga_isovist": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "subcmds": {
+                "Visibility": {
+                    "visibilityMode": "isovist"
+                }
+            }
+        },
+        "vga_thru_vision": {
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "subcmds": {
+                "Visibility": {
+                    "visibilityMode": "thruvision"
+                }
+            }
         }
     }
 }
