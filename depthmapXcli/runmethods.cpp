@@ -49,13 +49,13 @@ namespace dm_runmethods
         return mgraph;
     }
 
-    void linkGraph(const CommandLineParser &cmdP, IPerformanceSink &perfWriter)
+    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter)
     {
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
         SimpleTimer t;
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
-        vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
+        vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(mergeLines, currentMap);
         for (size_t i = 0; i < newLinks.size(); i++)
         {
             PixelRefPair link = newLinks.at(i);
@@ -65,7 +65,7 @@ namespace dm_runmethods
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
 
-    void runVga(const CommandLineParser &cmdP, const IRadiusConverter &converter, IPerformanceSink &perfWriter)
+    void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter)
     {
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
@@ -73,20 +73,20 @@ namespace dm_runmethods
         std::unique_ptr<Options> options(new Options());
 
         cout << "Getting options..." << std::flush;
-        switch(cmdP.vgaOptions().getVgaMode())
+        switch(vgaP.getVgaMode())
         {
             case VgaParser::VgaMode::VISBILITY:
                 options->output_type = Options::OUTPUT_VISUAL;
-                options->local = cmdP.vgaOptions().localMeasures();
-                options->global = cmdP.vgaOptions().globalMeasures();
+                options->local = vgaP.localMeasures();
+                options->global = vgaP.globalMeasures();
                 if (options->global )
                 {
-                    options->radius = converter.ConvertForVisibility(cmdP.vgaOptions().getRadius());
+                    options->radius = converter.ConvertForVisibility(vgaP.getRadius());
                 }
                 break;
             case VgaParser::VgaMode::METRIC:
                 options->output_type = Options::OUTPUT_METRIC;
-                options->radius = converter.ConvertForMetric(cmdP.vgaOptions().getRadius());
+                options->radius = converter.ConvertForMetric(vgaP.getRadius());
                 break;
             case VgaParser::VgaMode::ANGULAR:
                 options->output_type = Options::OUTPUT_ANGULAR;

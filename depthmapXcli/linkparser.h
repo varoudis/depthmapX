@@ -17,18 +17,20 @@
 #define LINKPARSER_H
 
 #include "salalib/mgraph.h"
+#include "imodeparser.h"
+#include "commandlineparser.h"
 #include <string>
 #include <vector>
 
-class LinkParser
+class LinkParser : IModeParser
 {
 public:
-    static const std::string getModeName()
+    virtual std::string getModeName() const
     {
         return "LINK";
     }
 
-    static const std::string getHelp()
+    virtual std::string getHelp() const
     {
         return  "Mode options for LINK:\n"\
                 "-lf <links file>\n"\
@@ -38,11 +40,11 @@ public:
     }
 
 public:
-    LinkParser(size_t argc, char *argv[]);
+    virtual void parse(int argc, char *argv[]);
+    virtual void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const;
 
     //link options
     const vector<Line> & getMergeLines() const { return _mergeLines; }
-
 private:
     vector<Line> _mergeLines;
 };

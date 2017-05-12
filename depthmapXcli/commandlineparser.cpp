@@ -18,8 +18,24 @@
 #include <iostream>
 //#include <sstream>
 #include <cstring>
+#include "vgaparser.h"
+#include "linkparser.h"
+#include <algorithm>
 
 using namespace depthmapX;
+
+std::vector<std::unique_ptr<IModeParser> > populateParsers()
+{
+    std::vector<std::unique_ptr<IModeParser> > result;
+    result.push_back(std::move(std::unique_ptr<IModeParser>(new VgaParser)));
+    result.push_back(std::move(std::unique_ptr<IModeParser>(new LinkParser)));
+    return result;
+}
+
+static std::vector<std::unique_ptr<IModeParser> > AvailableParsers = populateParsers();
+
+
+
 
 void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
@@ -27,18 +43,16 @@ void CommandLineParser::printHelp(){
               << "-s enables simple mode\n"
               << "-t <times.csv> enables output of runtimes as csv file\n"
 
-              << "Possible modes are:\n  "
-              << VgaParser::getModeName() << "\n  "
-              << LinkParser::getModeName() << "\n"
-              << VgaParser::getHelp()
-              << LinkParser::getHelp()
-              << std::flush;
+              << "Possible modes are:\n  ";
+              std::for_each(AvailableParsers.begin(), AvailableParsers.end(), [](auto &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
+              std::for_each(AvailableParsers.begin(), AvailableParsers.end(), [](auto &p)->void{ std::cout << p->getHelp(); });
+              std::cout << std::flush;
 }
 
 
 
 CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
-    : _mode(DepthmapMode::NONE), _simpleMode(false), _linkParser(nullptr), _vgaParser(nullptr)
+    :  _simpleMode(false), _modeParser(0)
 {
     if (argc <= 1)
     {
@@ -54,7 +68,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
         }
         else if ( strcmp ("-m", argv[i]) == 0)
         {
-            if ( _mode != DepthmapMode::NONE )
+            if ( _modeParser)
             {
                 throw CommandLineException("-m can only be used once");
             }
@@ -62,15 +76,18 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
             {
                 throw CommandLineException("-m requires an argument");
             }
-            if ( VgaParser::getModeName() == argv[i] )
+
+            for (auto iter = AvailableParsers.begin(), end = AvailableParsers.end();
+                 iter != end; ++iter )
             {
-                _mode = DepthmapMode::VGA_ANALYSIS;
+                if ((*iter)->getModeName() == argv[i])
+                {
+                    _modeParser = iter->get();
+                    break;
+                }
             }
-            else if ( LinkParser::getModeName() == argv[i] )
-            {
-                _mode = DepthmapMode::LINK_GRAPH;
-            }
-            else
+
+            if (!_modeParser)
             {
                 throw CommandLineException(std::string("Invalid mode: ") + argv[i]);
             }
@@ -106,7 +123,7 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
         ++i;
     }
 
-    if (_mode == DepthmapMode::NONE)
+    if (!_modeParser)
     {
         throw CommandLineException("-m for mode is required");
     }
@@ -118,42 +135,15 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
     {
         throw CommandLineException("-o for output file is required");
     }
-
-    if (_mode == DepthmapMode::VGA_ANALYSIS)
-    {
-        _vgaParser = new VgaParser(argc, argv);
-    }
-    if (_mode == DepthmapMode::LINK_GRAPH)
-    {
-        _linkParser = new LinkParser(argc, argv);
-    }
+    _modeParser->parse(argc, argv);
 }
 
-const VgaParser& CommandLineParser::vgaOptions() const
+void CommandLineParser::run(IPerformanceSink &perfWriter) const
 {
-    if ( _vgaParser == nullptr )
+    if (!_valid || !_modeParser)
     {
-        throw CommandLineException("VGA options are not available when mode is not VGA");
+        throw CommandLineException("Trying to run with invalid command line parameters");
     }
-    return *_vgaParser;
-}
-const LinkParser& CommandLineParser::linkOptions() const
-{
-    if ( _linkParser == nullptr )
-    {
-        throw CommandLineException("LINK options are not available when mode is not LINK");
-    }
-    return *_linkParser;
+    _modeParser->run(*this, perfWriter);
 }
 
-CommandLineParser::~CommandLineParser()
-{
-    if ( _vgaParser != nullptr)
-    {
-        delete _vgaParser;
-    }
-    if ( _linkParser != nullptr)
-    {
-        delete _linkParser;
-    }
-}

@@ -16,6 +16,8 @@
 #include "vgaparser.h"
 #include "exceptions.h"
 #include <cstring>
+#include "radiusconverter.h"
+#include "runmethods.h"
 
 using namespace depthmapX;
 
@@ -26,7 +28,10 @@ namespace {
 }
 
 
-VgaParser::VgaParser(size_t argc, char *argv[]) : _vgaMode(VgaMode::NONE), _globalMeasures(false), _localMeasures(false)
+VgaParser::VgaParser() : _vgaMode(VgaMode::NONE), _globalMeasures(false), _localMeasures(false)
+{}
+
+void VgaParser::parse(int argc, char *argv[])
 {
     for ( size_t i = 1; i < argc;  )
     {
@@ -109,5 +114,10 @@ VgaParser::VgaParser(size_t argc, char *argv[]) : _vgaMode(VgaMode::NONE), _glob
             throw CommandLineException("Metric vga requires a radius, use -vr <radius>");
         }
     }
+}
 
+void VgaParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
+{
+    RadiusConverter radiusConverter;
+    dm_runmethods::runVga(clp, *this, radiusConverter, perfWriter);
 }

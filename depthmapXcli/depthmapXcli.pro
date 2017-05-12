@@ -21,7 +21,8 @@ HEADERS += \
     vgaparser.h \
     linkparser.h \
     performancewriter.h \
-    performancesink.h
+    performancesink.h \
+    imodeparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
