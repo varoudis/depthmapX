@@ -34,6 +34,7 @@ class DepthmapRegressionRunner():
         cmd.mode = mode
         cmd.simpleMode = simpleMode
         cmd.modeLines = subcmds
+        cmd.timingFile = "runtimes.csv"
 
         baseDir = os.path.join(self.__workingDir, name + "_base")
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
