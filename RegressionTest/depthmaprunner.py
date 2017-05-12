@@ -2,6 +2,7 @@ import os.path
 import cmdlinewrapper
 import difflib
 import pprint
+import csv
 
 class DepthmapRunner():
     def __init__(self, runFunc, binary ):
@@ -21,20 +22,72 @@ def diffBinaryFiles(file1, file2):
     gen = difflib.diff_bytes(difflib.unified_diff, [content1], [content2])
     return not(list(gen))
 
+def checkPerformance(baseFile, testFile):
+    """ 
+    Check the performance of 2 depthmap runs against each other
+    This function expects the timing from a base and test run and  parses them
+    as CSV. For now, it expects the entries to be the same. It will return an
+    error message if
+    * one or both of the files are missing
+    * the number of lines or the labels don't match
+    * the test run is more than a second or 2% slower than the baseline
+      (whatever is greater)
+    """
+    if not os.path.exists(baseFile):
+        return "Base performance timing file {0} is missing".format(baseFile)
+    if not os.path.exists(testFile):
+        return "Test performance timing file {0} is missing".format(testFile)
+    with open(baseFile) as baseHandle, open(testFile) as testHandle:
+        baseReader = csv.DictReader(baseHandle)
+        testReader = csv.DictReader(testHandle)
+
+        baseDone = False
+        testDone = False
+        
+        while True:
+            try:
+                baseLine = next(baseReader)
+            except StopIteration:
+                baseDone = True
+
+            try:
+                testLine = next(testReader)
+            except StopIteration:
+                testDone = True
+
+            if baseDone and testDone:
+                return ""
+            if baseDone and not testDone:
+                return "baseline performance file {0} has fewer lines than the test one {1}".format(baseFile, testFile)
+            if testDone and not baseDone:
+                return "baseline performance file {0} has more lines than the test one {1}".format(baseFile, testFile)
+
+            if not baseLine["action"] == testLine["action"]:
+                return "performance line mismatch: base '{0}', test '{1}'".format(baseLine["action"], testLine["action"])
+
+            baseTime = float(baseLine["duration"])
+            testTime = float(testLine["duration"])
+
+            allowance = max(1.0, baseTime / 50.0 )
+            if testTime > baseTime + allowance:
+                return "Performance regression: {0} took {1}s instead of {2}s".format(baseLine["action"], testLine["duration"], baseLine["duration"])
+            
+        
+    
 class DepthmapRegressionRunner():
     def __init__(self, runFunc, baseBinary, testBinary, workingDir):
         self.__baseRunner = DepthmapRunner(runFunc, baseBinary)
         self.__testRunner = DepthmapRunner(runFunc, testBinary)
         self.__workingDir = workingDir
 
-    def runTestCase(self, name, infile, outfile, mode, simpleMode = False, subcmds = []):
+    def runTestCase(self, name, infile, outfile, mode, simpleMode = False, subcmds = [], timingFile = "runtimes.csv"):
         cmd = cmdlinewrapper.DepthmapCmd()
         cmd.infile = infile
         cmd.outfile = outfile
         cmd.mode = mode
         cmd.simpleMode = simpleMode
         cmd.modeLines = subcmds
-        cmd.timingFile = "runtimes.csv"
+        cmd.timingFile = timingFile
 
         baseDir = os.path.join(self.__workingDir, name + "_base")
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
@@ -64,6 +117,11 @@ class DepthmapRegressionRunner():
             message = "Test outputs differ"
             print (message)
             return (False, message)
+
+        message = checkPerformance( os.path.join(baseDir, timingFile), os.path.join(testDir, timingFile))
+        if message:
+            print(message)
+            return (False,message)
 
         return (True, "")
 
