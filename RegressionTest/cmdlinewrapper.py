@@ -10,6 +10,7 @@ class DepthmapCmd():
         self.simpleMode = False
         self.mode = None
         self.modeLines = []
+        self.timingFile = None
 
 
     def toCmdArray(self):
@@ -22,6 +23,9 @@ class DepthmapCmd():
         args = ["-f", self.infile, "-o", self.outfile, "-m", self.mode]
         if self.simpleMode:
             args.append("-s")
+
+        if self.timingFile:
+            args.extend(["-t", self.timingFile])
         
         for modeLine in self.modeLines:
             args.extend(modeLine.toCmdArray())
