@@ -25,18 +25,13 @@ void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
-              << "-t <times.csv> enables output of runtimes as csv file"
+              << "-t <times.csv> enables output of runtimes as csv file\n"
 
-              << "Possible modes are:\n  VGA\n  LINK\n"
-              << "Mode options for LINK:\n"
-              << "-lf <links file>\n"
-              << "-lnk <single link coordinates> provided in csv (x1,y1,x2,y2) for example \"0.1,0.2,0.2,0.4\" "
-              << "to create a link from 0.1,0.2 to 0.2,0.4. Provide multiple times for multiple links\n"
-              << "Mode options for VGA:\n"
-              << "-vm <vga mode> one of isovist, visiblity, metric, angular, thruvision\n"
-              << "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"
-              << "-vl turn on local measures for visibility\n"
-              << "-vr set visibility radius\n"
+              << "Possible modes are:\n  "
+              << VgaParser::getModeName() << "\n  "
+              << LinkParser::getModeName() << "\n"
+              << VgaParser::getHelp()
+              << LinkParser::getHelp()
               << std::flush;
 }
 
@@ -59,15 +54,19 @@ CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
         }
         else if ( strcmp ("-m", argv[i]) == 0)
         {
+            if ( _mode != DepthmapMode::NONE )
+            {
+                throw CommandLineException("-m can only be used once");
+            }
             if ( ++i >= argc || argv[i][0] == '-'  )
             {
                 throw CommandLineException("-m requires an argument");
             }
-            if ( strcmp(argv[i], "VGA") == 0 )
+            if ( VgaParser::getModeName() == argv[i] )
             {
                 _mode = DepthmapMode::VGA_ANALYSIS;
             }
-            else if ( strcmp(argv[i], "LINK") == 0 )
+            else if ( LinkParser::getModeName() == argv[i] )
             {
                 _mode = DepthmapMode::LINK_GRAPH;
             }
