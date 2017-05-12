@@ -21,6 +21,21 @@
 class VgaParser
 {
 public:
+    static const std::string getModeName()
+    {
+        return "VGA";
+    }
+
+    static const std::string getHelp()
+    {
+        return    "Mode options for VGA:\n"\
+                  "-vm <vga mode> one of isovist, visiblity, metric, angular, thruvision\n"\
+                  "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"\
+                  "-vl turn on local measures for visibility\n"\
+                  "-vr set visibility radius\n";
+    }
+
+public:
     VgaParser(size_t argc, char *argv[]);
 
     enum VgaMode{

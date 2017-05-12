@@ -23,6 +23,21 @@
 class LinkParser
 {
 public:
+    static const std::string getModeName()
+    {
+        return "LINK";
+    }
+
+    static const std::string getHelp()
+    {
+        return  "Mode options for LINK:\n"\
+                "-lf <links file>\n"\
+                "-lnk <single link coordinates> provided in csv (x1,y1,x2,y2) for example \"0.1,0.2,0.2,0.4\" "\
+                "to create a link from 0.1,0.2 to 0.2,0.4. Provide multiple times for multiple links\n";
+
+    }
+
+public:
     LinkParser(size_t argc, char *argv[]);
 
     //link options

@@ -59,6 +59,11 @@ TEST_CASE("Invalid Parser","Constructor"){
         REQUIRE_THROWS_WITH(CommandLineParser(ah.argc(), ah.argv()), Catch::Contains("-m for mode is required"));
     }
     {
+        ArgumentHolder ah{"prog", "-m", "VGA", "-m", "LINK","-f", "inputfile.graph"};
+        REQUIRE_THROWS_WITH(CommandLineParser(ah.argc(), ah.argv()), Catch::Contains("-m can only be used once"));
+    }
+
+    {
         ArgumentHolder ah{"prog", "-m", "VGA", "-o", "outputfile.graph"};
         REQUIRE_THROWS_WITH(CommandLineParser(ah.argc(), ah.argv()), Catch::Contains("-f for input file is required"));
     }
