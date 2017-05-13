@@ -24,8 +24,8 @@ namespace depthmapX {
         for (size_t i = 0; i < mergeLines.size(); i++)
         {
             const Line & mergeLine = mergeLines[i];
-            const PixelRef & a = currentMap.pixelate(mergeLine.start());
-            const PixelRef & b = currentMap.pixelate(mergeLine.end());
+            const PixelRef & a = currentMap.pixelate(mergeLine.start(), false);
+            const PixelRef & b = currentMap.pixelate(mergeLine.end(), false);
 
             // check in limits:
             if (!currentMap.includes(a) || !currentMap.getPoint(a).filled()
