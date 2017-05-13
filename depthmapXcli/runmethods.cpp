@@ -58,7 +58,7 @@ namespace dm_runmethods
         vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
         for (size_t i = 0; i < newLinks.size(); i++)
         {
-            PixelRefPair link = newLinks.at(i);
+            PixelRefPair link = newLinks[i];
             currentMap.mergePixels(link.a,link.b);
         }
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
