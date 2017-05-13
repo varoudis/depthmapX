@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     radiusconverter.cpp \
     vgaparser.cpp \
     linkparser.cpp \
-    performancewriter.cpp
+    performancewriter.cpp \
+    modeparserregistry.cpp
 
 HEADERS += \
     commandlineparser.h \
@@ -22,7 +23,8 @@ HEADERS += \
     linkparser.h \
     performancewriter.h \
     performancesink.h \
-    imodeparser.h
+    imodeparser.h \
+    modeparserregistry.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug

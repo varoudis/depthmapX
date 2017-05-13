@@ -15,27 +15,13 @@
 
 #include "commandlineparser.h"
 #include "exceptions.h"
+#include "modeparserregistry.h"
 #include <iostream>
-//#include <sstream>
 #include <cstring>
-#include "vgaparser.h"
-#include "linkparser.h"
 #include <algorithm>
 
 using namespace depthmapX;
-
-std::vector<std::unique_ptr<IModeParser> > populateParsers()
-{
-    std::vector<std::unique_ptr<IModeParser> > result;
-    result.push_back(std::move(std::unique_ptr<IModeParser>(new VgaParser)));
-    result.push_back(std::move(std::unique_ptr<IModeParser>(new LinkParser)));
-    return result;
-}
-
-static std::vector<std::unique_ptr<IModeParser> > AvailableParsers = populateParsers();
-
-
-
+static std::vector<std::unique_ptr<IModeParser> > AvailableParsers = ModeParserRegistry::populateParsers();
 
 void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
@@ -51,7 +37,7 @@ void CommandLineParser::printHelp(){
 
 
 
-CommandLineParser::CommandLineParser( size_t argc, char *argv[] )
+CommandLineParser::CommandLineParser(size_t argc, char *argv[])
     :  _simpleMode(false), _modeParser(0)
 {
     if (argc <= 1)
