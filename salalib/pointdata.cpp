@@ -3609,6 +3609,11 @@ void PointMap::mergeFromShapeMap(const ShapeMap& shapemap)
    }
 }
 
+bool PointMap::isPixelMerged(PixelRef a)
+{
+    return getPoint(a).m_merge.empty();
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 
 /*

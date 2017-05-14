@@ -283,6 +283,7 @@ public:
    bool unmergePoints();
    bool mergePixels(PixelRef a, PixelRef b);
    void mergeFromShapeMap(const ShapeMap& shapemap);
+   bool isPixelMerged(PixelRef a);
    //
    void outputSummary(ostream& myout, char delimiter = '\t');
    void outputMif( ostream& miffile, ostream& midfile );
