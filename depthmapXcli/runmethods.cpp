@@ -56,11 +56,8 @@ namespace dm_runmethods
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
         vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(cmdP.linkOptions().getMergeLines(), currentMap);
-        for (size_t i = 0; i < newLinks.size(); i++)
-        {
-            PixelRefPair link = newLinks[i];
-            currentMap.mergePixels(link.a,link.b);
-        }
+        depthmapX::mergePixelPairs(newLinks, currentMap);
+
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
