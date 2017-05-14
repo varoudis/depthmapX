@@ -18,7 +18,7 @@
 #include "salalib/linkutils.h"
 
 
-TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
+TEST_CASE("Test linking - fully filled grid (no geometry)", "")
 {
     double spacing = 0.5;
     Point2f offset(0,0); // seems that this is always set to 0,0
@@ -36,9 +36,10 @@ TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
                          gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
     pointMap.makePoints(midPoint, fill_type);
 
+    std::vector<Line> mergeLines;
+
+    SECTION ("Successful: bottom-left to top-right")
     {
-        // successful: bottom-left to top-right
-        std::vector<Line> mergeLines;
         mergeLines.push_back(Line(bottomLeft,topRight));
         std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
         REQUIRE(links.size() == 1);
@@ -46,11 +47,21 @@ TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
         REQUIRE(links[0].a.y == 0);
         REQUIRE(links[0].b.x == 4);
         REQUIRE(links[0].b.y == 8);
+
+        // make sure pixels are not already merged
+        REQUIRE(!pointMap.isPixelMerged(links[0].a));
+        REQUIRE(!pointMap.isPixelMerged(links[0].b));
+
+        // merge
+        depthmapX::mergePixelPairs(links, pointMap);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(links[0].a));
+        REQUIRE(pointMap.isPixelMerged(links[0].b));
     }
 
+    SECTION ("Successfull: bottom-left to top-right and bottom-right to top-left")
     {
-        // successfull: bottom-left to top-right and bottom-right to top-left
-        std::vector<Line> mergeLines;
         mergeLines.push_back(Line(bottomLeft,topRight));
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(bottomLeft.x, topRight.y);
@@ -65,29 +76,41 @@ TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
         REQUIRE(links[1].a.y == 8);
         REQUIRE(links[1].b.x == 4);
         REQUIRE(links[1].b.y == 0);
+
+        // make sure pixels are not already merged
+        REQUIRE(!pointMap.isPixelMerged(links[0].a));
+        REQUIRE(!pointMap.isPixelMerged(links[0].b));
+        REQUIRE(!pointMap.isPixelMerged(links[1].a));
+        REQUIRE(!pointMap.isPixelMerged(links[1].b));
+
+        // merge
+        depthmapX::mergePixelPairs(links, pointMap);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(links[0].a));
+        REQUIRE(pointMap.isPixelMerged(links[0].b));
+        REQUIRE(pointMap.isPixelMerged(links[1].a));
+        REQUIRE(pointMap.isPixelMerged(links[1].b));
     }
 
+    SECTION ("Failing: merge line start out of grid")
     {
-        // failing: merge line start out of grid
-        std::vector<Line> mergeLines;
         Point2f start(bottomLeft.x - spacing, bottomLeft.y - spacing);
         mergeLines.push_back(Line(start,topRight));
         REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
+    SECTION ("Failing: merge line end out of grid")
     {
-        // failing: merge line end out of grid
-        std::vector<Line> mergeLines;
         Point2f end(topRight.x + spacing, topRight.y + spacing);
         mergeLines.push_back(Line(bottomLeft,end));
         REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
+    SECTION ("Failing: second link start overlapping")
     {
-        // failing: second link start overlapping
-        std::vector<Line> mergeLines;
         mergeLines.push_back(Line(bottomLeft,topRight));
         Point2f start(bottomLeft.x, bottomLeft.y);
         Point2f end(topRight.x - 1, topRight.y);
@@ -96,9 +119,8 @@ TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
                             Catch::Contains("Overlapping link found"));
     }
 
+    SECTION("Failing: second link end overlapping")
     {
-        // failing: second link end overlapping
-        std::vector<Line> mergeLines;
         mergeLines.push_back(Line(bottomLeft,topRight));
         Point2f start(bottomLeft.x + 1, bottomLeft.y);
         Point2f end(topRight.x, topRight.y);
@@ -107,17 +129,42 @@ TEST_CASE("Test getLinksFromMergeLines - fully filled grid (no geometry)", "")
                             Catch::Contains("Overlapping link found"));
     }
 
+    SECTION("Failing: fully overlapping link (bottom-left to top-right)")
     {
-        // failing: fully overlapping link (bottom-left to top-right)
-        std::vector<Line> mergeLines;
         mergeLines.push_back(Line(bottomLeft,topRight));
         mergeLines.push_back(Line(bottomLeft,topRight));
         REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
                             Catch::Contains("Overlapping link found"));
     }
+
+    SECTION("Failing: link overlapping to previously merged")
+    {
+        mergeLines.push_back(Line(bottomLeft,topRight));
+        std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
+        REQUIRE(links.size() == 1);
+        REQUIRE(links[0].a.x == 0);
+        REQUIRE(links[0].a.y == 0);
+        REQUIRE(links[0].b.x == 4);
+        REQUIRE(links[0].b.y == 8);
+
+        // make sure pixels are not already merged
+        REQUIRE(!pointMap.isPixelMerged(links[0].a));
+        REQUIRE(!pointMap.isPixelMerged(links[0].b));
+
+        // merge
+        depthmapX::mergePixelPairs(links, pointMap);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(links[0].a));
+        REQUIRE(pointMap.isPixelMerged(links[0].b));
+
+        // now try to merge the same link again
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
+                            Catch::Contains("Link pixel found that is already linked on the map"));
+    }
 }
 
-TEST_CASE("Test getLinksFromMergeLines - half filled grid", "")
+TEST_CASE("Test linking - half filled grid", "")
 {
 
     double spacing = 0.5;
@@ -146,9 +193,10 @@ TEST_CASE("Test getLinksFromMergeLines - half filled grid", "")
     Point2f topLeftFillPoint(gridBottomLeft.x+spacing, gridTopRight.y-spacing);
     pointMap.makePoints(topLeftFillPoint, fill_type);
 
+    std::vector<Line> mergeLines;
+
+    SECTION("Successful: top-left pixel to one to its right")
     {
-        // successful: top-left pixel to one to its right
-        std::vector<Line> mergeLines;
         Point2f start(bottomLeft.x, topRight.y);
         Point2f end(bottomLeft.x + spacing, topRight.y);
         mergeLines.push_back(Line(start,end));
@@ -158,11 +206,21 @@ TEST_CASE("Test getLinksFromMergeLines - half filled grid", "")
         REQUIRE(links[0].a.y == 8);
         REQUIRE(links[0].b.x == 1);
         REQUIRE(links[0].b.y == 8);
+
+        // make sure pixels are not already merged
+        REQUIRE(!pointMap.isPixelMerged(links[0].a));
+        REQUIRE(!pointMap.isPixelMerged(links[0].b));
+
+        // merge
+        depthmapX::mergePixelPairs(links, pointMap);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(links[0].a));
+        REQUIRE(pointMap.isPixelMerged(links[0].b));
     }
 
+    SECTION("Failing: merge line (bottom-right to the one its left) completely out of grid")
     {
-        // failing: merge line (bottom-right to the one its left) completely out of grid
-        std::vector<Line> mergeLines;
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(topRight.x - 1, bottomLeft.y);
         mergeLines.push_back(Line(start,end));
@@ -170,9 +228,8 @@ TEST_CASE("Test getLinksFromMergeLines - half filled grid", "")
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
+    SECTION("Failing: merge line (bottom-right to top-left) start out of grid")
     {
-        // failing: merge line (bottom-right to top-left) start out of grid
-        std::vector<Line> mergeLines;
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(bottomLeft.x, topRight.y);
         mergeLines.push_back(Line(start,end));
@@ -180,9 +237,8 @@ TEST_CASE("Test getLinksFromMergeLines - half filled grid", "")
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
+    SECTION("Failing: merge line (top-left to bottom-right) end out of grid")
     {
-        // failing: merge line (top-left to bottom-right) end out of grid
-        std::vector<Line> mergeLines;
         Point2f start(bottomLeft.x, topRight.y);
         Point2f end(topRight.x, bottomLeft.y);
         mergeLines.push_back(Line(start,end));
