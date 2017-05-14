@@ -72,4 +72,29 @@ namespace depthmapX {
         }
         return mergePixelPairs;
     }
+
+    void mergePixelPairs(std::vector<PixelRefPair>& links, PointMap& currentMap) {
+
+        // check if any link pixel already exists on the map
+        for (size_t i = 0; i < links.size(); i++)
+        {
+            PixelRefPair link = links[i];
+            if(currentMap.isPixelMerged(link.a)
+                    || currentMap.isPixelMerged(link.b))
+            {
+                // one of the cells is already on the map
+                std::stringstream message;
+                message << "Link pixel found that is already linked on the map "
+                        << "(line " << i << ")"
+                        << flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+        }
+
+        for (size_t i = 0; i < links.size(); i++)
+        {
+            PixelRefPair link = links[i];
+            currentMap.mergePixels(link.a,link.b);
+        }
+    }
 }
