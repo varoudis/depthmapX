@@ -23,7 +23,7 @@ namespace depthmapX {
         vector<PixelRefPair> mergePixelPairs;
         for (size_t i = 0; i < mergeLines.size(); i++)
         {
-            const Line & mergeLine = mergeLines.at(i);
+            const Line & mergeLine = mergeLines[i];
             const PixelRef & a = currentMap.pixelate(mergeLine.start());
             const PixelRef & b = currentMap.pixelate(mergeLine.end());
 
@@ -48,10 +48,10 @@ namespace depthmapX {
             {
                 // PixelRefPair internal == operator only checks a with a and b with b
                 // but we also need to check the inverse
-                if(a == mergePixelPairs.at(j).a
-                        || b == mergePixelPairs.at(j).b
-                        || a == mergePixelPairs.at(j).b
-                        || b == mergePixelPairs.at(j).a)
+                if(a == mergePixelPairs[j].a
+                        || b == mergePixelPairs[j].b
+                        || a == mergePixelPairs[j].b
+                        || b == mergePixelPairs[j].a)
                 {
                     // one of the cells has already been seen.
                     std::stringstream message;

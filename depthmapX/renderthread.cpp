@@ -93,7 +93,7 @@ void RenderThread::run()
 			 pDoc->modifiedFlag = true;
          }
          else if (ok == -1) {
-	        QMessageBox::warning(0, tr("Warning"), tr("An error was found in the import file"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("An error was found in the import file"), QMessageBox::Ok, QMessageBox::Ok);
          }
          // This might change the line layers available, alert the layer chooser:
          QApplication::postEvent(pMain, new QmyEvent((enum QEvent::Type)FOCUSGRAPH, (void*)pDoc, QGraphDoc::CONTROLS_LOADDRAWING));
@@ -105,26 +105,26 @@ void RenderThread::run()
          switch (ok) {
          case MINFO_MULTIPLE:
              //BUG
-            //QMessageBox::warning(0, tr("Warning"), tr("The imported MIF file contains multiple shapes per object.\n Please note that depthmapX has broken these up, so each shape has one row of attribute data.\n Please consult your MapInfo provider for details."), QMessageBox::Yes, QMessageBox::Yes);
+            //QMessageBox::warning(0, tr("Warning"), tr("The imported MIF file contains multiple shapes per object.\n Please note that depthmapX has broken these up, so each shape has one row of attribute data.\n Please consult your MapInfo provider for details."), QMessageBox::Ok, QMessageBox::Ok);
         case MINFO_OK:
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
             break;
          case MINFO_HEADER:
-            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the header information in your MIF file."), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the header information in your MIF file."), QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_TABLE:
-            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the table data in your MID file."), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the table data in your MID file."), QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_MIFPARSE:
             QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the shape data in your MIF file.\n\
 										Please ensure that your shape data contains only points, lines, polylines or regions."),
-										QMessageBox::Yes, QMessageBox::Yes);
+                                        QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_OBJROWS:
             QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the shape data in your MIF file.\n\
 									It seems as though there are a different number of shapes to rows in the associated table.\n\
 									This may be due to the existance of unsupported shape types in the file."),
-										QMessageBox::Yes, QMessageBox::Yes);
+                                        QMessageBox::Ok, QMessageBox::Ok);
             break;
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_TOTAL, QGraphDoc::NEW_DATA );
@@ -218,7 +218,7 @@ void RenderThread::run()
 			 pDoc->modifiedFlag = true;
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          // Tell the sidebar about the new map:
          QApplication::postEvent(pMain, new QmyEvent((enum QEvent::Type)FOCUSGRAPH, (void*)pDoc, QGraphDoc::CONTROLS_LOADDRAWING));
@@ -231,7 +231,7 @@ void RenderThread::run()
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -248,7 +248,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to axial lines"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to axial lines"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -259,7 +259,7 @@ void RenderThread::run()
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -276,7 +276,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to segments"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to segments"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -294,7 +294,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -312,7 +312,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No polygons currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No polygons currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -333,7 +333,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines exist in map to convert to segments"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines exist in map to convert to segments"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
