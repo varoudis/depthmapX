@@ -1189,7 +1189,7 @@ void QDepthmapView::wheelEvent(QWheelEvent *e)
        ZoomOut(LogicalUnits(ViewHelpers::calculateCenter(position,centre,2.0)));
    }
    else {
-      QPoint centre = this->rect().center();
+      QPoint centre(this->rect().width()/2,this->rect().height()/2);
       QPoint position = e->pos();
       auto zoomFactor = 1.0 + double(zDelta) / 120.0;
       ZoomIn(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position, centre, 1.0/zoomFactor)));
