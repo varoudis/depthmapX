@@ -1184,15 +1184,13 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
-   QPoint centre = this->rect().center();
+   QPoint centre(this->rect().width()/2,this->rect().height()/2);
    QPoint position = e->pos();
    if (zDelta < 0) {
        auto zoomFactor = 1.0 - double(zDelta) / 120.0;
        ZoomTowards(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position,centre, zoomFactor)));
    }
    else {
-      QPoint centre(this->rect().width()/2,this->rect().height()/2);
-      QPoint position = e->pos();
       auto zoomFactor = 1.0/(1.0 + double(zDelta) / 120.0);
       ZoomTowards(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position, centre, zoomFactor)));
    }
