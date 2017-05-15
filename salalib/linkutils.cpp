@@ -18,7 +18,7 @@
 #include <sstream>
 
 namespace depthmapX {
-    std::vector<PixelRefPair> getLinksFromMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap)
+    std::vector<PixelRefPair> pixelateMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap)
     {
         vector<PixelRefPair> mergePixelPairs;
 
@@ -29,45 +29,6 @@ namespace depthmapX {
             const Line & mergeLine = *iter;
             const PixelRef & a = currentMap.pixelate(mergeLine.start(), false);
             const PixelRef & b = currentMap.pixelate(mergeLine.end(), false);
-
-            // check in limits:
-            if (!currentMap.includes(a) || !currentMap.getPoint(a).filled()
-                    || !currentMap.includes(b) || !currentMap.getPoint(b).filled())
-            {
-                std::stringstream message;
-                message << "Line ends not both on painted analysis space "
-                        << mergeLine.start().x << ", "
-                        << mergeLine.start().y << " -> "
-                        << mergeLine.end().x << ", "
-                        << mergeLine.end().y << ")" << flush;
-                throw depthmapX::RuntimeException(message.str().c_str());
-            }
-
-            // we probably need to check if we were given coordinates that
-            // fall on a previously given cell, in which case the newest given
-            // will replace the oldest and effectively delete the whole link
-            for (size_t j = 0; j < mergePixelPairs.size(); j++)
-            {
-                // PixelRefPair internal == operator only checks a with a and b with b
-                // but we also need to check the inverse
-                if(a == mergePixelPairs[j].a
-                        || b == mergePixelPairs[j].b
-                        || a == mergePixelPairs[j].b
-                        || b == mergePixelPairs[j].a)
-                {
-                    // one of the cells has already been seen.
-                    std::stringstream message;
-                    message << "Overlapping link found at line "
-                            << mergeLine.start().x << ", "
-                            << mergeLine.start().y << " -> "
-                            << mergeLine.end().x << ", "
-                            << mergeLine.end().y << ")" << flush;
-                    throw depthmapX::RuntimeException(message.str().c_str());
-                }
-            }
-
-            // TODO: the merge function will replace any links that already exist
-            // on the two locations, so we need to warn the user if this is the case
 
             mergePixelPairs.push_back(PixelRefPair(a, b));
         }
@@ -82,14 +43,53 @@ namespace depthmapX {
         for ( ; iter != end; ++iter )
         {
             const PixelRefPair link = *iter;
+
+            // check in limits:
+            if (!currentMap.includes(link.a) || !currentMap.getPoint(link.a).filled()
+                    || !currentMap.includes(link.b) || !currentMap.getPoint(link.b).filled())
+            {
+                std::stringstream message;
+                message << "Line ends not both on painted analysis space (index: "
+                        << (iter - links.begin() + 1)
+                        << ")" << flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+
+            // check if we were given coordinates that fall on a previously
+            // merged cell, in which case the newest given will replace the
+            // oldest and effectively delete the whole link
             if(currentMap.isPixelMerged(link.a)
                     || currentMap.isPixelMerged(link.b))
             {
                 // one of the cells is already on the map
                 std::stringstream message;
-                message << "Link pixel found that is already linked on the map "
+                message << "Link pixel found that is already linked on the map (index: "
+                        << (iter - links.begin() + 1)
+                        << ")"
                         << flush;
                 throw depthmapX::RuntimeException(message.str().c_str());
+            }
+
+            // also check if given links have overlapping pixels:
+            std::vector<PixelRefPair>::const_iterator prevIter = links.begin();
+            for ( ; prevIter != iter; ++prevIter )
+            {
+                const PixelRefPair prevLink = *prevIter;
+
+                // PixelRefPair internal == operator only checks a with a and b with b
+                // but we also need to check the inverse
+                if(link.a == prevLink.a
+                        || link.b == prevLink.b
+                        || link.a == prevLink.b
+                        || link.b == prevLink.a)
+                {
+                    // one of the cells has already been seen.
+                    std::stringstream message;
+                    message << "Overlapping link found (index: "
+                            << (iter - links.begin() + 1)
+                            << ")" << flush;
+                    throw depthmapX::RuntimeException(message.str().c_str());
+                }
             }
         }
         std::for_each(links.begin(), links.end(),

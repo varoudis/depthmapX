@@ -41,7 +41,7 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
     SECTION ("Successful: bottom-left to top-right")
     {
         mergeLines.push_back(Line(bottomLeft,topRight));
-        std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
         REQUIRE(links.size() == 1);
         REQUIRE(links[0].a.x == 0);
         REQUIRE(links[0].a.y == 0);
@@ -66,7 +66,7 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(bottomLeft.x, topRight.y);
         mergeLines.push_back(Line(start,end));
-        std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
         REQUIRE(links.size() == 2);
         REQUIRE(links[0].a.x == 0);
         REQUIRE(links[0].a.y == 0);
@@ -97,7 +97,8 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
     {
         Point2f start(bottomLeft.x - spacing, bottomLeft.y - spacing);
         mergeLines.push_back(Line(start,topRight));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
@@ -105,7 +106,8 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
     {
         Point2f end(topRight.x + spacing, topRight.y + spacing);
         mergeLines.push_back(Line(bottomLeft,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
@@ -115,7 +117,8 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
         Point2f start(bottomLeft.x, bottomLeft.y);
         Point2f end(topRight.x - 1, topRight.y);
         mergeLines.push_back(Line(start,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Overlapping link found"));
     }
 
@@ -125,7 +128,8 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
         Point2f start(bottomLeft.x + 1, bottomLeft.y);
         Point2f end(topRight.x, topRight.y);
         mergeLines.push_back(Line(start,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Overlapping link found"));
     }
 
@@ -133,14 +137,15 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
     {
         mergeLines.push_back(Line(bottomLeft,topRight));
         mergeLines.push_back(Line(bottomLeft,topRight));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Overlapping link found"));
     }
 
     SECTION("Failing: link overlapping to previously merged")
     {
         mergeLines.push_back(Line(bottomLeft,topRight));
-        std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
         REQUIRE(links.size() == 1);
         REQUIRE(links[0].a.x == 0);
         REQUIRE(links[0].a.y == 0);
@@ -200,7 +205,7 @@ TEST_CASE("Test linking - half filled grid", "")
         Point2f start(bottomLeft.x, topRight.y);
         Point2f end(bottomLeft.x + spacing, topRight.y);
         mergeLines.push_back(Line(start,end));
-        std::vector<PixelRefPair> links = depthmapX::getLinksFromMergeLines(mergeLines,pointMap);
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
         REQUIRE(links.size() == 1);
         REQUIRE(links[0].a.x == 0);
         REQUIRE(links[0].a.y == 8);
@@ -224,7 +229,8 @@ TEST_CASE("Test linking - half filled grid", "")
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(topRight.x - 1, bottomLeft.y);
         mergeLines.push_back(Line(start,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
@@ -233,7 +239,8 @@ TEST_CASE("Test linking - half filled grid", "")
         Point2f start(topRight.x, bottomLeft.y);
         Point2f end(bottomLeft.x, topRight.y);
         mergeLines.push_back(Line(start,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 
@@ -242,7 +249,8 @@ TEST_CASE("Test linking - half filled grid", "")
         Point2f start(bottomLeft.x, topRight.y);
         Point2f end(topRight.x, bottomLeft.y);
         mergeLines.push_back(Line(start,end));
-        REQUIRE_THROWS_WITH(depthmapX::getLinksFromMergeLines(mergeLines,pointMap),
+        std::vector<PixelRefPair> links = depthmapX::pixelateMergeLines(mergeLines,pointMap);
+        REQUIRE_THROWS_WITH(depthmapX::mergePixelPairs(links, pointMap),
                             Catch::Contains("Line ends not both on painted analysis space"));
     }
 }
