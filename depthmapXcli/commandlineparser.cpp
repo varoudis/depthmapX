@@ -15,13 +15,12 @@
 
 #include "commandlineparser.h"
 #include "exceptions.h"
-#include "modeparserregistry.h"
+#include "imodeparserfactory.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
 
 using namespace depthmapX;
-static std::vector<std::unique_ptr<IModeParser> > AvailableParsers = ModeParserRegistry::populateParsers();
 
 void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
@@ -29,16 +28,20 @@ void CommandLineParser::printHelp(){
               << "-s enables simple mode\n"
               << "-t <times.csv> enables output of runtimes as csv file\n"
 
-              << "Possible modes are:\n  ";
-              std::for_each(AvailableParsers.begin(), AvailableParsers.end(), [](auto &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
-              std::for_each(AvailableParsers.begin(), AvailableParsers.end(), [](auto &p)->void{ std::cout << p->getHelp(); });
+              << "Possible modes are:\n";
+              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](auto &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
+              std::cout << "\n";
+              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](auto &p)->void{ std::cout << p->getHelp() << "\n"; });
               std::cout << std::flush;
 }
 
 
 
-CommandLineParser::CommandLineParser(size_t argc, char *argv[])
-    :  _simpleMode(false), _modeParser(0)
+CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
+    :  _simpleMode(false), _modeParser(0), _parserFactory(parserFactory)
+{}
+
+void CommandLineParser::parse(size_t argc, char *argv[])
 {
     if (argc <= 1)
     {
@@ -63,7 +66,7 @@ CommandLineParser::CommandLineParser(size_t argc, char *argv[])
                 throw CommandLineException("-m requires an argument");
             }
 
-            for (auto iter = AvailableParsers.begin(), end = AvailableParsers.end();
+            for (auto iter = _parserFactory.getModeParsers().begin(), end = _parserFactory.getModeParsers().end();
                  iter != end; ++iter )
             {
                 if ((*iter)->getModeName() == argv[i])
