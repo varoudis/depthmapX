@@ -1184,16 +1184,19 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
-   QPoint centre(this->rect().width()/2,this->rect().height()/2);
    QPoint position = e->pos();
-   if (zDelta < 0) {
-       auto zoomFactor = 1.0 - double(zDelta) / 120.0;
-       ZoomTowards(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position,centre, zoomFactor)));
+   QPoint centre(m_physical_centre.width(),m_physical_centre.height());
+   auto zoomFactor = 1.0 + std::abs(double(zDelta)) / 120.0;
+   if (zDelta > 0) {
+      zoomFactor = 1.0/zoomFactor;
    }
-   else {
-      auto zoomFactor = 1.0/(1.0 + double(zDelta) / 120.0);
-      ZoomTowards(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position, centre, zoomFactor)));
-   }
+   Point2f newCentre = ViewHelpers::calculateCenter(position, centre, zoomFactor);
+
+   // Same as LogicalUnits() with non-discreet input
+   newCentre.x = m_centre.x + m_unit * double(newCentre.x - m_physical_centre.width());
+   newCentre.y = m_centre.y + m_unit * double(m_physical_centre.height() - newCentre.y);
+
+   ZoomTowards(zoomFactor, newCentre);
 }
 
 void QDepthmapView::ZoomTowards(double ratio, const Point2f& point)
