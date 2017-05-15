@@ -13,37 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
-#include "commandlineparser.h"
-#include "runmethods.h"
-#include "performancewriter.h"
-#include "modeparserregistry.h"
+#pragma once
+#include "imodeparser.h"
+#include <vector>
+#include <memory>
 
-using namespace std;
+typedef std::vector<std::unique_ptr<IModeParser> > ModeParserVec;
 
-int main(int argc, char *argv[])
+class IModeParserFactory
 {
-    ModeParserRegistry registry;
-    CommandLineParser args(registry);
-    try{
-        args.parse(argc, argv);
-        if (!args.isValid())
-        {
-            args.printHelp();
-            return 0;
-        }
-
-        PerformanceWriter perfWriter(args.getTimingFile());
-
-        args.run(perfWriter);
-        perfWriter.write();
-
-    }
-    catch( std::exception &e)
-    {
-        cout << e.what() << "\n";
-        args.printHelp();
-        return -1;
-    }
-    return 0;
-}
+public:
+    virtual const ModeParserVec &getModeParsers() const = 0;
+    virtual ~IModeParserFactory(){}
+};

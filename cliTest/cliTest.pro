@@ -3,7 +3,7 @@ TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
-INCLUDEPATH += ../ThirdParty/Catch
+INCLUDEPATH += ../ThirdParty/Catch ../ThirdParty/FakeIt
 
 SOURCES += main.cpp \
     ../depthmapXcli/commandlineparser.cpp \

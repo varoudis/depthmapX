@@ -24,7 +24,8 @@ HEADERS += \
     performancewriter.h \
     performancesink.h \
     imodeparser.h \
-    modeparserregistry.h
+    modeparserregistry.h \
+    imodeparserfactory.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
