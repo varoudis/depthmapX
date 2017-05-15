@@ -20,5 +20,5 @@
 
 namespace depthmapX {
     std::vector<PixelRefPair> getLinksFromMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap);
-    void mergePixelPairs(std::vector<PixelRefPair>& links, PointMap& currentMap);
+    void mergePixelPairs(const std::vector<PixelRefPair> &links, PointMap& currentMap);
 }
