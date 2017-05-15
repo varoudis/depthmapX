@@ -29,9 +29,9 @@ void CommandLineParser::printHelp(){
               << "-t <times.csv> enables output of runtimes as csv file\n"
 
               << "Possible modes are:\n";
-              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](auto &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
+              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](const ModeParserVec::value_type &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
               std::cout << "\n";
-              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](auto &p)->void{ std::cout << p->getHelp() << "\n"; });
+              std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](const ModeParserVec::value_type &p)->void{ std::cout << p->getHelp() << "\n"; });
               std::cout << std::flush;
 }
 
