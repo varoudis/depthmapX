@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-class LinkParser : IModeParser
+class LinkParser : public IModeParser
 {
 public:
     virtual std::string getModeName() const
