@@ -19,7 +19,7 @@
 #include "imodeparser.h"
 #include "commandlineparser.h"
 
-class VgaParser : IModeParser
+class VgaParser : public IModeParser
 {
 public:
     virtual std::string getModeName() const
