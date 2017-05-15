@@ -43,16 +43,15 @@ CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
 
 void CommandLineParser::parse(size_t argc, char *argv[])
 {
+    _valid = false;
     if (argc <= 1)
     {
         throw CommandLineException("No commandline parameters provided - don't know what to do");
     }
-    _valid = true;
     for ( size_t i = 1; i < argc;  )
     {
         if ( strcmp("-h", argv[i])== 0)
         {
-            _valid = false;
             return;
         }
         else if ( strcmp ("-m", argv[i]) == 0)
@@ -125,6 +124,7 @@ void CommandLineParser::parse(size_t argc, char *argv[])
         throw CommandLineException("-o for output file is required");
     }
     _modeParser->parse(argc, argv);
+    _valid = true;
 }
 
 void CommandLineParser::run(IPerformanceSink &perfWriter) const
