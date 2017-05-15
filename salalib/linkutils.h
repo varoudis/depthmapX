@@ -19,6 +19,6 @@
 #include <vector>
 
 namespace depthmapX {
-    std::vector<PixelRefPair> getLinksFromMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap);
+    std::vector<PixelRefPair> pixelateMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap);
     void mergePixelPairs(const std::vector<PixelRefPair> &links, PointMap& currentMap);
 }
