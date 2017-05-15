@@ -52,7 +52,7 @@ public:
         _runCalled = true;
     }
 
-    static public std::string formatTestHelpString(bool runCalled, bool parseCalled)
+    static std::string formatTestHelpString(bool runCalled, bool parseCalled)
     {
         std::stringstream buf;
         buf << "runCalled " << (runCalled ? "yes" : "no")
