@@ -21,9 +21,12 @@ namespace depthmapX {
     std::vector<PixelRefPair> getLinksFromMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap)
     {
         vector<PixelRefPair> mergePixelPairs;
-        for (size_t i = 0; i < mergeLines.size(); i++)
+
+        std::vector<Line>::const_iterator iter = mergeLines.begin(), end =
+        mergeLines.end();
+        for ( ; iter != end; ++iter )
         {
-            const Line & mergeLine = mergeLines[i];
+            const Line & mergeLine = *iter;
             const PixelRef & a = currentMap.pixelate(mergeLine.start(), false);
             const PixelRef & b = currentMap.pixelate(mergeLine.end(), false);
 
@@ -33,7 +36,6 @@ namespace depthmapX {
             {
                 std::stringstream message;
                 message << "Line ends not both on painted analysis space "
-                        << i << " ("
                         << mergeLine.start().x << ", "
                         << mergeLine.start().y << " -> "
                         << mergeLine.end().x << ", "
@@ -56,7 +58,6 @@ namespace depthmapX {
                     // one of the cells has already been seen.
                     std::stringstream message;
                     message << "Overlapping link found at line "
-                            << i << " ("
                             << mergeLine.start().x << ", "
                             << mergeLine.start().y << " -> "
                             << mergeLine.end().x << ", "
@@ -73,28 +74,25 @@ namespace depthmapX {
         return mergePixelPairs;
     }
 
-    void mergePixelPairs(std::vector<PixelRefPair>& links, PointMap& currentMap) {
+    void mergePixelPairs(const std::vector<PixelRefPair>& links, PointMap& currentMap) {
 
         // check if any link pixel already exists on the map
-        for (size_t i = 0; i < links.size(); i++)
+        std::vector<PixelRefPair>::const_iterator iter = links.begin(), end =
+        links.end();
+        for ( ; iter != end; ++iter )
         {
-            PixelRefPair link = links[i];
+            const PixelRefPair link = *iter;
             if(currentMap.isPixelMerged(link.a)
                     || currentMap.isPixelMerged(link.b))
             {
                 // one of the cells is already on the map
                 std::stringstream message;
                 message << "Link pixel found that is already linked on the map "
-                        << "(line " << i << ")"
                         << flush;
                 throw depthmapX::RuntimeException(message.str().c_str());
             }
         }
-
-        for (size_t i = 0; i < links.size(); i++)
-        {
-            PixelRefPair link = links[i];
-            currentMap.mergePixels(link.a,link.b);
-        }
+        std::for_each(links.begin(), links.end(),
+                      [&](const PixelRefPair &pair)->void{ currentMap.mergePixels(pair.a,pair.b); });
     }
 }
