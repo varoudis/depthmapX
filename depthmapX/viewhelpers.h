@@ -19,10 +19,11 @@
 
 #include <QPoint>
 #include "genlib/paftl.h"
+#include "genlib/p2dpoly.h"
 
 namespace ViewHelpers
 {
-    QPoint calculateCenter(QPoint point, const QPoint &oldCentre, double factor);
+    Point2f calculateCenter(QPoint& point, const QPoint &oldCentre, double factor);
     pstring getCurrentDate();
 }
 
