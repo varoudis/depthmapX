@@ -181,7 +181,55 @@ TEST_CASE("Valid Parser","CheckValues"){
         REQUIRE(cmdP.getTimingFile() == "timings.csv");
         REQUIRE(parsers[0]->getHelp() == TestParser::formatTestHelpString(false, true));
         REQUIRE(parsers[1]->getHelp() == TestParser::formatTestHelpString(false, false));
-        Mock<IPerformanceSink> perfSink;
+    }
+
+}
+
+TEST_CASE("Run Tests","Check we only run if it's appropriate"){
+    std::vector<std::unique_ptr<IModeParser> > parsers;
+    parsers.push_back(std::move(std::unique_ptr<IModeParser>(new TestParser("TEST1"))));
+    parsers.push_back(std::move(std::unique_ptr<IModeParser>(new TestParser("TEST2"))));
+
+    Mock<IModeParserFactory> factoryMock;
+    When(Method(factoryMock,getModeParsers)).AlwaysReturn(parsers);
+
+    Mock<IPerformanceSink> perfSink;
+
+    SECTION("Fail - run without parsing")
+    {
+        CommandLineParser cmdP(factoryMock.get());
+        REQUIRE_THROWS_WITH(cmdP.run(perfSink.get()), Catch::Contains("Trying to run with invalid command line parameters"));
+    }
+
+    SECTION("Fail run with help on the command line")
+    {
+        CommandLineParser cmdP(factoryMock.get());
+        ArgumentHolder ah{"prog", "-h", "-m", "TEST1", "-f", "inputfile.graph", "-o", "outputfile.graph"};
+        cmdP.parse(ah.argc(), ah.argv());
+        REQUIRE_FALSE(cmdP.isValid());
+        REQUIRE_THROWS_WITH(cmdP.run(perfSink.get()), Catch::Contains("Trying to run with invalid command line parameters"));
+    }
+
+    SECTION("Fail run without sub parser")
+    {
+        CommandLineParser cmdP(factoryMock.get());
+        ArgumentHolder ah{"prog" "-f", "inputfile.graph", "-o", "outputfile.graph"};
+        REQUIRE_THROWS(cmdP.parse(ah.argc(), ah.argv()));
+        REQUIRE_FALSE(cmdP.isValid());
+        REQUIRE_THROWS_WITH(cmdP.run(perfSink.get()), Catch::Contains("Trying to run with invalid command line parameters"));
+    }
+
+
+    SECTION("Parser test1 used, timings file, simple mode")
+    {
+        CommandLineParser cmdP(factoryMock.get());
+        ArgumentHolder ah{"prog", "-m", "TEST1", "-f", "inputfile.graph", "-o", "outputfile.graph", "-s", "-t", "timings.csv"};
+        cmdP.parse(ah.argc(), ah.argv());
+        REQUIRE(cmdP.isValid());
+        REQUIRE(cmdP.simpleMode());
+        REQUIRE(cmdP.getTimingFile() == "timings.csv");
+        REQUIRE(parsers[0]->getHelp() == TestParser::formatTestHelpString(false, true));
+        REQUIRE(parsers[1]->getHelp() == TestParser::formatTestHelpString(false, false));
         cmdP.run(perfSink.get());
         REQUIRE(parsers[0]->getHelp() == TestParser::formatTestHelpString(true, true));
         REQUIRE(parsers[1]->getHelp() == TestParser::formatTestHelpString(false, false));
@@ -189,6 +237,7 @@ TEST_CASE("Valid Parser","CheckValues"){
     }
 
 }
+
 
 TEST_CASE("Invalid Parser Need Help", "CheckForHelp")
 {
