@@ -17,37 +17,32 @@
 #include "commandlineparser.h"
 #include "runmethods.h"
 #include "performancewriter.h"
+#include "modeparserregistry.h"
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
+    ModeParserRegistry registry;
+    CommandLineParser args(registry);
     try{
-        CommandLineParser args(argc, argv);
+        args.parse(argc, argv);
         if (!args.isValid())
         {
-            CommandLineParser::printHelp();
+            args.printHelp();
             return 0;
         }
 
         PerformanceWriter perfWriter(args.getTimingFile());
 
-        if ( args.getMode() == DepthmapMode::VGA_ANALYSIS)
-        {
-            RadiusConverter converter;
-            dm_runmethods::runVga(args, converter, perfWriter);
-        }
-        else if ( args.getMode() == DepthmapMode::LINK_GRAPH)
-        {
-            dm_runmethods::linkGraph(args, perfWriter);
-        }
+        args.run(perfWriter);
         perfWriter.write();
 
     }
     catch( std::exception &e)
     {
         cout << e.what() << "\n";
-        CommandLineParser::printHelp();
+        args.printHelp();
         return -1;
     }
     return 0;

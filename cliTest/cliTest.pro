@@ -3,7 +3,7 @@ TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
-INCLUDEPATH += ../ThirdParty/Catch
+INCLUDEPATH += ../ThirdParty/Catch ../ThirdParty/FakeIt
 
 SOURCES += main.cpp \
     ../depthmapXcli/commandlineparser.cpp \
@@ -18,7 +18,9 @@ SOURCES += main.cpp \
     testargumentholder.cpp \
     ../depthmapXcli/performancewriter.cpp \
     testperformancewriter.cpp \
-    testselfcleaningfile.cpp
+    testselfcleaningfile.cpp \
+    ../depthmapXcli/runmethods.cpp \
+    ../depthmapXcli/modeparserregistry.cpp
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \

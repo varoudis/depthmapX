@@ -17,46 +17,41 @@
 #define COMMANDLINEPARSER_H
 
 #include <string>
-#include "vgaparser.h"
-#include "linkparser.h"
-
-enum DepthmapMode{
-    NONE = 0,
-    LINK_GRAPH,
-    VGA_ANALYSIS
-};
+#include <vector>
+#include <memory>
+class IModeParserFactory;
+class IModeParser;
+class IPerformanceSink;
 
 
 
 class CommandLineParser
 {
 public:
-    CommandLineParser(size_t argc, char *argv[]);
-    ~CommandLineParser();
+    CommandLineParser(const IModeParserFactory &parserFactory);
+    void parse(size_t argc, char *argv[]);
 
-    DepthmapMode getMode() const { return _mode; }
     const std::string &getFileName() const { return _fileName; }
     const std::string &getOuputFile() const {return _outputFile;}
     const std::string &getTimingFile() const {return _timingFile;}
     bool isValid() const { return _valid; }
     bool simpleMode() const { return _simpleMode; }
-    const VgaParser& vgaOptions() const;
-    const LinkParser& linkOptions() const;
+    const IModeParser& modeOptions() const{ return *_modeParser;};
 
-    static void printHelp();
 
+    void printHelp();
+    void run(IPerformanceSink &perfWriter) const;
 
 
 private:
-    DepthmapMode _mode;
     std::string _fileName;
     std::string _outputFile;
     std::string _timingFile;
     bool _valid;
     bool _simpleMode;
 
-    const LinkParser * _linkParser;
-    const VgaParser * _vgaParser;
+    const IModeParserFactory &_parserFactory;
+    IModeParser * _modeParser;
 
 };
 

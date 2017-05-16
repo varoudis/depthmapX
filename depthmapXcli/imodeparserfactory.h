@@ -13,19 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RUNMETHODS_H
-#define RUNMETHODS_H
-#include <string>
-#include "commandlineparser.h"
-#include "radiusconverter.h"
-#include "performancesink.h"
-#include "vgaparser.h"
+#pragma once
+#include "imodeparser.h"
 #include <vector>
+#include <memory>
 
-class Line;
+typedef std::vector<std::unique_ptr<IModeParser> > ModeParserVec;
 
-namespace dm_runmethods{
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter );
-    void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
-}
-#endif // RUNMETHODS_H
+class IModeParserFactory
+{
+public:
+    virtual const ModeParserVec &getModeParsers() const = 0;
+    virtual ~IModeParserFactory(){}
+};

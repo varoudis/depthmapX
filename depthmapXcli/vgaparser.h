@@ -13,15 +13,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef VGAPARSER_H
-#define VGAPARSER_H
+#pragma once
 
 #include <string>
+#include "imodeparser.h"
+#include "commandlineparser.h"
 
-class VgaParser
+class VgaParser : public IModeParser
 {
 public:
-    VgaParser(size_t argc, char *argv[]);
+    virtual std::string getModeName() const
+    {
+        return "VGA";
+    }
+
+    virtual std::string getHelp() const
+    {
+        return    "Mode options for VGA:\n"\
+                  "-vm <vga mode> one of isovist, visiblity, metric, angular, thruvision\n"\
+                  "-vg turn on global measures for visibility, requires radius between 1 and 99 or n\n"\
+                  "-vl turn on local measures for visibility\n"\
+                  "-vr set visibility radius\n";
+    }
+
+public:
+    VgaParser();
+    virtual void parse(int argc, char *argv[]);
+    virtual void run(const CommandLineParser &clp, IPerformanceSink& perfWriter) const;
 
     enum VgaMode{
         NONE,
@@ -37,7 +55,6 @@ public:
     bool localMeasures() const { return _localMeasures; }
     bool globalMeasures() const { return _globalMeasures; }
     const std::string & getRadius() const { return _radius; }
-
 private:
     // vga options
     VgaMode _vgaMode;
@@ -46,4 +63,3 @@ private:
     std::string _radius;
 };
 
-#endif // VGAPARSER_H

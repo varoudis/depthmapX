@@ -13,19 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RUNMETHODS_H
-#define RUNMETHODS_H
-#include <string>
-#include "commandlineparser.h"
-#include "radiusconverter.h"
-#include "performancesink.h"
-#include "vgaparser.h"
+
+
+#ifndef MODEPARSERREGISTRY_H
+#define MODEPARSERREGISTRY_H
+
+#include "imodeparser.h"
+#include "imodeparserfactory.h"
 #include <vector>
+#include <memory>
 
-class Line;
+class ModeParserRegistry : public IModeParserFactory
+{
+public:
+    ModeParserRegistry()
+    {
+        populateParsers();
+    }
 
-namespace dm_runmethods{
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter );
-    void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
-}
-#endif // RUNMETHODS_H
+    const ModeParserVec &getModeParsers() const {return _availableParsers;};
+private:
+    void populateParsers();
+    ModeParserVec _availableParsers;
+};
+
+#define REGISTER_PARSER(parser)\
+    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
+
+#endif // MODEPARSERREGISTRY_H
