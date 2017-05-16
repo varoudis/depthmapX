@@ -23,7 +23,7 @@
 
 namespace ViewHelpers
 {
-    Point2f calculateCenter(QPoint& point, const QPoint &oldCentre, double factor);
+    Point2f calculateCenter(const QPoint& point, const QPoint &oldCentre, double factor);
     pstring getCurrentDate();
 }
 
