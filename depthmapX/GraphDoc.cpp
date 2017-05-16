@@ -360,6 +360,28 @@ void QGraphDoc::OnVGALinksFileImport()
             depthmapX::mergePixelPairs(newLinks, currentMap);
             SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
         }
+        catch (EntityParsing::EntityParseException& e)
+        {
+            std::stringstream message;
+            message << "Unable to parse text file\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+        catch (depthmapX::InvalidLinkException& e)
+        {
+            std::stringstream message;
+            message << "Unable to import links\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
         catch (depthmapX::BaseException& e)
         {
             std::stringstream message;
