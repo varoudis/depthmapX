@@ -328,26 +328,20 @@ void QGraphDoc::OnVGALinksFileImport()
 
     QFileDialog::Options options = 0;
     QString selectedFilter;
-    QStringList infiles = QFileDialog::getOpenFileNames(
+    QString infile = QFileDialog::getOpenFileName(
                                 0, tr("Import Links File"),
                                 "",
                                 template_string,
                                 &selectedFilter,
                                 options);
 
-    if (!infiles.size())
+    if (!infile.size())
     {
         // no file selected
         return;
     }
-    if (infiles.size() > 1)
-    {
-        QMessageBox::warning(this, tr("Warning"), tr("Multiple files selected!"),
-                             QMessageBox::Ok, QMessageBox::Ok);
-        return;
-    }
 
-    std::string fileName = infiles[0].toStdString();
+    std::string fileName = infile.toStdString();
 
     ifstream fileStream(fileName);
     if (fileStream.fail())
