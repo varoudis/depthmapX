@@ -16,9 +16,17 @@
 #pragma once
 
 #include "mgraph.h"
+#include "genlib/exceptions.h"
 #include <vector>
 
 namespace depthmapX {
+
+    class InvalidLinkException : public depthmapX::BaseException
+    {
+    public:
+        InvalidLinkException(std::string message) : depthmapX::BaseException(message)
+        {}
+    };
     std::vector<PixelRefPair> pixelateMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap);
     void mergePixelPairs(const std::vector<PixelRefPair> &links, PointMap& currentMap);
 }
