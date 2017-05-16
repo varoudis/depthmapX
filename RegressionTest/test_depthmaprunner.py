@@ -81,9 +81,9 @@ class PerformanceCheckTest(unittest.TestCase):
             with open(f1.filename(), "w") as f:
                 f.write("action,duration\nfoo,10\n")
             with open(f2.filename(), "w") as f:
-                f.write("action,duration\nfoo,12\n")
+                f.write("action,duration\nfoo,18\n")
             message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "Performance regression: foo took 12s instead of 10s")
+            self.assertEqual(message, "Performance regression: foo took 18s instead of 10s")
         
 
 class DepthmapRunnerTest(unittest.TestCase):

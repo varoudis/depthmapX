@@ -30,7 +30,7 @@ def checkPerformance(baseFile, testFile):
     error message if
     * one or both of the files are missing
     * the number of lines or the labels don't match
-    * the test run is more than a second or 2% slower than the baseline
+    * the test run is more than 5 seconds or 5% slower than the baseline
       (whatever is greater)
     """
     if not os.path.exists(baseFile):
@@ -68,7 +68,7 @@ def checkPerformance(baseFile, testFile):
             baseTime = float(baseLine["duration"])
             testTime = float(testLine["duration"])
 
-            allowance = max(1.0, baseTime / 50.0 )
+            allowance = max(5.0, baseTime / 20.0 )
             if testTime > baseTime + allowance:
                 return "Performance regression: {0} took {1}s instead of {2}s".format(baseLine["action"], testLine["duration"], baseLine["duration"])
             
