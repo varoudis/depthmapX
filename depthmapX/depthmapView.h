@@ -178,9 +178,7 @@ private:
    void ResetHoverWnd(const QPoint& p = QPoint(-1,-1));
    void CreateHoverWnd();
 
-   void ZoomIn(double ratio, const Point2f& point);
-   void ZoomOut();
-   void ZoomOut(Point2f centre);
+   void ZoomTowards(double ratio, const Point2f& point);
 
    void InitViewport(const QRect& phys_bounds, QGraphDoc *pDoc);
    QtRegion LogicalViewport(const QRect& phys_bounds, QGraphDoc *pDoc);
