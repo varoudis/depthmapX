@@ -861,15 +861,15 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			 QRect rect = QRect(0,0,width(),height());
 			 double ratio = __min( double(rect.height() / double(m_drag_rect_a.height()) ),
 								   double(rect.width()) / double(m_drag_rect_a.width()) );
-			 ZoomIn(ratio, LogicalUnits(m_drag_rect_a.center()) );
+             ZoomTowards(1.0/ratio, LogicalUnits(m_drag_rect_a.center()) );
 		  }
 		  else {
-			 ZoomIn(2.0, m_centre);
+             ZoomTowards(0.75, m_centre);
 		  }
 		  break;
 	   case ZOOM_OUT:
 		  {
-			 ZoomOut();
+             ZoomTowards(1.5, m_centre);
 		  }
 		  break;
 	   case DRAG:
@@ -1132,7 +1132,7 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			// cancel other tools:
 		switch (m_mouse_mode) {
 		 case ZOOM_IN:
-			 ZoomOut();
+             ZoomTowards(0.75, m_centre);
 			 break;
 		 case JOIN | JOINB:
 		 case UNJOIN | JOINB:
@@ -1180,48 +1180,35 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 	char key = e->key();
 }
 
+
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
-   QPoint centre = this->rect().center();
    QPoint position = e->pos();
-   if (zDelta < 0) {
-       ZoomOut(LogicalUnits(ViewHelpers::calculateCenter(position,centre,2.0)));
+   QPoint centre(m_physical_centre.width(),m_physical_centre.height());
+   auto zoomFactor = 1.0 + std::abs(double(zDelta)) / 120.0;
+   if (zDelta > 0) {
+      zoomFactor = 1.0/zoomFactor;
    }
-   else {
-      QPoint centre = this->rect().center();
-      QPoint position = e->pos();
-      auto zoomFactor = 1.0 + double(zDelta) / 120.0;
-      ZoomIn(zoomFactor, LogicalUnits(ViewHelpers::calculateCenter(position, centre, 1.0/zoomFactor)));
-   }
+   Point2f newCentre = ViewHelpers::calculateCenter(position, centre, zoomFactor);
+
+   // Same as LogicalUnits() with non-discreet input
+   newCentre.x = m_centre.x + m_unit * double(newCentre.x - m_physical_centre.width());
+   newCentre.y = m_centre.y + m_unit * double(m_physical_centre.height() - newCentre.y);
+
+   ZoomTowards(zoomFactor, newCentre);
 }
 
-void QDepthmapView::ZoomIn(double ratio, const Point2f& point)
+void QDepthmapView::ZoomTowards(double ratio, const Point2f& point)
 {
    m_centre = point;
-   m_unit /= ratio;
+   m_unit *= ratio;
 
    m_invalidate = 0;
 
    // Redraw
    m_redraw_all = true;
    update();
-}
-
-void QDepthmapView::ZoomOut()
-{
-    m_unit *= 2;
-    m_invalidate = 0;
-
-    // Redraw scene
-    m_redraw_all = true;
-    update();
-}
-
-void QDepthmapView::ZoomOut(Point2f centre)
-{
-   m_centre = centre;
-   ZoomOut();
 }
 
 QSize QDepthmapView::sizeHint() const
