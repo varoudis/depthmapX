@@ -32,11 +32,14 @@
 #include <float.h>
 #include <genlib/paftl.h>
 #include <genlib/comm.h>
+#include <genlib/exceptions.h>
 // Sala
 #include <salalib/mgraph.h>
 #include "salalib/salaprogram.h"
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
+#include <salalib/entityparsing.h>
+#include <salalib/linkutils.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -276,8 +279,9 @@ public:
 	int OnSaveDocument(QString lpszPathName, int version);
 	bool OnCloseDocument(int);
 	int OnOpenDocument(char* lpszPathName);
-	void OnToolsTPD();
-	void OnFileImport();
+    void OnToolsTPD();
+    void OnVGALinksFileImport();
+    void OnFileImport();
 	void OnFileExport();
 	void OnToolsMakeGraph();
 	void OnEditClear();

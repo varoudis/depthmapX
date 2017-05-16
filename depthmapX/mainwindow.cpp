@@ -436,6 +436,15 @@ void MainWindow::OnToolsMakeGraph()
     }
 }
 
+void MainWindow::OnToolsImportVGALinks()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnVGALinksFileImport();
+    }
+}
+
 void MainWindow::OnToolsRun()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
@@ -2219,6 +2228,7 @@ void MainWindow::updateVisibilitySubMenu()
     {
         SetGridAct->setEnabled(0);
         makeVisibilityGraphAct->setEnabled(0);
+        importVGALinksAct->setEnabled(0);
         makeIsovistPathAct->setEnabled(0);
         runVisibilityGraphAnalysisAct->setEnabled(0);
         convertDataMapLinesAct->setEnabled(0);
@@ -2237,9 +2247,15 @@ void MainWindow::updateVisibilitySubMenu()
         makeIsovistPathAct->setEnabled(true);
     else makeIsovistPathAct->setEnabled(0);
 
-    if (m_p->m_meta_graph->viewingProcessedPoints())
+    if (m_p->m_meta_graph->viewingProcessedPoints()) {
+        importVGALinksAct->setEnabled(true);
         runVisibilityGraphAnalysisAct->setEnabled(true);
-    else runVisibilityGraphAnalysisAct->setEnabled(0);
+    }
+    else
+    {
+        importVGALinksAct->setEnabled(0);
+        runVisibilityGraphAnalysisAct->setEnabled(0);
+    }
 
     if ( !m_p->m_communicator &&
          m_p->m_meta_graph->viewingProcessedShapes() &&
@@ -2880,6 +2896,9 @@ void MainWindow::createActions()
     makeVisibilityGraphAct = new QAction(tr("Make &Visibility Graph..."), this);
     connect(makeVisibilityGraphAct, SIGNAL(triggered()), this, SLOT(OnToolsMakeGraph()));
 
+    importVGALinksAct = new QAction(tr("Import VGA links from file..."), this);
+    connect(importVGALinksAct, SIGNAL(triggered()), this, SLOT(OnToolsImportVGALinks()));
+
     makeIsovistPathAct = new QAction(tr("Make &Isovist Path..."), this);
     connect(makeIsovistPathAct, SIGNAL(triggered()), this, SLOT(OnToolsIsovistpath()));
 
@@ -3385,6 +3404,7 @@ void MainWindow::createMenus()
     visibilitySubMenu = toolsMenu->addMenu(tr("&Visibility"));
     visibilitySubMenu->addAction(SetGridAct);
     visibilitySubMenu->addAction(makeVisibilityGraphAct);
+    visibilitySubMenu->addAction(importVGALinksAct);
     visibilitySubMenu->addAction(makeIsovistPathAct);
     visibilitySubMenu->addSeparator();
     visibilitySubMenu->addAction(runVisibilityGraphAnalysisAct);
