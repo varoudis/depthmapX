@@ -17,6 +17,7 @@
 #include "salalib/mgraph.h"
 #include "salalib/entityparsing.h"
 #include "exceptions.h"
+#include "runmethods.h"
 #include <cstring>
 #include <memory>
 #include <sstream>
@@ -29,7 +30,7 @@ namespace {
     }
 }
 
-LinkParser::LinkParser(size_t argc, char *argv[])
+void LinkParser::parse(int argc, char *argv[])
 {
     std::string linksFile;
     std::vector<std::string> manualLinks;
@@ -105,4 +106,9 @@ LinkParser::LinkParser(size_t argc, char *argv[])
         vector<Line> lines = EntityParsing::parseLines(linksStream, ',');
         _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
     }
+}
+
+void LinkParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
+{
+    dm_runmethods::linkGraph(clp, _mergeLines, perfWriter);
 }
