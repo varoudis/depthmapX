@@ -382,17 +382,6 @@ void QGraphDoc::OnVGALinksFileImport()
             QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
                                                    QMessageBox::Ok, QMessageBox::Ok);
         }
-        catch (depthmapX::BaseException& e)
-        {
-            std::stringstream message;
-            message << "Unable to import text file\n\n";
-            message << fileName;
-            message << "\n\n Error: ";
-            message << e.what();
-            message << flush;
-            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
-                                                   QMessageBox::Ok, QMessageBox::Ok);
-        }
     }
 }
 
