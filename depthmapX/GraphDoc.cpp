@@ -344,7 +344,7 @@ void QGraphDoc::OnFileImport()
          QFilePath filepath(infiles[i]);
          if (filepath.m_ext != ext || !(filepath.m_ext == tr("RT1") || filepath.m_ext == tr("NTF") || filepath.m_ext == tr("GML") || filepath.m_ext == tr(""))) {
 			 QMessageBox::warning(this, tr("Warning"), tr("You have selected more than one file.  Unfortunately, this feature is only currently available with NTF, GML and Tiger line files.\nPlease select a single file to import only."),
-				 QMessageBox::Yes, QMessageBox::Yes);
+                 QMessageBox::Ok, QMessageBox::Ok);
             return;
          }
       }
@@ -404,7 +404,7 @@ void QGraphDoc::OnFileImport()
       ifstream file( infiles[0].toLatin1() );
       if (file.fail()) {
 		 QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
-			 QMessageBox::Yes, QMessageBox::Yes);
+             QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
          if (m_meta_graph->importTxt( file, pstring(filepath.m_name.toLatin1()), (ext == tr("CSV")) ) != -1) {
@@ -421,13 +421,13 @@ void QGraphDoc::OnFileImport()
 													Points with X and Y values, or\n\
 													points with Easting and Northing values, or\n\
 													lines with X1,Y1 and X2,Y2 values"),
-													QMessageBox::Yes, QMessageBox::Yes);
+                                                    QMessageBox::Ok, QMessageBox::Ok);
          }
       }
    }
    else {
 	  QMessageBox::warning(this, tr("Warning"), tr("Unrecognised file format.  Sorry, unable to import this file."),
-		 QMessageBox::Yes, QMessageBox::Yes);
+         QMessageBox::Ok, QMessageBox::Ok);
    }
 }
 
@@ -1488,33 +1488,33 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
       ret = TRUE;
       break;
    case MetaGraph::WARN_BUGGY_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("this graph was made with a version of depthmapX that contained slight errors"), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("this graph was made with a version of depthmapX that contained slight errors"), QMessageBox::Ok, QMessageBox::Ok);
       ret = TRUE;
       break;
    case MetaGraph::WARN_CONVERTED:
       QMessageBox::warning(this, tr("Warning"), tr("Warning: this graph was made with an older version of depthmapX.\n" \
-          "Some aspects of the graph may not have been translated to the new depthmapX properly."), QMessageBox::Yes, QMessageBox::Yes);
+          "Some aspects of the graph may not have been translated to the new depthmapX properly."), QMessageBox::Ok, QMessageBox::Ok);
       ret = TRUE;
       break;
    case MetaGraph::NOT_A_GRAPH:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: not recognised as a graph file."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: not recognised as a graph file."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DAMAGED_FILE:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: the graph file is damaged."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: the graph file is damaged."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DISK_ERROR:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: an error occurred while trying to read from the disk."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: an error occurred while trying to read from the disk."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::NEWER_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this graph has been written by a newer version of depthmapX."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this graph has been written by a newer version of depthmapX."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DEPRECATED_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this is a graph file format not supported by this version of depthmapX."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this is a graph file format not supported by this version of depthmapX."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    default:
       {
          pstring err = pstringify(ok);
-		 QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: error number "), QMessageBox::Yes, QMessageBox::Yes);
+         QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: error number "), QMessageBox::Ok, QMessageBox::Ok);
       }
       break;
    }
