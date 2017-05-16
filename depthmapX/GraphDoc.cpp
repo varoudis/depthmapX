@@ -361,13 +361,9 @@ void QGraphDoc::OnVGALinksFileImport()
         try
         {
             PointMap& currentMap = m_meta_graph->getDisplayedPointMap();
-            vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(
+            vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(
                         EntityParsing::parseLines(fileStream, '\t'), currentMap);
-            for (size_t i = 0; i < newLinks.size(); i++)
-            {
-                PixelRefPair link = newLinks[i];
-                currentMap.mergePixels(link.a,link.b);
-            }
+            depthmapX::mergePixelPairs(newLinks, currentMap);
             SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
         }
         catch (depthmapX::BaseException& e)
