@@ -14,7 +14,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "linkutils.h"
-#include "genlib/exceptions.h"
 #include <sstream>
 
 namespace depthmapX {
@@ -52,7 +51,7 @@ namespace depthmapX {
                 message << "Line ends not both on painted analysis space (index: "
                         << (iter - links.begin() + 1)
                         << ")" << flush;
-                throw depthmapX::RuntimeException(message.str().c_str());
+                throw depthmapX::InvalidLinkException(message.str().c_str());
             }
 
             // check if we were given coordinates that fall on a previously
@@ -67,7 +66,7 @@ namespace depthmapX {
                         << (iter - links.begin() + 1)
                         << ")"
                         << flush;
-                throw depthmapX::RuntimeException(message.str().c_str());
+                throw depthmapX::InvalidLinkException(message.str().c_str());
             }
 
             // also check if given links have overlapping pixels:
@@ -88,7 +87,7 @@ namespace depthmapX {
                     message << "Overlapping link found (index: "
                             << (iter - links.begin() + 1)
                             << ")" << flush;
-                    throw depthmapX::RuntimeException(message.str().c_str());
+                    throw depthmapX::InvalidLinkException(message.str().c_str());
                 }
             }
         }
