@@ -159,6 +159,7 @@ private slots:
     void OnColumnProperties();
     void OnPushToLayer();
     void OnToolsMakeGraph();
+    void OnToolsImportVGALinks();
     void OnToolsIsovistpath();
     void OnToolsAgentLoadProgram();
     void OnToolsRunAxa();
@@ -378,6 +379,7 @@ private:
 
     //Tools Menu Actions
     QAction *makeVisibilityGraphAct;
+    QAction *importVGALinksAct;
     QAction *makeIsovistPathAct;
     QAction *runVisibilityGraphAnalysisAct;
     QAction *visibilityStepAct;

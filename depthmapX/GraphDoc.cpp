@@ -312,6 +312,90 @@ void QGraphDoc::ProcPostMessage(int m, int x, int y)
     }
 }
 
+void QGraphDoc::OnVGALinksFileImport()
+{
+    if (m_communicator) {
+        return; // Locked
+    }
+
+    // change the view before loading the file to make the changes apparent
+    ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
+    SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
+
+    QString template_string;
+    template_string += "Text files (*.txt *.csv)\n";
+    template_string += "All files (*.*)";
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString infile = QFileDialog::getOpenFileName(
+                                0, tr("Import Links File"),
+                                "",
+                                template_string,
+                                &selectedFilter,
+                                options);
+
+    if (!infile.size())
+    {
+        // no file selected
+        return;
+    }
+
+    std::string fileName = infile.toStdString();
+
+    ifstream fileStream(fileName);
+    if (fileStream.fail())
+    {
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
+                           QMessageBox::Ok, QMessageBox::Ok);
+      return;
+    }
+    else
+    {
+        try
+        {
+            PointMap& currentMap = m_meta_graph->getDisplayedPointMap();
+            vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(
+                        EntityParsing::parseLines(fileStream, '\t'), currentMap);
+            depthmapX::mergePixelPairs(newLinks, currentMap);
+            SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
+        }
+        catch (EntityParsing::EntityParseException& e)
+        {
+            std::stringstream message;
+            message << "Unable to parse text file\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+        catch (depthmapX::InvalidLinkException& e)
+        {
+            std::stringstream message;
+            message << "Unable to import links\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+        catch (depthmapX::BaseException& e)
+        {
+            std::stringstream message;
+            message << "Unable to import text file\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+    }
+}
+
 void QGraphDoc::OnFileImport()
 {
    if (m_communicator) {
