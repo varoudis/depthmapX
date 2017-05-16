@@ -55,12 +55,9 @@ namespace dm_runmethods
         SimpleTimer t;
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
-        vector<PixelRefPair> newLinks = depthmapX::getLinksFromMergeLines(mergeLines, currentMap);
-        for (size_t i = 0; i < newLinks.size(); i++)
-        {
-            PixelRefPair link = newLinks.at(i);
-            currentMap.mergePixels(link.a,link.b);
-        }
+        vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(mergeLines, currentMap);
+        depthmapX::mergePixelPairs(newLinks, currentMap);
+
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }

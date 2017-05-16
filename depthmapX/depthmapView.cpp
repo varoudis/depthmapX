@@ -1702,7 +1702,7 @@ void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc )
    // now the two are a little out of synch
 
    if (!m_viewport_set) {
-       QMessageBox::warning(this, tr("Warning"), tr("Can't save screen as the Depthmap window is not initialised"), QMessageBox::Yes, QMessageBox::Yes);
+       QMessageBox::warning(this, tr("Warning"), tr("Can't save screen as the Depthmap window is not initialised"), QMessageBox::Ok, QMessageBox::Ok);
        return;
    }
 
