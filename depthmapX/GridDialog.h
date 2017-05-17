@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,30 +15,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui_GridDialog.h"
-#include <salalib/mgraph.h>
-#include <salalib/attributes.h>
-#include <salalib/shapemap.h>
-#include <salalib/axialmap.h>
-
 
 class CGridDialog : public QDialog, public Ui::CGridDialog
 {
 	Q_OBJECT
 public:
-	CGridDialog(QWidget *parent = 0);
-	double	m_spacing;
-	double m_maxdimension;
-	int m_minexponent;
-	int m_maxexponent;
-	int m_basemantissa;
-	int m_mantissa;
-	int m_exponent;
+    CGridDialog(double maxDimension, QWidget *parent = 0);
     void UpdateData(bool value);
 	void showEvent(QShowEvent * event);
+    double getSpacing() const { return m_spacing; }
+
+private:
+    double	m_spacing;
+    double m_maxdimension;
 
 private slots:
 		void OnDeltaposSpinSpacing(double);
 		void OnOK();
 		void OnCancel();
-        void userValue(double value);
 };
