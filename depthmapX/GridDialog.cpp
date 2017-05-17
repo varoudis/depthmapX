@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,30 +16,21 @@
 
 #include "GridDialog.h"
 #include <QMessageBox>
+#include <salalib/gridproperties.h>
 
-CGridDialog::CGridDialog(QWidget *parent)
-: QDialog(parent)
+CGridDialog::CGridDialog(double maxDimension, QWidget *parent)
+: QDialog(parent), m_maxdimension(maxDimension)
 {
 	setupUi(this);
 	m_spacing = 0.01;
-	m_maxdimension = 1.0;
 }
 
 void CGridDialog::showEvent(QShowEvent * event)
 {
-	m_maxexponent = (int) floor(log10(m_maxdimension)) - 1;
-	m_minexponent = m_maxexponent - 2;
-	m_basemantissa = (int) floor(m_maxdimension / pow(10.0,double(m_maxexponent+1)));
+    GridProperties gp(m_maxdimension);
+    m_spacing = gp.getDefault();
 
-	// current:
-	m_mantissa = m_basemantissa;
-	m_exponent = m_maxexponent - 1;
-
-	m_spacing = (double) m_mantissa * pow(10.0, double(m_exponent));
-
-    double truemax = (double) 2 * m_mantissa * pow(10.0, double(m_maxexponent));
-    double truemin = (double) m_mantissa * pow(10.0, double(m_minexponent));
-    c_spacing_ctrl->setRange(truemin, truemax);
+    c_spacing_ctrl->setRange(gp.getMin(), gp.getMax());
 
 	UpdateData(false);
 }
@@ -58,48 +50,6 @@ void CGridDialog::OnDeltaposSpinSpacing(double iDelta)
 void CGridDialog::OnOK()
 {
 	UpdateData(true);
-
-	double truemax = (double) 2 * m_mantissa * pow(10.0, double(m_maxexponent));
-	double truemin = (double) m_mantissa * pow(10.0, double(m_minexponent));
-	if (m_spacing > truemax || m_spacing < truemin) {
-		QString formatabsmin, formatmin, formatmax;
-		if (m_minexponent < 0) {
-			formatmin.sprintf("%%.%df", abs(m_minexponent));
-		}
-		else {
-			formatmin = tr("%.0f");
-		}
-		if (m_minexponent-1 < 0) {
-			formatabsmin.sprintf("%%.%df", abs(m_minexponent-1));
-		}
-		else {
-			formatabsmin = tr("%.0f");
-		}
-		if (m_maxexponent < 0) {
-			formatmax.sprintf("%%.%df" ,abs(m_maxexponent));
-		}
-		else {
-			formatmax = tr("%.0f");
-		}
-		QString absminstr, minstr, maxstr;
-        absminstr.sprintf(formatabsmin.toLatin1(), truemin/10);
-        minstr.sprintf(formatmin.toLatin1(), truemin);
-        maxstr.sprintf(formatmax.toLatin1(), truemax);
-		if (m_spacing >= truemin / 10 && m_spacing < truemin) {
-			QString msg;
-			msg = tr("You are below the suggested minimum grid spacing of ") + minstr + tr(".  If you use this grid spacing, it may cause processing problems.\nAre you sure you want to proceed with this grid spacing?");
-			if (QMessageBox::No == QMessageBox::question(this, tr("Question"), msg, QMessageBox::Yes | QMessageBox::No)) {
-				return;
-			}
-		}
-		else {
-			QString msg;
-			msg = tr("Please enter a spacing between ") + absminstr + tr(" (at the absolute minimum) and ") + maxstr;
-			QMessageBox::warning(this, "Notice", msg, QMessageBox::Ok, QMessageBox::Ok);
-			return;
-		}
-	}
-
 	accept();
 }
 
@@ -118,9 +68,4 @@ void CGridDialog::UpdateData(bool value)
 	{
 		c_spacing_ctrl->setValue(m_spacing);
 	}
-}
-
-void CGridDialog::userValue(double value)
-{
-    m_spacing = c_spacing_ctrl->value();
 }

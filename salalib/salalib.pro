@@ -38,7 +38,8 @@ SOURCES += \
     topomet.cpp \
     vertex.cpp \
     entityparsing.cpp \
-    linkutils.cpp
+    linkutils.cpp \
+    gridproperties.cpp
 
 HEADERS += \
     attributes.h \
@@ -63,7 +64,8 @@ HEADERS += \
     vertex.h \
     idepthmap.h \
     entityparsing.h \
-    linkutils.h
+    linkutils.h \
+    gridproperties.h
 
 DISTFILES += \
     salascript-tests.txt
