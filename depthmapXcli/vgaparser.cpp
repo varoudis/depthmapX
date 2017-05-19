@@ -18,6 +18,7 @@
 #include <cstring>
 #include "radiusconverter.h"
 #include "runmethods.h"
+#include "parsingutils.h"
 
 using namespace depthmapX;
 
@@ -42,10 +43,7 @@ void VgaParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-vm can only be used once, modes are mutually exclusive");
             }
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-vm requires an argument");
-            }
+            ENFORCE_ARGUMENT("-vm", i)
             if ( strcmp(argv[i], "isovist") == 0 )
             {
                 _vgaMode = VgaMode::ISOVIST;
@@ -81,10 +79,7 @@ void VgaParser::parse(int argc, char *argv[])
         }
         else if (strcmp(argv[i], "-vr") == 0)
         {
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-vr requires an argument");
-            }
+            ENFORCE_ARGUMENT("-vr", i)
             _radius = argv[i];
         }
         ++i;

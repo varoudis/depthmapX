@@ -16,6 +16,7 @@
 #include "commandlineparser.h"
 #include "exceptions.h"
 #include "imodeparserfactory.h"
+#include "parsingutils.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -60,10 +61,7 @@ void CommandLineParser::parse(size_t argc, char *argv[])
             {
                 throw CommandLineException("-m can only be used once");
             }
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-m requires an argument");
-            }
+            ENFORCE_ARGUMENT("-m", i)
 
             for (auto iter = _parserFactory.getModeParsers().begin(), end = _parserFactory.getModeParsers().end();
                  iter != end; ++iter )
@@ -82,26 +80,17 @@ void CommandLineParser::parse(size_t argc, char *argv[])
         }
         else if ( strcmp ("-f", argv[i]) == 0)
         {
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-f requires an argument");
-            }
+            ENFORCE_ARGUMENT("-f", i)
             _fileName = argv[i];
         }
         else if ( strcmp ("-o", argv[i]) == 0)
         {
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-o requires an argument");
-            }
+            ENFORCE_ARGUMENT("-o", i)
             _outputFile = argv[i];
         }
         else if ( strcmp ("-t", argv[i]) == 0)
         {
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-t requires an argument");
-            }
+            ENFORCE_ARGUMENT("-t", i)
             _timingFile = argv[i];
         }
         else if ( strcmp("-s", argv[i]) == 0)
