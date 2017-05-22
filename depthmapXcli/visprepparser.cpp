@@ -76,7 +76,7 @@ void VisPrepParser::parse(int argc, char ** argv)
             if ( m_maxVisibility == 0.0)
             {
                 std::stringstream message;
-                message << "Restricted visibilyt of '" << argv[i] << "' makes no sense, use a positive number or -1 for unrestricted";
+                message << "Restricted visibility of '" << argv[i] << "' makes no sense, use a positive number or -1 for unrestricted";
                 throw CommandLineException(message.str());
             }
         }

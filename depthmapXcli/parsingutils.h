@@ -14,9 +14,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-
+#define PASTE(arg) arg
 #define ENFORCE_ARGUMENT(flag, counter)\
-    if ( ++ ##counter >= argc || argv[ ##counter][0] == '-'  )\
+    if ( ++ PASTE(counter) >= argc || argv[ PASTE(counter)][0] == '-'  )\
     {\
         throw CommandLineException(flag  " requires an argument");\
     }\

@@ -138,7 +138,7 @@ namespace dm_runmethods
         if ( gridSize > gp.getMax() ||  gridSize < gp.getMin())
         {
             std::stringstream message;
-            message << "Chosen grid spacing " << gridSize << " is outside of the expected intervall of "
+            message << "Chosen grid spacing " << gridSize << " is outside of the expected interval of "
                     << gp.getMin() << " <= spacing <= " << gp.getMax() << std::flush;
             throw depthmapX::RuntimeException(message.str());
         }

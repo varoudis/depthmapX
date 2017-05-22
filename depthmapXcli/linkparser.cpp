@@ -30,7 +30,7 @@ void LinkParser::parse(int argc, char *argv[])
     std::string linksFile;
     std::vector<std::string> manualLinks;
 
-    for ( size_t i = 1; i < argc;  )
+    for ( int i = 1; i < argc;  )
     {
         if ( strcmp ("-lf", argv[i]) == 0)
         {
