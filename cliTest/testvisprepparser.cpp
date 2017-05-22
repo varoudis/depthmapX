@@ -122,14 +122,14 @@ TEST_CASE("VisPrepParserFail", "Error cases")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Error parsing line: 0.1"));
     }
 
-    SECTION("Nonsensical visiblity restriction")
+    SECTION("Nonsensical visibility restriction")
     {
         VisPrepParser parser;
         ArgumentHolder ah{"prog", "-pr", "foo"};
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibilyt of 'foo' makes no sense, use a positive number or -1 for unrestricted"));
     }
 
-    SECTION("Nonsensical visiblity restriction")
+    SECTION("Nonsensical visibility restriction")
     {
         VisPrepParser parser;
         ArgumentHolder ah{"prog", "-pr", "0.0"};

@@ -60,7 +60,7 @@ TEST_CASE("LINK args valid", "valid")
 {
     // for this set of tests a difference less than 0.001 should
     // suffice to signify that two floats are the same
-    const float EPSILON = 0.001;
+    const float EPSILON = 0.001f;
 
     {
         ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8"};

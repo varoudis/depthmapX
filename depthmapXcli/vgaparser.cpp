@@ -34,7 +34,7 @@ VgaParser::VgaParser() : _vgaMode(VgaMode::NONE), _globalMeasures(false), _local
 
 void VgaParser::parse(int argc, char *argv[])
 {
-    for ( size_t i = 1; i < argc;  )
+    for ( int i = 1; i < argc;  )
     {
 
         if ( strcmp ("-vm", argv[i]) == 0)
