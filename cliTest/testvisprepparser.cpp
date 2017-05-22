@@ -126,14 +126,14 @@ TEST_CASE("VisPrepParserFail", "Error cases")
     {
         VisPrepParser parser;
         ArgumentHolder ah{"prog", "-pr", "foo"};
-        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibilyt of 'foo' makes no sense, use a positive number or -1 for unrestricted"));
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibility of 'foo' makes no sense, use a positive number or -1 for unrestricted"));
     }
 
     SECTION("Nonsensical visibility restriction")
     {
         VisPrepParser parser;
         ArgumentHolder ah{"prog", "-pr", "0.0"};
-        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibilyt of '0.0' makes no sense, use a positive number or -1 for unrestricted"));
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibility of '0.0' makes no sense, use a positive number or -1 for unrestricted"));
     }
 
 }
