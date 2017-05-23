@@ -20,7 +20,10 @@ SOURCES += main.cpp \
     testperformancewriter.cpp \
     testselfcleaningfile.cpp \
     ../depthmapXcli/runmethods.cpp \
-    ../depthmapXcli/modeparserregistry.cpp
+    ../depthmapXcli/modeparserregistry.cpp \
+    testvisprepparser.cpp \
+    ../depthmapXcli/visprepparser.cpp
+
 
 HEADERS += \
     ../depthmapXcli/commandlineparser.h \

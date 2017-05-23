@@ -22,6 +22,7 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include <salalib/gridproperties.h>
 
 namespace dm_runmethods
 {
@@ -102,6 +103,62 @@ namespace dm_runmethods
         DO_TIMED("Run VGA", mgraph->analyseGraph(comm.get(), *options, cmdP.simpleMode() ))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        std::cout << " ok" << std::endl;
+    }
+
+    void fillGraph(MetaGraph& graph, const Point2f& point)
+    {
+        auto r = graph.getRegion();
+        if (!r.contains(point))
+        {
+            throw depthmapX::RuntimeException("Point outside of target region");
+        }
+        graph.makePoints(point, 0, 0);
+    }
+
+    void runVisualPrep(
+            const CommandLineParser &clp,
+            double gridSize, const std::vector<Point2f> &fillPoints,
+            double maxVisibility,
+            bool boundaryGraph,
+            IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
+
+        std::cout << "Initial checks... " << std::flush;
+        auto state = mGraph->getState();
+        if (~state & MetaGraph::LINEDATA)
+        {
+            throw depthmapX::RuntimeException("Graph must have line data before preparing VGA");
+        }
+        // set grid
+        QtRegion r = mGraph->getRegion();
+
+        GridProperties gp(__max(r.width(), r.height()));
+        if ( gridSize > gp.getMax() ||  gridSize < gp.getMin())
+        {
+            std::stringstream message;
+            message << "Chosen grid spacing " << gridSize << " is outside of the expected interval of "
+                    << gp.getMin() << " <= spacing <= " << gp.getMax() << std::flush;
+            throw depthmapX::RuntimeException(message.str());
+        }
+
+        std::cout << "ok\nSetting up grid... " << std::flush;
+        if (!mGraph->PointMaps::size() || mGraph->getDisplayedPointMap().isProcessed()) {
+           // this can happen if there are no displayed maps -- so flag new map required:
+            mGraph->addNewMap();
+        }
+        DO_TIMED("Setting grid", mGraph->setGrid(gridSize, Point2f(0.0, 0.0)))
+
+        std::cout << "ok\nFilling grid... " << std::flush;
+        DO_TIMED("Filling grid",
+                 for_each(fillPoints.begin(), fillPoints.end(), [&mGraph](const Point2f &point)->void{fillGraph(*mGraph, point);}))
+
+
+        std::cout << "ok\nCalculating connectivity... " << std::flush;
+        DO_TIMED("Calculate Connectivity", mGraph->makeGraph(0, boundaryGraph ? 1 : 0, maxVisibility))
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
         std::cout << " ok" << std::endl;
     }
 
