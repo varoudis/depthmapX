@@ -742,15 +742,14 @@ void QGraphDoc::OnEditGrid()
       if ( QMessageBox::Yes != QMessageBox::question(this, tr("depthmapX"), tr("This will clear existing points.  Do you want to continue?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
          return;
    }
-   CGridDialog dlg;
    QtRegion r = m_meta_graph->SuperSpacePixel::getRegion();
-   dlg.m_maxdimension = __max(r.width(), r.height());
+   CGridDialog dlg(__max(r.width(), r.height()));
    if (QDialog::Accepted == dlg.exec())
    {
       if (newmap) {
          m_meta_graph->PointMaps::addNewMap();
       }
-      m_meta_graph->setGrid( dlg.m_spacing, Point2f(0.0f, 0.0f) );
+      m_meta_graph->setGrid( dlg.getSpacing(), Point2f(0.0f, 0.0f) );
       m_meta_graph->m_showgrid = true;
       SetUpdateFlag(NEW_TABLE);
       SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_DATA);

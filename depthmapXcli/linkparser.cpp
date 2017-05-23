@@ -18,24 +18,19 @@
 #include "salalib/entityparsing.h"
 #include "exceptions.h"
 #include "runmethods.h"
+#include "parsingutils.h"
 #include <cstring>
 #include <memory>
 #include <sstream>
 
 using namespace depthmapX;
 
-namespace {
-    bool has_only_digits_dots_commas(const std::string &s){
-      return s.find_first_not_of( "0123456789,." ) == std::string::npos;
-    }
-}
-
 void LinkParser::parse(int argc, char *argv[])
 {
     std::string linksFile;
     std::vector<std::string> manualLinks;
 
-    for ( size_t i = 1; i < argc;  )
+    for ( int i = 1; i < argc;  )
     {
         if ( strcmp ("-lf", argv[i]) == 0)
         {
@@ -47,10 +42,7 @@ void LinkParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-lf requires an argument");
-            }
+            ENFORCE_ARGUMENT("-lf", i)
             linksFile = argv[i];
         }
         else if ( strcmp ("-lnk", argv[i]) == 0)
@@ -59,10 +51,7 @@ void LinkParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
-            if ( ++i >= argc || argv[i][0] == '-'  )
-            {
-                throw CommandLineException("-lnk requires an argument");
-            }
+            ENFORCE_ARGUMENT("-lnk", i)
             if (!has_only_digits_dots_commas(argv[i]))
             {
                 std::stringstream message;
