@@ -22,7 +22,9 @@ SOURCES += main.cpp \
     ../depthmapXcli/runmethods.cpp \
     ../depthmapXcli/modeparserregistry.cpp \
     testvisprepparser.cpp \
-    ../depthmapXcli/visprepparser.cpp
+    ../depthmapXcli/visprepparser.cpp \
+    testaxialparser.cpp \
+    ../depthmapXcli/axialparser.cpp
 
 
 HEADERS += \
