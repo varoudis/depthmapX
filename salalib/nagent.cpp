@@ -149,21 +149,25 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
 
    // output agent trails to file:
    if (m_record_trails) {
-      // just dump in local file...
-      ofstream trails("trails.cat");
-      trails << "CAT" << endl;
-      for (int i = 0; i < m_trail_count; i++) {
-         trails << "Begin Polyline" << endl;
-         for (size_t j = 0; j < g_trails[i].size(); j++) {
-            trails << g_trails[i][j].x << " " << g_trails[i][j].y << endl;
-         }
-         trails << "End Polyline" << endl;
-      }
+       // just dump in local file...
+       ofstream trails("trails.cat");
+       outputTrails(trails);
    }
 
    // actually, no, do this from the 
    pointmap->overrideDisplayedAttribute(-2);
    pointmap->setDisplayedAttribute(displaycol);
+}
+
+void AgentEngine::outputTrails(ostream& trailsFile) {
+    trailsFile << "CAT" << endl;
+    for (int i = 0; i < m_trail_count; i++) {
+       trailsFile << "Begin Polyline" << endl;
+       for (size_t j = 0; j < g_trails[i].size(); j++) {
+          trailsFile << g_trails[i][j].x << " " << g_trails[i][j].y << endl;
+       }
+       trailsFile << "End Polyline" << endl;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
