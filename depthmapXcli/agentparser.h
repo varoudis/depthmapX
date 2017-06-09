@@ -52,7 +52,11 @@ public:
                   "-alocrand set agents to start at random locations\n"\
                   "-alocfile <agent starting points file>\n"\
                   "-aloc <single agent starting point coordinates> provided in csv (x1,y1) "\
-                  "for example \"0.1,0.2\". Provide multiple times for multiple links\n";
+                  "for example \"0.1,0.2\". Provide multiple times for multiple links\n"\
+                  "-ot <output type> available output types (may use more than one):"\
+                  "    graph (graph file, default)"\
+                  "    gatecounts (csv with cells of grid with gate counts)"\
+                  "    trails (csv with lines showing path traversed by each agent)";
     }
 
 public:
@@ -75,6 +79,12 @@ public:
         BIN_MEMORY
     };
 
+    enum OutputType{
+        GRAPH,
+        GATECOUNTS,
+        TRAILS
+    };
+
     // agent options
     AgentMode getAgentMode() const { return _agentMode; }
 
@@ -88,6 +98,8 @@ public:
     int agentLifeTimesteps() const { return _agentLifeTimesteps; }
 
     std::vector<Point2f> getReleasePoints() const { return _releasePoints; }
+
+    std::vector<OutputType> outputTypes() const { return _outputTypes; }
 
 private:
     // agent options
@@ -103,5 +115,7 @@ private:
 
     bool _randomReleaseLocations = false;
     std::vector<Point2f> _releasePoints;
+
+    std::vector<OutputType> _outputTypes;
 };
 

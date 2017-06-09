@@ -223,6 +223,31 @@ void AgentParser::parse(int argc, char *argv[])
             }
             points.push_back(argv[i]);
         }
+        else if (strcmp(argv[i], "-ot") == 0)
+        {
+            ENFORCE_ARGUMENT("-ot", i)
+            if ( strcmp(argv[i], "graph") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::GRAPH) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (graph) provided twice");
+                }
+                _outputTypes.push_back(OutputType::GRAPH);
+            }
+            else if ( strcmp(argv[i], "gatecounts") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::GATECOUNTS) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (gatecounts) provided twice");
+                }
+                _outputTypes.push_back(OutputType::GATECOUNTS);
+            }
+            else if ( strcmp(argv[i], "trails") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::TRAILS) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (trails) provided twice");
+                }
+                _outputTypes.push_back(OutputType::TRAILS);
+            }
+        }
         ++i;
     }
 
