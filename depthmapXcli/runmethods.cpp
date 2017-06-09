@@ -246,7 +246,7 @@ namespace dm_runmethods
         }
 
         std::cout << "ok\nRunning agent analysis... " << std::flush;
-        DO_TIMED("Running agent analysis", eng.run(comm.get(), &(mgraph->getDisplayedPointMap()) ))
+        DO_TIMED("Running agent analysis", eng.run(comm.get(), &currentMap))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
     }
