@@ -248,6 +248,62 @@ namespace dm_runmethods
         std::cout << "ok\nRunning agent analysis... " << std::flush;
         DO_TIMED("Running agent analysis", eng.run(comm.get(), &currentMap))
         std::cout << " ok\nWriting out result..." << std::flush;
-        DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        std::vector<AgentParser::OutputType> resultTypes = agentP.outputTypes();
+        if(resultTypes.size() == 0)
+        {
+            // if no choice was made for an output type assume the user just
+            // wants a graph file
+
+            DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        }
+        else if(resultTypes.size() == 1)
+        {
+            // if only one type of output is given, assume that the user has
+            // correctly entered a name with the correct extension and export
+            // exactly with that name and extension
+
+            switch(resultTypes[0]) {
+                case AgentParser::OutputType::GRAPH:
+                {
+                    DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                    break;
+                }
+                case AgentParser::OutputType::GATECOUNTS:
+                {
+                    ofstream gatecountStream(cmdP.getOuputFile().c_str());
+                    DO_TIMED("Writing gatecounts", currentMap.outputSummary(gatecountStream, ','))
+                    break;
+                }
+                case AgentParser::OutputType::TRAILS:
+                {
+                    ofstream trailStream(cmdP.getOuputFile().c_str());
+                    DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // if more than one output type is given assume the user has given
+            // a filename without an extension and thus the new file must have
+            // an extension. Also to avoid name clashes in cases where the user
+            // asked for outputs that would yield the same extension also add
+            // a related suffix
+
+            if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::GRAPH) != resultTypes.end()) {
+                std::string outFile = cmdP.getOuputFile() + ".graph";
+                DO_TIMED("Writing graph", mgraph->write(outFile.c_str(),METAGRAPH_VERSION, false))
+            }
+            if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::GATECOUNTS) != resultTypes.end()) {
+                std::string outFile = cmdP.getOuputFile() + "_gatecounts.csv";
+                ofstream gatecountStream(outFile.c_str());
+                DO_TIMED("Writing gatecounts", currentMap.outputSummary(gatecountStream, ','))
+            }
+            if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::TRAILS) != resultTypes.end()) {
+                std::string outFile = cmdP.getOuputFile() + "_trails.cat";
+                ofstream trailStream(outFile.c_str());
+                 DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+            }
+        }
     }
 }

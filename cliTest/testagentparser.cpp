@@ -129,11 +129,32 @@ TEST_CASE("AgentParserFail", "Parsing errors")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-alife must be a number >0, got foo"));
     }
 
-    SECTION("rubbish input to -aloc")
+    SECTION("Rubbish input to -aloc")
     {
         AgentParser parser;
         ArgumentHolder ah{"prog", "-aloc", "foo"};
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid starting point provided (foo). Should only contain digits dots and commas"));
+    }
+
+    SECTION("Define graph output twice")
+    {
+        AgentParser parser;
+        ArgumentHolder ah{"prog", "-ot", "graph", "-ot", "graph"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Same output type argument (graph) provided twice"));
+    }
+
+    SECTION("Define gatecounts output twice")
+    {
+        AgentParser parser;
+        ArgumentHolder ah{"prog", "-ot", "gatecounts", "-ot", "gatecounts"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Same output type argument (gatecounts) provided twice"));
+    }
+
+    SECTION("Define trails output twice")
+    {
+        AgentParser parser;
+        ArgumentHolder ah{"prog", "-ot", "trails", "-ot", "trails"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Same output type argument (trails) provided twice"));
     }
 }
 TEST_CASE("AgentParserInputFail", "Bad or missing input")
@@ -302,13 +323,8 @@ TEST_CASE("AgentParserSuccess", "Read successfully")
     std::stringstream alife;
     alife << agentLifeTimesteps << std::flush;
 
-    SECTION("Read from commandline")
+    SECTION("Random starting locations (points vector should be empty)")
     {
-        std::stringstream p1;
-        p1 << x1 << "," << y1 << std::flush;
-        std::stringstream p2;
-        p2 << x2 << "," << y2 << std::flush;
-
         ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand"};
         parser.parse(ah.argc(), ah.argv());
 
@@ -352,6 +368,56 @@ TEST_CASE("AgentParserSuccess", "Read successfully")
         REQUIRE(points[0].y == Approx(y1));
         REQUIRE(points[1].x == Approx(x2));
         REQUIRE(points[1].y == Approx(y2));
+    }
+
+    SECTION("Output type not set")
+    {
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand"};
+        parser.parse(ah.argc(), ah.argv());
+
+        auto outputTypes = parser.outputTypes();
+        REQUIRE(outputTypes.size() == 0);
+    }
+
+    SECTION("Set output type to graph")
+    {
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "-ot", "graph"};
+        parser.parse(ah.argc(), ah.argv());
+
+        auto outputTypes = parser.outputTypes();
+        REQUIRE(outputTypes.size() == 1);
+        REQUIRE(outputTypes[0] == AgentParser::OutputType::GRAPH);
+    }
+
+    SECTION("Set output type to gatecounts")
+    {
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "-ot", "gatecounts"};
+        parser.parse(ah.argc(), ah.argv());
+
+        auto outputTypes = parser.outputTypes();
+        REQUIRE(outputTypes.size() == 1);
+        REQUIRE(outputTypes[0] == AgentParser::OutputType::GATECOUNTS);
+    }
+
+    SECTION("Set output type to trails")
+    {
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "-ot", "trails"};
+        parser.parse(ah.argc(), ah.argv());
+
+        auto outputTypes = parser.outputTypes();
+        REQUIRE(outputTypes.size() == 1);
+        REQUIRE(outputTypes[0] == AgentParser::OutputType::TRAILS);
+    }
+
+    SECTION("Set two output types")
+    {
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "-ot", "graph", "-ot", "gatecounts"};
+        parser.parse(ah.argc(), ah.argv());
+
+        auto outputTypes = parser.outputTypes();
+        REQUIRE(outputTypes.size() == 2);
+        REQUIRE(outputTypes[0] == AgentParser::OutputType::GRAPH);
+        REQUIRE(outputTypes[1] == AgentParser::OutputType::GATECOUNTS);
     }
 
     REQUIRE(parser.totalSystemTimestemps() == totalTimeSteps);
