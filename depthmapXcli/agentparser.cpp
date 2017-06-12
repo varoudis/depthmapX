@@ -1,0 +1,320 @@
+// Copyright (C) 2017 Petros Koutsolampros
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#include "agentparser.h"
+#include "exceptions.h"
+#include <cstring>
+#include "radiusconverter.h"
+#include "runmethods.h"
+#include "parsingutils.h"
+#include "salalib/entityparsing.h"
+#include <sstream>
+
+using namespace depthmapX;
+
+namespace {
+    bool has_only_digits(const std::string &s){
+      return s.find_first_not_of( "0123456789" ) == std::string::npos;
+    }
+}
+
+
+AgentParser::AgentParser() : _agentMode(AgentMode::NONE)
+{}
+
+void AgentParser::parse(int argc, char *argv[])
+{
+    std::vector<std::string> points;
+    std::string pointFile;
+
+    for ( int i = 1; i < argc;  )
+    {
+
+        if ( strcmp ("-am", argv[i]) == 0)
+        {
+            if (_agentMode != AgentMode::NONE)
+            {
+                throw CommandLineException("-am can only be used once, modes are mutually exclusive");
+            }
+            ENFORCE_ARGUMENT("-am", i)
+            if ( strcmp(argv[i], "standard") == 0 )
+            {
+                _agentMode = AgentMode::STANDARD;
+            }
+            else if ( strcmp(argv[i], "los-length") == 0 )
+            {
+                _agentMode = AgentMode::LOS_LENGTH;
+            }
+            else if ( strcmp(argv[i], "occ-length") == 0 )
+            {
+                _agentMode = AgentMode::OCC_LENGTH;
+            }
+            else if ( strcmp(argv[i], "occ-any") == 0 )
+            {
+                _agentMode = AgentMode::OCC_ANY;
+            }
+            else if ( strcmp(argv[i], "occ-group-45") == 0)
+            {
+                _agentMode = AgentMode::OCC_GROUP_45;
+            }
+            else if ( strcmp(argv[i], "occ-group-60") == 0)
+            {
+                _agentMode = AgentMode::OCC_GROUP_60;
+            }
+            else if ( strcmp(argv[i], "occ-furthest") == 0)
+            {
+                _agentMode = AgentMode::OCC_FURTHEST;
+            }
+            else if ( strcmp(argv[i], "bin-far-dist") == 0)
+            {
+                _agentMode = AgentMode::BIN_FAR_DIST;
+            }
+            else if ( strcmp(argv[i], "bin-angle") == 0)
+            {
+                _agentMode = AgentMode::BIN_ANGLE;
+            }
+            else if ( strcmp(argv[i], "bin-far-dist-angle") == 0)
+            {
+                _agentMode = AgentMode::BIN_FAR_DIST_ANGLE;
+            }
+            else if ( strcmp(argv[i], "bin-memory") == 0)
+            {
+                _agentMode = AgentMode::BIN_MEMORY;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid AGENTS mode: ") + argv[i]);
+            }
+        }
+        else if ( strcmp(argv[i], "-ats") == 0 )
+        {
+            if (_totalSystemTimestemps > 0)
+            {
+                throw CommandLineException("-ats can only be used once");
+            }
+            ENFORCE_ARGUMENT("-ats", i)
+            _totalSystemTimestemps = std::atoi(argv[i]);
+            if (_totalSystemTimestemps <= 0)
+            {
+                throw CommandLineException(std::string("-ats must be a number >0, got ") + argv[i]);
+            }
+        }
+        else if ( strcmp(argv[i], "-arr") == 0 )
+        {
+            if (_releaseRate > 0)
+            {
+                throw CommandLineException("-arr can only be used once");
+            }
+            ENFORCE_ARGUMENT("-arr", i)
+            _releaseRate = std::atof(argv[i]);
+            if (_releaseRate <= 0)
+            {
+                throw CommandLineException(std::string("-arr must be a number >0, got ") + argv[i]);
+            }
+        }
+        else if (strcmp(argv[i], "-atrails") == 0)
+        {
+            if (_recordTrailsForAgents >= 0)
+            {
+                throw CommandLineException("-atrails can only be used once");
+            }
+            ENFORCE_ARGUMENT("-atrails", i)
+            _recordTrailsForAgents = std::atoi(argv[i]);
+            if (_recordTrailsForAgents <= -1 || _recordTrailsForAgents == 0)
+            {
+                throw CommandLineException(std::string("-atrails must be a number >=0 or -1 for all, got ") + argv[i]);
+            }
+        }
+        else if (strcmp(argv[i], "-afov") == 0)
+        {
+            if (_agentFOV > 0)
+            {
+                throw CommandLineException("-afov can only be used once");
+            }
+            ENFORCE_ARGUMENT("-afov", i)
+            _agentFOV = std::atoi(argv[i]);
+            if (_agentFOV <= 0 || _agentFOV > 32)
+            {
+                throw CommandLineException(std::string("-afov must be a number between 1 and 32, got ") + argv[i]);
+            }
+        }
+        else if (strcmp(argv[i], "-asteps") == 0)
+        {
+            if (_agentStepsBeforeTurnDecision > 0)
+            {
+                throw CommandLineException("-asteps can only be used once");
+            }
+            ENFORCE_ARGUMENT("-asteps", i)
+            _agentStepsBeforeTurnDecision = std::atoi(argv[i]);
+            if (_agentStepsBeforeTurnDecision <= 0)
+            {
+                throw CommandLineException(std::string("-asteps must be a number >0, got ") + argv[i]);
+            }
+        }
+        else if (strcmp(argv[i], "-alife") == 0)
+        {
+            if (_agentLifeTimesteps > 0)
+            {
+                throw CommandLineException("-alife can only be used once");
+            }
+            ENFORCE_ARGUMENT("-alife", i)
+            _agentLifeTimesteps = std::atoi(argv[i]);
+            if (_agentLifeTimesteps <= 0)
+            {
+                throw CommandLineException(std::string("-alife must be a number >0, got ") + argv[i]);
+            }
+        }
+        else if (strcmp(argv[i], "-alocrand") == 0)
+        {
+            if (!pointFile.empty())
+            {
+                throw CommandLineException("-alocrand cannot be used together with -alocfile");
+            }
+            if (!points.empty())
+            {
+                throw CommandLineException("-alocrand cannot be used together with -aloc");
+            }
+            _randomReleaseLocations = true;
+        }
+        else if (strcmp(argv[i], "-alocfile") == 0)
+        {
+            if (!points.empty())
+            {
+                throw CommandLineException("-alocfile cannot be used together with -aloc");
+            }
+            if (_randomReleaseLocations)
+            {
+                throw CommandLineException("-alocfile cannot be used together with -alocrand");
+            }
+            ENFORCE_ARGUMENT("-alocfile", i)
+            pointFile = argv[i];
+        }
+        else if (strcmp(argv[i], "-aloc") == 0)
+        {
+            if (!pointFile.empty())
+            {
+                throw CommandLineException("-aloc cannot be used together with -alocfile");
+            }
+            if (_randomReleaseLocations)
+            {
+                throw CommandLineException("-aloc cannot be used together with -alocrand");
+            }
+            ENFORCE_ARGUMENT("-aloc", i)
+            if (!has_only_digits_dots_commas(argv[i]))
+            {
+                std::stringstream message;
+                message << "Invalid starting point provided ("
+                        << argv[i]
+                        << "). Should only contain digits dots and commas"
+                        << flush;
+                throw CommandLineException(message.str().c_str());
+            }
+            points.push_back(argv[i]);
+        }
+        else if (strcmp(argv[i], "-ot") == 0)
+        {
+            ENFORCE_ARGUMENT("-ot", i)
+            if ( strcmp(argv[i], "graph") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::GRAPH) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (graph) provided twice");
+                }
+                _outputTypes.push_back(OutputType::GRAPH);
+            }
+            else if ( strcmp(argv[i], "gatecounts") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::GATECOUNTS) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (gatecounts) provided twice");
+                }
+                _outputTypes.push_back(OutputType::GATECOUNTS);
+            }
+            else if ( strcmp(argv[i], "trails") == 0 )
+            {
+                if(std::find(_outputTypes.begin(), _outputTypes.end(), OutputType::TRAILS) != _outputTypes.end()) {
+                     throw CommandLineException("Same output type argument (trails) provided twice");
+                }
+                _outputTypes.push_back(OutputType::TRAILS);
+            }
+        }
+        ++i;
+    }
+
+    if(_agentMode == AgentMode::NONE)
+    {
+        _agentMode = AgentMode::STANDARD;
+    }
+
+    if (_totalSystemTimestemps == 0)
+    {
+        throw CommandLineException("Total number of timesteps (-ats <timesteps>) is required");
+    }
+
+    if (_releaseRate == 0)
+    {
+        throw CommandLineException("Release rate (-arr <rate>) is required");
+    }
+
+    if (_agentFOV == 0)
+    {
+        throw CommandLineException("Agent field-of-view (-afov <bins>) is required");
+    }
+
+    if (_agentStepsBeforeTurnDecision == 0)
+    {
+        throw CommandLineException("Agent number of steps before turn decision (-asteps <steps>) is required");
+    }
+
+    if (_agentLifeTimesteps == 0)
+    {
+        throw CommandLineException("Agent life in timesteps (-alife <timesteps>) is required");
+    }
+
+    if (pointFile.empty() && points.empty() && !(_randomReleaseLocations))
+    {
+        throw CommandLineException("Either -aloc, -alocfile or -alocrand must be given");
+    }
+
+    if(!pointFile.empty())
+    {
+        std::ifstream pointsStream(pointFile);
+        if (!pointsStream)
+        {
+            std::stringstream message;
+            message << "Failed to load file " << pointFile << ", error " << strerror(errno) << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+        vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, '\t');
+        _releasePoints.insert(std::end(_releasePoints), std::begin(parsed), std::end(parsed));
+    }
+    else if(!points.empty())
+    {
+        std::stringstream pointsStream;
+        pointsStream << "x,y";
+        std::vector<std::string>::iterator iter = points.begin(), end =
+        points.end();
+        for ( ; iter != end; ++iter )
+        {
+            pointsStream << "\n" << *iter;
+        }
+        vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, ',');
+        _releasePoints.insert(std::end(_releasePoints), std::begin(parsed), std::end(parsed));
+
+    }
+}
+
+void AgentParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
+{
+    dm_runmethods::runAgentAnalysis(clp, *this, perfWriter);
+}
