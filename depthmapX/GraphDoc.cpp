@@ -17,11 +17,10 @@
 #include <QMessageBox>
 #include <QString>
 #include <QFile>
-#include <QSettings>
 #include <QtCore/QFile>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/QPushButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 #include <stdio.h>
 
 #include "mainwindow.h"
@@ -50,14 +49,16 @@
 #include "TopoMetDlg.h"
 #include "AttributeSummary.h"
 #include "depthmapView.h"
+#include "viewhelpers.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include "compatibilitydefines.h"
 
 QT_BEGIN_NAMESPACE
 
-QGraphDoc::QGraphDoc()
+QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 {
    m_opened_name = "";
    m_flag_lock = false;
@@ -82,14 +83,10 @@ QGraphDoc::QGraphDoc()
    m_step = 0;
    m_num_records = 0;
 
-    // TV need work
-   QSettings settings("QT-KCC", "depthmapX");
-   QString name = settings.value(QLatin1String("Name"), "Registered").toChar();
-   QString organization = settings.value(QLatin1String("Organization"), "Copyright").toChar();
-   QString date = "11-2-3";
+   pstring date = ViewHelpers::getCurrentDate();
    QString version = QString("depthmapX v%1.%2").arg(DEPTHMAPX_VERSION).arg(DEPTHMAPX_MINOR_VERSION);
 
-   m_meta_graph->setProperties(pstring(name.toAscii()),pstring(organization.toAscii()),pstring(date.toAscii()),pstring(version.toAscii()));
+   m_meta_graph->setProperties(pstring(author.toLatin1()),pstring(organisation.toLatin1()),date,pstring(version.toLatin1()));
 
 }
 
@@ -186,19 +183,19 @@ void QGraphDoc::OnLayerNew()
       // for now, 0 = axial map, and 1 = data map
       ShapeMap *map;
       if (dlg.m_layer_type == 0) {
-		  int ref = m_meta_graph->addShapeMap(pstring(dlg.m_name.toAscii()));
+          int ref = m_meta_graph->addShapeMap(pstring(dlg.m_name.toLatin1()));
          map = &(m_meta_graph->getDataMaps().getMap(ref));
       }
       else if (dlg.m_layer_type == 1) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toAscii()),ShapeMap::CONVEXMAP);
+         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::CONVEXMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
       else if (dlg.m_layer_type == 2) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toAscii()),ShapeMap::AXIALMAP);
+         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::AXIALMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
       else if (dlg.m_layer_type == 3) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toAscii()),ShapeMap::PESHMAP);
+         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::PESHMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
 
@@ -315,6 +312,79 @@ void QGraphDoc::ProcPostMessage(int m, int x, int y)
     }
 }
 
+void QGraphDoc::OnVGALinksFileImport()
+{
+    if (m_communicator) {
+        return; // Locked
+    }
+
+    // change the view before loading the file to make the changes apparent
+    ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
+    SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
+
+    QString template_string;
+    template_string += "Text files (*.txt *.csv)\n";
+    template_string += "All files (*.*)";
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString infile = QFileDialog::getOpenFileName(
+                                0, tr("Import Links File"),
+                                "",
+                                template_string,
+                                &selectedFilter,
+                                options);
+
+    if (!infile.size())
+    {
+        // no file selected
+        return;
+    }
+
+    std::string fileName = infile.toStdString();
+
+    ifstream fileStream(fileName);
+    if (fileStream.fail())
+    {
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
+                           QMessageBox::Ok, QMessageBox::Ok);
+      return;
+    }
+    else
+    {
+        try
+        {
+            PointMap& currentMap = m_meta_graph->getDisplayedPointMap();
+            vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(
+                        EntityParsing::parseLines(fileStream, '\t'), currentMap);
+            depthmapX::mergePixelPairs(newLinks, currentMap);
+            SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
+        }
+        catch (EntityParsing::EntityParseException& e)
+        {
+            std::stringstream message;
+            message << "Unable to parse text file\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+        catch (depthmapX::InvalidLinkException& e)
+        {
+            std::stringstream message;
+            message << "Unable to import links\n\n";
+            message << fileName;
+            message << "\n\n Error: ";
+            message << e.what();
+            message << flush;
+            QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                                                   QMessageBox::Ok, QMessageBox::Ok);
+        }
+    }
+}
+
 void QGraphDoc::OnFileImport()
 {
    if (m_communicator) {
@@ -347,7 +417,7 @@ void QGraphDoc::OnFileImport()
          QFilePath filepath(infiles[i]);
          if (filepath.m_ext != ext || !(filepath.m_ext == tr("RT1") || filepath.m_ext == tr("NTF") || filepath.m_ext == tr("GML") || filepath.m_ext == tr(""))) {
 			 QMessageBox::warning(this, tr("Warning"), tr("You have selected more than one file.  Unfortunately, this feature is only currently available with NTF, GML and Tiger line files.\nPlease select a single file to import only."),
-				 QMessageBox::Yes, QMessageBox::Yes);
+                 QMessageBox::Ok, QMessageBox::Ok);
             return;
          }
       }
@@ -362,7 +432,7 @@ void QGraphDoc::OnFileImport()
          m_communicator = new CMSCommunicator;
          if (ext != tr("RT1") && ext != tr("NTF") && ext != tr("GML")) {  // ntf, gml & rt1 use filesets (all others use standard file at a time)
 #ifndef _WIN32
-            m_communicator->SetInfile( (comm_char *)(infiles[0].toAscii().data()) );
+            m_communicator->SetInfile( (comm_char *)(infiles[0].toLatin1().data()) );
 #else
             m_communicator->SetInfile( (comm_char *)(infiles[0].utf16()) );
 #endif
@@ -393,7 +463,7 @@ void QGraphDoc::OnFileImport()
             int thedot = infiles[0].lastIndexOf('.');
             QString infile2 = infiles[0].left(thedot+1) + tr("mid");
 #ifndef _WIN32
-            m_communicator->SetInfile2( (comm_char *)infile2.toAscii().data());
+            m_communicator->SetInfile2( (comm_char *)infile2.toLatin1().data());
 #else
             m_communicator->SetInfile2( (comm_char *)infile2.utf16() );
 #endif
@@ -404,13 +474,13 @@ void QGraphDoc::OnFileImport()
       }
    }
    else if (ext == tr("TXT") || ext == tr("CSV")) {
-      ifstream file( infiles[0].toAscii() );
+      ifstream file( infiles[0].toLatin1() );
       if (file.fail()) {
 		 QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
-			 QMessageBox::Yes, QMessageBox::Yes);
+             QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         if (m_meta_graph->importTxt( file, pstring(filepath.m_name.toAscii()), (ext == tr("CSV")) ) != -1) {
+         if (m_meta_graph->importTxt( file, pstring(filepath.m_name.toLatin1()), (ext == tr("CSV")) ) != -1) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
             SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_TABLE);
@@ -424,13 +494,13 @@ void QGraphDoc::OnFileImport()
 													Points with X and Y values, or\n\
 													points with Easting and Northing values, or\n\
 													lines with X1,Y1 and X2,Y2 values"),
-													QMessageBox::Yes, QMessageBox::Yes);
+                                                    QMessageBox::Ok, QMessageBox::Ok);
          }
       }
    }
    else {
 	  QMessageBox::warning(this, tr("Warning"), tr("Unrecognised file format.  Sorry, unable to import this file."),
-		 QMessageBox::Yes, QMessageBox::Yes);
+         QMessageBox::Ok, QMessageBox::Ok);
    }
 }
 
@@ -521,7 +591,7 @@ void QGraphDoc::OnFileExport()
 		return;
    }
 
-   FILE* fp = fopen(outfile.toAscii(), "wb");
+   FILE* fp = fopen(outfile.toLatin1(), "wb");
    fclose(fp);
 
    QFilePath filepath(outfile);
@@ -529,7 +599,7 @@ void QGraphDoc::OnFileExport()
 
    if (ext != tr("MIF") && ext != tr("GRAPH") && ext != tr("NET")) 
    {
-	   ofstream stream(outfile.toAscii());
+       ofstream stream(outfile.toLatin1());
        char delimiter = '\t';
        if (ext == tr("CSV")) {
           delimiter = ',';
@@ -570,7 +640,7 @@ void QGraphDoc::OnFileExport()
             return;
         }
 
-		if (m_meta_graph->write(pstring(outfile.toAscii()), METAGRAPH_VERSION, true) != MetaGraph::OK) { // <- true writes current layer only
+        if (m_meta_graph->write(pstring(outfile.toLatin1()), METAGRAPH_VERSION, true) != MetaGraph::OK) { // <- true writes current layer only
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
         }
     }
@@ -579,7 +649,7 @@ void QGraphDoc::OnFileExport()
             QMessageBox::warning(this, tr("Notice"), tr("Sorry, depthmapX can only export VGA graphs or shape graphs to Pajek .net files"), QMessageBox::Ok, QMessageBox::Ok);
             return;
          }
-		 ofstream stream(outfile.toAscii());
+         ofstream stream(outfile.toLatin1());
          if (!stream) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
          }
@@ -601,13 +671,13 @@ void QGraphDoc::OnFileExport()
          int thedot = outfile.indexOf('.');
          QString outfile2 = outfile.left(thedot+1) + tr("mid");
 
-		 ofstream miffile(outfile.toAscii());
+         ofstream miffile(outfile.toLatin1());
          if (miffile.fail() || miffile.bad()) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
             mode = -1;
          }
 
-         ofstream midfile(outfile2.toAscii());
+         ofstream midfile(outfile2.toLatin1());
          if (midfile.fail() || midfile.bad()) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open associated .mid file for export"), QMessageBox::Ok, QMessageBox::Ok);
             mode = -1;
@@ -672,15 +742,14 @@ void QGraphDoc::OnEditGrid()
       if ( QMessageBox::Yes != QMessageBox::question(this, tr("depthmapX"), tr("This will clear existing points.  Do you want to continue?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
          return;
    }
-   CGridDialog dlg;
    QtRegion r = m_meta_graph->SuperSpacePixel::getRegion();
-   dlg.m_maxdimension = __max(r.width(), r.height());
+   CGridDialog dlg(__max(r.width(), r.height()));
    if (QDialog::Accepted == dlg.exec())
    {
       if (newmap) {
          m_meta_graph->PointMaps::addNewMap();
       }
-      m_meta_graph->setGrid( dlg.m_spacing, Point2f(0.0f, 0.0f) );
+      m_meta_graph->setGrid( dlg.getSpacing(), Point2f(0.0f, 0.0f) );
       m_meta_graph->m_showgrid = true;
       SetUpdateFlag(NEW_TABLE);
       SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_DATA);
@@ -1491,33 +1560,33 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
       ret = TRUE;
       break;
    case MetaGraph::WARN_BUGGY_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("this graph was made with a version of depthmapX that contained slight errors"), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("this graph was made with a version of depthmapX that contained slight errors"), QMessageBox::Ok, QMessageBox::Ok);
       ret = TRUE;
       break;
    case MetaGraph::WARN_CONVERTED:
       QMessageBox::warning(this, tr("Warning"), tr("Warning: this graph was made with an older version of depthmapX.\n" \
-          "Some aspects of the graph may not have been translated to the new depthmapX properly."), QMessageBox::Yes, QMessageBox::Yes);
+          "Some aspects of the graph may not have been translated to the new depthmapX properly."), QMessageBox::Ok, QMessageBox::Ok);
       ret = TRUE;
       break;
    case MetaGraph::NOT_A_GRAPH:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: not recognised as a graph file."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: not recognised as a graph file."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DAMAGED_FILE:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: the graph file is damaged."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: the graph file is damaged."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DISK_ERROR:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: an error occurred while trying to read from the disk."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: an error occurred while trying to read from the disk."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::NEWER_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this graph has been written by a newer version of depthmapX."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this graph has been written by a newer version of depthmapX."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    case MetaGraph::DEPRECATED_VERSION:
-      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this is a graph file format not supported by this version of depthmapX."), QMessageBox::Yes, QMessageBox::Yes);
+      QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: this is a graph file format not supported by this version of depthmapX."), QMessageBox::Ok, QMessageBox::Ok);
       break;
    default:
       {
          pstring err = pstringify(ok);
-		 QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: error number "), QMessageBox::Yes, QMessageBox::Yes);
+         QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: error number "), QMessageBox::Ok, QMessageBox::Ok);
       }
       break;
    }
@@ -1541,7 +1610,7 @@ void QGraphDoc::OnFileSave()
 
 		m_opened_name = outfile;
 
-		FILE* fp = fopen(m_opened_name.toAscii(), "wb");
+        FILE* fp = fopen(m_opened_name.toLatin1(), "wb");
 		fclose(fp);
 
 		OnSaveDocument(outfile);
@@ -1573,10 +1642,10 @@ void QGraphDoc::OnFileSaveAs()
 	if (outfile.isEmpty())
 		return;
 
-	FILE* fp = fopen(outfile.toAscii(), "wb");
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
 	fclose(fp);
 
-	OnSaveDocument(outfile.toAscii());
+    OnSaveDocument(outfile.toLatin1());
 	
 	// reset the title and change the document name
 	m_opened_name = newName;
@@ -1609,7 +1678,7 @@ int QGraphDoc::OnSaveDocument(QString lpszPathName, int version)
 
    modifiedFlag = true;
 
-   int ok = m_meta_graph->write( pstring(lpszPathName.toAscii()), version );
+   int ok = m_meta_graph->write( pstring(lpszPathName.toLatin1()), version );
    if (ok == MetaGraph::OK) {
 	   modifiedFlag = false;
       return TRUE;
@@ -1974,7 +2043,7 @@ void QGraphDoc::OnAddColumn()
          AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
          for (int i = 0; i < tab.getColumnCount(); i++) {
-            if (tab.getColumnName(i) == pstring(dlg.m_object_name.toAscii())) {
+            if (tab.getColumnName(i) == pstring(dlg.m_object_name.toLatin1())) {
 				QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
                found = true;
                break;
@@ -1987,7 +2056,7 @@ void QGraphDoc::OnAddColumn()
       }
    }
    if (success) {
-      int col = m_meta_graph->addAttribute(pstring(dlg.m_object_name.toAscii()));
+      int col = m_meta_graph->addAttribute(pstring(dlg.m_object_name.toLatin1()));
       m_meta_graph->setDisplayedAttribute(col);
       SetUpdateFlag(QGraphDoc::NEW_DATA);
       // Tell the views to update their menus
@@ -2019,7 +2088,7 @@ int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
    bool success = false;
    while (dlg.exec() == QDialog::Accepted && !success && dlg.m_object_name != colname) {
-      int newcol = tab->renameColumn(col,pstring(dlg.m_object_name.toAscii()));
+      int newcol = tab->renameColumn(col,pstring(dlg.m_object_name.toLatin1()));
       if (newcol == -1) {
 		  QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
       }
@@ -2185,7 +2254,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
    while (error && QDialog::Accepted == dlg.exec()) {
       error = false;
       // unicode conversion (AT 31.01.11) -- seems easiest at the mo to simply feed through pstring converter
-	  pstring multibytetext(((MainWindow*)m_mainFrame)->m_formula_cache.toAscii());
+      pstring multibytetext(((MainWindow*)m_mainFrame)->m_formula_cache.toLatin1());
       char *text = new char[multibytetext.length()+1];
       strcpy(text,multibytetext.c_str());
       istringstream stream(text);
@@ -2239,7 +2308,7 @@ void QGraphDoc::OnEditSelectToLayer()
       CRenameObjectDlg dlg("Layer"); // note, without specifying existing layer name, this defaults to "New layer" behaviour
       if (QDialog::Accepted == dlg.exec()) {
 
-         pstring layer_name = pstring(dlg.m_object_name.toAscii());
+         pstring layer_name = pstring(dlg.m_object_name.toLatin1());
          if (layer_name.empty()) {
             layer_name = "Untitled";
          }
@@ -2308,9 +2377,9 @@ void QGraphDoc::OnFileProperties()
          dlg.m_file_version = tr("<Unsaved>");
       }
       if (QDialog::Accepted == dlg.exec()) {
-         m_meta_graph->setTitle(pstring(dlg.m_title.toAscii()));
-         m_meta_graph->setLocation(pstring(dlg.m_location.toAscii()));
-         m_meta_graph->setDescription(pstring(dlg.m_description.toAscii()));
+         m_meta_graph->setTitle(pstring(dlg.m_title.toLatin1()));
+         m_meta_graph->setLocation(pstring(dlg.m_location.toLatin1()));
+         m_meta_graph->setDescription(pstring(dlg.m_description.toLatin1()));
       }
    }
 }
@@ -2343,12 +2412,12 @@ void QGraphDoc::OnMagiMif()
                int thedot = outfile.indexOf('.');
                QString outfile2 = outfile.left(thedot+1) + tr("mid");
                
-			   ofstream miffile(outfile.toAscii());
+               ofstream miffile(outfile.toLatin1());
                if (miffile.fail() || miffile.bad()) {
                   QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
                }
                
-               ofstream midfile(outfile2.toAscii());
+               ofstream midfile(outfile2.toLatin1());
                if (midfile.fail() || midfile.bad()) {
 	               QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open associated .mid file for export"), QMessageBox::Ok, QMessageBox::Ok);
                }             
@@ -2466,7 +2535,7 @@ void QGraphDoc::OnToolsLineLoadUnlinks()
                                options);
    if(outfile.isEmpty()) return;
 
-   ifstream stream(outfile.toAscii());
+   ifstream stream(outfile.toLatin1());
    if (stream.fail()) {
 	  QMessageBox::warning(this, tr("Warning"), tr("There was an error opening the file.\nPlease check the file is not already open"), QMessageBox::Ok, QMessageBox::Ok);
       return;

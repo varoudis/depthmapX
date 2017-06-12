@@ -30,13 +30,16 @@
 #include <sstream>
 #include <math.h>
 #include <float.h>
-#include <generic/paftl.h>
-#include <generic/comm.h>
+#include <genlib/paftl.h>
+#include <genlib/comm.h>
+#include <genlib/exceptions.h>
 // Sala
-#include <sala/mgraph.h>
-#include "sala/salaprogram.h"
-#include <idepthmap.h>
-#include <sala/idepthmapx.h>
+#include <salalib/mgraph.h>
+#include "salalib/salaprogram.h"
+#include <salalib/idepthmap.h>
+#include <salalib/idepthmapx.h>
+#include <salalib/entityparsing.h>
+#include <salalib/linkutils.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -125,7 +128,7 @@ public:
        for (int i = 0; i < strings.size(); i++)
 	   {
 		   strs.clear();
-           for(int j=0; j<strings[i].size(); j++) strs.push_back(strings[i].toAscii().data()[j]);
+           for(int j=0; j<strings[i].size(); j++) strs.push_back(strings[i].toLatin1().data()[j]);
            m_fileset.push_back(strs);
        }*/
    }
@@ -174,7 +177,7 @@ class QGraphDoc : public QWidget
 	Q_OBJECT
 
 public:
-   QGraphDoc();
+   QGraphDoc(const QString &author, const QString &organisation);
    CMSCommunicator *m_communicator;
 
    int m_make_algorithm;   // algorithm to make graph
@@ -276,8 +279,9 @@ public:
 	int OnSaveDocument(QString lpszPathName, int version);
 	bool OnCloseDocument(int);
 	int OnOpenDocument(char* lpszPathName);
-	void OnToolsTPD();
-	void OnFileImport();
+    void OnToolsTPD();
+    void OnVGALinksFileImport();
+    void OnFileImport();
 	void OnFileExport();
 	void OnToolsMakeGraph();
 	void OnEditClear();

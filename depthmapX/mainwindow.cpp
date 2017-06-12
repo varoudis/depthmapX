@@ -16,6 +16,16 @@
 
 #include <QtGui>
 #include <QDesktopServices>
+#include <QtWidgets/QMdiArea>
+#include <QtWidgets/QDockWidget>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QMdiSubWindow>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QMenuBar>
 
 #include "mainwindow.h"
 #include "depthmapView.h"
@@ -25,12 +35,28 @@
 #include "DepthmapOptionsDlg.h"
 #include "AboutDlg.h"
 
-#define TITLE_BASE tr("depthmapX 0.30 - Tasos Varoudis")
 
 static int current_view_type = 0;
 enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_TYPES = 5};
 
 const QString editstatetext[] = {"Not Editable", "Editable Off", "Editable On"};
+
+namespace SettingTag
+{
+    const QString position = "pos";
+    const QString size = "size";
+    const QString foregroundColour = "forColor";
+    const QString backgroundColour = "backColor";
+    const QString simpleVersion = "simple";
+    const QString recentFileList = "recentFileList";
+    const QString mwMaximised = "mainWindowMaximised";
+
+    template<class ValueType> void saveSettings( const QString& settingsFilename, const QString& settingName, const ValueType& value )
+    {
+        QSettings settings(settingsFilename, QSettings::Format::IniFormat );
+        settings.setValue(settingName, value);
+    }
+}
 
 QmyEvent::QmyEvent(Type type, void* wp, int lp)
     : QEvent(type)
@@ -82,15 +108,10 @@ MainWindow::MainWindow()
     AttributesListDock->setWidget(setupAttributesListWidget());
     addDockWidget(Qt::LeftDockWidgetArea, AttributesListDock);
 
-    m_settingsFile = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) +  "/depthmapXsettings.ini";
-    // QApplication::applicationDirPath() + ":/depthmapXsettings.ini";
-
-    simple_version = true;
+    m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).first() +  "/depthmapXsettings.ini";
 
     readSettings(); // read setting or generate default
     setWindowTitle(TITLE_BASE);
-    setWindowState(Qt::WindowMaximized);
-    //m_imported_modules = im;
 
     createActions();
     createMenus();
@@ -415,6 +436,15 @@ void MainWindow::OnToolsMakeGraph()
     }
 }
 
+void MainWindow::OnToolsImportVGALinks()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnVGALinksFileImport();
+    }
+}
+
 void MainWindow::OnToolsRun()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
@@ -553,12 +583,13 @@ void MainWindow::OnToolsAPD()
 
 void MainWindow::OnToolsOptions()
 {
-    CDepthmapOptionsDlg dlg(this);
+    CDepthmapOptionsDlg dlg(this, m_simpleVersion);
 
     if (QDialog::Accepted == dlg.exec()) {
 
-        simple_version = dlg.c_show_simple_version->checkState();
-        if(simple_version)
+        m_simpleVersion = dlg.c_show_simple_version->checkState();
+        SettingTag::saveSettings(m_settingsFile, SettingTag::simpleVersion, m_simpleVersion);
+        if(m_simpleVersion)
             qWarning("SV = True");
         else
             qWarning("SV = False");
@@ -568,11 +599,13 @@ void MainWindow::OnToolsOptions()
 void MainWindow::OnWindowBackground()
 {
     m_background = QColorDialog::getColor(m_background).rgb();
+    SettingTag::saveSettings(m_settingsFile, SettingTag::backgroundColour, m_background);
 }
 
 void MainWindow::OnWindowForeground()
 {
     m_foreground = QColorDialog::getColor(m_foreground).rgb();
+    SettingTag::saveSettings(m_settingsFile, SettingTag::foregroundColour, m_foreground);
 }
 
 void MainWindow::OnShowResearchtoolbar()
@@ -679,10 +712,10 @@ void MainWindow::OnAppAbout()
 
 QDepthmapView *MainWindow::createQDepthmapView()
 {
-    QGraphDoc* doc = new QGraphDoc();
+    QGraphDoc* doc = new QGraphDoc("", "");
     doc->m_mainFrame = this;
 
-    QDepthmapView *child = new QDepthmapView;
+    QDepthmapView *child = new QDepthmapView(m_settingsFile);
     child->pDoc = doc;
 
     mdiArea->addSubWindow(child);
@@ -1720,7 +1753,7 @@ void MainWindow::StepDepthTriggered()
 
 void MainWindow::zoomButtonTriggered()
 {
-    int id = qVariantValue<int>(zoomInAct->data());
+    int id = zoomInAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ZOOM_IN)
         activeQDepthmapView()->OnViewZoomIn();
     else
@@ -1732,10 +1765,10 @@ void MainWindow::FillButtonTriggered()
     int id;// = qVariantValue<int>(STDFillColorAct->data());
     if( qobject_cast<QAction *>(sender()) ) { // Not sure // Hack TV
         QAction* temp = qobject_cast<QAction *>(sender());
-        id = qVariantValue<int>(temp->data());
+        id = temp->data().value<int>();
         delete temp;
     } else {
-        id = qVariantValue<int>(STDFillColorAct->data());
+        id = STDFillColorAct->data().value<int>();
     }
 
     if(id == ID_MAPBAR_ITEM_FILL)
@@ -1748,7 +1781,7 @@ void MainWindow::FillButtonTriggered()
 
 void MainWindow::LineButtonTriggered()
 {
-    int id = qVariantValue<int>(SelectLineAct->data());
+    int id = SelectLineAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_LINETOOL)
         activeQDepthmapView()->OnEditLineTool();
     else
@@ -1757,7 +1790,7 @@ void MainWindow::LineButtonTriggered()
 
 void MainWindow::isoButtonTriggered()
 {
-    int id = qVariantValue<int>(MakeIosAct->data());
+    int id = MakeIosAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ISOVIST)
         activeQDepthmapView()->OnModeIsovist();
     else
@@ -1766,7 +1799,7 @@ void MainWindow::isoButtonTriggered()
 
 void MainWindow::joinButtonTriggered()
 {
-    int id = qVariantValue<int>(JoinAct->data());
+    int id = JoinAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_JOIN)
         activeQDepthmapView()->OnModeJoin();
     else
@@ -1967,22 +2000,20 @@ void MainWindow::readSettings()
     QCoreApplication::setOrganizationDomain("depthmap.org");
     QCoreApplication::setApplicationName("depthmapX");
 
-    bool newfile = true;
-    QFile opt(m_settingsFile);
-    if(opt.exists()) newfile = false;
-
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
-    //QSettings settings;
-    //settings.setPath(QSettings::NativeFormat,QSettings::UserScope,m_settingsFile);
-
-    //settings(m_settingsFile, QSettings::NativeFormat);
-    //QSettings settings("QT-KCC", "depthmapX");
-    QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
-    QSize size = settings.value("size", QSize(400, 400)).toSize();
-    m_foreground = settings.value("forColor", qRgb(128,255,128)).toInt();
-    m_background = settings.value("backColor", qRgb(0,0,0)).toInt();
-    move(pos);
-    resize(size);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
+    QPoint pos = settings.value(SettingTag::position, QPoint(200, 200)).toPoint();
+    QSize size = settings.value(SettingTag::size, QSize(400, 400)).toSize();
+    m_foreground = settings.value(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
+    m_background = settings.value(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
+    m_simpleVersion = settings.value(SettingTag::simpleVersion, true).toBool();
+    if (settings.value(SettingTag::mwMaximised, true).toBool())
+    {
+         setWindowState(Qt::WindowMaximized);
+    }
+    else{
+        move(pos);
+        resize(size);
+    }
 }
 
 void MainWindow::writeSettings()
@@ -1991,42 +2022,35 @@ void MainWindow::writeSettings()
     QCoreApplication::setOrganizationDomain("depthmap.org");
     QCoreApplication::setApplicationName("depthmapX");
 
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    settings.setValue("pos", pos());
-    settings.setValue("size", size());
-    settings.setValue("forColor", m_foreground);
-    settings.setValue("backColor", m_background);
+    settings.setValue(SettingTag::position, pos());
+    settings.setValue(SettingTag::size, size());
+    settings.setValue(SettingTag::mwMaximised, windowState() == Qt::WindowMaximized);
 }
 
 void MainWindow::setCurrentFile(const QString &fileName)
 {
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 
-    settings.setValue("recentFileList", files);
+    settings.setValue(SettingTag::recentFileList, files);
 
     updateRecentFileActions();
-/*
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
-        if (mainWin)
-            mainWin->updateRecentFileActions();
-    }*/
 }
 
 void MainWindow::updateRecentFileActions()
 {
-    QSettings settings(m_settingsFile, QSettings::NativeFormat);
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
 
-    int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
+    int numRecentFiles = qMin(files.size(), MaxRecentFiles);
 
     for (int i = 0; i < numRecentFiles; ++i) {
         QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
@@ -2204,6 +2228,7 @@ void MainWindow::updateVisibilitySubMenu()
     {
         SetGridAct->setEnabled(0);
         makeVisibilityGraphAct->setEnabled(0);
+        importVGALinksAct->setEnabled(0);
         makeIsovistPathAct->setEnabled(0);
         runVisibilityGraphAnalysisAct->setEnabled(0);
         convertDataMapLinesAct->setEnabled(0);
@@ -2222,9 +2247,15 @@ void MainWindow::updateVisibilitySubMenu()
         makeIsovistPathAct->setEnabled(true);
     else makeIsovistPathAct->setEnabled(0);
 
-    if (m_p->m_meta_graph->viewingProcessedPoints())
+    if (m_p->m_meta_graph->viewingProcessedPoints()) {
+        importVGALinksAct->setEnabled(true);
         runVisibilityGraphAnalysisAct->setEnabled(true);
-    else runVisibilityGraphAnalysisAct->setEnabled(0);
+    }
+    else
+    {
+        importVGALinksAct->setEnabled(0);
+        runVisibilityGraphAnalysisAct->setEnabled(0);
+    }
 
     if ( !m_p->m_communicator &&
          m_p->m_meta_graph->viewingProcessedShapes() &&
@@ -2865,6 +2896,9 @@ void MainWindow::createActions()
     makeVisibilityGraphAct = new QAction(tr("Make &Visibility Graph..."), this);
     connect(makeVisibilityGraphAct, SIGNAL(triggered()), this, SLOT(OnToolsMakeGraph()));
 
+    importVGALinksAct = new QAction(tr("Import VGA links from file..."), this);
+    connect(importVGALinksAct, SIGNAL(triggered()), this, SLOT(OnToolsImportVGALinks()));
+
     makeIsovistPathAct = new QAction(tr("Make &Isovist Path..."), this);
     connect(makeIsovistPathAct, SIGNAL(triggered()), this, SLOT(OnToolsIsovistpath()));
 
@@ -3370,6 +3404,7 @@ void MainWindow::createMenus()
     visibilitySubMenu = toolsMenu->addMenu(tr("&Visibility"));
     visibilitySubMenu->addAction(SetGridAct);
     visibilitySubMenu->addAction(makeVisibilityGraphAct);
+    visibilitySubMenu->addAction(importVGALinksAct);
     visibilitySubMenu->addAction(makeIsovistPathAct);
     visibilitySubMenu->addSeparator();
     visibilitySubMenu->addAction(runVisibilityGraphAnalysisAct);

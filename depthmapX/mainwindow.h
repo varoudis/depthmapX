@@ -24,10 +24,9 @@
 #include "treeWindow.h"
 #include "GraphDoc.h"
 #include "ColourScaleDlg.h"
+#include "compatibilitydefines.h"
 
-#define DEPTHMAPX_VERSION 0.27          //
-#define DEPTHMAPX_MINOR_VERSION "b"
-#define DEPTHMAP_MODULE_VERSION 10.04
+#include "version.h"
 
 class ItemTreeEntry
 {
@@ -82,7 +81,7 @@ enum {
    ID_MAPBAR_ITEM_AUGMENT_FILL = 18 // AV test - TV
 };
 
-enum { MaxRecentFiles = 5 };
+const int  MaxRecentFiles = 5;
 
 enum { FOCUSGRAPH = 1001, AllTransactionsDone = 1002 };
 
@@ -107,7 +106,7 @@ public:
     QRgb m_foreground;
     QRgb m_background;
 
-    bool simple_version;  // bool that replaces compile defines
+    bool m_simpleVersion;  // bool that replaces compile defines
 
     void RedoPlotViewMenu(QGraphDoc* pDoc);
     void updateToolbar();
@@ -160,6 +159,7 @@ private slots:
     void OnColumnProperties();
     void OnPushToLayer();
     void OnToolsMakeGraph();
+    void OnToolsImportVGALinks();
     void OnToolsIsovistpath();
     void OnToolsAgentLoadProgram();
     void OnToolsRunAxa();
@@ -350,7 +350,7 @@ private:
     QAction *printAct;
     QAction *printPreviewAct;
     QAction *printSetupAct;
-    QAction *recentFileActs[5];
+    QAction *recentFileActs[MaxRecentFiles];
     QAction *separatorAct;
     QAction *exitAct;
 
@@ -379,6 +379,7 @@ private:
 
     //Tools Menu Actions
     QAction *makeVisibilityGraphAct;
+    QAction *importVGALinksAct;
     QAction *makeIsovistPathAct;
     QAction *runVisibilityGraphAnalysisAct;
     QAction *visibilityStepAct;

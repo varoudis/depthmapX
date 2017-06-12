@@ -1,0 +1,22 @@
+sudo: required
+dist: trusty
+language: c++
+notifications:
+    slack: depthmapx:B3CKNlNDLrNz1vSOU5yoQQqA
+
+
+before_install:
+  - sudo add-apt-repository --yes ppa:beineri/opt-qt571-trusty
+  - sudo add-apt-repository --yes ppa:fkrull/deadsnakes
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get -y install qt573d qt57tools libgl1-mesa-dev libglu1-mesa-dev python3.5
+
+script:
+  - source /opt/qt57/bin/qt57-env.sh
+  - mkdir build && cd build
+  - /opt/qt57/bin/qmake ../depthmapX.pro
+  - make
+  - ./cliTest/cliTest && ./GuiUnitTest/GuiUnitTest && ./salaTest/salaTest
+  - cd ../RegressionTest && python3.5 test_main.py && python3.5 RegressionTestRunner.py
