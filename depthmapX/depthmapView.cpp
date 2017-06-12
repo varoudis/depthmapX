@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
 #include <QtGui>
 #include <QToolBar>
 #include <QEvent>
+#include <QtWidgets/QMessageBox>
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -25,20 +27,18 @@
 #include <qpainter.h>
 #include <qevent.h>
 #include <qfiledialog.h>
-#include <qsettings.h>
 #include <qmenu.h>
 #include <qactiongroup.h>
 #include <qdebug.h>
+#include <qsettings.h>
 
 #include "mainwindow.h"
 #include "depthmapView.h"
+#include "viewhelpers.h"
 
 class QToolBar;
 
-#define LOBYTE(w)           ((unsigned char)((w) & 0xff))
-#define GetRValue(rgb)      (LOBYTE(rgb))
-#define GetGValue(rgb)      (LOBYTE((rgb) >> 8))
-#define GetBValue(rgb)      (LOBYTE((rgb)>>16))
+#include "compatibilitydefines.h"
 
 #define DMP_TIMER_SPLASH      1
 #define DMP_TIMER_REDRAW      2
@@ -94,8 +94,8 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
    return (color & 0x006f6f6f) | (mergecolor & 0x00a0a0a0);
 }
 
-QDepthmapView::QDepthmapView(QWidget *parent)
-    : QWidget(parent)
+QDepthmapView::QDepthmapView(const QString &settingsFile )
+    : QWidget(0), m_settingsFile(settingsFile)
 {
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);
@@ -133,11 +133,8 @@ QDepthmapView::QDepthmapView(QWidget *parent)
 
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
-   // TV - dX Simple
-   m_settingsFile = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation) + ":/depthmapXsettings.ini";
-   QSettings settings(m_settingsFile, QSettings::NativeFormat);
-   //QSettings settings("QT-KCC", "depthmapX");
-   m_initialSize = settings.value(QLatin1String("initialSize"), QSize(2000, 2000)).toSize();
+   QSettings settings(m_settingsFile, QSettings::IniFormat);
+   m_initialSize = settings.value(QLatin1String("depthmapViewSize"), QSize(2000, 2000)).toSize();
 
    installEventFilter(this);
 
@@ -148,9 +145,8 @@ QDepthmapView::QDepthmapView(QWidget *parent)
 
 QDepthmapView::~QDepthmapView()
 {
-    QSettings settings("QT-KCC", "depthmapX");
-    settings.setValue(QLatin1String("initialSize"), size());
-    settings.setValue(QLatin1String("position"), pos());
+    QSettings settings(m_settingsFile, QSettings::IniFormat);
+    settings.setValue(QLatin1String("depthmapViewSize"), size());
 }
 
 int QDepthmapView::OnRedraw(int wParam, int lParam)
@@ -865,15 +861,15 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			 QRect rect = QRect(0,0,width(),height());
 			 double ratio = __min( double(rect.height() / double(m_drag_rect_a.height()) ),
 								   double(rect.width()) / double(m_drag_rect_a.width()) );
-			 ZoomIn(ratio, LogicalUnits(m_drag_rect_a.center()) );
+             ZoomTowards(1.0/ratio, LogicalUnits(m_drag_rect_a.center()) );
 		  }
 		  else {
-			 ZoomIn(2.0, m_centre);
+             ZoomTowards(0.75, m_centre);
 		  }
 		  break;
 	   case ZOOM_OUT:
 		  {
-			 ZoomOut();
+             ZoomTowards(1.5, m_centre);
 		  }
 		  break;
 	   case DRAG:
@@ -1136,7 +1132,7 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			// cancel other tools:
 		switch (m_mouse_mode) {
 		 case ZOOM_IN:
-			 ZoomOut();
+             ZoomTowards(0.75, m_centre);
 			 break;
 		 case JOIN | JOINB:
 		 case UNJOIN | JOINB:
@@ -1184,36 +1180,33 @@ void QDepthmapView::keyPressEvent(QKeyEvent *e)
 	char key = e->key();
 }
 
+
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
-   if (zDelta < 0) {
-      ZoomOut();
+   QPoint position = e->pos();
+   QPoint centre(m_physical_centre.width(),m_physical_centre.height());
+   auto zoomFactor = 1.0 + std::abs(double(zDelta)) / 120.0;
+   if (zDelta > 0) {
+      zoomFactor = 1.0/zoomFactor;
    }
-   else {
-	  QPoint pta = this->rect().center();
-      ZoomIn(1.0 + double(zDelta) / double(120), LogicalUnits(pta));
-   }
+   Point2f newCentre = ViewHelpers::calculateCenter(position, centre, zoomFactor);
+
+   // Same as LogicalUnits() with non-discreet input
+   newCentre.x = m_centre.x + m_unit * double(newCentre.x - m_physical_centre.width());
+   newCentre.y = m_centre.y + m_unit * double(m_physical_centre.height() - newCentre.y);
+
+   ZoomTowards(zoomFactor, newCentre);
 }
 
-void QDepthmapView::ZoomIn(double ratio, const Point2f& point)
+void QDepthmapView::ZoomTowards(double ratio, const Point2f& point)
 {
    m_centre = point;
-   m_unit /= ratio;
+   m_unit *= ratio;
 
    m_invalidate = 0;
 
    // Redraw
-   m_redraw_all = true;
-   update();
-}
-
-void QDepthmapView::ZoomOut()
-{
-   m_unit *= 2;
-   m_invalidate = 0;
- 
-   // Redraw scene
    m_redraw_all = true;
    update();
 }
@@ -1696,7 +1689,7 @@ void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc )
    // now the two are a little out of synch
 
    if (!m_viewport_set) {
-       QMessageBox::warning(this, tr("Warning"), tr("Can't save screen as the Depthmap window is not initialised"), QMessageBox::Yes, QMessageBox::Yes);
+       QMessageBox::warning(this, tr("Warning"), tr("Can't save screen as the Depthmap window is not initialised"), QMessageBox::Ok, QMessageBox::Ok);
        return;
    }
 
@@ -2446,10 +2439,10 @@ void QDepthmapView::OnEditSave()
    
    if(outfile.isEmpty()) return;
 
-  FILE* fp = fopen(outfile.toAscii(), "wb");
+  FILE* fp = fopen(outfile.toLatin1(), "wb");
   fclose(fp);
 
-  ofstream stream( outfile.toAscii() );
+  ofstream stream( outfile.toLatin1() );
   if (stream.fail()) {
      QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open ") + outfile + tr(" for writing"), QMessageBox::Ok, QMessageBox::Ok );
 	 return;

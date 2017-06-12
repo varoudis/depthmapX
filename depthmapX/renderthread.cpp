@@ -15,6 +15,7 @@
 
 
 #include <QtGui>
+#include <QtWidgets/QMessageBox>
 #include <QEvent>
 #include "mainwindow.h"
 
@@ -81,7 +82,7 @@ void RenderThread::run()
 
    if (comm) {
        // move simple setting to comm
-       comm->simple_version = pMain->simple_version;
+       comm->simple_version = pMain->m_simpleVersion;
 
       int ok;
       switch (comm->GetFunction()) 
@@ -92,7 +93,7 @@ void RenderThread::run()
 			 pDoc->modifiedFlag = true;
          }
          else if (ok == -1) {
-	        QMessageBox::warning(0, tr("Warning"), tr("An error was found in the import file"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("An error was found in the import file"), QMessageBox::Ok, QMessageBox::Ok);
          }
          // This might change the line layers available, alert the layer chooser:
          QApplication::postEvent(pMain, new QmyEvent((enum QEvent::Type)FOCUSGRAPH, (void*)pDoc, QGraphDoc::CONTROLS_LOADDRAWING));
@@ -104,26 +105,26 @@ void RenderThread::run()
          switch (ok) {
          case MINFO_MULTIPLE:
              //BUG
-            //QMessageBox::warning(0, tr("Warning"), tr("The imported MIF file contains multiple shapes per object.\n Please note that depthmapX has broken these up, so each shape has one row of attribute data.\n Please consult your MapInfo provider for details."), QMessageBox::Yes, QMessageBox::Yes);
+            //QMessageBox::warning(0, tr("Warning"), tr("The imported MIF file contains multiple shapes per object.\n Please note that depthmapX has broken these up, so each shape has one row of attribute data.\n Please consult your MapInfo provider for details."), QMessageBox::Ok, QMessageBox::Ok);
         case MINFO_OK:
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
             break;
          case MINFO_HEADER:
-            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the header information in your MIF file."), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the header information in your MIF file."), QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_TABLE:
-            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the table data in your MID file."), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the table data in your MID file."), QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_MIFPARSE:
             QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the shape data in your MIF file.\n\
 										Please ensure that your shape data contains only points, lines, polylines or regions."),
-										QMessageBox::Yes, QMessageBox::Yes);
+                                        QMessageBox::Ok, QMessageBox::Ok);
             break;
          case MINFO_OBJROWS:
             QMessageBox::warning(0, tr("Warning"), tr("depthmapX had a problem reading the shape data in your MIF file.\n\
 									It seems as though there are a different number of shapes to rows in the associated table.\n\
 									This may be due to the existance of unsupported shape types in the file."),
-										QMessageBox::Yes, QMessageBox::Yes);
+                                        QMessageBox::Ok, QMessageBox::Ok);
             break;
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_TOTAL, QGraphDoc::NEW_DATA );
@@ -212,12 +213,12 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKEDRAWING:
          // option 1 is: 0 a data map, 1 an axial map
-         ok = pDoc->m_meta_graph->convertToDrawing( comm, pstring(comm->GetString().toAscii()), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToDrawing( comm, pstring(comm->GetString().toLatin1()), comm->GetOption(1) );
          if (ok) {
 			 pDoc->modifiedFlag = true;
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          // Tell the sidebar about the new map:
          QApplication::postEvent(pMain, new QmyEvent((enum QEvent::Type)FOCUSGRAPH, (void*)pDoc, QGraphDoc::CONTROLS_LOADDRAWING));
@@ -225,18 +226,18 @@ void RenderThread::run()
          break;
 
       case CMSCommunicator::MAKEUSERMAP:
-         ok = pDoc->m_meta_graph->convertDrawingToAxial( comm, pstring(comm->GetString().toAscii()) );
+         ok = pDoc->m_meta_graph->convertDrawingToAxial( comm, pstring(comm->GetString().toLatin1()) );
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
       case CMSCommunicator::MAKEUSERMAPSHAPE:
-         ok = pDoc->m_meta_graph->convertDataToAxial( comm, pstring(comm->GetString().toAscii()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
+         ok = pDoc->m_meta_graph->convertDataToAxial( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -247,24 +248,24 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to axial lines"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to axial lines"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
       case CMSCommunicator::MAKEUSERSEGMAP:
-         ok = pDoc->m_meta_graph->convertDrawingToSegment( comm, pstring(comm->GetString().toAscii()) );
+         ok = pDoc->m_meta_graph->convertDrawingToSegment( comm, pstring(comm->GetString().toLatin1()) );
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
       case CMSCommunicator::MAKEUSERSEGMAPSHAPE:
-         ok = pDoc->m_meta_graph->convertDataToSegment( comm, pstring(comm->GetString().toAscii()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
+         ok = pDoc->m_meta_graph->convertDataToSegment( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -275,14 +276,14 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to segments"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines available in current layer to convert to segments"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
       
       case CMSCommunicator::MAKEGATESMAP:
          // note: relies on the fact that make data map from drawing sets option 1 to -1, whereas make data layer from graph it to either 0 or 1
-         ok = pDoc->m_meta_graph->convertToData( comm, pstring(comm->GetString().toAscii()), (comm->GetOption(0) == 1), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToData( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), comm->GetOption(1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -293,14 +294,14 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No objects currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
       case CMSCommunicator::MAKECONVEXMAP:
          // note: relies on the fact that make convex map from drawing sets option 1 to -1, whereas make convex map from data sets it to either 0 or 1
-         ok = pDoc->m_meta_graph->convertToConvex( comm, pstring(comm->GetString().toAscii()), (comm->GetOption(0) == 1), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToConvex( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), comm->GetOption(1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -311,7 +312,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No polygons currently visible in drawing layers"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No polygons currently visible in drawing layers"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
@@ -321,7 +322,7 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKESEGMENTMAP:
          // convert percentage to fraction, and pass to metagraph
-         ok = pDoc->m_meta_graph->convertAxialToSegment( comm, pstring(comm->GetString().toAscii()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1), double(comm->GetOption(2)) / 100.0);
+         ok = pDoc->m_meta_graph->convertAxialToSegment( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1), double(comm->GetOption(2)) / 100.0);
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -332,7 +333,7 @@ void RenderThread::run()
             }
          }
          else {
-	        QMessageBox::warning(0, tr("Warning"), tr("No lines exist in map to convert to segments"), QMessageBox::Yes, QMessageBox::Yes);
+            QMessageBox::warning(0, tr("Warning"), tr("No lines exist in map to convert to segments"), QMessageBox::Ok, QMessageBox::Ok);
          }
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;

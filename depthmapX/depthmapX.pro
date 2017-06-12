@@ -1,6 +1,8 @@
-QT            += core gui opengl
+include(../defaults.pri)
+QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
-TEMPLATE      = app
+TEMPLATE      = lib
+CONFIG        += staticlib
 TARGET        = depthmapX
 HEADERS       = depthmapView.h \
                 GraphDoc.h \
@@ -38,33 +40,15 @@ HEADERS       = depthmapView.h \
     AttributeChooserDlg.h \
     AgentAnalysisDlg.h \
     AboutDlg.h \
-    Libs/include/generic/xmlparse.h \
-    Libs/include/generic/paftl.h \
-    Libs/include/generic/paftl_old.h \
-    Libs/include/generic/pafmath.h \
-    Libs/include/generic/p2dpoly.h \
-    Libs/include/generic/dxfp.h \
-    Libs/include/generic/comm.h \
-    Libs/include/sala/vertex.h \
-    Libs/include/sala/spacepix.h \
-    Libs/include/sala/shapemap.h \
-    Libs/include/sala/salaprogram.h \
-    Libs/include/sala/pointdata.h \
-    Libs/include/sala/ngraph.h \
-    Libs/include/sala/nagent.h \
-    Libs/include/sala/mgraph.h \
-    Libs/include/sala/idepthmapx.h \
-    Libs/include/sala/fileproperties.h \
-    Libs/include/sala/datalayer.h \
-    Libs/include/sala/connector.h \
-    Libs/include/sala/axialmap.h \
-    Libs/include/sala/attributes.h \
-    licenseagreement.h
+    licenseagreement.h \
+    compatibilitydefines.h \
+    mainwindowfactory.h \
+    viewhelpers.h \
+    version.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
                 indexWidget.cpp \
-                main.cpp \
                 mainwindow.cpp \
                 mdichild.cpp \
                 renderthread.cpp \
@@ -99,40 +83,11 @@ SOURCES       = depthmapView.cpp \
     AttributeChooserDlg.cpp \
     AgentAnalysisDlg.cpp \
     AboutDlg.cpp \
-# genlib
-    Libs/genlib/dxfp.cpp \
-    Libs/genlib/p2dpoly.cpp \
-    Libs/genlib/pafmath.cpp \
-    Libs/include/generic/xmlparse.cpp \
-# salalib
-    Libs/salalib/attributes.cpp \
-    Libs/salalib/axialmap.cpp \
-    Libs/salalib/connector.cpp \
-    Libs/salalib/datalayer.cpp \
-    Libs/salalib/idepthmap.cpp \
-    Libs/salalib/idepthmapx.cpp \
-    Libs/salalib/isovist.cpp \
-    Libs/salalib/MapInfoData.cpp \
-    Libs/salalib/mgraph.cpp \
-    Libs/salalib/nagent.cpp \
-    Libs/salalib/ngraph.cpp \
-    Libs/salalib/ntfp.cpp \
-    Libs/salalib/pointdata.cpp \
-    Libs/salalib/salaprogram.cpp \
-    Libs/salalib/shapemap.cpp \
-    Libs/salalib/spacepix.cpp \
-    Libs/salalib/sparksieve2.cpp \
-    Libs/salalib/tigerp.cpp \
-    Libs/salalib/topomet.cpp \
-    Libs/salalib/vertex.cpp \
-    licenseagreement.cpp
+    licenseagreement.cpp \
+    mainwindowfactory.cpp \
+    viewhelpers.cpp
 
-INCLUDEPATH   += Libs/include
 RESOURCES     = resource.qrc
-
-!win32:!macx:LIBS += -L/usr/lib/i386-linux-gnu/
-
-!win32:!macx:LIBS = -lGL -lGLU
 
 OTHER_FILES += \
     Libs/include/generic/lgpl.txt
@@ -168,5 +123,5 @@ FORMS += \
     UI/AttributeChooserDlg.ui \
     UI/AgentAnalysisDlg.ui \
     UI/AboutDlg.ui \
- UI/licenseagreement.ui
+    UI/licenseagreement.ui
 

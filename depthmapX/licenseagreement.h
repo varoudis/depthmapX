@@ -18,6 +18,7 @@
 
 #include <QDialog>
 #include "ui_licenseagreement.h"
+#include "compatibilitydefines.h"
 
 namespace Ui {
 class LicenseAgreement;

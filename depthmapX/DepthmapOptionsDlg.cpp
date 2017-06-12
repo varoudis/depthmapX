@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,13 +16,11 @@
 
 #include "DepthmapOptionsDlg.h"
 
-CDepthmapOptionsDlg::CDepthmapOptionsDlg(QWidget *parent)
-: QDialog(parent)
+CDepthmapOptionsDlg::CDepthmapOptionsDlg(QWidget *parent, bool simpleVersion)
+: QDialog(parent), m_show_simple_version(simpleVersion)
 {
 	setupUi(this);
 	m_show_research_toolbar = false;
-    m_show_simple_version = true;
-
 }
 
 void CDepthmapOptionsDlg::OnOK()
@@ -66,5 +65,5 @@ void CDepthmapOptionsDlg::UpdateData(bool value)
 void CDepthmapOptionsDlg::showEvent(QShowEvent * event)
 {
     //c_show_research_toolbar->setEnabled(true);
-	UpdateData(false);
+    UpdateData(true);
 }
