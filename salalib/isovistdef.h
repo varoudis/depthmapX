@@ -29,6 +29,28 @@ public:
     const Point2f &getLocation() const { return mLocation;}
     double getAngle() const { return mAngle; }
     double getViewAngle() const { return mViewAngle; }
+    double getLeftAngle() const {
+        double leftAngle = mAngle - 0.5 * mViewAngle;
+        if (leftAngle < 0 )
+        {
+            leftAngle += 2 * M_PI;
+        }
+        return leftAngle;
+    }
+
+    double getRightAngle() const{
+        double rightAngle = mAngle + 0.5 * mViewAngle;
+        if (rightAngle > 2 * M_PI)
+        {
+            rightAngle -= 2 * M_PI;
+        }
+        return rightAngle;
+    }
+
+    bool partialIsovist() const
+    {
+        return mViewAngle >= 0;
+    }
 
 private:
     Point2f mLocation;
