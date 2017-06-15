@@ -36,6 +36,7 @@ namespace EntityParsing {
     std::vector<Line> parseLines(std::istream& stream, char delimiter);
     std::vector<Point2f> parsePoints(std::istream& stream, char delimiter);
     std::vector<IsovistDefinition> parseIsovists(std::istream &stream, char delimiter);
+    IsovistDefinition parseIsovist(const std::string &isovist);
 
 }
 
