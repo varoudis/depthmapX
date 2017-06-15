@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Petros Koutsolampros
+// Copyright (C) 2017 Petros Koutsolampros, Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -240,4 +240,31 @@ TEST_CASE("Failing Isovist parser")
         stream << "x,y,angle,viewAngle\n1.0,1.0,270" << std::flush;
         REQUIRE_THROWS_WITH(EntityParsing::parseIsovists(stream, ','), Catch::Contains("Error parsing line: 1.0,1.0,270"));
     }
+}
+
+TEST_CASE("Parsing single isovist")
+{
+    SECTION("Success full")
+    {
+        auto result =  EntityParsing::parseIsovist("1,1");
+        REQUIRE(result.getLocation().x == Approx(1.0));
+        REQUIRE(result.getLocation().y == Approx(1.0));
+        REQUIRE(result.getAngle() == 0.0);
+        REQUIRE(result.getViewAngle() == Approx(-1.0));
+    }
+
+    SECTION("Success partial isovist")
+    {
+        auto result =  EntityParsing::parseIsovist("1,1,27,90");
+        REQUIRE(result.getLocation().x == Approx(1.0));
+        REQUIRE(result.getLocation().y == Approx(1.0));
+        REQUIRE(result.getAngle() == Approx(0.4712388));
+        REQUIRE(result.getViewAngle() == Approx(M_PI/2.0));
+    }
+
+    SECTION("Failed bad string")
+    {
+        REQUIRE_THROWS_WITH(EntityParsing::parseIsovist("1,1,27"), Catch::Contains("Failed to parse '1,1,27' to an isovist definition"));
+    }
+
 }

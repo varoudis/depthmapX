@@ -285,4 +285,22 @@ namespace EntityParsing {
         return isovists;
     }
 
+    IsovistDefinition parseIsovist(const string &isovist)
+    {
+        auto parts = split(isovist, ',');
+        if (parts.size() == 2)
+        {
+            return IsovistDefinition(std::atof(parts[0].c_str()), std::atof(parts[1].c_str()));
+        }
+        else if (parts.size() == 4)
+        {
+            double angle = std::atof(parts[2].c_str()) / 180.0 * M_PI;
+            double viewAngle = std::atof(parts[3].c_str())/180.0 * M_PI;
+            return IsovistDefinition(std::atof(parts[0].c_str()), std::atof(parts[1].c_str()), angle, viewAngle);
+        }
+        std::stringstream message;
+        message << "Failed to parse '" << isovist << "' to an isovist definition";
+        throw EntityParseException(message.str());
+    }
+
 }
