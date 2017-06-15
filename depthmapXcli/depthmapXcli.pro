@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     performancewriter.cpp \
     modeparserregistry.cpp \
     visprepparser.cpp \
-    agentparser.cpp
+    agentparser.cpp \
+    isovistparser.cpp
 
 HEADERS += \
     commandlineparser.h \
@@ -30,7 +31,8 @@ HEADERS += \
     imodeparserfactory.h \
     visprepparser.h \
     parsingutils.h \
-    agentparser.h
+    agentparser.h \
+    isovistparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
