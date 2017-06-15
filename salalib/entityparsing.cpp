@@ -198,4 +198,91 @@ namespace EntityParsing {
         }
         return points;
     }
+
+    std::vector<IsovistDefinition> parseIsovists(istream &stream, char delimiter)
+    {
+        std::vector<IsovistDefinition> isovists;
+
+        std::string inputline;
+        std::getline(stream, inputline);
+
+        std::vector<std::string> strings = split(inputline, delimiter);
+
+        if (strings.size() < 2)
+        {
+            throw EntityParseException("Badly formatted header (should contain x, y, can also have angle and viewangle for partial isovists)");
+        }
+
+        size_t i;
+        for (i = 0; i < strings.size(); i++)
+        {
+           if (!strings[i].empty())
+           {
+               std::transform(strings[i].begin(), strings[i].end(), strings[i].begin(), ::tolower);
+           }
+        }
+
+        int xcol = -1, ycol = -1, anglecol = -1, viewcol = -1;
+        for (i = 0; i < strings.size(); i++) {
+            if (strings[i] == "x")
+            {
+                xcol = i;
+            }
+            else if (strings[i] == "y")
+            {
+                ycol = i;
+            }
+            else if (strings[i] == "angle")
+            {
+                anglecol = i;
+            }
+            else if (strings[i] == "viewangle")
+            {
+                viewcol = i;
+            }
+        }
+
+        if(xcol == -1 || ycol == -1 )
+        {
+            throw EntityParseException("Badly formatted header (should contain x and y, might also have angle and viewangle for partial isovists)");
+        }
+
+
+        bool partialIsovists =  anglecol != -1 && viewcol != -1;
+        int maxCol = std::max({xcol, ycol, anglecol, viewcol});
+        while ( !stream.eof())
+        {
+            std::getline(stream, inputline);
+            if (!inputline.empty())
+            {
+                strings = split(inputline, delimiter);
+                if (!strings.size())
+                {
+                    continue;
+                }
+                if (strings.size() <= maxCol)
+                {
+                    std::stringstream message;
+                    message << "Error parsing line: " << inputline << flush;
+                    throw EntityParseException(message.str().c_str());
+                }
+
+                double x = std::atof(strings[xcol].c_str());
+                double y = std::atof(strings[ycol].c_str());
+
+                if (partialIsovists)
+                {
+                    double angle = std::atof(strings[anglecol].c_str()) / 180.0 * M_PI;
+                    double viewAngle = std::atof(strings[viewcol].c_str())/180.0 * M_PI;
+                    isovists.push_back(IsovistDefinition(x,y,angle,viewAngle));
+                }
+                else
+                {
+                    isovists.push_back(IsovistDefinition(x,y));
+                }
+            }
+        }
+        return isovists;
+    }
+
 }
