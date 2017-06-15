@@ -18,6 +18,7 @@
 
 #include "genlib/p2dpoly.h"
 #include "genlib/exceptions.h"
+#include "isovistdef.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -34,6 +35,8 @@ namespace EntityParsing {
     std::vector<std::string> split(const std::string &s, char delim);
     std::vector<Line> parseLines(std::istream& stream, char delimiter);
     std::vector<Point2f> parsePoints(std::istream& stream, char delimiter);
+    std::vector<IsovistDefinition> parseIsovists(std::istream &stream, char delimiter);
+
 }
 
 #endif // ENTITYPARSING_H

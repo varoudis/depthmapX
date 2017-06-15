@@ -193,3 +193,51 @@ TEST_CASE("Tests for split function", "")
         REQUIRE(stringParts.size() == 3);
     }
 }
+
+TEST_CASE("Successful Isovist parser")
+{
+    const float EPSILON = 0.0001;
+    {
+        std::stringstream stream;
+        stream << "x,y\n1.0,2.34\n0.5,9.2\n" << std::flush;
+        auto result = EntityParsing::parseIsovists(stream, ',');
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0].getLocation().x == Approx(1.0).epsilon(EPSILON));
+        REQUIRE(result[0].getLocation().y == Approx(2.34).epsilon(EPSILON));
+        REQUIRE(result[0].getAngle() == Approx(0.0).epsilon(EPSILON));
+        REQUIRE(result[0].getViewAngle() == Approx(-1.0).epsilon(EPSILON));
+        REQUIRE(result[1].getLocation().x == Approx(0.5).epsilon(EPSILON));
+        REQUIRE(result[1].getLocation().y == Approx(9.2).epsilon(EPSILON));
+        REQUIRE(result[1].getAngle() == Approx(0.0).epsilon(EPSILON));
+        REQUIRE(result[1].getViewAngle() == Approx(-1.0).epsilon(EPSILON));
+    }
+    {
+        std::stringstream stream;
+        stream << "x,y,angle,viewAngle\n1.0,2.34,90,90\n0.5,9.2,180,270\n" << std::flush;
+        auto result = EntityParsing::parseIsovists(stream, ',');
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0].getLocation().x == Approx(1.0).epsilon(EPSILON));
+        REQUIRE(result[0].getLocation().y == Approx(2.34).epsilon(EPSILON));
+        REQUIRE(result[0].getAngle() == Approx(M_PI/2.0).epsilon(EPSILON));
+        REQUIRE(result[0].getViewAngle() == Approx(M_PI/2.0).epsilon(EPSILON));
+        REQUIRE(result[1].getLocation().x == Approx(0.5).epsilon(EPSILON));
+        REQUIRE(result[1].getLocation().y == Approx(9.2).epsilon(EPSILON));
+        REQUIRE(result[1].getAngle() == Approx(M_PI).epsilon(EPSILON));
+        REQUIRE(result[1].getViewAngle() == Approx(M_PI*1.5).epsilon(EPSILON));
+    }
+}
+
+TEST_CASE("Failing Isovist parser")
+{
+    {
+        std::stringstream stream;
+        stream << "x,angle,viewAngle\n" << std::flush;
+        REQUIRE_THROWS_WITH(EntityParsing::parseIsovists(stream, ','), Catch::Contains("Badly formatted header (should contain x and y, might also have angle and viewangle for partial isovists)"));
+    }
+
+    {
+        std::stringstream stream;
+        stream << "x,y,angle,viewAngle\n1.0,1.0,270" << std::flush;
+        REQUIRE_THROWS_WITH(EntityParsing::parseIsovists(stream, ','), Catch::Contains("Error parsing line: 1.0,1.0,270"));
+    }
+}
