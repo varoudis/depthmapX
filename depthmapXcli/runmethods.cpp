@@ -159,7 +159,46 @@ namespace dm_runmethods
         DO_TIMED("Calculate Connectivity", mGraph->makeGraph(0, boundaryGraph ? 1 : 0, maxVisibility))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
-        std::cout << " ok" << std::endl;
+                std::cout << " ok" << std::endl;
     }
+
+    void runAxialAnalysis(const CommandLineParser &clp, const AxialParser &ap, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
+
+        auto state = mGraph->getState();
+        if ( ap.runAllLines())
+        {
+           if (~state & MetaGraph::LINEDATA)
+           {
+               throw depthmapX::RuntimeException("Line drawing must be loaded before axial map can be constructed");
+           }
+           std::cout << "Making all line map... " << std::flush;
+           DO_TIMED("Making all axes map", for_each (ap.getAllAxesRoots().begin(),ap.getAllAxesRoots().end(), [&mGraph](const Point2f &point)->void{mGraph->makeAllLineMap(0, point);} ))
+           std::cout << "ok" << std::endl;
+        }
+
+        if (ap.runFewestLines())
+        {
+            if (~state & MetaGraph::LINEDATA)
+            {
+                throw depthmapX::RuntimeException("Line drawing must be loaded before fewest line map can be constructed");
+            }
+            if (!mGraph->hasAllLineMap())
+            {
+                throw depthmapX::RuntimeException("All line map must be constructed before fewest lines can be constructed. Use -aa to do this");
+            }
+            std::cout << "Constructing fewest line map... " << std::flush;
+            DO_TIMED("Fewest line map", mGraph->makeFewestLineMap(0,1))
+            std::cout << "ok" << std::endl;
+        }
+        std::cout << "Writing out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        std::cout << " ok" << std::endl;
+
+    }
+
+
+
 
 }

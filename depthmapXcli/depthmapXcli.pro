@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     performancewriter.cpp \
     modeparserregistry.cpp \
     visprepparser.cpp \
-    axialparser.cpp
+    axialparser.cpp \
+    parsingutils.cpp
 
 HEADERS += \
     commandlineparser.h \

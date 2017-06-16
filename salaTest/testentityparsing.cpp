@@ -193,3 +193,17 @@ TEST_CASE("Tests for split function", "")
         REQUIRE(stringParts.size() == 3);
     }
 }
+
+
+TEST_CASE("Test point parsing")
+{
+    REQUIRE_THROWS_WITH(EntityParsing::parsePoint("foo", '|'), Catch::Contains("Badly formatted point data, should be <number>|<number>, was foo" ));
+    auto point = EntityParsing::parsePoint("1.235|27.25", '|');
+    REQUIRE(point.x == Approx(1.235));
+    REQUIRE(point.y == Approx(27.25));
+
+    point = EntityParsing::parsePoint("1.235|bar", '|');
+    REQUIRE(point.x == Approx(1.235));
+    REQUIRE(point.y == 0.0);
+
+}

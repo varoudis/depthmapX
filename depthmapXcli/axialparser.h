@@ -15,6 +15,7 @@
 
 #pragma once
 #include "imodeparser.h"
+#include "genlib/p2dpoly.h"
 
 class AxialParser : public IModeParser
 {
@@ -31,34 +32,32 @@ public:
     // accessors
     bool runAllLines() const
     {
-        return (m_mode & ALLLINES) != 0;
+        return !m_allAxesRoots.empty();
+    }
+
+    const std::vector<Point2f> & getAllAxesRoots() const{
+        return m_allAxesRoots;
     }
 
     bool runFewestLines() const
     {
-        return (m_mode & FEWEST) != 0;
+        return m_runFewestLines;
     }
 
     bool runUnlink() const
     {
-        return (m_mode & UNLINK) != 0;
+        // not supported for now
+        return false;
     }
 
     bool runAnalysis() const
     {
-        return (m_mode & ANALYSIS) != 0;
+        return m_runAnalysis;
     }
 
-
 private:
-    enum AXIAL_MODE
-    {
-        NONE = 0,
-        ALLLINES = 1,
-        FEWEST = 2,
-        UNLINK = 4,
-        ANALYSIS = 8
-    };
-
-    int m_mode;
+    std::vector<Point2f> m_allAxesRoots;
+    bool m_runFewestLines;
+    bool m_runAnalysis;
+    std::vector<double> m_radii;
 };

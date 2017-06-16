@@ -20,6 +20,7 @@
 #include "radiusconverter.h"
 #include "performancesink.h"
 #include "vgaparser.h"
+#include "axialparser.h"
 #include <vector>
 
 class Line;
@@ -29,5 +30,6 @@ namespace dm_runmethods{
     void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter );
     void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
     void runVisualPrep(const CommandLineParser &clp, double gridSize, const std::vector<Point2f> &fillPoints, double maxVisibility, bool boundaryGraph, IPerformanceSink &perfWriter);
+    void runAxialAnalysis(const CommandLineParser& clp, const AxialParser &ap, IPerformanceSink &perfWriter);
 }
 #endif // RUNMETHODS_H
