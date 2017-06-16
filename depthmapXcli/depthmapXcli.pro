@@ -14,7 +14,8 @@ SOURCES += main.cpp \
     modeparserregistry.cpp \
     visprepparser.cpp \
     axialparser.cpp \
-    parsingutils.cpp
+    parsingutils.cpp \
+    agentparser.cpp
 
 HEADERS += \
     commandlineparser.h \
@@ -31,7 +32,8 @@ HEADERS += \
     imodeparserfactory.h \
     visprepparser.h \
     parsingutils.h \
-    axialparser.h
+    axialparser.h \
+    agentparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug

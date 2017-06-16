@@ -15,6 +15,8 @@ SOURCES += main.cpp \
     ../depthmapXcli/vgaparser.cpp \
     testlinkparser.cpp \
     ../depthmapXcli/linkparser.cpp \
+    testagentparser.cpp \
+    ../depthmapXcli/agentparser.cpp \
     testargumentholder.cpp \
     ../depthmapXcli/performancewriter.cpp \
     testperformancewriter.cpp \
@@ -36,6 +38,7 @@ HEADERS += \
     ../depthmapXcli/simpletimer.h \
     ../depthmapXcli/vgaparser.h \
     ../depthmapXcli/linkparser.h \
+    ../depthmapXcli/agentparser.h \
     ../depthmapXcli/permformancewriter.h \
     argumentholder.h \
     selfcleaningfile.h
