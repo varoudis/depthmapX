@@ -39,4 +39,5 @@ HEADERS += \
     paftl.h \
     paftl_old.h \
     xmlparse.h \
-    exceptions.h
+    exceptions.h \
+    legacyconverters.h
