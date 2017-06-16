@@ -17,6 +17,7 @@
 #include "exceptions.h"
 #include "salalib/entityparsing.h"
 #include <sstream>
+#include "runmethods.h"
 
 using namespace depthmapX;
 
@@ -92,4 +93,5 @@ void IsovistParser::parse(int argc, char **argv)
 
 void IsovistParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
+    dm_runmethods::runIsovists(clp, mIsovists, perfWriter);
 }
