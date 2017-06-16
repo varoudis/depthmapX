@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <salalib/gridproperties.h>
+#include <genlib/legacyconverters.h>
 
 namespace dm_runmethods
 {
@@ -192,6 +193,15 @@ namespace dm_runmethods
             std::cout << "Constructing fewest line map... " << std::flush;
             DO_TIMED("Fewest line map", mGraph->makeFewestLineMap(0,1))
             std::cout << "ok" << std::endl;
+        }
+
+        if (ap.runAnalysis())
+        {
+            std::cout << "Running axial analysis... " << std::flush;
+            Options options;
+            options.radius_list = genshim::toPVector(ap.getRadii());
+            mGraph->analyseAxial(0, options, clp.simpleMode());
+
         }
         std::cout << "Writing out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
