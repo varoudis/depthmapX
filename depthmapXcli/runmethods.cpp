@@ -200,7 +200,11 @@ namespace dm_runmethods
             std::cout << "Running axial analysis... " << std::flush;
             Options options;
             options.radius_list = genshim::toPVector(ap.getRadii());
-            mGraph->analyseAxial(0, options, clp.simpleMode());
+            options.choice = ap.useChoice();
+            options.local = ap.useLocal();
+            options.fulloutput = ap.calculateRRA();
+            DO_TIMED("Axial analysis", mGraph->analyseAxial(0, options, clp.simpleMode()))
+            std::cout << "ok\n" << std::flush;
 
         }
         std::cout << "Writing out result..." << std::flush;

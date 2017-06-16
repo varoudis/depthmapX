@@ -55,6 +55,10 @@ public:
         return m_runAnalysis;
     }
 
+    bool useChoice() const { return m_choice; }
+    bool useLocal() const { return m_local; }
+    bool calculateRRA() const { return m_rra; }
+
     const std::vector<double> getRadii() const { return m_radii;}
 
 private:
@@ -62,4 +66,7 @@ private:
     bool m_runFewestLines;
     bool m_runAnalysis;
     std::vector<double> m_radii;
+    bool m_choice;
+    bool m_local;
+    bool m_rra;
 };
