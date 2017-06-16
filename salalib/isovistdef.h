@@ -21,9 +21,15 @@ class IsovistDefinition
 {
 public:
     IsovistDefinition( double x, double y, double angle, double viewAngle ) : mLocation(x, y), mAngle(angle), mViewAngle(viewAngle)
-    {}
+    {
+        if ( viewAngle >= 2 * M_PI)
+        {
+            mAngle = 0.0;
+            mViewAngle = 0.0;
+        }
+    }
 
-    IsovistDefinition(double x, double y) : mLocation(x,y), mAngle(0), mViewAngle(-1.0)
+    IsovistDefinition(double x, double y) : mLocation(x,y), mAngle(0), mViewAngle(0)
     {}
 
     const Point2f &getLocation() const { return mLocation;}
@@ -45,11 +51,6 @@ public:
             rightAngle -= 2 * M_PI;
         }
         return rightAngle;
-    }
-
-    bool partialIsovist() const
-    {
-        return mViewAngle >= 0;
     }
 
 private:

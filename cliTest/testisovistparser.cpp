@@ -27,7 +27,7 @@ TEST_CASE("Parse isovist on the command line")
 
     REQUIRE(parser.getIsovists().size() == 2);
     REQUIRE(parser.getIsovists()[0].getLocation().y == Approx(2.0));
-    REQUIRE(parser.getIsovists()[0].getViewAngle() == Approx(-1.0));
+    REQUIRE(parser.getIsovists()[0].getViewAngle() == 0.0);
 
     REQUIRE(parser.getIsovists()[1].getLocation().y == Approx(5.0));
     REQUIRE(parser.getIsovists()[1].getViewAngle() == Approx(3.141592));
@@ -53,11 +53,11 @@ TEST_CASE("Parse isovists from file")
         REQUIRE(parser.getIsovists().size() == 2);
         REQUIRE(parser.getIsovists()[0].getLocation().y == Approx(1.0));
         REQUIRE(parser.getIsovists()[0].getAngle() == 0.0);
-        REQUIRE(parser.getIsovists()[0].getViewAngle() == Approx(-1.0));
+        REQUIRE(parser.getIsovists()[0].getViewAngle() == 0.0);
 
         REQUIRE(parser.getIsovists()[1].getLocation().y == Approx(1.1));
         REQUIRE(parser.getIsovists()[1].getAngle() == 0.0);
-        REQUIRE(parser.getIsovists()[1].getViewAngle() == Approx(-1.0));
+        REQUIRE(parser.getIsovists()[1].getViewAngle() == 0.0);
     }
 
     SECTION("Partial isovists")
