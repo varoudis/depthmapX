@@ -18,6 +18,7 @@
 #include "vgaparser.h"
 #include "visprepparser.h"
 #include "axialparser.h"
+#include "agentparser.h"
 
 
 void ModeParserRegistry::populateParsers()
@@ -27,5 +28,6 @@ void ModeParserRegistry::populateParsers()
     REGISTER_PARSER(LinkParser);
     REGISTER_PARSER(VisPrepParser);
     REGISTER_PARSER(AxialParser);
+    REGISTER_PARSER(AgentParser);
     // *********
 }
