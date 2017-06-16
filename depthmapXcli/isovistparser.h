@@ -18,7 +18,7 @@
 #include "salalib/isovistdef.h"
 #include <vector>
 
-class IsovistParser : IModeParser
+class IsovistParser : public IModeParser
 {
 public:
     IsovistParser();
