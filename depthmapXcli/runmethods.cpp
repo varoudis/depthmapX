@@ -306,4 +306,26 @@ namespace dm_runmethods
             }
         }
     }
+
+    void runIsovists(const CommandLineParser &clp, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
+
+        auto communicator = std::unique_ptr<Communicator>(new ICommunicator);
+        std::cout << "Making " << isovists.size() << " isovists... "  << std::flush;
+        DO_TIMED("Make isovists", std::for_each(isovists.begin(), isovists.end(), [&mGraph, &communicator](const IsovistDefinition &isovist)->void{
+            if(isovist.partialIsovist())
+            {
+                mGraph->makeIsovist(communicator.get(), isovist.getLocation(), isovist.getLeftAngle(), isovist.getRightAngle(), false);
+            }
+            else
+            {
+                mGraph->makeIsovist(communicator.get(), isovist.getLocation(),0,0, false);
+            }
+        }))
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        std::cout << " ok" << std::endl;
+    }
+
 }
