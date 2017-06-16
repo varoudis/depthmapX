@@ -22,7 +22,7 @@
 
 using namespace depthmapX;
 
-AxialParser::AxialParser() :  m_runFewestLines(false), m_runAnalysis(false)
+AxialParser::AxialParser() :  m_runFewestLines(false), m_runAnalysis(false), m_choice(false), m_local(false), m_rra(false)
 {
 
 }
@@ -41,7 +41,11 @@ std::string AxialParser::getHelp() const
             "  -xu Process unlink data (not yet supported)\n"\
             "  -xa run axial anlysis\n"\
             " All modes expect to find the required input in the in graph\n"\
-            " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n";
+            " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n"\
+            " Further flags for axial analysis are:\n"\
+            "   -xac Include choice (betweenness)\n"\
+            "   -xal Include local measures\n"\
+            "   -xar Inlcude RA, RRA and total depth\n\n";
 }
 
 void AxialParser::parse(int argc, char **argv)
@@ -70,6 +74,18 @@ void AxialParser::parse(int argc, char **argv)
             }
             m_radii = depthmapX::parseAxialRadiusList(argv[i]);
             m_runAnalysis = true;
+        }
+        else if (strcmp(argv[i], "-xal") == 0)
+        {
+            m_local = true;
+        }
+        else if (strcmp(argv[i], "-xac") == 0)
+        {
+            m_choice = true;
+        }
+        else if(strcmp(argv[i], "-xar") == 0)
+        {
+            m_rra = true;
         }
     }
 

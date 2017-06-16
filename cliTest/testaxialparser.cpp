@@ -28,7 +28,11 @@ TEST_CASE("Test mode and help")
                                 "  -xu Process unlink data (not yet supported)\n"\
                                 "  -xa run axial anlysis\n"\
                                 " All modes expect to find the required input in the in graph\n"\
-                                " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n");
+                                " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n"\
+                                " Further flags for axial analysis are:\n"\
+                                "   -xac Include choice (betweenness)\n"\
+                                "   -xal Include local measures\n"\
+                                "   -xar Inlcude RA, RRA and total depth\n\n");
 
 }
 
@@ -80,7 +84,47 @@ TEST_CASE("Test mode parsing", "")
         REQUIRE_FALSE(parser.runFewestLines());
         REQUIRE_FALSE(parser.runUnlink());
         REQUIRE(parser.runAnalysis());
+        REQUIRE_FALSE(parser.calculateRRA());
+        REQUIRE_FALSE(parser.useChoice());
+        REQUIRE_FALSE(parser.useLocal());
     }
+    SECTION("Analysis -rra")
+    {
+        ArgumentHolder ah{"prog", "-xa", "n", "-xar"};
+        parser.parse(ah.argc(), ah.argv());
+        REQUIRE_FALSE(parser.runAllLines());
+        REQUIRE_FALSE(parser.runFewestLines());
+        REQUIRE_FALSE(parser.runUnlink());
+        REQUIRE(parser.runAnalysis());
+        REQUIRE(parser.calculateRRA());
+        REQUIRE_FALSE(parser.useChoice());
+        REQUIRE_FALSE(parser.useLocal());
+    }
+    SECTION("Analysis + choice")
+    {
+        ArgumentHolder ah{"prog", "-xa", "n", "-xac"};
+        parser.parse(ah.argc(), ah.argv());
+        REQUIRE_FALSE(parser.runAllLines());
+        REQUIRE_FALSE(parser.runFewestLines());
+        REQUIRE_FALSE(parser.runUnlink());
+        REQUIRE(parser.runAnalysis());
+        REQUIRE_FALSE(parser.calculateRRA());
+        REQUIRE(parser.useChoice());
+        REQUIRE_FALSE(parser.useLocal());
+    }
+    SECTION("Analysis + local")
+    {
+        ArgumentHolder ah{"prog", "-xa", "n", "-xal"};
+        parser.parse(ah.argc(), ah.argv());
+        REQUIRE_FALSE(parser.runAllLines());
+        REQUIRE_FALSE(parser.runFewestLines());
+        REQUIRE_FALSE(parser.runUnlink());
+        REQUIRE(parser.runAnalysis());
+        REQUIRE_FALSE(parser.calculateRRA());
+        REQUIRE_FALSE(parser.useChoice());
+        REQUIRE(parser.useLocal());
+    }
+
     SECTION("Multiple")
     {
         ArgumentHolder ah{"prog", "-xl", "1.2,1.5", "-xa", "n", "-xl", "2.4,1.0"};
