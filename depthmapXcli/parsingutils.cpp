@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <cstring>
 #include "exceptions.h"
 
 std::vector<double> depthmapX::parseAxialRadiusList(const std::string &radiusList)
