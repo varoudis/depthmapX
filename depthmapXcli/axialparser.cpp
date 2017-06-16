@@ -17,10 +17,12 @@
 #include "axialparser.h"
 #include "parsingutils.h"
 #include "exceptions.h"
+#include "salalib/entityparsing.h"
+#include "runmethods.h"
 
 using namespace depthmapX;
 
-AxialParser::AxialParser() : m_mode((int) AxialParser::NONE)
+AxialParser::AxialParser() :  m_runFewestLines(false), m_runAnalysis(false)
 {
 
 }
@@ -34,44 +36,44 @@ std::string AxialParser::getModeName() const
 std::string AxialParser::getHelp() const
 {
     return  "Mode options for Axial Analysis:\n"\
-            "-am <axial mode> one of all, fewest, unlink, analysis\n"\
-            "    all - create all axial lines map\n"\
-            "    fewest - reduce to fewest axial lines\n"\
-            "    unlink - perform line unlinks (requires extra information)\n"\
-            "    analysis - run axial analysis (requies extra information)\n"\
-            "    Any mode expects input in the in graph\n"\
-            "    -am can be used several times, the operations will be run in the above order\n"\
-            "";
+            "  -xl <x>,<y> Calculate all lines map from this seed point (can be used more than once)\n"
+            "  -xf Calculate fewest lines map from all lines map\n"\
+            "  -xu Process unlink data (not yet supported)\n"\
+            "  -xa run axial anlysis\n"\
+            " All modes expect to find the required input in the in graph\n"\
+            " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n";
 }
 
 void AxialParser::parse(int argc, char **argv)
 {
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(argv[i], "-am") == 0)
+        if (strcmp(argv[i], "-xl") == 0)
         {
-            ENFORCE_ARGUMENT("-am", i)
-            std::string arg(argv[i]);
-            if ( arg == "all")
+            ENFORCE_ARGUMENT("-xl", i)
+            m_allAxesRoots.push_back(EntityParsing::parsePoint(argv[i]));
+        }
+        else if(strcmp(argv[i], "-xf") == 0)
+        {
+            m_runFewestLines = true;
+        }
+        else if(strcmp(argv[i], "-xu") == 0)
+        {
+            ENFORCE_ARGUMENT("-xu", i)
+        }
+        else if (strcmp(argv[i], "-xa") == 0)
+        {
+            ENFORCE_ARGUMENT("-xa", i)
+            if (m_runAnalysis)
             {
-                m_mode |= ALLLINES;
+                throw CommandLineException("-xa can only be used once");
             }
-            else if ( arg == "fewest")
-            {
-                m_mode |= FEWEST;
-            }
-            else if ( arg == "unlink")
-            {
-                m_mode |= UNLINK;
-            }
-            else if (arg == "analysis")
-            {
-                m_mode |= ANALYSIS;
-            }
+            m_radii = depthmapX::parseAxialRadiusList(argv[i]);
+            m_runAnalysis = true;
         }
     }
 
-    if (m_mode == (int)NONE)
+    if (!runAllLines() && !runFewestLines() && !runUnlink() && !runAnalysis())
     {
         throw CommandLineException("No axial analysis mode present");
     }
@@ -79,4 +81,5 @@ void AxialParser::parse(int argc, char **argv)
 
 void AxialParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
+    dm_runmethods::runAxialAnalysis(clp, *this, perfWriter);
 }

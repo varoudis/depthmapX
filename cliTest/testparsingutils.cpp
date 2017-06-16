@@ -13,31 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "catch.hpp"
+#include "../depthmapXcli/parsingutils.h"
 
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
-
-#include "imodeparser.h"
-#include "imodeparserfactory.h"
-#include <vector>
-#include <memory>
-
-class ModeParserRegistry : public IModeParserFactory
+TEST_CASE("AxialRadiusParsing success")
 {
-public:
-    ModeParserRegistry()
-    {
-        populateParsers();
-    }
-
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
-private:
-    void populateParsers();
-    ModeParserVec _availableParsers;
-};
-
-#define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
+    std::string testString = "5,1,n";
+    auto result = depthmapX::parseAxialRadiusList(testString);
+    std::vector<double> expectedResult = {1.0 ,5.0,-1.0};
+    REQUIRE( result == expectedResult );
+}

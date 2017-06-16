@@ -198,4 +198,19 @@ namespace EntityParsing {
         }
         return points;
     }
+
+    Point2f parsePoint(const string &point, char delimiter)
+    {
+        std::vector<std::string> strings = split(point, delimiter);
+
+        if (strings.size() != 2)
+        {
+            std::stringstream message;
+            message << "Badly formatted point data, should be <number>" << delimiter << "<number>, was " << point << flush;
+             throw EntityParseException(message.str());
+        }
+        return Point2f(atof(strings[0].c_str()), atof(strings[1].c_str()));
+
+    }
+
 }

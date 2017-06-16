@@ -18,6 +18,20 @@
 #include "../depthmapXcli/axialparser.h"
 #include "argumentholder.h"
 
+TEST_CASE("Test mode and help")
+{
+    AxialParser parser;
+    REQUIRE(parser.getModeName() == "AXIAL");
+    REQUIRE(parser.getHelp() == "Mode options for Axial Analysis:\n"\
+                                "  -xl <x>,<y> Calculate all lines map from this seed point (can be used more than once)\n"
+                                "  -xf Calculate fewest lines map from all lines map\n"\
+                                "  -xu Process unlink data (not yet supported)\n"\
+                                "  -xa run axial anlysis\n"\
+                                " All modes expect to find the required input in the in graph\n"\
+                                " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n");
+
+}
+
 TEST_CASE("Test Parsing Exceptions","")
 {
     AxialParser parser;
@@ -29,8 +43,8 @@ TEST_CASE("Test Parsing Exceptions","")
 
     SECTION("Argument missing")
     {
-        ArgumentHolder ah{"prog", "-am"};
-        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "-am requires an argument" );
+        ArgumentHolder ah{"prog", "-xl"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "-xl requires an argument" );
     }
 }
 
@@ -39,34 +53,28 @@ TEST_CASE("Test mode parsing", "")
     AxialParser parser;
     SECTION("All lines")
     {
-        ArgumentHolder ah{"prog", "-am", "all"};
+        ArgumentHolder ah{"prog", "-xl", "1.2,1.5"};
         parser.parse(ah.argc(), ah.argv());
         REQUIRE(parser.runAllLines());
+        REQUIRE(parser.getAllAxesRoots().size() == 1);
+        REQUIRE(parser.getAllAxesRoots()[0].x == Approx(1.2));
+        REQUIRE(parser.getAllAxesRoots()[0].y == Approx(1.5));
         REQUIRE_FALSE(parser.runFewestLines());
         REQUIRE_FALSE(parser.runUnlink());
         REQUIRE_FALSE(parser.runAnalysis());
     }
     SECTION("Fewest lines")
     {
-        ArgumentHolder ah{"prog", "-am", "fewest"};
+        ArgumentHolder ah{"prog", "-xf"};
         parser.parse(ah.argc(), ah.argv());
         REQUIRE_FALSE(parser.runAllLines());
         REQUIRE(parser.runFewestLines());
         REQUIRE_FALSE(parser.runUnlink());
         REQUIRE_FALSE(parser.runAnalysis());
     }
-    SECTION("Unlink")
-    {
-        ArgumentHolder ah{"prog", "-am", "unlink"};
-        parser.parse(ah.argc(), ah.argv());
-        REQUIRE_FALSE(parser.runAllLines());
-        REQUIRE_FALSE(parser.runFewestLines());
-        REQUIRE(parser.runUnlink());
-        REQUIRE_FALSE(parser.runAnalysis());
-    }
     SECTION("Analysis")
     {
-        ArgumentHolder ah{"prog", "-am", "analysis"};
+        ArgumentHolder ah{"prog", "-xa", "n"};
         parser.parse(ah.argc(), ah.argv());
         REQUIRE_FALSE(parser.runAllLines());
         REQUIRE_FALSE(parser.runFewestLines());
@@ -75,12 +83,17 @@ TEST_CASE("Test mode parsing", "")
     }
     SECTION("Multiple")
     {
-        ArgumentHolder ah{"prog", "-am", "all", "-am", "unlink"};
+        ArgumentHolder ah{"prog", "-xl", "1.2,1.5", "-xa", "n", "-xl", "2.4,1.0"};
         parser.parse(ah.argc(), ah.argv());
         REQUIRE(parser.runAllLines());
+        REQUIRE(parser.getAllAxesRoots().size() == 2);
+        REQUIRE(parser.getAllAxesRoots()[0].x == Approx(1.2));
+        REQUIRE(parser.getAllAxesRoots()[0].y == Approx(1.5));
+        REQUIRE(parser.getAllAxesRoots()[1].x == Approx(2.4));
+        REQUIRE(parser.getAllAxesRoots()[1].y == Approx(1.0));
         REQUIRE_FALSE(parser.runFewestLines());
-        REQUIRE(parser.runUnlink());
-        REQUIRE_FALSE(parser.runAnalysis());
+        REQUIRE_FALSE(parser.runUnlink());
+        REQUIRE(parser.runAnalysis());
     }
 
 }
