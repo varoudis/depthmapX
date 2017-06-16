@@ -55,6 +55,8 @@ public:
         return m_runAnalysis;
     }
 
+    const std::vector<double> getRadii() const { return m_radii;}
+
 private:
     std::vector<Point2f> m_allAxesRoots;
     bool m_runFewestLines;
