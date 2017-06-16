@@ -19,6 +19,21 @@
 #include "argumentholder.h"
 #include "selfcleaningfile.h"
 
+TEST_CASE("Isovistparser string constants")
+{
+    IsovistParser parser;
+    REQUIRE(parser.getModeName() == "ISOVIST");
+    REQUIRE(parser.getHelp() == "Arguments for isovist mode:\n" \
+                                "  -ii <x,y[,angle,viewangle]> Define an isoivist at position x,y with\n"\
+                                "    optional direction angle and view angle for partial isovists\n"\
+                                "  -if <isovist file> load isovist definitions from a file (csv)\n"\
+                                "    the relevant headers must be called x, y, angle and viewangle\n"\
+                                "    the latter two are optional.\n"\
+                                "  Those two arguments cannot be mixed\n"\
+                                "  Angles for partial isovists are in degrees, counted anti-clockwise with 0°\n"\
+                                "  pointing to the right.\n\n" );
+}
+
 TEST_CASE("Parse isovist on the command line")
 {
     ArgumentHolder ah{"prog", "-ii", "1,2", "-ii", "1,5,27,180"};

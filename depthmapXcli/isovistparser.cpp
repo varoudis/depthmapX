@@ -40,7 +40,9 @@ std::string IsovistParser::getHelp() const
            "  -if <isovist file> load isovist definitions from a file (csv)\n"\
            "    the relevant headers must be called x, y, angle and viewangle\n"\
            "    the latter two are optional.\n"\
-           "  Those two arguments cannot be mixed\n";
+           "  Those two arguments cannot be mixed\n"\
+           "  Angles for partial isovists are in degrees, counted anti-clockwise with 0°\n"\
+           "  pointing to the right.\n\n";
 }
 
 void IsovistParser::parse(int argc, char **argv)
