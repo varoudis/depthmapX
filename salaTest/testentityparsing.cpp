@@ -205,11 +205,11 @@ TEST_CASE("Successful Isovist parser")
         REQUIRE(result[0].getLocation().x == Approx(1.0).epsilon(EPSILON));
         REQUIRE(result[0].getLocation().y == Approx(2.34).epsilon(EPSILON));
         REQUIRE(result[0].getAngle() == Approx(0.0).epsilon(EPSILON));
-        REQUIRE(result[0].getViewAngle() == Approx(-1.0).epsilon(EPSILON));
+        REQUIRE(result[0].getViewAngle() == 0.0);
         REQUIRE(result[1].getLocation().x == Approx(0.5).epsilon(EPSILON));
         REQUIRE(result[1].getLocation().y == Approx(9.2).epsilon(EPSILON));
         REQUIRE(result[1].getAngle() == Approx(0.0).epsilon(EPSILON));
-        REQUIRE(result[1].getViewAngle() == Approx(-1.0).epsilon(EPSILON));
+        REQUIRE(result[1].getViewAngle() == 0.0);
     }
     {
         std::stringstream stream;
@@ -250,7 +250,7 @@ TEST_CASE("Parsing single isovist")
         REQUIRE(result.getLocation().x == Approx(1.0));
         REQUIRE(result.getLocation().y == Approx(1.0));
         REQUIRE(result.getAngle() == 0.0);
-        REQUIRE(result.getViewAngle() == Approx(-1.0));
+        REQUIRE(result.getViewAngle() == 0.0);
     }
 
     SECTION("Success partial isovist")
