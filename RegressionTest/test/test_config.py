@@ -1,7 +1,8 @@
 import unittest
-import config
+from context import config
 from disposablefile import DisposableFile
 import RegressionTestRunner
+import os
 
 def writeConfig(filename, rundir):
     with open(filename, "w") as f:
@@ -56,7 +57,7 @@ class TestMethods(unittest.TestCase):
 
 class TestRealConfig(unittest.TestCase):
     def test_realConfig(self):
-        configFile = RegressionTestRunner.defaultConfigFile
+        configFile = os.path.join("..", RegressionTestRunner.defaultConfigFile)
         self.assertNotEqual( configFile, "" )
         conf = config.RegressionConfig(configFile)
 
