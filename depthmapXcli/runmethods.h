@@ -22,6 +22,7 @@
 #include "performancesink.h"
 #include "vgaparser.h"
 #include "agentparser.h"
+#include "salalib/isovistdef.h"
 #include <vector>
 
 class Line;
@@ -32,5 +33,6 @@ namespace dm_runmethods{
     void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
     void runVisualPrep(const CommandLineParser &clp, double gridSize, const std::vector<Point2f> &fillPoints, double maxVisibility, bool boundaryGraph, IPerformanceSink &perfWriter);
     void runAgentAnalysis(const CommandLineParser &cmdP, const AgentParser &agentP, IPerformanceSink &perfWriter );
+    void runIsovists(const CommandLineParser &cmdP, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter );
 }
 #endif // RUNMETHODS_H
