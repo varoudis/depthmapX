@@ -1,5 +1,5 @@
 import unittest
-import runhelpers
+from context import runhelpers
 from disposablefile import DisposableDirectory
 import os
 import platform

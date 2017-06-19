@@ -1,5 +1,5 @@
 import unittest
-import cmdlinewrapper
+from context import cmdlinewrapper
 
 class TestDepthmapCmd(unittest.TestCase):
     def test_correctBehaviour(self):

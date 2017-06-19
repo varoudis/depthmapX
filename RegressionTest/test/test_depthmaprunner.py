@@ -1,4 +1,4 @@
-import depthmaprunner
+from context import depthmaprunner
 from cmdlinewrapper import DepthmapCmd
 import unittest
 from disposablefile import DisposableFile, DisposableDirectory
