@@ -1,6 +1,6 @@
 import unittest
 from disposablefile import DisposableDirectory
-import runhelpers
+from context import runhelpers
 import sys
 
 class TestUnitTestMain(unittest.TestCase):

@@ -28,8 +28,9 @@ SOURCES += main.cpp \
     testaxialparser.cpp \
     ../depthmapXcli/axialparser.cpp \
     testparsingutils.cpp \
-    ../depthmapXcli/parsingutils.cpp
-
+    ../depthmapXcli/parsingutils.cpp \
+    testisovistparser.cpp \
+    ../depthmapXcli/isovistparser.cpp
 
 
 HEADERS += \
