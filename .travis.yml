@@ -19,4 +19,4 @@ script:
   - /opt/qt57/bin/qmake ../depthmapX.pro
   - make
   - ./cliTest/cliTest && ./GuiUnitTest/GuiUnitTest && ./salaTest/salaTest
-  - cd ../RegressionTest && python3.5 test_main.py && python3.5 RegressionTestRunner.py
+  - cd ../RegressionTest/test && python3.5 test_main.py && cd .. && python3.5 RegressionTestRunner.py
