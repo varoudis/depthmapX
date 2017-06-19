@@ -16,7 +16,6 @@ SOURCES += main.cpp \
     axialparser.cpp \
     parsingutils.cpp \
     agentparser.cpp \
-    agentparser.cpp \
     isovistparser.cpp
 
 HEADERS += \
@@ -35,7 +34,6 @@ HEADERS += \
     visprepparser.h \
     parsingutils.h \
     axialparser.h \
-    agentparser.h \
     agentparser.h \
     isovistparser.h
 
