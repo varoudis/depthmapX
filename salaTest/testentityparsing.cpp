@@ -194,6 +194,19 @@ TEST_CASE("Tests for split function", "")
     }
 }
 
+
+TEST_CASE("Test point parsing")
+{
+    REQUIRE_THROWS_WITH(EntityParsing::parsePoint("foo", '|'), Catch::Contains("Badly formatted point data, should be <number>|<number>, was foo" ));
+    auto point = EntityParsing::parsePoint("1.235|27.25", '|');
+    REQUIRE(point.x == Approx(1.235));
+    REQUIRE(point.y == Approx(27.25));
+
+    point = EntityParsing::parsePoint("1.235|bar", '|');
+    REQUIRE(point.x == Approx(1.235));
+    REQUIRE(point.y == 0.0);
+}
+
 TEST_CASE("Successful Isovist parser")
 {
     const float EPSILON = 0.0001;
@@ -266,5 +279,4 @@ TEST_CASE("Parsing single isovist")
     {
         REQUIRE_THROWS_WITH(EntityParsing::parseIsovist("1,1,27"), Catch::Contains("Failed to parse '1,1,27' to an isovist definition"));
     }
-
 }

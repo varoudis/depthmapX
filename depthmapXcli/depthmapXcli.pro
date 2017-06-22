@@ -13,6 +13,8 @@ SOURCES += main.cpp \
     performancewriter.cpp \
     modeparserregistry.cpp \
     visprepparser.cpp \
+    axialparser.cpp \
+    parsingutils.cpp \
     agentparser.cpp \
     isovistparser.cpp
 
@@ -31,6 +33,7 @@ HEADERS += \
     imodeparserfactory.h \
     visprepparser.h \
     parsingutils.h \
+    axialparser.h \
     agentparser.h \
     isovistparser.h
 

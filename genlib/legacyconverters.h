@@ -13,31 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
-
-#include "imodeparser.h"
-#include "imodeparserfactory.h"
+#pragma once
 #include <vector>
-#include <memory>
+#include "paftl.h"
 
-class ModeParserRegistry : public IModeParserFactory
+namespace genshim
 {
-public:
-    ModeParserRegistry()
+    /**
+     * Converte a std::vector to a pvec (preserving the order of elements)
+     * This is expensive as it copies every single element
+     */
+    template<class T> pvector<T> toPVector(const std::vector<T> &vec)
     {
-        populateParsers();
+        pvector<T> pvec;
+        std::for_each(vec.begin(), vec.end(), [&pvec](const T& val)->void{pvec.push_back(val);});
+        return pvec;
     }
-
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
-private:
-    void populateParsers();
-    ModeParserVec _availableParsers;
-};
-
-#define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
+}
