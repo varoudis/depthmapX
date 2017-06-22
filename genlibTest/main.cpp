@@ -14,30 +14,5 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
-
-#include "imodeparser.h"
-#include "imodeparserfactory.h"
-#include <vector>
-#include <memory>
-
-class ModeParserRegistry : public IModeParserFactory
-{
-public:
-    ModeParserRegistry()
-    {
-        populateParsers();
-    }
-
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
-private:
-    void populateParsers();
-    ModeParserVec _availableParsers;
-};
-
-#define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
