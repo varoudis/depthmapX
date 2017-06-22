@@ -7,4 +7,5 @@ import config
 import depthmaprunner
 import RegressionTestRunner
 import runhelpers
-
+import performanceregressionconfig
+import performancerunner

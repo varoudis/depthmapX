@@ -15,76 +15,7 @@ class BinaryDiffTest(unittest.TestCase):
             self.assertFalse(depthmaprunner.diffBinaryFiles(f1.filename(), f2.filename()))
 
 
-class PerformanceCheckTest(unittest.TestCase):
-    def test_filesMissing(self):
-        message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-        self.assertEqual(message, "Base performance timing file f1.csv is missing")
 
-        with DisposableFile("f1.csv") as f1:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "Test performance timing file f2.csv is missing")
-                
-        with DisposableFile("f2.csv") as f2:
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "Base performance timing file f1.csv is missing")
-
-    def test_fileLineNumberMismatch(self):
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "baseline performance file f1.csv has more lines than the test one f2.csv")
-
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\nbar,20\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "baseline performance file f1.csv has fewer lines than the test one f2.csv")
-
-    def test_fileLabelMismatch(self):
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\nbar,10\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "performance line mismatch: base 'foo', test 'bar'")
-
-    def test_successfulRunEmptyFile(self):        
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "")
-            
-    def test_successfulRun(self):
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\nbar,21\nbaz,1000\nblub,10\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\nfoo,10.9\nbar,10\nbaz,1010\nblub,10\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "")
-
-    def test_performanceRegression(self):
-        with DisposableFile("f1.csv") as f1, DisposableFile("f2.csv") as f2:
-            with open(f1.filename(), "w") as f:
-                f.write("action,duration\nfoo,10\n")
-            with open(f2.filename(), "w") as f:
-                f.write("action,duration\nfoo,18\n")
-            message = depthmaprunner.checkPerformance("f1.csv", "f2.csv")
-            self.assertEqual(message, "Performance regression: foo took 18s instead of 10s")
-        
 
 class DepthmapRunnerTest(unittest.TestCase):
     def runfunc(self, rundir, args):

@@ -1,6 +1,8 @@
 import json
 import os.path
 import cmdlinewrapper
+from performanceregressionconfig import PerformanceRegressionConfig
+
 
 class ConfigError(Exception):
     def __init__(self, message):
@@ -47,6 +49,9 @@ def buildTestcase(testcase, rundir, configdir):
     return TestCase(buildCmd(testcase)) 
 
 
+        
+    
+
 class RegressionConfig():
     def __init__(self, filename):
         with open(filename, "r") as f:
@@ -55,6 +60,7 @@ class RegressionConfig():
         self.rundir = config["rundir"]
         self.basebinlocation = config["basebinlocation"]
         self.testbinlocation = config["testbinlocation"]
+        self.performanceRegression = PerformanceRegressionConfig(config.get("performance", None))
         self.testcases = {}
         for (name, tc) in config["testcases"].items():
             self.testcases[name] = buildTestcase(tc, self.rundir, configdir)
