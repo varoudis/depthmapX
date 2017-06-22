@@ -60,6 +60,7 @@ class TestRealConfig(unittest.TestCase):
         configFile = os.path.join("..", RegressionTestRunner.defaultConfigFile)
         self.assertNotEqual( configFile, "" )
         conf = config.RegressionConfig(configFile)
+        self.assertFalse(conf.performanceRegression.enabled)
 
 if __name__ == "__main__":
     unittest.main()
