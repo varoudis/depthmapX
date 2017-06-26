@@ -178,6 +178,7 @@ private:
    void ResetHoverWnd(const QPoint& p = QPoint(-1,-1));
    void CreateHoverWnd();
 
+   bool IsAtZoomLimits(double ratio, double maxZoomOutRatio);
    void ZoomTowards(double ratio, const Point2f& point);
 
    void InitViewport(const QRect& phys_bounds, QGraphDoc *pDoc);
