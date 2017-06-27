@@ -46,15 +46,26 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
                 break
         self.assertFalse( outputfile == None )
         return outputfile
-        
+
+    def getTimingsFile(self,args):
+        timingsFile = None
+        for i in range(0, len(args)):
+            if args[i] == "-t" and i < len(args):
+                timingsFile = args[i+1]
+                break
+        return timingsFile
+
     
     def runfuncSucceedAlwaysSame(self, rundir, args):
-        os.makedirs(rundir)
+        if not os.path.isdir(rundir):
+            os.makedirs(rundir)
         outpath = os.path.join(rundir, self.getOutfile(args))
         with open (outpath, "w") as f:
             f.write("123")
-        with open (os.path.join(rundir, "runtimes.csv"), "w") as f:
-            f.write('"action","duration"\n')
+        timingsFile = self.getTimingsFile(args)
+        if timingsFile:
+            with open (os.path.join(rundir, timingsFile), "w") as f:
+                f.write('"action","duration"\n')
         return (True, "")
 
     def runfuncDifferentResults(self, rundir, args):

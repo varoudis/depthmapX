@@ -6,7 +6,7 @@ import os
 import csv
 from performanceregressionconfig import PerformanceRegressionConfig
 
-def checkPerformance(baseFile, testFile):
+def checkPerformance(baseFile, testFile, relativeThreshold, absoluteThreshold):
     """
     Check the performance of 2 depthmap runs against each other
     This function expects the timing from a base and test run and  parses them
@@ -49,12 +49,12 @@ def checkPerformance(baseFile, testFile):
             if not baseLine["action"] == testLine["action"]:
                 return "performance line mismatch: base '{0}', test '{1}'".format(baseLine["action"], testLine["action"])
 
-            baseTime = float(baseLine["duration"])
-            testTime = float(testLine["duration"])
+            baseTime = float(baseLine["average"])
+            testTime = float(testLine["average"])
 
-            allowance = max(5.0, baseTime / 20.0 )
+            allowance = max(absoluteThreshold, baseTime * relativeThreshold / 100 )
             if testTime > baseTime + allowance:
-                return "Performance regression: {0} took {1}s instead of {2}s".format(baseLine["action"], testLine["duration"], baseLine["duration"])
+                return "Performance regression: {0} took {1}s instead of {2}s".format(baseLine["action"], testLine["average"], baseLine["average"])
 
 def aggregatePerformanceStats(dir, numRuns, filenameTemplate ):
     data = OrderedDict()
@@ -81,9 +81,21 @@ def aggregatePerformanceStats(dir, numRuns, filenameTemplate ):
     return outputFile
 
 class PerformanceRunner(depthmaprunner.DepthmapRegressionRunner):
-    def __init__(self, perfConfig):
+    def __init__(self, runFunc, baseBinary, testBinary, workingDir,  perfConfig):
+        depthmaprunner.DepthmapRegressionRunner.__init__(self,runFunc,baseBinary,testBinary,workingDir)
         self.perfConfig = perfConfig
 
-    def runPerformanceRegression(self, name, testCase):
+    def runPerformanceRegression(self, name, cmd):
+        nameTemplate = "timings_{0}.csv"
         for i in range(self.perfConfig.runsPerInstance):
-            self.runTestCase(name, testCase.cmd.infile, testCase.cmd.outfile, testCase.cmd.mode, testCase.cmd.simpleMode, testCase.cmd.modeLines, "timingscsv{0}.csv".format(i))
+            cmd.timingFile = nameTemplate.format(i)
+            result, message = self.runTestCase(name, cmd)
+            if not result:
+                return (False, "Run {0} failed with message: {1}".format(i, message))
+
+        testFile = aggregatePerformanceStats(self.makeTestDir(name),self.perfConfig.runsPerInstance, nameTemplate)
+        baseFile = aggregatePerformanceStats(self.makeBaseDir(name),self.perfConfig.runsPerInstance, nameTemplate)
+        message = checkPerformance(testFile, baseFile, self.perfConfig.relativeThresholdInPercent, self.perfConfig.absoluteThresholdInSeconds)
+        if message:
+            return (False, message)
+        return (True, "")
