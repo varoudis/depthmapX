@@ -13,31 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "catch.hpp"
+#include "../genlib/legacyconverters.h"
 
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
-
-#include "imodeparser.h"
-#include "imodeparserfactory.h"
-#include <vector>
-#include <memory>
-
-class ModeParserRegistry : public IModeParserFactory
+TEST_CASE("vector conversion")
 {
-public:
-    ModeParserRegistry()
-    {
-        populateParsers();
-    }
-
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
-private:
-    void populateParsers();
-    ModeParserVec _availableParsers;
-};
-
-#define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
+    std::vector<int> vec{1,4,5};
+    pvector<int> result = genshim::toPVector(vec);
+    REQUIRE(result.size() == 3);
+    REQUIRE(result[0] == 1);
+    REQUIRE(result[1] == 4);
+    REQUIRE(result[2] == 5);
+}

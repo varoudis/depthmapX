@@ -12,32 +12,25 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
+#pragma once
 
 #include "imodeparser.h"
-#include "imodeparserfactory.h"
+#include "salalib/isovistdef.h"
 #include <vector>
-#include <memory>
 
-class ModeParserRegistry : public IModeParserFactory
+class IsovistParser : public IModeParser
 {
 public:
-    ModeParserRegistry()
-    {
-        populateParsers();
-    }
+    IsovistParser();
 
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
+    // IModeParser interface
+public:
+    std::string getModeName() const;
+    std::string getHelp() const;
+    void parse(int argc, char **argv);
+    void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const;
+
+    const std::vector<IsovistDefinition> &getIsovists() const{ return mIsovists;}
 private:
-    void populateParsers();
-    ModeParserVec _availableParsers;
+    std::vector<IsovistDefinition> mIsovists;
 };
-
-#define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
