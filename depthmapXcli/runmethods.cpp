@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <salalib/gridproperties.h>
+#include <genlib/legacyconverters.h>
 
 namespace dm_runmethods
 {
@@ -160,7 +161,56 @@ namespace dm_runmethods
         DO_TIMED("Calculate Connectivity", mGraph->makeGraph(0, boundaryGraph ? 1 : 0, maxVisibility))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
+    }
+
+    void runAxialAnalysis(const CommandLineParser &clp, const AxialParser &ap, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
+
+        auto state = mGraph->getState();
+        if ( ap.runAllLines())
+        {
+           if (~state & MetaGraph::LINEDATA)
+           {
+               throw depthmapX::RuntimeException("Line drawing must be loaded before axial map can be constructed");
+           }
+           std::cout << "Making all line map... " << std::flush;
+           DO_TIMED("Making all axes map", for_each (ap.getAllAxesRoots().begin(),ap.getAllAxesRoots().end(), [&mGraph](const Point2f &point)->void{mGraph->makeAllLineMap(0, point);} ))
+           std::cout << "ok" << std::endl;
+        }
+
+        if (ap.runFewestLines())
+        {
+            if (~state & MetaGraph::LINEDATA)
+            {
+                throw depthmapX::RuntimeException("Line drawing must be loaded before fewest line map can be constructed");
+            }
+            if (!mGraph->hasAllLineMap())
+            {
+                throw depthmapX::RuntimeException("All line map must be constructed before fewest lines can be constructed. Use -aa to do this");
+            }
+            std::cout << "Constructing fewest line map... " << std::flush;
+            DO_TIMED("Fewest line map", mGraph->makeFewestLineMap(0,1))
+            std::cout << "ok" << std::endl;
+        }
+
+        if (ap.runAnalysis())
+        {
+            std::cout << "Running axial analysis... " << std::flush;
+            Options options;
+            options.radius_list = genshim::toPVector(ap.getRadii());
+            options.choice = ap.useChoice();
+            options.local = ap.useLocal();
+            options.fulloutput = ap.calculateRRA();
+            DO_TIMED("Axial analysis", mGraph->analyseAxial(0, options, clp.simpleMode()))
+            std::cout << "ok\n" << std::flush;
+
+        }
+        std::cout << "Writing out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
         std::cout << " ok" << std::endl;
+
     }
 
     void runAgentAnalysis(const CommandLineParser &cmdP, const AgentParser &agentP, IPerformanceSink &perfWriter) {
@@ -306,4 +356,20 @@ namespace dm_runmethods
             }
         }
     }
+
+    void runIsovists(const CommandLineParser &clp, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
+
+        auto communicator = std::unique_ptr<Communicator>(new ICommunicator);
+        std::cout << "Making " << isovists.size() << " isovists... "  << std::flush;
+        DO_TIMED("Make isovists", std::for_each(isovists.begin(), isovists.end(),
+            [&mGraph, &communicator, &clp](const IsovistDefinition &isovist)->void{
+                mGraph->makeIsovist(communicator.get(), isovist.getLocation(), isovist.getLeftAngle(), isovist.getRightAngle(), clp.simpleMode());
+            }))
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+        std::cout << " ok" << std::endl;
+    }
+
 }
