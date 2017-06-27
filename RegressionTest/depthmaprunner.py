@@ -34,8 +34,7 @@ class DepthmapRegressionRunner():
         return os.path.join(self.__workingDir, name + "_test")
 
     def runTestCase(self, name, cmd):
-        cmd.timingFile = "runtimes.csv"
-        baseDir = os.path.join(self.__workingDir, name + "_base")
+        baseDir = self.makeBaseDir(name)
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
         if not baseSuccess:
             print("Baseline run failed with arguments " + pprint.pformat(cmd.toCmdArray()))
