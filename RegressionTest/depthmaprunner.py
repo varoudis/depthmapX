@@ -80,15 +80,8 @@ class DepthmapRegressionRunner():
         self.__testRunner = DepthmapRunner(runFunc, testBinary)
         self.__workingDir = workingDir
 
-    def runTestCase(self, name, infile, outfile, mode, simpleMode = False, subcmds = [], timingFile = "runtimes.csv"):
-        cmd = cmdlinewrapper.DepthmapCmd()
-        cmd.infile = infile
-        cmd.outfile = outfile
-        cmd.mode = mode
-        cmd.simpleMode = simpleMode
-        cmd.modeLines = subcmds
-        cmd.timingFile = timingFile
-
+    def runTestCase(self, name, cmd):
+        cmd.timingFile = "runtimes.csv"
         baseDir = os.path.join(self.__workingDir, name + "_base")
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
         if not baseSuccess:
@@ -102,8 +95,8 @@ class DepthmapRegressionRunner():
             print(testOut)
             return (False, "Test run failed")
 
-        baseFile = os.path.join(baseDir, outfile)
-        testFile = os.path.join(testDir, outfile)
+        baseFile = os.path.join(baseDir, cmd.outfile)
+        testFile = os.path.join(testDir, cmd.outfile)
         if not os.path.exists(baseFile):
             message = "Baseline output {0} does not exist".format(baseFile)
             print (message)
@@ -118,7 +111,7 @@ class DepthmapRegressionRunner():
             print (message)
             return (False, message)
 
-        message = checkPerformance( os.path.join(baseDir, timingFile), os.path.join(testDir, timingFile))
+        message = checkPerformance( os.path.join(baseDir, cmd.timingFile), os.path.join(testDir, cmd.timingFile))
         if message:
             print(message)
             return (False,message)
