@@ -49,7 +49,7 @@ public:
                   "-afov set agent field-of-view (bins)\n"\
                   "-asteps set agent steps before turn decision\n"\
                   "-alife set agent total lifetime (in timesteps)\n"\
-                  "-alocrand set agents to start at random locations\n"\
+                  "-alocrand <seed> set agents to start at random locations with specific seed (0 to 10)\n"\
                   "-alocfile <agent starting points file>\n"\
                   "-aloc <single agent starting point coordinates> provided in csv (x1,y1) "\
                   "for example \"0.1,0.2\". Provide multiple times for multiple links\n"\
@@ -91,7 +91,7 @@ public:
     int totalSystemTimestemps() const { return _totalSystemTimestemps; }
     double releaseRate() const { return _releaseRate; }
     int recordTrailsForAgents() const { return _recordTrailsForAgents; }
-    bool randomReleaseLocations() const { return _randomReleaseLocations; }
+    int randomReleaseLocationSeed() const { return _randomReleaseLocationSeed; }
 
     int agentFOV() const { return _agentFOV; }
     int agentStepsBeforeTurnDecision() const { return _agentStepsBeforeTurnDecision; }
@@ -113,7 +113,7 @@ private:
     int _agentStepsBeforeTurnDecision = 0; // Steps before turn decision
     int _agentLifeTimesteps = 0; // Timesteps in system
 
-    bool _randomReleaseLocations = false;
+    int _randomReleaseLocationSeed = -1;
     std::vector<Point2f> _releasePoints;
 
     std::vector<OutputType> _outputTypes;

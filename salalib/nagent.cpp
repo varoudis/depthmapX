@@ -188,7 +188,7 @@ void AgentSet::init(int agent, int trail_num)
       const PointMap& map = at(agent).getPointMap();
       PixelRef pix;
       do {
-         pix = map.pickPixel(prandom());
+         pix = map.pickPixel(prandom(m_release_locations_seed));
       } while (!map.getPoint(pix).filled());
       at(agent).onInit(pix, trail_num);
    }

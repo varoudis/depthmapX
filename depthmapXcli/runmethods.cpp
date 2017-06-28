@@ -277,7 +277,10 @@ namespace dm_runmethods
 
         // if the m_release_locations is not set the locations are
         // set later by picking random pixels
-        if (!agentP.randomReleaseLocations()) {
+        if(agentP.randomReleaseLocationSeed() >= 0) {
+            eng.tail().m_release_locations_seed = agentP.randomReleaseLocationSeed();
+        }
+        else {
             eng.tail().m_release_locations.clear();
             for_each(agentP.getReleasePoints().begin(), agentP.getReleasePoints().end(),
                      [&eng, &currentMap](const Point2f &point)
