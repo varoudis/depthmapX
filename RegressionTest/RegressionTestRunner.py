@@ -29,7 +29,7 @@ class RegressionTestRunner():
         good = True
         for name, case in self.config.testcases.items():
             print("Running test case " + name)
-            success, output = runner.runTestCase(name, case.cmd)
+            success, output = runner.runTestCase(name, case)
             if not success:
                 good = False
                 print ("Failed:\n" + output)
