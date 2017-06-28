@@ -57,8 +57,6 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
 
     
     def runfuncSucceedAlwaysSame(self, rundir, args):
-        if not os.path.isdir(rundir):
-            os.makedirs(rundir)
         outpath = os.path.join(rundir, self.getOutfile(args))
         with open (outpath, "w") as f:
             f.write("123")
@@ -69,7 +67,6 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
         return (True, "")
 
     def runfuncDifferentResults(self, rundir, args):
-        os.makedirs(rundir)
         outpath = os.path.join(rundir, self.getOutfile(args))
         with open (outpath, "w") as f:
             f.write(self.__outContent)
@@ -77,7 +74,6 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
         return (True, "")
         
     def runfuncWriteNoFile(self, rundir, args, dontWriteFor):
-        os.makedirs(rundir)
         if not args[0] == dontWriteFor:
             outpath = os.path.join(rundir, self.getOutfile(args))
             with open (outpath, "w") as f:
@@ -85,7 +81,6 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
         return (True, "")
 
     def runfuncFail(self, rundir, args, failFor, shouldOtherRun):
-        os.makedirs(rundir)
         if args[0] == failFor:
             return (False, "Boom!")
         if shouldOtherRun:

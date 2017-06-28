@@ -1,7 +1,9 @@
 import runhelpers
 import config
 import depthmaprunner
+import performancerunner
 import os
+import sys
 
 defaultConfigFile = "regressionconfig.json"
 
@@ -17,7 +19,12 @@ class RegressionTestRunner():
     def run(self):
         if not os.path.exists(self.config.rundir):
             os.makedirs(self.config.rundir)
-        runner = depthmaprunner.DepthmapRegressionRunner( self.runfunc, self.baseBinary, self.testBinary, self.config.rundir )
+        if self.config.performanceRegression.enabled:
+            print("Performance regression runs enabled")
+            runner = performancerunner.PerformanceRunner(self.runfunc, self.baseBinary, self.testBinary, self.config.rundir,self.config.performanceRegression )
+        else:
+            print("Default regression runs - no performance")
+            runner = depthmaprunner.DepthmapRegressionRunner( self.runfunc, self.baseBinary, self.testBinary, self.config.rundir )
 
         good = True
         for name, case in self.config.testcases.items():
@@ -31,7 +38,10 @@ class RegressionTestRunner():
         return good        
 
 if __name__ == "__main__":
-    r = RegressionTestRunner(defaultConfigFile, runhelpers.runExecutable)
+    configFile = defaultConfigFile
+    if len(sys.argv) == 2:
+        configFile = sys.argv[1]
+    r = RegressionTestRunner(configFile, runhelpers.runExecutable)
     if not r.run():
         exit(-1)
 

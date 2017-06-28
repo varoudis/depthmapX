@@ -26,7 +26,6 @@ def prepareDirectory(dirname):
 
 def runExecutable( workingDir, arguments ):
     """ Prepares a clean run directoy and runs the process in this """
-    prepareDirectory(workingDir)
     with cd(workingDir):
         with open("out.txt", "w") as outfile:
             result = subprocess.run(arguments, stdout = outfile, stderr = subprocess.STDOUT )
