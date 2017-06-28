@@ -186,7 +186,21 @@ void AgentParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-alocrand cannot be used together with -aloc");
             }
-            _randomReleaseLocations = true;
+            ENFORCE_ARGUMENT("-alocrand", i)
+            if (!has_only_digits(argv[i]))
+            {
+                std::stringstream message;
+                message << "Invalid starting location seed provided ("
+                        << argv[i]
+                        << "). Should only contain digits"
+                        << flush;
+                throw CommandLineException(message.str().c_str());
+            }
+            _randomReleaseLocationSeed = std::atof(argv[i]);
+            if (_randomReleaseLocationSeed < 0 || _randomReleaseLocationSeed > 10)
+            {
+                throw CommandLineException(std::string("-alocrand must be a number between 0 and 10, got ") + argv[i]);
+            }
         }
         else if (strcmp(argv[i], "-alocfile") == 0)
         {
@@ -194,7 +208,7 @@ void AgentParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-alocfile cannot be used together with -aloc");
             }
-            if (_randomReleaseLocations)
+            if (_randomReleaseLocationSeed > -1)
             {
                 throw CommandLineException("-alocfile cannot be used together with -alocrand");
             }
@@ -207,7 +221,7 @@ void AgentParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-aloc cannot be used together with -alocfile");
             }
-            if (_randomReleaseLocations)
+            if (_randomReleaseLocationSeed > -1)
             {
                 throw CommandLineException("-aloc cannot be used together with -alocrand");
             }
@@ -281,7 +295,7 @@ void AgentParser::parse(int argc, char *argv[])
         throw CommandLineException("Agent life in timesteps (-alife <timesteps>) is required");
     }
 
-    if (pointFile.empty() && points.empty() && !(_randomReleaseLocations))
+    if (pointFile.empty() && points.empty() && _randomReleaseLocationSeed == -1)
     {
         throw CommandLineException("Either -aloc, -alocfile or -alocrand must be given");
     }
