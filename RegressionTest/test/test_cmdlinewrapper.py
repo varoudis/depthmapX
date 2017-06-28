@@ -1,4 +1,6 @@
 import unittest
+
+import collections
 from context import cmdlinewrapper
 
 class TestDepthmapCmd(unittest.TestCase):
@@ -26,33 +28,17 @@ class TestDepthmapCmd(unittest.TestCase):
             cmd.toCmdArray()
         self.assertEqual(cm.exception.message, "mode must be defined")    
 
-    def test_subcmd(self):
+    def test_extraArgs(self):
         cmd = cmdlinewrapper.DepthmapCmd()
         cmd.infile = "foo"
         cmd.outfile = "bar"
         cmd.mode = "visibility"
+        # use ordered dict here for testability
+        cmd.extraArgs = collections.OrderedDict([("-lnk", ["foo", "bar"]), ("-vm", "metric"), ("-vg", "" )])
 
-        vis = cmdlinewrapper.VisibilityCmd()
-        vis.visibilityMode = "metric"
-        cmd.modeLines.append(vis)
-
-        self.assertEqual(cmd.toCmdArray(), ["-f", "foo", "-o", "bar", "-m", "visibility", "-vm", "metric" ])
+        self.assertEqual(cmd.toCmdArray(), ["-f", "foo", "-o", "bar", "-m", "visibility", "-lnk", "foo", "-lnk", "bar", "-vm", "metric", "-vg" ])
 
             
-class TestVisibiltyCmd(unittest.TestCase):
-    def test_correctBehaviour(self):
-        cmd = cmdlinewrapper.VisibilityCmd()
-        cmd.visibilityMode = "isovist"
-        self.assertEqual(cmd.toCmdArray(), ["-vm", "isovist"])
-        cmd.radius = "5"
-        self.assertEqual(cmd.toCmdArray(), ["-vm", "isovist", "-vr", "5"])
-        cmd.globalMeasures = True;
-        self.assertEqual(cmd.toCmdArray(), ["-vm", "isovist", "-vg", "-vr", "5"])
-        cmd.localMeasures = True;
-        self.assertEqual(cmd.toCmdArray(), ["-vm", "isovist", "-vg", "-vl", "-vr", "5"])
-
-
-
 if __name__ == "__main__":
     unittest.main()
 
