@@ -3,6 +3,9 @@ import cmdlinewrapper
 import difflib
 import pprint
 
+import runhelpers
+
+
 class DepthmapRunner():
     def __init__(self, runFunc, binary ):
         self.__runFunc = runFunc
@@ -34,6 +37,11 @@ class DepthmapRegressionRunner():
         return os.path.join(self.__workingDir, name + "_test")
 
     def runTestCase(self, name, cmd):
+        runhelpers.prepareDirectory(self.makeBaseDir(name))
+        runhelpers.prepareDirectory(self.makeTestDir(name))
+        return self.runTestCaseImpl(name, cmd)
+
+    def runTestCaseImpl(self, name, cmd):
         baseDir = self.makeBaseDir(name)
         (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
         if not baseSuccess:

@@ -4,6 +4,8 @@ from collections import OrderedDict
 import depthmaprunner
 import os
 import csv
+
+import runhelpers
 from performanceregressionconfig import PerformanceRegressionConfig
 
 def checkPerformance(baseFile, testFile, relativeThreshold, absoluteThreshold):
@@ -85,11 +87,15 @@ class PerformanceRunner(depthmaprunner.DepthmapRegressionRunner):
         depthmaprunner.DepthmapRegressionRunner.__init__(self,runFunc,baseBinary,testBinary,workingDir)
         self.perfConfig = perfConfig
 
-    def runPerformanceRegression(self, name, cmd):
+    def runTestCase(self, name, cmd):
+        runhelpers.prepareDirectory(self.makeBaseDir(name))
+        runhelpers.prepareDirectory(self.makeTestDir(name))
+
         nameTemplate = "timings_{0}.csv"
         for i in range(self.perfConfig.runsPerInstance):
+            print ("Running test case {0}, run {1} of {2}".format(name, i, self.perfConfig.runsPerInstance))
             cmd.timingFile = nameTemplate.format(i)
-            result, message = self.runTestCase(name, cmd)
+            result, message = self.runTestCaseImpl(name, cmd)
             if not result:
                 return (False, "Run {0} failed with message: {1}".format(i, message))
 

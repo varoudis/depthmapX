@@ -49,12 +49,14 @@ class TestRunHelpers(unittest.TestCase):
 
     def test_runExecutableFail(self):
         with DisposableDirectory("testdir") as d:
+            runhelpers.prepareDirectory(d.name())
             retcode, output = runhelpers.runExecutable( d.name(), [sys.executable, "-c", "exit(-1)"])
             self.assertFalse(retcode)
             self.assertEqual(output, "")
 
     def test_runExecutableException(self):
         with DisposableDirectory("testdir") as d:
+            runhelpers.prepareDirectory(d.name())
             retcode, output = runhelpers.runExecutable( d.name(), [sys.executable, "-c", "raise Exception()"])
             self.assertFalse(retcode)
             self.assertEqual(output, 'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\nException\n')
