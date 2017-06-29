@@ -31,7 +31,7 @@ public:
         populateParsers();
     }
 
-    const ModeParserVec &getModeParsers() const {return _availableParsers;};
+    const ModeParserVec &getModeParsers() const {return _availableParsers;}
 private:
     void populateParsers();
     ModeParserVec _availableParsers;

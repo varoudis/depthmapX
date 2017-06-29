@@ -136,6 +136,7 @@ public:
 public:
    AgentEngine();
    void run(Communicator *comm, PointMap *pointmap);
+   void outputTrails(ostream& trailsFile);
 };
 
 struct AgentProgram
@@ -189,6 +190,7 @@ struct AgentProgram
 struct AgentSet : public AgentProgram, public prefvec<Agent>
 {
    pvecint m_release_locations;
+   int m_release_locations_seed = 0;
    double m_release_rate;
    int m_lifetime;
    AgentSet();

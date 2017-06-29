@@ -7,75 +7,61 @@
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "LINK",
-            "subcmds": {
-                "Link": {
-                    "manualLinks": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
-                }
+            "extraArgs": {
+               "-lnk": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
             }
         },
         "links_file": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "LINK",
-            "subcmds": {
-                "Link": {
-                    "linksFile": "../../../testdata/gallery_connected_merge_links.txt"
-                }
+            "extraArgs": {
+                "-lf": "../../../testdata/gallery_connected_merge_links.txt"
             }
         },
         "visibility_local": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
-            "subcmds": {
-                "Visibility": {
-                    "visibilityMode": "visibility",
-                    "localMeasures": "1"
-                }
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vl": ""
             }
         },
         "visibility_global_3": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
-            "subcmds": {
-                "Visibility": {
-                    "visibilityMode": "visibility",
-                    "globalMeasures": "1",
-                    "radius": "3"
-                }
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vg": "",
+                "-vr": "3"
             }
         },
         "visibility_global_n": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
-            "subcmds": {
-                "Visibility": {
-                    "visibilityMode": "visibility",
-                    "globalMeasures": "1",
-                    "radius": "n"
-                }
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vg": "",
+                "-vr": "n"
             }
         },
         "vga_isovist": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
-            "subcmds": {
-                "Visibility": {
-                    "visibilityMode": "isovist"
-                }
+            "extraArgs": {
+                "-vm": "isovist"
             }
         },
         "vga_thru_vision": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
-            "subcmds": {
-                "Visibility": {
-                    "visibilityMode": "thruvision"
-                }
+            "extraArgs": {
+                "-vm": "thruvision"
             }
         }
     }
