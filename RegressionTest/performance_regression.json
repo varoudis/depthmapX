@@ -1,0 +1,18 @@
+{
+  "rundir": "rundir",
+  "basebinlocation": "../../BaselineBinaries",
+  "testbinlocation": "../../../build",
+  "performance":{},
+  "testcases": {
+    "visibility_global_n": {
+      "infile": "../../../testdata/gallery_connected.graph",
+      "outfile": "out.graph",
+      "mode": "VGA",
+      "extraArgs": {
+        "-vm": "visibility",
+        "-vg": "1",
+        "-vr": "n"
+      }
+    }
+  }
+}

@@ -9,7 +9,8 @@ SOURCES += main.cpp \
     testentityparsing.cpp \
     testpointmap.cpp \
     testlinkutils.cpp \
-    testgridproperties.cpp
+    testgridproperties.cpp \
+    testisovistdef.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug

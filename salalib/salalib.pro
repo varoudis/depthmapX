@@ -65,7 +65,8 @@ HEADERS += \
     idepthmap.h \
     entityparsing.h \
     linkutils.h \
-    gridproperties.h
+    gridproperties.h \
+    isovistdef.h
 
 DISTFILES += \
     salascript-tests.txt
