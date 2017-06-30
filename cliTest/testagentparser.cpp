@@ -112,7 +112,7 @@ TEST_CASE("AgentParserFail", "Parsing errors")
     {
         AgentParser parser;
         ArgumentHolder ah{"prog", "-atrails", "foo"};
-        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-atrails must be a number >=0 or -1 for all, got foo"));
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-atrails must be a number >=1 or 0 for all (max possible = 50), got foo"));
     }
 
     SECTION("Non-numeric input to -afov")
@@ -440,8 +440,11 @@ TEST_CASE("AgentParserSuccess", "Read successfully")
 
     SECTION("Set output type to trails")
     {
-        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "0", "-ot", "trails"};
+        ArgumentHolder ah{"prog", "-ats", ats.str(), "-arr", arr.str(), "-afov", afov.str(), "-asteps", asteps.str(), "-alife", alife.str(), "-alocrand", "0", "-atrails", "1", "-ot", "trails"};
         parser.parse(ah.argc(), ah.argv());
+
+        auto noOfTrails = parser.recordTrailsForAgents();
+        REQUIRE(noOfTrails == 1);
 
         auto outputTypes = parser.outputTypes();
         REQUIRE(outputTypes.size() == 1);
