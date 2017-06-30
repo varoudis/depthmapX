@@ -1204,13 +1204,14 @@ void QDepthmapView::wheelEvent(QWheelEvent *e)
 // provides a way to limit how much can we zoom out in relation to the window
 // and graph bounding box size to avoid problems when zooming out too far
 bool QDepthmapView::IsAtZoomLimits(double ratio, double maxZoomOutRatio) {
-
+    if ( ratio < 1 )
+    {
+        return false;
+    }
+    // for zoom out
     QtRegion bounds = pDoc->m_meta_graph->getBoundingBox();
     double maxUnit = __max(bounds.width() / width(), bounds.height() / height());
-    if(ratio > 1) {
-        // for zoom out
-        return m_unit * ratio > maxZoomOutRatio * maxUnit;
-    }
+    return m_unit * ratio > maxZoomOutRatio * maxUnit;
 }
 
 void QDepthmapView::ZoomTowards(double ratio, const Point2f& point)
