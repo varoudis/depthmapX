@@ -105,6 +105,10 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException("-ats can only be used once");
             }
             ENFORCE_ARGUMENT("-ats", i)
+            if (!has_only_digits(argv[i]))
+            {
+                throw CommandLineException(std::string("-ats must be a number >0, got ") + argv[i]);
+            }
             _totalSystemTimestemps = std::atoi(argv[i]);
             if (_totalSystemTimestemps <= 0)
             {
@@ -117,7 +121,11 @@ void AgentParser::parse(int argc, char *argv[])
             {
                 throw CommandLineException("-arr can only be used once");
             }
-            ENFORCE_ARGUMENT("-arr", i)
+            ENFORCE_ARGUMENT("-arr", i)                   
+            if (!has_only_digits_dots_commas(argv[i]))
+            {
+                throw CommandLineException(std::string("-arr must be a number >0, got ") + argv[i]);
+            }
             _releaseRate = std::atof(argv[i]);
             if (_releaseRate <= 0)
             {
@@ -131,6 +139,10 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException("-atrails can only be used once");
             }
             ENFORCE_ARGUMENT("-atrails", i)
+            if (!has_only_digits(argv[i]))
+            {
+                throw CommandLineException(std::string("-atrails must be a number >=1 or 0 for all (max possible = 50), got ") + argv[i]);
+            }
             _recordTrailsForAgents = std::atoi(argv[i]);
             if (_recordTrailsForAgents < 0)
             {
@@ -144,6 +156,10 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException("-afov can only be used once");
             }
             ENFORCE_ARGUMENT("-afov", i)
+            if (!has_only_digits(argv[i]))
+            {
+                throw CommandLineException(std::string("-afov must be a number between 1 and 32, got ") + argv[i]);
+            }
             _agentFOV = std::atoi(argv[i]);
             if (_agentFOV <= 0 || _agentFOV > 32)
             {
@@ -157,6 +173,10 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException("-asteps can only be used once");
             }
             ENFORCE_ARGUMENT("-asteps", i)
+            if (!has_only_digits(argv[i]))
+            {
+                throw CommandLineException(std::string("-asteps must be a number >0, got ") + argv[i]);
+            }
             _agentStepsBeforeTurnDecision = std::atoi(argv[i]);
             if (_agentStepsBeforeTurnDecision <= 0)
             {
@@ -170,6 +190,10 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException("-alife can only be used once");
             }
             ENFORCE_ARGUMENT("-alife", i)
+            if (!has_only_digits(argv[i]))
+            {
+                throw CommandLineException(std::string("-alife must be a number >0, got ") + argv[i]);
+            }
             _agentLifeTimesteps = std::atoi(argv[i]);
             if (_agentLifeTimesteps <= 0)
             {
