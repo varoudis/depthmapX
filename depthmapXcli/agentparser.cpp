@@ -132,9 +132,9 @@ void AgentParser::parse(int argc, char *argv[])
             }
             ENFORCE_ARGUMENT("-atrails", i)
             _recordTrailsForAgents = std::atoi(argv[i]);
-            if (_recordTrailsForAgents <= -1 || _recordTrailsForAgents == 0)
+            if (_recordTrailsForAgents < 0)
             {
-                throw CommandLineException(std::string("-atrails must be a number >=0 or -1 for all, got ") + argv[i]);
+                throw CommandLineException(std::string("-atrails must be a number >=1 or 0 for all (max possible = 50), got ") + argv[i]);
             }
         }
         else if (strcmp(argv[i], "-afov") == 0)
