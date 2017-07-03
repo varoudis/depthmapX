@@ -18,30 +18,12 @@
 
 #include <QMainWindow>
 #include <QDialog>
+#include <memory>
 
-class MainWindowHolder
-{
-public:
-    MainWindowHolder();
-    ~MainWindowHolder();
-    QMainWindow& get();
+namespace MainWindowFactory{
+    std::unique_ptr<QMainWindow> getMainWindow();
+    std::unique_ptr<QDialog> getLicenseDialog();
+}
 
-private:
-    QMainWindow* m_window;
-    MainWindowHolder(const MainWindowHolder& );
-    MainWindowHolder& operator=(const MainWindowHolder& );
-};
-
-class LicenseAgreementHolder
-{
-public:
-    LicenseAgreementHolder();
-    ~LicenseAgreementHolder();
-    QDialog& get();
-private:
-    QDialog* m_licenseDialog;
-    LicenseAgreementHolder(const LicenseAgreementHolder& );
-    LicenseAgreementHolder& operator=(const LicenseAgreementHolder&);
-};
 
 #endif // MAINWINDOWFACTORY_H
