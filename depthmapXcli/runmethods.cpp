@@ -293,9 +293,13 @@ namespace dm_runmethods
         // eng.m_gatelayer = m_gatelayer;
 
         // note, trails currently per run, but output per engine
-        if (agentP.recordTrailsForAgents() >= 0) {
+        if (agentP.recordTrailsForAgents() == 0) {
             eng.m_record_trails = true;
-            eng.m_trail_count = agentP.recordTrailsForAgents();
+            eng.m_trail_count = MAX_TRAILS;
+        }
+        else if (agentP.recordTrailsForAgents() > 0) {
+                eng.m_record_trails = true;
+                eng.m_trail_count = agentP.recordTrailsForAgents();
         }
 
         std::cout << "ok\nRunning agent analysis... " << std::flush;
