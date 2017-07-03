@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    LicenseAgreementHolder dummy;
-    dummy.get().setModal(true);
-    dummy.get().setWindowTitle(TITLE_BASE);
-    dummy.get().exec();
-    if ( dummy.get().result() == dummy.get().Rejected ) return 0;
+    auto dummy = MainWindowFactory::getLicenseDialog();
+    dummy->setModal(true);
+    dummy->setWindowTitle(TITLE_BASE);
+    dummy->exec();
+    if ( dummy->result() == QDialog::Rejected) return 0;
 
 	QSplashScreen *splash = 0;
     int screenId = QApplication::desktop()->screenNumber();
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
     }
     //splash->show();
 
-    MainWindowHolder mainWindow;
-    mainWindow.get().show();
+    auto mainWindow = MainWindowFactory::getMainWindow();
+    mainWindow->show();
 
     //splash->finish(&mainWin);
     return app.exec();
