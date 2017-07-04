@@ -21,13 +21,15 @@
 
 class CoreApplication : public QApplication
 {
+private:
+    QString mFileToLoad;
 public:
     CoreApplication(int &argc, char **argv)
         : QApplication(argc, argv)
     {
     }
 
-    QString fileToLoad = "";
+    const QString& fileToLoad() const { return mFileToLoad;}
 
     bool event(QEvent *event)
     {
@@ -36,7 +38,7 @@ public:
         // more info: http://doc.qt.io/qt-5/qfileopenevent.html
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-            fileToLoad = openEvent->file();
+            mFileToLoad = openEvent->file();
         }
 
         return QApplication::event(event);
