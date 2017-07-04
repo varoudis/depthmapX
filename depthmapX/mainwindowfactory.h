@@ -22,7 +22,7 @@
 class MainWindowHolder
 {
 public:
-    MainWindowHolder();
+    MainWindowHolder(const QString& fileToLoad);
     ~MainWindowHolder();
     QMainWindow& get();
 

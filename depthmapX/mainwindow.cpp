@@ -26,6 +26,7 @@
 #include <QtWidgets/QMdiSubWindow>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QMessageBox>
 
 #include "mainwindow.h"
 #include "depthmapView.h"
@@ -86,7 +87,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *e)
     return QObject::eventFilter(object, e);
 }
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(const QString &fileToLoad)
 {
     m_treeDoc = NULL;
     mdiArea = new QMdiArea;
@@ -122,6 +123,22 @@ MainWindow::MainWindow()
 
     installEventFilter(this);
 //	setWindowIcon(QIcon(tr(":/images/cur/icon-1-1.png")));
+
+    if (fileToLoad.length()>0)
+    {
+        QDepthmapView *child = createQDepthmapView();
+        if (child->loadFile(fileToLoad))
+        {
+             statusBar()->showMessage(tr("File loaded"), 2000);
+             child->show();
+             OnFocusGraph(child->pDoc, QGraphDoc::CONTROLS_LOADALL);
+             setCurrentFile(fileToLoad);
+        } else {
+             child->close();
+             QMessageBox::warning(this, "Failed to load", QString("Failed to load file ")+fileToLoad, QMessageBox::Ok, QMessageBox::Ok );
+        }
+
+    }
 }
 
 QWidget * MainWindow::setupAttributesListWidget()
