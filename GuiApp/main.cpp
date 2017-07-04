@@ -55,7 +55,14 @@ int main(int argc, char *argv[])
     }
     //splash->show();
 
-    MainWindowHolder mainWindow;
+    auto args = app.arguments();
+    QString fileToLoad = "";
+    if (args.length() == 2)
+    {
+        fileToLoad = args[1];
+    }
+
+    MainWindowHolder mainWindow(fileToLoad);
     mainWindow.get().show();
 
     //splash->finish(&mainWin);

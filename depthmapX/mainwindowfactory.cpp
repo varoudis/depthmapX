@@ -17,9 +17,9 @@
 #include "mainwindow.h"
 #include "licenseagreement.h"
 
-MainWindowHolder::MainWindowHolder()
+MainWindowHolder::MainWindowHolder(const QString &fileToLoad)
 {
-    m_window = dynamic_cast<QMainWindow*>(new MainWindow());
+    m_window = dynamic_cast<QMainWindow*>(new MainWindow(fileToLoad));
 }
 
 MainWindowHolder::~MainWindowHolder()
