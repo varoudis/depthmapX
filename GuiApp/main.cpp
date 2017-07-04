@@ -56,11 +56,8 @@ int main(int argc, char *argv[])
     //splash->show();
 
     auto args = app.arguments();
-    QString fileToLoad = "";
-    if(app.fileToLoad.length() > 0) {
-        fileToLoad = app.fileToLoad;
-    }
-    else if (args.length() == 2)
+    QString fileToLoad = app.fileToLoad();
+    if (args.length() == 2)
     {
         fileToLoad = args[1];
     }
