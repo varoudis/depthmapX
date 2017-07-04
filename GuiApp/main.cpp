@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#include <QApplication>
 #include <QPixmap>
 #include <QDir>
 #include <QSplashScreen>
@@ -23,6 +21,7 @@
 #include <QDateTime>
 
 #include "mainwindowfactory.h"
+#include "coreapplication.h"
 #include "version.h"
 
 #ifdef _WIN32
@@ -37,7 +36,8 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resource);
 
-    QApplication app(argc, argv);
+
+    CoreApplication app(argc, argv);
 
     LicenseAgreementHolder dummy;
     dummy.get().setModal(true);
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     //splash->show();
 
     auto args = app.arguments();
-    QString fileToLoad = "";
+    QString fileToLoad = app.fileToLoad();
     if (args.length() == 2)
     {
         fileToLoad = args[1];
