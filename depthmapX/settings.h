@@ -32,6 +32,7 @@ namespace SettingTag
     const QString simpleVersion = "simple";
     const QString recentFileList = "recentFileList";
     const QString mwMaximised = "mainWindowMaximised";
+    const QString licenseAccepted = "licenseAccepted";
 }
 
 /**
