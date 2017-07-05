@@ -42,23 +42,6 @@ enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4,
 
 const QString editstatetext[] = {"Not Editable", "Editable Off", "Editable On"};
 
-namespace SettingTag
-{
-    const QString position = "pos";
-    const QString size = "size";
-    const QString foregroundColour = "forColor";
-    const QString backgroundColour = "backColor";
-    const QString simpleVersion = "simple";
-    const QString recentFileList = "recentFileList";
-    const QString mwMaximised = "mainWindowMaximised";
-
-    template<class ValueType> void saveSettings( const QString& settingsFilename, const QString& settingName, const ValueType& value )
-    {
-        QSettings settings(settingsFilename, QSettings::Format::IniFormat );
-        settings.setValue(settingName, value);
-    }
-}
-
 QmyEvent::QmyEvent(Type type, void* wp, int lp)
     : QEvent(type)
 {
@@ -87,7 +70,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *e)
     return QObject::eventFilter(object, e);
 }
 
-MainWindow::MainWindow(const QString &fileToLoad)
+MainWindow::MainWindow(const QString &fileToLoad, Settings &settings) : mSettings(settings)
 {
     m_treeDoc = NULL;
     mdiArea = new QMdiArea;
@@ -108,8 +91,6 @@ MainWindow::MainWindow(const QString &fileToLoad)
     AttributesListDock->setObjectName(QLatin1String("AttributesListWindow"));
     AttributesListDock->setWidget(setupAttributesListWidget());
     addDockWidget(Qt::LeftDockWidgetArea, AttributesListDock);
-
-    m_settingsFile = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation).first() +  "/depthmapXsettings.ini";
 
     readSettings(); // read setting or generate default
     setWindowTitle(TITLE_BASE);
@@ -605,7 +586,7 @@ void MainWindow::OnToolsOptions()
     if (QDialog::Accepted == dlg.exec()) {
 
         m_simpleVersion = dlg.c_show_simple_version->checkState();
-        SettingTag::saveSettings(m_settingsFile, SettingTag::simpleVersion, m_simpleVersion);
+        mSettings.writeSetting(SettingTag::simpleVersion, m_simpleVersion);
         if(m_simpleVersion)
             qWarning("SV = True");
         else
@@ -616,13 +597,13 @@ void MainWindow::OnToolsOptions()
 void MainWindow::OnWindowBackground()
 {
     m_background = QColorDialog::getColor(m_background).rgb();
-    SettingTag::saveSettings(m_settingsFile, SettingTag::backgroundColour, m_background);
+    mSettings.writeSetting(SettingTag::backgroundColour, m_background);
 }
 
 void MainWindow::OnWindowForeground()
 {
     m_foreground = QColorDialog::getColor(m_foreground).rgb();
-    SettingTag::saveSettings(m_settingsFile, SettingTag::foregroundColour, m_foreground);
+    mSettings.writeSetting(SettingTag::foregroundColour, m_foreground);
 }
 
 void MainWindow::OnShowResearchtoolbar()
@@ -732,7 +713,7 @@ QDepthmapView *MainWindow::createQDepthmapView()
     QGraphDoc* doc = new QGraphDoc("", "");
     doc->m_mainFrame = this;
 
-    QDepthmapView *child = new QDepthmapView(m_settingsFile);
+    QDepthmapView *child = new QDepthmapView(mSettings);
     child->pDoc = doc;
 
     mdiArea->addSubWindow(child);
@@ -2013,17 +1994,13 @@ void MainWindow::createStatusBar()
 
 void MainWindow::readSettings()
 {
-    QCoreApplication::setOrganizationName("Tasos Varoudis");
-    QCoreApplication::setOrganizationDomain("depthmap.org");
-    QCoreApplication::setApplicationName("depthmapX");
-
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
-    QPoint pos = settings.value(SettingTag::position, QPoint(200, 200)).toPoint();
-    QSize size = settings.value(SettingTag::size, QSize(400, 400)).toSize();
-    m_foreground = settings.value(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
-    m_background = settings.value(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
-    m_simpleVersion = settings.value(SettingTag::simpleVersion, true).toBool();
-    if (settings.value(SettingTag::mwMaximised, true).toBool())
+    auto settings = mSettings.getTransaction();
+    QPoint pos = settings->readSetting(SettingTag::position, QPoint(200, 200)).toPoint();
+    QSize size = settings->readSetting(SettingTag::size, QSize(400, 400)).toSize();
+    m_foreground = settings->readSetting(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
+    m_background = settings->readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
+    m_simpleVersion = settings->readSetting(SettingTag::simpleVersion, true).toBool();
+    if (settings->readSetting(SettingTag::mwMaximised, true).toBool())
     {
          setWindowState(Qt::WindowMaximized);
     }
@@ -2035,38 +2012,30 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-    QCoreApplication::setOrganizationName("Tasos Varoudis");
-    QCoreApplication::setOrganizationDomain("depthmap.org");
-    QCoreApplication::setApplicationName("depthmapX");
-
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
-
-    settings.setValue(SettingTag::position, pos());
-    settings.setValue(SettingTag::size, size());
-    settings.setValue(SettingTag::mwMaximised, windowState() == Qt::WindowMaximized);
+    auto settings = mSettings.getTransaction();
+    settings->writeSetting(SettingTag::position, pos());
+    settings->writeSetting(SettingTag::size, size());
+    settings->writeSetting(SettingTag::mwMaximised, windowState() == Qt::WindowMaximized);
 }
 
 void MainWindow::setCurrentFile(const QString &fileName)
 {
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
 
-    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
+    auto settings = mSettings.getTransaction();
+
+    QStringList files = settings->readSetting(SettingTag::recentFileList).toStringList();
     files.removeAll(fileName);
     files.prepend(fileName);
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 
-    settings.setValue(SettingTag::recentFileList, files);
+    settings->writeSetting(SettingTag::recentFileList, files);
 
-    updateRecentFileActions();
+    updateRecentFileActions(files);
 }
 
-void MainWindow::updateRecentFileActions()
+void MainWindow::updateRecentFileActions(const QStringList &files)
 {
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
-
-    QStringList files = settings.value(SettingTag::recentFileList).toStringList();
-
     int numRecentFiles = qMin(files.size(), MaxRecentFiles);
 
     for (int i = 0; i < numRecentFiles; ++i) {
@@ -3381,7 +3350,7 @@ void MainWindow::createMenus()
         fileMenu->addAction(recentFileActs[i]);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
-    updateRecentFileActions();
+    updateRecentFileActions(mSettings.readSetting(SettingTag::recentFileList).toStringList());
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);

@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         fileToLoad = args[1];
     }
 
-    auto mainWindow = MainWindowFactory::getMainWindow(fileToLoad);
+    auto mainWindow = MainWindowFactory::getMainWindow(fileToLoad, settings);
     mainWindow->show();
 
     //splash->finish(&mainWin);

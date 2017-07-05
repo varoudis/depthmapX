@@ -33,6 +33,7 @@ namespace SettingTag
     const QString recentFileList = "recentFileList";
     const QString mwMaximised = "mainWindowMaximised";
     const QString licenseAccepted = "licenseAccepted";
+    const QString depthmapViewSize = "depthmapViewSize";
 }
 
 /**

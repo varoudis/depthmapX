@@ -20,8 +20,10 @@
 #include <QDialog>
 #include <memory>
 
+class Settings;
+
 namespace MainWindowFactory{
-    std::unique_ptr<QMainWindow> getMainWindow(const QString &fileToLoad);
+    std::unique_ptr<QMainWindow> getMainWindow(const QString &fileToLoad, Settings &settings);
     std::unique_ptr<QDialog> getLicenseDialog();
 }
 #endif // MAINWINDOWFACTORY_H
