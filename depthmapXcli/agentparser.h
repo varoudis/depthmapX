@@ -50,7 +50,7 @@ public:
                   "-afov <fov> set agent field-of-view (bins)\n"\
                   "-asteps <steps> set agent steps before turn decision\n"\
                   "-alife <timesteps> set agent total lifetime (in timesteps)\n"\
-                  "-alocrand <seed> set agents to start at random locations with specific seed (0 to 10)\n"\
+                  "-alocseed <seed> set agents to start at random locations with specific seed (0 to 10)\n"\
                   "-alocfile <agent starting points file>\n"\
                   "-aloc <single agent starting point coordinates> provided in csv (x1,y1) "\
                   "for example \"0.1,0.2\". Provide multiple times for multiple links\n"\

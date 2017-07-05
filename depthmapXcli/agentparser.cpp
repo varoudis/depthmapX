@@ -200,17 +200,17 @@ void AgentParser::parse(int argc, char *argv[])
                 throw CommandLineException(std::string("-alife must be a number >0, got ") + argv[i]);
             }
         }
-        else if (strcmp(argv[i], "-alocrand") == 0)
+        else if (strcmp(argv[i], "-alocseed") == 0)
         {
             if (!pointFile.empty())
             {
-                throw CommandLineException("-alocrand cannot be used together with -alocfile");
+                throw CommandLineException("-alocseed cannot be used together with -alocfile");
             }
             if (!points.empty())
             {
-                throw CommandLineException("-alocrand cannot be used together with -aloc");
+                throw CommandLineException("-alocseed cannot be used together with -aloc");
             }
-            ENFORCE_ARGUMENT("-alocrand", i)
+            ENFORCE_ARGUMENT("-alocseed", i)
             if (!has_only_digits(argv[i]))
             {
                 std::stringstream message;
@@ -223,7 +223,7 @@ void AgentParser::parse(int argc, char *argv[])
             _randomReleaseLocationSeed = std::atof(argv[i]);
             if (_randomReleaseLocationSeed < 0 || _randomReleaseLocationSeed > 10)
             {
-                throw CommandLineException(std::string("-alocrand must be a number between 0 and 10, got ") + argv[i]);
+                throw CommandLineException(std::string("-alocseed must be a number between 0 and 10, got ") + argv[i]);
             }
         }
         else if (strcmp(argv[i], "-alocfile") == 0)
@@ -234,7 +234,7 @@ void AgentParser::parse(int argc, char *argv[])
             }
             if (_randomReleaseLocationSeed > -1)
             {
-                throw CommandLineException("-alocfile cannot be used together with -alocrand");
+                throw CommandLineException("-alocfile cannot be used together with -alocseed");
             }
             ENFORCE_ARGUMENT("-alocfile", i)
             pointFile = argv[i];
@@ -247,7 +247,7 @@ void AgentParser::parse(int argc, char *argv[])
             }
             if (_randomReleaseLocationSeed > -1)
             {
-                throw CommandLineException("-aloc cannot be used together with -alocrand");
+                throw CommandLineException("-aloc cannot be used together with -alocseed");
             }
             ENFORCE_ARGUMENT("-aloc", i)
             if (!has_only_digits_dots_commas(argv[i]))
@@ -321,7 +321,7 @@ void AgentParser::parse(int argc, char *argv[])
 
     if (pointFile.empty() && points.empty() && _randomReleaseLocationSeed == -1)
     {
-        throw CommandLineException("Either -aloc, -alocfile or -alocrand must be given");
+        throw CommandLineException("Either -aloc, -alocfile or -alocseed must be given");
     }
 
     if(!pointFile.empty())

@@ -22,4 +22,7 @@ LIBS += -ldepthmapX -lsalalib -lgenlib
 
 win32:LIBS += -lOpenGl32 -lglu32 -lgdi32
 
+HEADERS += \
+    coreapplication.h
+
 

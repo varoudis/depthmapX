@@ -19,9 +19,9 @@
 #include <memory>
 
 namespace MainWindowFactory{
-    std::unique_ptr<QMainWindow> getMainWindow()
+    std::unique_ptr<QMainWindow> getMainWindow(const QString& fileToLoad)
     {
-        return std::unique_ptr<QMainWindow>(new MainWindow);
+        return std::unique_ptr<QMainWindow>(new MainWindow(fileToLoad));
     }
 
     std::unique_ptr<QDialog> getLicenseDialog()

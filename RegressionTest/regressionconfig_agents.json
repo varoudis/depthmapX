@@ -14,7 +14,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_line_of_sight_length_look": {
@@ -28,7 +28,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_line_of_sight_length_look": {
@@ -42,7 +42,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_occluded_length_look": {
@@ -56,7 +56,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_any_occlusion_look": {
@@ -70,7 +70,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_occlusion_group_bins_45_look": {
@@ -84,7 +84,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_occlusion_group_bins_60_look": {
@@ -98,7 +98,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_furthest_occlusion_per_bin_look": {
@@ -112,7 +112,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_per_bin_far_distance_look": {
@@ -126,7 +126,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_per_bin_angle_look": {
@@ -140,7 +140,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_per_bin_far_distance_and_angle_look": {
@@ -154,7 +154,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_per_bin_memory_look": {
@@ -168,7 +168,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0"
+                "-alocseed": "0"
             }
         },
         "agents_gatecounts": {
@@ -182,7 +182,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "5",
+                "-alocseed": "5",
                 "-ot": "gatecounts"
             }
         },
@@ -197,7 +197,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0",
+                "-alocseed": "0",
                 "-atrails": "0",
                 "-ot": "trails"
             }
@@ -213,7 +213,7 @@
                 "-afov": "15",
                 "-asteps": "3",
                 "-alife": "1000",
-                "-alocrand": "0",
+                "-alocseed": "0",
                 "-atrails": "1",
                 "-ot": "trails"
             }

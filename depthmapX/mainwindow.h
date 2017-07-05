@@ -99,7 +99,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(const QString &fileToLoad);
    // Graph analysis options
     QString m_formula_cache;
     Options m_options;
