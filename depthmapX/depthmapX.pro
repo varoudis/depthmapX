@@ -44,7 +44,9 @@ HEADERS       = depthmapView.h \
     compatibilitydefines.h \
     mainwindowfactory.h \
     viewhelpers.h \
-    version.h
+    version.h \
+    settings.h \
+    settingsimpl.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -85,7 +87,8 @@ SOURCES       = depthmapView.cpp \
     AboutDlg.cpp \
     licenseagreement.cpp \
     mainwindowfactory.cpp \
-    viewhelpers.cpp
+    viewhelpers.cpp \
+    settingsimpl.cpp
 
 RESOURCES     = resource.qrc
 
