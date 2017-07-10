@@ -16,34 +16,16 @@
 #include "mainwindowfactory.h"
 #include "mainwindow.h"
 #include "licenseagreement.h"
+#include <memory>
 
-MainWindowHolder::MainWindowHolder(const QString &fileToLoad)
-{
-    m_window = dynamic_cast<QMainWindow*>(new MainWindow(fileToLoad));
-}
+namespace MainWindowFactory{
+    std::unique_ptr<QMainWindow> getMainWindow(const QString& fileToLoad, Settings &settings)
+    {
+        return std::unique_ptr<QMainWindow>(new MainWindow(fileToLoad, settings));
+    }
 
-MainWindowHolder::~MainWindowHolder()
-{
-    delete m_window;
-}
-
-QMainWindow& MainWindowHolder::get()
-{
-    return *m_window;
-}
-
-
-LicenseAgreementHolder::LicenseAgreementHolder()
-{
-    m_licenseDialog = dynamic_cast<QDialog*>(new LicenseAgreement());
-}
-
-LicenseAgreementHolder::~LicenseAgreementHolder()
-{
-    delete m_licenseDialog;
-}
-
-QDialog& LicenseAgreementHolder::get()
-{
-    return *m_licenseDialog;
+    std::unique_ptr<QDialog> getLicenseDialog()
+    {
+        return std::unique_ptr<QDialog>(new LicenseAgreement);
+    }
 }

@@ -94,8 +94,8 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
    return (color & 0x006f6f6f) | (mergecolor & 0x00a0a0a0);
 }
 
-QDepthmapView::QDepthmapView(const QString &settingsFile )
-    : QWidget(0), m_settingsFile(settingsFile)
+QDepthmapView::QDepthmapView(Settings &settings)
+    : QWidget(0), mSettings(settings)
 {
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);
@@ -133,8 +133,7 @@ QDepthmapView::QDepthmapView(const QString &settingsFile )
 
    m_selected_color = qRgb(selcol.redb(),selcol.greenb(),selcol.blueb());
 
-   QSettings settings(m_settingsFile, QSettings::IniFormat);
-   m_initialSize = settings.value(QLatin1String("depthmapViewSize"), QSize(2000, 2000)).toSize();
+   m_initialSize = mSettings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 
    installEventFilter(this);
 
@@ -145,8 +144,7 @@ QDepthmapView::QDepthmapView(const QString &settingsFile )
 
 QDepthmapView::~QDepthmapView()
 {
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
-    settings.setValue(QLatin1String("depthmapViewSize"), size());
+    mSettings.writeSetting(SettingTag::depthmapViewSize, size());
 }
 
 int QDepthmapView::OnRedraw(int wParam, int lParam)

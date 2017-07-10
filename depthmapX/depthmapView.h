@@ -22,6 +22,8 @@
 #include <qpixmap.h>
 #include "GraphDoc.h"
 
+#include "settings.h"
+
 #define MK_LBUTTON          0x0001
 #define MK_RBUTTON          0x0002
 #define MK_SHIFT            0x0004
@@ -35,7 +37,7 @@ class QDepthmapView : public QWidget
 public:
 	QGraphDoc* pDoc;
 
-    QDepthmapView(const QString &settingFilename);
+    QDepthmapView(Settings &settings);
     ~QDepthmapView();
     QSize sizeHint() const;
 	void SetRedrawflag();
@@ -45,7 +47,7 @@ public:
 	QString m_open_file_name;
 	QString currentFile() {return m_open_file_name;}
 
-    const QString &m_settingsFile;
+    Settings &mSettings;
 
 	int m_curr_seleted;
 	bool m_showgrid;
