@@ -23,6 +23,7 @@
 #include "mainwindowfactory.h"
 #include "coreapplication.h"
 #include "version.h"
+#include "settingsimpl.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -35,15 +36,21 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resource);
-
-
     CoreApplication app(argc, argv);
 
-    LicenseAgreementHolder dummy;
-    dummy.get().setModal(true);
-    dummy.get().setWindowTitle(TITLE_BASE);
-    dummy.get().exec();
-    if ( dummy.get().result() == dummy.get().Rejected ) return 0;
+    SettingsImpl settings(new DefaultSettingsFactory);
+
+    if (!settings.readSetting(SettingTag::licenseAccepted, false).toBool())
+    {
+        auto dummy = MainWindowFactory::getLicenseDialog();
+        dummy->setModal(true);
+        dummy->setWindowTitle(TITLE_BASE);
+        dummy->exec();
+        if ( dummy->result() == QDialog::Rejected) {
+            return 0;
+        }
+        settings.writeSetting(SettingTag::licenseAccepted, true);
+    }
 
 	QSplashScreen *splash = 0;
     int screenId = QApplication::desktop()->screenNumber();
@@ -62,8 +69,8 @@ int main(int argc, char *argv[])
         fileToLoad = args[1];
     }
 
-    MainWindowHolder mainWindow(fileToLoad);
-    mainWindow.get().show();
+    auto mainWindow = MainWindowFactory::getMainWindow(fileToLoad, settings);
+    mainWindow->show();
 
     //splash->finish(&mainWin);
     return app.exec();
