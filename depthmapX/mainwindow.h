@@ -25,6 +25,7 @@
 #include "GraphDoc.h"
 #include "ColourScaleDlg.h"
 #include "compatibilitydefines.h"
+#include "settings.h"
 
 #include "version.h"
 
@@ -99,7 +100,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const QString &fileToLoad);
+    MainWindow(const QString &fileToLoad, Settings &settings);
    // Graph analysis options
     QString m_formula_cache;
     Options m_options;
@@ -246,7 +247,7 @@ private slots:
 private:
     int OnFocusGraph(QGraphDoc* pDoc, int lParam);
     void setCurrentFile(const QString &fileName);
-    void updateRecentFileActions();
+    void updateRecentFileActions(const QStringList &files);
     QString strippedName(const QString &fullFileName);
 
     void createActions();
@@ -255,7 +256,7 @@ private:
     void createStatusBar();
 
     // Settings Files
-    QString m_settingsFile;
+    Settings &mSettings;
     void readSettings();
     void writeSettings();
 
