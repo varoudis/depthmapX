@@ -1,108 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.17">
-    <grammar name="GRAPH grammar" start="id:436" author="Petros Koutsolampros" fileextension="graph">
+    <grammar name="GRAPH grammar" start="id:1" author="Petros Koutsolampros" fileextension="graph">
         <description>Grammar for GRAPH files</description>
-        <structure name="GRAPH file" id="436" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <structure name="header" id="437" length="0">
-                <string name="grf" mustmatch="yes" id="438" type="fixed-length" length="3">
+        <structure name="GRAPH file" id="1" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="header" id="2" length="0">
+                <string name="grf" mustmatch="yes" id="3" type="fixed-length" length="3">
                     <fixedvalues>
                         <fixedvalue name="grf" value="grf"/>
                     </fixedvalues>
                 </string>
-                <number name="version" id="439" type="integer" length="4"/>
-                <structure name="&lt;new structure&gt;" id="440" length="19"/>
-                <number name="stringDateLength" id="442" type="integer" length="4"/>
-                <string name="stringDate" id="443" type="fixed-length" length="stringDateLength"/>
-                <number name="stringVersionLength" id="444" type="integer" length="4"/>
-                <string name="stringVersion" id="445" type="fixed-length" length="stringVersionLength"/>
-                <binary name="&lt;new binary&gt;" id="446" length="12"/>
+                <number name="version" id="4" type="integer" length="4"/>
+                <structure name="&lt;new structure&gt;" id="5" length="19"/>
+                <number name="stringDateLength" id="7" type="integer" length="4"/>
+                <string name="stringDate" id="8" type="fixed-length" length="stringDateLength"/>
+                <number name="stringVersionLength" id="9" type="integer" length="4"/>
+                <string name="stringVersion" id="10" type="fixed-length" length="stringVersionLength"/>
+                <binary name="&lt;new binary&gt;" id="11" length="12"/>
             </structure>
-            <structure name="LineData" id="652">
-                <string name="map type" mustmatch="yes" id="448" type="fixed-length" length="1">
+            <structure name="LineData" id="13">
+                <string name="map type" mustmatch="yes" id="14" type="fixed-length" length="1">
                     <fixedvalues>
                         <fixedvalue name="map type" value="l"/>
                     </fixedvalues>
                 </string>
-                <number name="wehLength" id="449" type="integer" length="4" signed="yes" endian="little"/>
-                <string name="weh" id="450" type="fixed-length" length="wehLength"/>
-                <structref name="Region" id="452" structure="id:451"/>
-                <number name="numSpacePixel" id="453" type="integer" length="4" signed="yes" endian="little"/>
-                <structref name="SpacePixel" id="455" repeatmin="numSpacePixel" repeatmax="numSpacePixel" structure="id:454"/>
+                <number name="wehLength" id="15" type="integer" length="4" signed="yes" endian="little"/>
+                <string name="weh" id="16" type="fixed-length" length="wehLength"/>
+                <structref name="Region" id="18" structure="id:17"/>
+                <number name="numSpacePixel" id="19" type="integer" length="4" signed="yes" endian="little"/>
+                <structref name="SpacePixel" id="21" repeatmin="numSpacePixel" repeatmax="numSpacePixel" structure="id:20"/>
             </structure>
-            <structure name="PointMaps" id="456" repeatmin="0">
-                <string name="map type" mustmatch="yes" id="457" type="fixed-length" length="1">
+            <structure name="PointMaps" id="23" repeatmin="0">
+                <string name="map type" mustmatch="yes" id="24" type="fixed-length" length="1">
                     <fixedvalues>
                         <fixedvalue name="map type" value="p"/>
                     </fixedvalues>
                 </string>
-                <number name="Displayed Map" id="458" type="integer" length="4"/>
-                <number name="Count" id="459" type="integer" length="4"/>
-                <structref name="Map Name" id="461" structure="id:460"/>
-                <number name="cellSize" id="462" type="float" length="64" lengthunit="bit"/>
-                <number name="noOfCellsY" id="463" type="integer" length="4"/>
-                <number name="noOfCellsX" id="464" type="integer" length="4"/>
-                <binary name="&lt;new binary&gt;" id="465" length="4"/>
-                <structref name="gridStartPoint" id="467" structure="id:466"/>
-                <binary name="&lt;new binary-3&gt;" id="468" length="32"/>
-                <structref name="fourByteLengthAndString-1" id="469" structure="id:460"/>
-                <number name="noOfColumns" id="470" type="integer" length="4"/>
-                <structure name="column" id="471" length="0" repeatmin="noOfColumns" repeatmax="noOfColumns">
-                    <structref name="fourByteLengthAndString" id="472" structure="id:460"/>
-                    <structure name="coldata" id="473" length="38"/>
+                <number name="Displayed Map" id="25" type="integer" length="4"/>
+                <number name="Count" id="26" type="integer" length="4"/>
+                <structref name="Map Name" id="28" structure="id:27"/>
+                <number name="cellSize" id="29" type="float" length="64" lengthunit="bit"/>
+                <number name="noOfCellsY" id="30" type="integer" length="4"/>
+                <number name="noOfCellsX" id="31" type="integer" length="4"/>
+                <binary name="&lt;new binary&gt;" id="32" length="4"/>
+                <structref name="gridStartPoint" id="34" structure="id:33"/>
+                <binary name="&lt;new binary-3&gt;" id="35" length="32"/>
+                <structref name="fourByteLengthAndString-1" id="36" structure="id:27"/>
+                <number name="noOfColumns" id="37" type="integer" length="4"/>
+                <structure name="column" id="38" length="0" repeatmin="noOfColumns" repeatmax="noOfColumns">
+                    <structref name="fourByteLengthAndString" id="39" structure="id:27"/>
+                    <structure name="coldata" id="40" length="38"/>
                 </structure>
-                <number name="noOfFollowingStuff" id="476" type="integer" length="4"/>
-                <structure name="visiCell" id="477" length="0" disabled="yes" repeatmin="noOfFollowingStuff" repeatmax="noOfFollowingStuff">
-                    <number name="refID" id="478" fillcolor="FF4D33" type="integer" length="4"/>
-                    <binary name="&lt;new binary&gt;" id="479" length="12"/>
-                    <number name="colValue" id="480" fillcolor="14DFFF" repeatmin="noOfColumns" repeatmax="noOfColumns" type="float" length="4"/>
+                <number name="noOfFollowingStuff" id="43" type="integer" length="4"/>
+                <structure name="visiCell" id="44" length="0" disabled="yes" repeatmin="noOfFollowingStuff" repeatmax="noOfFollowingStuff">
+                    <number name="refID" id="45" fillcolor="FF4D33" type="integer" length="4"/>
+                    <binary name="&lt;new binary&gt;" id="46" length="12"/>
+                    <number name="colValue" id="47" fillcolor="14DFFF" repeatmin="noOfColumns" repeatmax="noOfColumns" type="float" length="4"/>
                 </structure>
-                <binary name="&lt;new binary-1&gt;" id="482" disabled="yes" length="12"/>
-                <structure name="gridCell" id="483" disabled="yes" repeatmin="noOfCellsX*noOfCellsY" repeatmax="noOfCellsX*noOfCellsY">
-                    <number name="m_state" id="484" type="integer" length="4"/>
-                    <number name="m_block" id="485" type="integer" length="4"/>
-                    <number name="m_misc" id="486" type="integer" length="4">
+                <binary name="&lt;new binary-1&gt;" id="49" disabled="yes" length="12"/>
+                <structure name="gridCell" id="50" disabled="yes" repeatmin="noOfCellsX*noOfCellsY" repeatmax="noOfCellsX*noOfCellsY">
+                    <number name="m_state" id="51" type="integer" length="4"/>
+                    <number name="m_block" id="52" type="integer" length="4"/>
+                    <number name="m_misc" id="53" type="integer" length="4">
                         <description>undocounter / point seen register / agent reference number, etc</description>
                     </number>
-                    <binary name="m_grid_connections" id="487" length="1">
+                    <binary name="m_grid_connections" id="54" length="1">
                         <description>this is a standard set of grid connections, with bits set for E,NE,N,NW,W,SW,S,SE</description>
                     </binary>
-                    <structref name="m_merge" id="489" structure="id:488"/>
-                    <number name="isInGraph" mustmatch="yes" id="490" type="integer" length="1" display="binary">
+                    <structref name="m_merge" id="56" structure="id:55"/>
+                    <number name="isInGraph" mustmatch="yes" id="57" type="integer" length="1" display="binary">
                         <fixedvalues>
                             <fixedvalue name="inGraph" value="00000001"/>
                             <fixedvalue name="notInGraph" value="00000000"/>
                         </fixedvalues>
                     </number>
-                    <structure name="graphNode" id="491" repeatmin="isInGraph" repeatmax="isInGraph">
-                        <structure name="bin" id="492" repeatmin="32" repeatmax="32" order="variable">
+                    <structure name="graphNode" id="58" repeatmin="isInGraph" repeatmax="isInGraph">
+                        <structure name="bin" id="59" repeatmin="32" repeatmax="32" order="variable">
                             <description>For some odd reason synalize it skips this structure and instead displays its child elements 32 times</description>
-                            <structure name="noNodes" id="493" repeatmin="0">
-                                <binary name="direction" id="494" fillcolor="FFE6E4" length="1"/>
-                                <number name="noOfNodes" mustmatch="yes" id="495" type="integer" length="2">
+                            <structure name="noNodes" id="60" repeatmin="0">
+                                <binary name="direction" id="61" fillcolor="FFE6E4" length="1"/>
+                                <number name="noOfNodes" mustmatch="yes" id="62" type="integer" length="2">
                                     <fixedvalues>
                                         <fixedvalue name="ifZero" value="0"/>
                                     </fixedvalues>
                                 </number>
-                                <number name="m_distance" id="496" type="float" length="32" lengthunit="bit"/>
-                                <number name="m_occ_distance" id="497" type="float" length="32" lengthunit="bit"/>
+                                <number name="m_distance" id="63" type="float" length="32" lengthunit="bit"/>
+                                <number name="m_occ_distance" id="64" type="float" length="32" lengthunit="bit"/>
                             </structure>
-                            <structure name="diagonal" id="499" repeatmin="0">
-                                <binary name="direction" mustmatch="yes" id="500" fillcolor="FF962A" length="1">
+                            <structure name="diagonal" id="66" repeatmin="0">
+                                <binary name="direction" mustmatch="yes" id="67" fillcolor="FF962A" length="1">
                                     <fixedvalues>
                                         <fixedvalue name="POSDIAGONAL" value="04"/>
                                         <fixedvalue name="NEGDIAGONAL" value="08"/>
                                         <fixedvalue name="DIAGONAL" value="0C"/>
                                     </fixedvalues>
                                 </binary>
-                                <structure name="yesNodes" id="501" repeatmin="0">
-                                    <number name="noOfNodes" mustmatch="yes" id="502" fillcolor="FFC0F7" type="integer" length="2" minval="1"/>
-                                    <number name="m_distance" id="503" type="float" length="32" lengthunit="bit"/>
-                                    <number name="m_occ_distance" id="504" type="float" length="32" lengthunit="bit"/>
-                                    <structref name="startPixel" id="506" structure="id:505"/>
+                                <structure name="yesNodes" id="68" repeatmin="0">
+                                    <number name="noOfNodes" mustmatch="yes" id="69" fillcolor="FFC0F7" type="integer" length="2" minval="1"/>
+                                    <number name="m_distance" id="70" type="float" length="32" lengthunit="bit"/>
+                                    <number name="m_occ_distance" id="71" type="float" length="32" lengthunit="bit"/>
+                                    <structref name="startPixel" id="73" structure="id:72"/>
                                 </structure>
                             </structure>
-                            <structure name="nonDiagonal" id="509" length="0" repeatmin="0">
-                                <binary name="direction" mustmatch="yes" id="510" fillcolor="FF5B1F" length="1">
+                            <structure name="nonDiagonal" id="76" length="0" repeatmin="0">
+                                <binary name="direction" mustmatch="yes" id="77" fillcolor="FF5B1F" length="1">
                                     <fixedvalues>
                                         <fixedvalue name="NODIR" value="00"/>
                                         <fixedvalue name="HORIZONTAL" value="01"/>
@@ -111,181 +111,186 @@
                                         <fixedvalue name="NEGVERTICAL" value="20"/>
                                     </fixedvalues>
                                 </binary>
-                                <structure name="yesNodes" id="511" repeatmin="0">
-                                    <number name="noOfNodes" mustmatch="yes" id="512" fillcolor="FFC0F7" type="integer" length="2" minval="1"/>
-                                    <number name="m_distance" id="513" type="float" length="32" lengthunit="bit"/>
-                                    <number name="m_occ_distance" id="514" type="float" length="32" lengthunit="bit"/>
-                                    <number name="m_length" id="515" fillcolor="F8FDC6" type="integer" length="2"/>
-                                    <structref name="startPixel" id="516" structure="id:505"/>
-                                    <structure name="pixelShift" id="517" length="4" repeatmin="m_length - 1" repeatmax="m_length - 1">
-                                        <number name="primaryIndex" id="518" type="integer" length="2">
+                                <structure name="yesNodes" id="78" repeatmin="0">
+                                    <number name="noOfNodes" mustmatch="yes" id="79" fillcolor="FFC0F7" type="integer" length="2" minval="1"/>
+                                    <number name="m_distance" id="80" type="float" length="32" lengthunit="bit"/>
+                                    <number name="m_occ_distance" id="81" type="float" length="32" lengthunit="bit"/>
+                                    <number name="m_length" id="82" fillcolor="F8FDC6" type="integer" length="2"/>
+                                    <structref name="startPixel" id="83" structure="id:72"/>
+                                    <structure name="pixelShift" id="84" length="4" repeatmin="m_length - 1" repeatmax="m_length - 1">
+                                        <number name="primaryIndex" id="85" type="integer" length="2">
                                             <description>Why is this short when the noOfCellsX is int?</description>
                                         </number>
-                                        <binary name="shift+runlength" id="519" disabled="yes" length="2">
+                                        <binary name="shift+runlength" id="86" disabled="yes" length="2">
                                             <description>struct ShiftLength {
        unsigned short shift : 4;
        unsigned short runlength : 12;
     };</description>
                                         </binary>
-                                        <structure name="shiftrunlengthbitfields" id="520" length="2">
+                                        <structure name="shiftrunlengthbitfields" id="87" length="2">
                                             <description>struct ShiftLength {
        unsigned short shift : 4;
        unsigned short runlength : 12;
     };</description>
-                                            <number name="runlength" id="521" type="integer" length="4" lengthunit="bit"/>
-                                            <number name="shift" id="522" type="integer" length="4" lengthunit="bit"/>
-                                            <binary name="pad" id="523" length="8" lengthunit="bit"/>
+                                            <number name="runlength" id="88" type="integer" length="4" lengthunit="bit"/>
+                                            <number name="shift" id="89" type="integer" length="4" lengthunit="bit"/>
+                                            <binary name="pad" id="90" length="8" lengthunit="bit"/>
                                         </structure>
                                     </structure>
                                 </structure>
                             </structure>
                         </structure>
-                        <structure name="emptybin" id="529" length="4" repeatmin="32" repeatmax="32"/>
+                        <structure name="emptybin" id="96" length="4" repeatmin="32" repeatmax="32"/>
                     </structure>
-                    <structref name="vertex" id="532" structure="id:466"/>
+                    <structref name="vertex" id="99" structure="id:33"/>
                 </structure>
             </structure>
-            <structure name="DataMaps" id="535" repeatmin="0">
-                <string name="map type" mustmatch="yes" id="536" type="fixed-length" length="1">
+            <structure name="DataMaps" id="102" repeatmin="0">
+                <string name="map type" mustmatch="yes" id="103" type="fixed-length" length="1">
                     <fixedvalues>
                         <fixedvalue name="map type" value="s"/>
                     </fixedvalues>
                 </string>
-                <number name="Displayed Map" id="537" type="integer" length="4"/>
-                <number name="Count" id="538" type="integer" length="4"/>
-                <structref name="Map Name" id="539" structure="id:460"/>
-                <number name="Map Type" id="540" type="integer" length="4"/>
-                <number name="show map" id="541" type="integer" length="1"/>
-                <number name="is editable" id="542" type="integer" length="1"/>
-                <structref name="Region" id="543" structure="id:451"/>
-                <number name="rows" id="544" type="integer" length="4"/>
-                <number name="cols" id="545" type="integer" length="4"/>
-                <number name="object reference" id="546" type="integer" length="4"/>
-                <number name="shape reference" id="547" type="integer" length="4"/>
-                <number name="shapesCount" id="548" type="integer" length="4"/>
-                <structref name="shapes" id="550" repeatmin="shapesCount" repeatmax="shapesCount" structure="id:549"/>
+                <number name="Displayed Map" id="104" type="integer" length="4"/>
+                <number name="Count" id="105" type="integer" length="4"/>
+                <structref name="Map Name" id="106" structure="id:27"/>
+                <number name="Map Type" id="107" type="integer" length="4"/>
+                <number name="show map" id="108" type="integer" length="1"/>
+                <number name="is editable" id="109" type="integer" length="1"/>
+                <structref name="Region" id="110" structure="id:17"/>
+                <number name="rows" id="111" type="integer" length="4"/>
+                <number name="cols" id="112" type="integer" length="4"/>
+                <number name="object reference" id="113" type="integer" length="4"/>
+                <number name="shape reference" id="114" type="integer" length="4"/>
+                <number name="shapesCount" id="115" type="integer" length="4"/>
+                <structref name="shapes" id="117" repeatmin="shapesCount" repeatmax="shapesCount" structure="id:116"/>
+                <number name="numSalaObjects" id="217" type="integer" length="4" signed="yes" endian="little"/>
+                <structure name="SalaObject" id="218" repeat="id:217">
+                    <number name="objKey" id="220" type="integer" length="4" signed="yes" endian="little"/>
+                    <structref name="Centroid" id="221" structure="id:175"/>
+                </structure>
             </structure>
-            <binary name="processed" id="552" length="2">
+            <binary name="processed" id="119" length="2">
                 <fixedvalues>
                     <fixedvalue name="no" value="0100"/>
                     <fixedvalue name="yes" value="0000"/>
                 </fixedvalues>
             </binary>
         </structure>
-        <structure name="polygon" id="554" length="0" repeatmin="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <binary name="entityType" mustmatch="yes" id="555" length="1">
+        <structure name="polygon" id="121" length="0" repeatmin="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <binary name="entityType" mustmatch="yes" id="122" length="1">
                 <fixedvalues>
                     <fixedvalue name="circle" value="C4"/>
                     <fixedvalue name="open poly" value="04"/>
                     <fixedvalue name="closed poly" value="44"/>
                 </fixedvalues>
             </binary>
-            <number name="minX" id="556" fillcolor="AA7941" type="float" length="8" signed="yes" endian="little"/>
-            <number name="minY" id="557" fillcolor="FEBF98" type="float" length="8" signed="yes" endian="little"/>
-            <number name="maxX" id="558" fillcolor="AA7941" type="float" length="8" signed="yes" endian="little"/>
-            <number name="maxY" id="559" fillcolor="FFDCC4" type="float" length="8" signed="yes" endian="little"/>
-            <binary name="eregr" id="560" unused="yes" length="8"/>
-            <number name="centreX" id="561" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="centreY" id="562" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="area" id="563" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="perimeter" id="564" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="vertexNum" id="565" fillcolor="FF9200" type="integer" length="4" signed="yes"/>
-            <structref name="vertex" id="566" repeatmax="vertexNum" structure="id:466"/>
+            <number name="minX" id="123" fillcolor="AA7941" type="float" length="8" signed="yes" endian="little"/>
+            <number name="minY" id="124" fillcolor="FEBF98" type="float" length="8" signed="yes" endian="little"/>
+            <number name="maxX" id="125" fillcolor="AA7941" type="float" length="8" signed="yes" endian="little"/>
+            <number name="maxY" id="126" fillcolor="FFDCC4" type="float" length="8" signed="yes" endian="little"/>
+            <binary name="eregr" id="127" unused="yes" length="8"/>
+            <number name="centreX" id="128" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="centreY" id="129" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="area" id="130" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="perimeter" id="131" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="vertexNum" id="132" fillcolor="FF9200" type="integer" length="4" signed="yes"/>
+            <structref name="vertex" id="133" repeatmax="vertexNum" structure="id:33"/>
         </structure>
-        <structure name="spline" id="568" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <binary name="entityType" mustmatch="yes" id="569" length="1">
+        <structure name="spline" id="135" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <binary name="entityType" mustmatch="yes" id="136" length="1">
                 <fixedvalues>
                     <fixedvalue name="spline" value="84"/>
                 </fixedvalues>
             </binary>
-            <number name="minX" id="570" type="float" length="8" signed="yes" endian="little"/>
-            <number name="minY" id="571" type="float" length="8" signed="yes" endian="little"/>
-            <number name="maxX" id="572" type="float" length="8" signed="yes" endian="little"/>
-            <number name="maxY" id="573" type="float" length="8" endian="little"/>
-            <binary name="&lt;new binary&gt;" id="574" length="40"/>
-            <number name="vertexNum" id="575" type="integer" length="4" signed="yes" endian="little"/>
-            <structref name="vertex" id="576" repeatmin="vertexNum" repeatmax="vertexNum" structure="id:466"/>
+            <number name="minX" id="137" type="float" length="8" signed="yes" endian="little"/>
+            <number name="minY" id="138" type="float" length="8" signed="yes" endian="little"/>
+            <number name="maxX" id="139" type="float" length="8" signed="yes" endian="little"/>
+            <number name="maxY" id="140" type="float" length="8" endian="little"/>
+            <binary name="&lt;new binary&gt;" id="141" length="40"/>
+            <number name="vertexNum" id="142" type="integer" length="4" signed="yes" endian="little"/>
+            <structref name="vertex" id="143" repeatmin="vertexNum" repeatmax="vertexNum" structure="id:33"/>
         </structure>
-        <structure name="line" id="578" repeatmin="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <binary name="entityType" mustmatch="yes" id="579" length="1">
+        <structure name="line" id="145" repeatmin="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <binary name="entityType" mustmatch="yes" id="146" length="1">
                 <fixedvalues>
                     <fixedvalue name="line" value="02"/>
                 </fixedvalues>
             </binary>
-            <structref name="vertex" id="580" repeatmin="2" repeatmax="2" structure="id:466"/>
-            <binary name="&lt;Binary Fill Bytes&gt;" id="581" unused="yes" length="8"/>
-            <structref name="midpoint" id="582" structure="id:466"/>
-            <binary name="&lt;Binary Fill Bytes-1&gt;" id="583" unused="yes" length="8"/>
-            <number name="length" id="584" type="float" length="8" signed="yes"/>
-            <binary name="lineOffset" id="585" length="4"/>
+            <structref name="vertex" id="147" repeatmin="2" repeatmax="2" structure="id:33"/>
+            <binary name="&lt;Binary Fill Bytes&gt;" id="148" unused="yes" length="8"/>
+            <structref name="midpoint" id="149" structure="id:33"/>
+            <binary name="&lt;Binary Fill Bytes-1&gt;" id="150" unused="yes" length="8"/>
+            <number name="length" id="151" type="float" length="8" signed="yes"/>
+            <binary name="lineOffset" id="152" length="4"/>
         </structure>
-        <structure name="vertex" id="466" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <number name="x" id="587" fillcolor="00F900" type="float" length="8"/>
-            <number name="y" id="588" fillcolor="79FDFA" type="float" length="8"/>
+        <structure name="vertex" id="33" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="x" id="154" fillcolor="00F900" type="float" length="8"/>
+            <number name="y" id="155" fillcolor="79FDFA" type="float" length="8"/>
         </structure>
-        <structure name="fourByteLengthAndString" id="460" length="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <number name="len" id="590" type="integer" length="4" signed="yes" endian="little"/>
-            <string name="Str" id="591" type="fixed-length" length="len"/>
+        <structure name="fourByteLengthAndString" id="27" length="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="len" id="157" type="integer" length="4" signed="yes" endian="little"/>
+            <string name="Str" id="158" type="fixed-length" length="len"/>
         </structure>
-        <structure name="pixelRef" id="488" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <number name="x" id="593" type="integer" length="2"/>
-            <number name="y" id="594" type="integer" length="2"/>
+        <structure name="pixelRef" id="55" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="x" id="160" type="integer" length="2"/>
+            <number name="y" id="161" type="integer" length="2"/>
         </structure>
-        <structure name="pixelVec" id="505" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <structref name="start" id="596" structure="id:488"/>
-            <number name="length" id="597" type="integer" length="2"/>
+        <structure name="pixelVec" id="72" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structref name="start" id="163" structure="id:55"/>
+            <number name="length" id="164" type="integer" length="2"/>
         </structure>
-        <structure name="QtRegion" id="451" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <binary name="blob (to be done)" id="599" length="32"/>
+        <structure name="QtRegion" id="17" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="blob (to be done)" id="166" length="32"/>
         </structure>
-        <structure name="ShapeMapping" id="549" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <number name="shape key" id="601" type="integer" length="4"/>
-            <structref name="&lt;SalaShape&gt;" id="603" structure="id:602"/>
+        <structure name="ShapeMapping" id="116" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="shape key" id="168" type="integer" length="4"/>
+            <structref name="&lt;SalaShape&gt;" id="170" structure="id:169"/>
         </structure>
-        <structure name="SalaShape" id="602" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <number name="shape type" id="605" type="integer" length="1"/>
-            <structref name="Region" id="606" structure="id:451"/>
-            <binary name="RegionBits" id="607" length="8"/>
-            <structref name="centroid" id="609" structure="id:608"/>
-            <number name="area" id="610" type="float" length="8" signed="yes" endian="little"/>
-            <number name="perimeter" id="611" type="float" length="8" signed="yes" endian="little"/>
-            <number name="pointCount" id="612" type="integer" length="4" signed="yes" endian="little"/>
-            <structref name="point" id="613" repeatmin="pointCount" repeatmax="pointCount" structure="id:608"/>
+        <structure name="SalaShape" id="169" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="shape type" id="172" type="integer" length="1"/>
+            <structref name="Region" id="173" structure="id:17"/>
+            <binary name="RegionBits" id="174" length="8"/>
+            <structref name="centroid" id="176" structure="id:175"/>
+            <number name="area" id="177" type="float" length="8" signed="yes" endian="little"/>
+            <number name="perimeter" id="178" type="float" length="8" signed="yes" endian="little"/>
+            <number name="pointCount" id="179" type="integer" length="4" signed="yes" endian="little"/>
+            <structref name="point" id="180" repeatmin="pointCount" repeatmax="pointCount" structure="id:175"/>
         </structure>
-        <structure name="Point2f" id="608" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <number name="x" id="615" type="float" length="8" signed="yes" endian="little"/>
-            <number name="y" id="616" type="float" length="8" signed="yes" endian="little"/>
+        <structure name="Point2f" id="175" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="x" id="182" type="float" length="8" signed="yes" endian="little"/>
+            <number name="y" id="183" type="float" length="8" signed="yes" endian="little"/>
         </structure>
-        <structure name="SpacePixel" id="454" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <structref name="planFileName" id="618" structure="id:460"/>
-            <number name="planMinX" id="619" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="planMinY" id="620" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="planMaxX" id="621" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="planMaxY" id="622" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
-            <number name="noOfDrawingObjectLayers" id="623" type="integer" length="4" signed="yes" endian="little"/>
-            <structure name="layerData" id="624" repeatmin="noOfDrawingObjectLayers" repeatmax="noOfDrawingObjectLayers">
-                <structref name="layerName" id="625" structure="id:460"/>
-                <binary name="offsettt" id="626" length="6"/>
-                <number name="layerMinX" id="627" type="float" length="8" signed="yes" endian="little"/>
-                <number name="layerMinY" id="628" type="float" length="8" signed="yes" endian="little"/>
-                <number name="layerMaxX" id="629" type="float" length="8" signed="yes" endian="little"/>
-                <number name="layerMaxY" id="630" type="float" length="8" signed="yes" endian="little"/>
-                <binary name="anotherOffset" id="631" length="16"/>
-                <number name="noOfDrawingObjects" id="632" type="integer" length="4" signed="yes" endian="little"/>
-                <structure name="drawingObject" id="633" repeatmax="noOfDrawingObjects">
-                    <number name="ID" id="634" type="integer" length="4" signed="yes" endian="little"/>
-                    <structure name="entity" id="635" alignment="0" order="variable">
-                        <structref name="line" id="636" repeatmin="0" structure="id:578"/>
-                        <structref name="polygon" id="637" repeatmin="0" structure="id:554"/>
-                        <structref name="spline" id="638" repeatmin="0" structure="id:568"/>
+        <structure name="SpacePixel" id="20" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structref name="planFileName" id="185" structure="id:27"/>
+            <number name="planMinX" id="186" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="planMinY" id="187" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="planMaxX" id="188" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="planMaxY" id="189" fillcolor="FF9200" type="float" length="8" signed="yes" endian="little"/>
+            <number name="noOfDrawingObjectLayers" id="190" type="integer" length="4" signed="yes" endian="little"/>
+            <structure name="layerData" id="191" repeatmin="noOfDrawingObjectLayers" repeatmax="noOfDrawingObjectLayers">
+                <structref name="layerName" id="192" structure="id:27"/>
+                <binary name="offsettt" id="193" length="6"/>
+                <number name="layerMinX" id="194" type="float" length="8" signed="yes" endian="little"/>
+                <number name="layerMinY" id="195" type="float" length="8" signed="yes" endian="little"/>
+                <number name="layerMaxX" id="196" type="float" length="8" signed="yes" endian="little"/>
+                <number name="layerMaxY" id="197" type="float" length="8" signed="yes" endian="little"/>
+                <binary name="anotherOffset" id="198" length="16"/>
+                <number name="noOfDrawingObjects" id="199" type="integer" length="4" signed="yes" endian="little"/>
+                <structure name="drawingObject" id="200" repeatmax="noOfDrawingObjects">
+                    <number name="ID" id="201" type="integer" length="4" signed="yes" endian="little"/>
+                    <structure name="entity" id="202" alignment="0" order="variable">
+                        <structref name="line" id="203" repeatmin="0" structure="id:145"/>
+                        <structref name="polygon" id="204" repeatmin="0" structure="id:121"/>
+                        <structref name="spline" id="205" repeatmin="0" structure="id:135"/>
                     </structure>
                 </structure>
-                <binary name="anotherkindofoffset" id="641" length="32"/>
-                <structref name="fourByteLengthAndString" id="642" structure="id:460"/>
-                <binary name="moaroffset" id="643" length="4"/>
-                <number name="numberOfSomethings" id="644" type="integer" length="4" signed="yes" endian="little"/>
-                <structure name="Somethings" id="645" length="16" repeat="id:644" repeatmin="0" repeatmax="numberOfSomethings"/>
-                <binary name="yada" id="647" length="29"/>
+                <binary name="anotherkindofoffset" id="208" length="32"/>
+                <structref name="fourByteLengthAndString" id="209" structure="id:27"/>
+                <binary name="moaroffset" id="210" length="4"/>
+                <number name="numberOfSomethings" id="211" type="integer" length="4" signed="yes" endian="little"/>
+                <structure name="Somethings" id="212" length="16" repeat="id:211" repeatmin="0" repeatmax="numberOfSomethings"/>
+                <binary name="yada" id="214" length="29"/>
             </structure>
         </structure>
     </grammar>
