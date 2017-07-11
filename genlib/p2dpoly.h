@@ -395,11 +395,15 @@ class Line : public QtRegion
 {
 protected:
    struct Bits {
+      Bits() : x_dummy(0), y_dummy(0), z_dummy(0){}
       char parity      : 8;  // 1 ... positive, 0 ... negative
       char direction   : 8;  // 1 ... positive, 0 ... negative
-#ifndef _WIN32
-      int z_dummy      : 32;
-#endif
+
+      // dummy variables as it seems to be necessary that the width of this struct is 8 bytes
+      // and I don't want any uninitialised memory that gets written to file accidentally
+      char x_dummy : 8;
+      char y_dummy : 8;
+      int  z_dummy : 32;
    };
    Bits bits;
 public:
