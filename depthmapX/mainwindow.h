@@ -190,6 +190,7 @@ private slots:
     void OnWindowMap();
     void OnViewTable();
     void OnWindow3dView();
+    void OnWindowGLView();
     void OnViewScatterplot();
     void OnToolsRun();
     void OnToolsAgentRun();
@@ -412,6 +413,7 @@ private:
     QAction *scatterPlotAct;
     QAction *tableAct;
     QAction *thirdDViewAct;
+    QAction *glViewAct;
     QAction *colourRangeAct;
     QAction *cascadeAct;
     QAction *tileAct;
