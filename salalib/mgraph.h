@@ -172,6 +172,8 @@ enum { MINFO_OK, MINFO_HEADER, MINFO_TABLE, MINFO_MIFPARSE, MINFO_OBJROWS, MINFO
 // for agent engine interface
 #include <salalib/nagent.h>
 
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 class Communicator;
@@ -533,6 +535,7 @@ public:
    int read( const pstring& filename );
    int write( const pstring& filename, int version, bool currentlayer = false);
    //
+   std::vector<SimpleLine> getVisibleLines();
 protected:
    pqvector<AttrBody> *m_attr_conv_table;
    int convertAttributes( ifstream& stream, int version );

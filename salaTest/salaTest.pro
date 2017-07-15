@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     testpointmap.cpp \
     testlinkutils.cpp \
     testgridproperties.cpp \
-    testisovistdef.cpp
+    testisovistdef.cpp \
+    testmgraph.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
