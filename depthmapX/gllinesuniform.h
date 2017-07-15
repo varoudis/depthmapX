@@ -16,20 +16,28 @@
 
 #pragma once
 
+#include "genlib/p2dpoly.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
+#include <QRgb>
 
-class GLLineData
+class GLLinesUniform
 {
 public:
-    GLLineData();
-    void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_world);
+    GLLinesUniform();
+    void loadLineData(const std::vector<SimpleLine>& lines, const QRgb& lineColour);
+    void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void cleanup();
+    void updateColour(const QRgb& lineColour);
 
 private:
+    bool dataLoaded = false;
     const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
     int count() const { return m_count; }
@@ -39,5 +47,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    QOpenGLVertexArrayObject m_vao;
+    QOpenGLBuffer m_vbo;
     QOpenGLShaderProgram *m_program;
 };
