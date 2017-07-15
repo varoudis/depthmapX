@@ -48,8 +48,8 @@ HEADERS       = depthmapView.h \
     settings.h \
     settingsimpl.h \
     glview.h \
-    gllinedata.h \
-    glpointmap.h
+    glpointmap.h \
+    gllinesuniform.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -92,9 +92,9 @@ SOURCES       = depthmapView.cpp \
     mainwindowfactory.cpp \
     viewhelpers.cpp \
     settingsimpl.cpp \
-    gllinedata.cpp \
     glview.cpp \
-    glpointmap.cpp
+    glpointmap.cpp \
+    gllinesuniform.cpp
 
 RESOURCES     = resource.qrc
 

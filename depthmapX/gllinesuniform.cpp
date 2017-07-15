@@ -14,19 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gllinedata.h"
+#include "gllinesuniform.h"
 #include <qmath.h>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
-#include <QOpenGLFunctions>
 
-QOpenGLVertexArrayObject m_vao;
-QOpenGLBuffer m_vbo;
-QOpenGLShaderProgram *m_program;
 int m_projMatrixLoc;
 int m_mvMatrixLoc;
-int m_colorVectorLoc;
-QVector4D m_color(0.0f, 0.0f, 0.0f, 1.0f);
+int m_colourVectorLoc;
+QVector4D m_colour(1.0f, 1.0f, 1.0f, 1.0f);
 
 static const char *vertexShaderSourceCore =
     "#version 150\n"
@@ -59,18 +53,36 @@ static const char *fragmentShaderSource =
     "   gl_FragColor = colourVector;\n"
     "}\n";
 
-GLLineData::GLLineData()
+/**
+ * @brief GLLinesUniform::GLLinesUniform
+ * This class is an OpenGL representation of  multiple lines of uniform colour
+ */
+
+GLLinesUniform::GLLinesUniform()
     : m_count(0),
       m_program(0)
 {
 
-    m_data.resize(1 * DATA_DIMENSIONS);
-    add(QVector3D(-0.25f, -0.25f, 0.0f));
-    add(QVector3D(+0.25f, +0.25f, 0.0f));
-
 }
 
-void GLLineData::setupVertexAttribs()
+void GLLinesUniform::loadLineData(const std::vector<SimpleLine>& lines, const QRgb &lineColour)
+{
+    m_data.resize(lines.size() * 2 * DATA_DIMENSIONS);
+
+    std::vector<SimpleLine>::const_iterator iter = lines.begin(), end =
+    lines.end();
+    for ( ; iter != end; ++iter )
+    {
+        const SimpleLine & line = *iter;
+        add(QVector3D(line.start().x, line.start().y, 0.0f));
+        add(QVector3D(line.end().x, line.end().y, 0.0f));
+    }
+    m_colour.setX(qRed(lineColour)/255.0f);
+    m_colour.setY(qGreen(lineColour)/255.0f);
+    m_colour.setZ(qBlue(lineColour)/255.0f);
+}
+
+void GLLinesUniform::setupVertexAttribs()
 {
     m_vbo.bind();
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -79,7 +91,8 @@ void GLLineData::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLLineData::initializeGL(bool m_core) {
+void GLLinesUniform::initializeGL(bool m_core)
+{
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
@@ -89,7 +102,7 @@ void GLLineData::initializeGL(bool m_core) {
     m_program->bind();
     m_projMatrixLoc = m_program->uniformLocation("projMatrix");
     m_mvMatrixLoc = m_program->uniformLocation("mvMatrix");
-    m_colorVectorLoc = m_program->uniformLocation("colourVector");
+    m_colourVectorLoc = m_program->uniformLocation("colourVector");
 
     // Create a vertex array object. In OpenGL ES 2.0 and OpenGL 2.x
     // implementations this is optional and support may not be present
@@ -105,28 +118,39 @@ void GLLineData::initializeGL(bool m_core) {
 
     // Store the vertex attribute bindings for the program.
     setupVertexAttribs();
-
+    m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
 }
-void GLLineData::cleanup() {
+void GLLinesUniform::updateColour(const QRgb &lineColour)
+{
+    m_colour.setX(qRed(lineColour)/255.0f);
+    m_colour.setY(qGreen(lineColour)/255.0f);
+    m_colour.setZ(qBlue(lineColour)/255.0f);
+    m_program->bind();
+    m_program->setUniformValue(m_colourVectorLoc, m_colour);
+    m_program->release();
+}
+
+void GLLinesUniform::cleanup()
+{
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
 }
 
-void GLLineData::paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_world) {
+void GLLinesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
+{
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
-    m_program->setUniformValue(m_projMatrixLoc, m_proj);
-    m_program->setUniformValue(m_mvMatrixLoc, m_camera * m_world);
-    m_program->setUniformValue(m_colorVectorLoc, m_color);
+    m_program->setUniformValue(m_projMatrixLoc, m_mProj);
+    m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
 
     glDrawArrays(GL_LINES, 0, vertexCount());
 
     m_program->release();
 }
 
-void GLLineData::add(const QVector3D &v)
+void GLLinesUniform::add(const QVector3D &v)
 {
     GLfloat *p = m_data.data() + m_count;
     *p++ = v.x();

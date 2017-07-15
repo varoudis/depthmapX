@@ -816,9 +816,7 @@ void MainWindow::OnWindowGLView()
     {
         if(m_p->pDoc->m_view[QGraphDoc::VIEW_GL])
             return setActiveSubWindow(m_p->pDoc->m_view[QGraphDoc::VIEW_GL]);
-        GLView *child = new GLView(this, m_p->pDoc);
-        child->setBackground(m_background);
-        child->setForeground(m_foreground);
+        GLView *child = new GLView(this, m_p->pDoc, m_background, m_foreground);
         mdiArea->addSubWindow(child);
         child->show();
     }
