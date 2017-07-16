@@ -47,7 +47,12 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    QVector4D m_colour = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
     QOpenGLShaderProgram *m_program;
+    int m_projMatrixLoc;
+    int m_mvMatrixLoc;
+    int m_colourVectorLoc;
 };

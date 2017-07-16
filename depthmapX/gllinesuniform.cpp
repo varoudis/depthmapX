@@ -17,11 +17,6 @@
 #include "gllinesuniform.h"
 #include <qmath.h>
 
-int m_projMatrixLoc;
-int m_mvMatrixLoc;
-int m_colourVectorLoc;
-QVector4D m_colour(1.0f, 1.0f, 1.0f, 1.0f);
-
 static const char *vertexShaderSourceCore =
     "#version 150\n"
     "in vec4 vertex;\n"
