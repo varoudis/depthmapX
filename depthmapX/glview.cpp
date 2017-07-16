@@ -22,13 +22,11 @@
 
 GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, const QRgb &foregroundColour)
     : QOpenGLWidget(parent),
-      m_xPos(0),
-      m_yPos(0),
-      m_zPos(0),
+      m_eyePosX(0),
+      m_eyePosY(0),
       m_background(backgroundColour),
       m_foreground(foregroundColour)
 {
-    std::cout << "starting" << std::endl;
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     pDoc = doc;
 
@@ -37,6 +35,10 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     m_lineData.loadLineData(pDoc->m_meta_graph->getVisibleLines(), m_foreground);
     pDoc->m_meta_graph->releaseLock(this);
 
+    std::vector<std::pair<SimpleLine, QRgb>> axesData;
+    axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,1,0), qRgb(255,0,0)));
+    axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,0,1), qRgb(0,255,0)));
+    m_axes.loadLineData(axesData);
 }
 
 GLView::~GLView()
@@ -54,36 +56,10 @@ QSize GLView::sizeHint() const
     return QSize(400, 400);
 }
 
-void GLView::setXPosition(float xPos)
-{
-    if (xPos != m_xPos) {
-        m_xPos = xPos;
-        emit xPositionChanged(xPos);
-        update();
-    }
-}
-
-void GLView::setYPosition(float yPos)
-{
-    if (yPos != m_yPos) {
-        m_yPos = yPos;
-        emit yPositionChanged(yPos);
-        update();
-    }
-}
-
-void GLView::setZPosition(float zPos)
-{
-    if (zPos != m_zPos) {
-        m_zPos = zPos;
-        emit zPositionChanged(zPos);
-        update();
-    }
-}
-
 void GLView::cleanup()
 {
     makeCurrent();
+    m_axes.cleanup();
     m_lineData.cleanup();
     doneCurrent();
 }
@@ -95,7 +71,10 @@ void GLView::initializeGL()
     initializeOpenGLFunctions();
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
+    m_axes.initializeGL(m_core);
     m_lineData.initializeGL(m_core);
+
+    m_mModel.setToIdentity();
 
     m_mView.setToIdentity();
     m_mView.translate(0, 0, -1);
@@ -107,39 +86,76 @@ void GLView::paintGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    m_mModel.setToIdentity();
-    m_mModel.translate(m_xPos, m_yPos, m_zPos);
-
+    m_axes.paintGL(m_mProj, m_mView, m_mModel);
     m_lineData.paintGL(m_mProj, m_mView, m_mModel);
 }
 
 void GLView::resizeGL(int w, int h)
 {
-    m_mProj.setToIdentity();
-    GLfloat ratio = GLfloat(w) / h;
-    if(perspectiveView)
-    {
-        m_mProj.perspective(45.0f, ratio, 0.01f, 100.0f);
-    }
-    else
-    {
-        m_mProj.ortho(-0.5f * ratio, 0.5f * ratio, -0.5f, 0.5f, 0, 10);
-    }
+    screenWidth = w;
+    screenHeight = h;
+    screenRatio = GLfloat(w) / h;
+    recalcView();
 }
 
 void GLView::mousePressEvent(QMouseEvent *event)
 {
-    m_lastPos = event->pos();
+    m_mouseLastPos = event->pos();
 }
 
 void GLView::mouseMoveEvent(QMouseEvent *event)
 {
-    int dx = event->x() - m_lastPos.x();
-    int dy = event->y() - m_lastPos.y();
+    int dx = event->x() - m_mouseLastPos.x();
+    int dy = event->y() - m_mouseLastPos.y();
 
     if (event->buttons() & Qt::RightButton) {
-        setXPosition(m_xPos + 0.002f * dx);
-        setYPosition(m_yPos - 0.002f * dy);
+        panBy(dx, dy);
     }
-    m_lastPos = event->pos();
+    m_mouseLastPos = event->pos();
+}
+
+void GLView::wheelEvent(QWheelEvent *event)
+{
+    QPoint numDegrees = event->angleDelta() / 8;
+
+    int x = event->x();
+    int y = event->y();
+
+    zoomBy(1 - 0.25f * numDegrees.y() / 15.0f, x, y);
+
+    event->accept();
+}
+
+void GLView::zoomBy(float dzf, int mouseX, int mouseY)
+{
+    float pzf = zoomFactor;
+    zoomFactor = zoomFactor * dzf;
+    if(zoomFactor < minZoomFactor) zoomFactor = minZoomFactor;
+    else if(zoomFactor > maxZoomFactor) zoomFactor = maxZoomFactor;
+    m_eyePosX += (zoomFactor - pzf) * screenRatio * GLfloat(mouseX - screenWidth*0.5f) / GLfloat(screenWidth);
+    m_eyePosY -= (zoomFactor - pzf) * GLfloat(mouseY - screenHeight*0.5f) / GLfloat(screenHeight);
+    recalcView();
+}
+void GLView::panBy(int dx, int dy)
+{
+    m_eyePosX += zoomFactor * screenRatio * GLfloat(dx) / screenWidth;
+    m_eyePosY -= zoomFactor * GLfloat(dy) / screenWidth;
+
+    recalcView();
+}
+void GLView::recalcView()
+{
+    m_mProj.setToIdentity();
+
+    if(perspectiveView)
+    {
+        m_mProj.perspective(45.0f, screenRatio, 0.01f, 100.0f);
+        m_mProj.scale(1.0f, 1.0f, zoomFactor);
+    }
+    else
+    {
+        m_mProj.ortho(-zoomFactor * 0.5f * screenRatio, zoomFactor * 0.5f * screenRatio, -zoomFactor * 0.5f, zoomFactor * 0.5f, 0, 10);
+    }
+    m_mProj.translate(m_eyePosX, m_eyePosY, 0.0f);
+    update();
 }
