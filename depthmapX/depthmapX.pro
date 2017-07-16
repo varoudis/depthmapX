@@ -47,10 +47,10 @@ HEADERS       = depthmapView.h \
     version.h \
     settings.h \
     settingsimpl.h \
-    glpointmap.h \
     gllinesuniform.h \
     glview.h \
-    gllines.h
+    gllines.h \
+    glrastertexture.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -93,10 +93,10 @@ SOURCES       = depthmapView.cpp \
     mainwindowfactory.cpp \
     viewhelpers.cpp \
     settingsimpl.cpp \
-    glpointmap.cpp \
     gllinesuniform.cpp \
     glview.cpp \
-    gllines.cpp
+    gllines.cpp \
+    glrastertexture.cpp
 
 RESOURCES     = resource.qrc
 

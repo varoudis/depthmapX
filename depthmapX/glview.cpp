@@ -39,6 +39,10 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,1,0), qRgb(255,0,0)));
     axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,0,1), qRgb(0,255,0)));
     m_axes.loadLineData(axesData);
+
+    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+    QtRegion region = currentPointMap.getRegion();
+    m_pointData.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
 }
 
 GLView::~GLView()
@@ -61,6 +65,7 @@ void GLView::cleanup()
     makeCurrent();
     m_axes.cleanup();
     m_lineData.cleanup();
+    m_pointData.cleanup();
     doneCurrent();
 }
 
@@ -73,6 +78,19 @@ void GLView::initializeGL()
 
     m_axes.initializeGL(m_core);
     m_lineData.initializeGL(m_core);
+    m_pointData.initializeGL(m_core);
+
+    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+    QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
+    data.fill(Qt::transparent);
+
+    AttributeTable& table = currentPointMap.getAttributeTable();
+    for (int i = 0; i < table.getRowCount(); i++) {
+       PixelRef pix = table.getRowKey(i);
+       data.setPixelColor(pix.x, pix.y, table.getValue(i,currentPointMap.getDisplayedAttribute()));
+    }
+
+    m_pointData.loadPixelData(data);
 
     m_mModel.setToIdentity();
 
@@ -85,8 +103,11 @@ void GLView::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
+    m_pointData.paintGL(m_mProj, m_mView, m_mModel);
     m_lineData.paintGL(m_mProj, m_mView, m_mModel);
 }
 

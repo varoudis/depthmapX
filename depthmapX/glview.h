@@ -22,6 +22,7 @@
 #include "GraphDoc.h"
 #include "depthmapX/gllines.h"
 #include "depthmapX/gllinesuniform.h"
+#include "depthmapX/glrastertexture.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -62,6 +63,7 @@ private:
 
     GLLines m_axes;
     GLLinesUniform m_lineData;
+    GLRasterTexture m_pointData;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;
