@@ -43,6 +43,19 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
     QtRegion region = currentPointMap.getRegion();
     m_pointData.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+
+    m_eyePosX = - (region.top_right.x + region.bottom_left.x)*0.5f;
+    m_eyePosY = - (region.top_right.y + region.bottom_left.y)*0.5f;
+    if(region.width() > region.height())
+    {
+        zoomFactor = region.top_right.x - region.bottom_left.x;
+    }
+    else
+    {
+        zoomFactor = region.top_right.y - region.bottom_left.y;
+    }
+    minZoomFactor = zoomFactor * 0.001;
+    maxZoomFactor = zoomFactor * 10;
 }
 
 GLView::~GLView()
