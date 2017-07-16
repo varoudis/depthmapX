@@ -20,6 +20,7 @@
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
 #include "GraphDoc.h"
+#include "depthmapX/gllines.h"
 #include "depthmapX/gllinesuniform.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
@@ -38,37 +39,42 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
-public slots:
-    void setXPosition(float xPos);
-    void setYPosition(float yPos);
-    void setZPosition(float zPos);
-    void cleanup();
-
-signals:
-    void xPositionChanged(float xPos);
-    void yPositionChanged(float yPos);
-    void zPositionChanged(float zPos);
-
 protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int width, int height) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 private:
+    void cleanup();
+
     bool perspectiveView = false;
     bool m_core;
-    float m_xPos;
-    float m_yPos;
-    float m_zPos;
-    QPoint m_lastPos;
-    GLLinesUniform m_lineData;
     QMatrix4x4 m_mProj;
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
+
     QGraphDoc* pDoc;
     const QRgb &m_foreground;
     const QRgb &m_background;
+
+    GLLines m_axes;
+    GLLinesUniform m_lineData;
+
+    QPoint m_mouseLastPos;
+    float m_eyePosX;
+    float m_eyePosY;
+    float minZoomFactor = 1;
+    float zoomFactor = 20;
+    float maxZoomFactor = 200;
+    GLfloat screenRatio;
+    int screenWidth;
+    int screenHeight;
+
+    void panBy(int dx, int dy);
+    void recalcView();
+    void zoomBy(float dzf, int mouseX, int mouseY);
 };
 
