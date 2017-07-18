@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.17">
-    <grammar name="GRAPH grammar" start="id:753" author="Petros Koutsolampros" fileextension="graph">
-        <description>Grammar for GRAPH files</description>
+    <grammar name="GRAPH grammar" start="id:753" author="Petros Koutsolampros, Christian Sailer" fileextension="graph">
+        <description>Grammar for depthmap GRAPH files</description>
         <scripts>
             <script name="PointNodeBin" type="DataType" id="458">
                 <description>Parse one bin in a Node in a Point</description>
