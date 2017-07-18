@@ -28,19 +28,21 @@
 
 class GLLines
 {
+    friend class testgllines;
+
 public:
     GLLines();
     void loadLineData(const std::vector<std::pair<SimpleLine, QRgb> > &colouredLines);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void cleanup();
+    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
 private:
     bool dataLoaded = false;
     const int DATA_DIMENSIONS = 6;
     void setupVertexAttribs();
     int count() const { return m_count; }
-    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v, const QVector3D &c);
 

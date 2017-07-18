@@ -35,13 +35,13 @@ public:
     void initializeGL(bool m_core);
     void cleanup();
     void updateColour(const QRgb& lineColour);
+    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
 private:
     bool dataLoaded = false;
     const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
     int count() const { return m_count; }
-    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v);
 
