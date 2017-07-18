@@ -49,8 +49,6 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 
 private:
-    void cleanup();
-
     bool perspectiveView = false;
     bool m_core;
     QMatrix4x4 m_mProj;

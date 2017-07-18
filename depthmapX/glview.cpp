@@ -60,7 +60,11 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 
 GLView::~GLView()
 {
-    cleanup();
+    makeCurrent();
+    m_axes.cleanup();
+    m_lineData.cleanup();
+    m_pointData.cleanup();
+    doneCurrent();
 }
 
 QSize GLView::minimumSizeHint() const
@@ -73,19 +77,8 @@ QSize GLView::sizeHint() const
     return QSize(400, 400);
 }
 
-void GLView::cleanup()
-{
-    makeCurrent();
-    m_axes.cleanup();
-    m_lineData.cleanup();
-    m_pointData.cleanup();
-    doneCurrent();
-}
-
 void GLView::initializeGL()
 {
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &GLView::cleanup);
-
     initializeOpenGLFunctions();
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
