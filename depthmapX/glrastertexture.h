@@ -33,13 +33,13 @@ public:
     void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void cleanup();
+    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
 private:
     int DATA_DIMENSIONS = 5;
 
     void setupVertexAttribs();
     int count() const { return m_count; }
-    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v, const QVector2D &tc);
 
