@@ -74,8 +74,8 @@ void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, QRgb>> &colou
     colouredLines.end();
     for ( ; iter != end; ++iter )
     {
-        const SimpleLine &line = (*iter).first;
-        const QRgb &colour = (*iter).second;
+        const SimpleLine &line = iter->first;
+        const QRgb &colour = iter->second;
 
         QVector3D colourVector(qRed(colour)/255.0f, qGreen(colour)/255.0f, qBlue(colour)/255.0f);
         add(QVector3D(line.start().x, line.start().y, 0.0f), colourVector);
