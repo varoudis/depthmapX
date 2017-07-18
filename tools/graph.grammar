@@ -84,6 +84,14 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                     <number name="sg_numPolyConnectors" id="786" type="integer" length="4"/>
                     <structref name="sg_polyConnector" id="788" repeatmin="sg_numPolyConnectors" repeatmax="sg_numPolyConnectors" structure="id:787"/>
                 </structure>
+                <structure name="sg_radialLines" id="1014">
+                    <number name="sg_numRadialLines" id="1016" type="integer" length="4"/>
+                    <structure name="sg_radialLine" id="1017" repeatmin="sg_numRadialLines" repeatmax="sg_numRadialLines">
+                        <structref name="rl_openSpace" id="1019" structure="id:819"/>
+                        <structref name="rl_keyVertex" id="1020" structure="id:819"/>
+                        <structref name="rl_nextVertex" id="1021" structure="id:819"/>
+                    </structure>
+                </structure>
             </structure>
             <structure name="DataMaps" id="790" repeatmin="0">
                 <string name="map type" mustmatch="yes" id="791" type="fixed-length" length="1">
@@ -340,8 +348,10 @@ if nodeCount &gt; 0:
         </structure>
         <structure name="ShapeGraph" id="784" encoding="ISO_8859-1:1987" endian="little" signed="yes">
             <number name="sg_keyVertexCount" id="997" type="integer" length="4"/>
-            <number name="sg_numKeyVertices" id="998" type="integer" length="4"/>
-            <structref name="keyVertices" id="999" repeatmin="sg_numKeyVertices" repeatmax="sg_numKeyVertices" structure="id:864"/>
+            <structure name="sg_keyVertices" id="1022">
+                <number name="sg_numKeyVertices" id="998" type="integer" length="4"/>
+                <structref name="keyVertices" id="999" repeatmin="sg_numKeyVertices" repeatmax="sg_numKeyVertices" structure="id:864"/>
+            </structure>
             <structref name="sg_shapeMap" id="1000" structure="id:794"/>
         </structure>
         <structure name="PolyConnector" id="787" encoding="ISO_8859-1:1987" endian="little" signed="no">
