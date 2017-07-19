@@ -17,6 +17,8 @@
 
 #ifndef __SHAPEGRAPH_H__
 #define __SHAPEGRAPH_H__
+#include "spacepix.h"
+#include "connector.h"
 
 struct AxialVertex;
 struct AxialVertexKey;
@@ -93,9 +95,13 @@ struct RadialKey {
    AxialVertexKey vertex;
    float ang;
    bool segend;
-   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false) 
+   // padding the remaining three bytes behind the bool - don't use int : 24 as this will grab the next 4 byte block
+   char pad1 : 8;
+   short pad2 : 16;
+
+   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false) : pad1(0), pad2(0)
    { vertex = v; ang = a; segend = se; }
-   RadialKey(const RadialKey& rk)
+   RadialKey(const RadialKey& rk) : pad1(0), pad2(0)
    { vertex = rk.vertex; ang = rk.ang; segend = rk.segend; }
    friend bool operator < (const RadialKey& a, const RadialKey& b);
    friend bool operator > (const RadialKey& a, const RadialKey& b);
@@ -210,6 +216,7 @@ public:
    virtual bool read( ifstream& stream, int version );
    bool readold( ifstream& stream, int version );
    virtual bool write( ofstream& stream, int version );
+   void writeConnectorsAsDotGraph(ostream &stream);
    //
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
