@@ -362,6 +362,15 @@ void MainWindow::OnFileExport()
     }
 }
 
+void MainWindow::OnAxialIntersectionsExport()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnAxialIntersectionsExport();
+    }
+}
+
 void MainWindow::OnAddColumn()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
@@ -2429,6 +2438,7 @@ void MainWindow::updateMapMenu()
         convertMapShapesAct->setEnabled(0);
         importAct->setEnabled(0);
         exportAct->setEnabled(0);
+        exportAxialIntersectionsAct->setEnabled(0);
         return;
     }
     mapNewAct->setEnabled(true);
@@ -2450,8 +2460,15 @@ void MainWindow::updateMapMenu()
     else convertMapShapesAct->setEnabled(0);
 
     if (!m_p->m_meta_graph->viewingNone() && !m_p->m_communicator)
+    {
         exportAct->setEnabled(true);
-    else exportAct->setEnabled(0);
+        exportAxialIntersectionsAct->setEnabled(true);
+    }
+    else
+    {
+        exportAct->setEnabled(0);
+        exportAxialIntersectionsAct->setEnabled(0);
+    }
 }
 
 
@@ -2868,6 +2885,10 @@ void MainWindow::createActions()
     exportAct->setShortcut(tr("Ctrl+E"));
     exportAct->setStatusTip(tr("Export the active map\nExport Map"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(OnFileExport()));
+
+    exportAxialIntersectionsAct = new QAction(tr("&Axial intersections..."), this);
+    exportAxialIntersectionsAct->setStatusTip(tr("Export a list of line-line intersections"));
+    connect(exportAxialIntersectionsAct, SIGNAL(triggered()), this, SLOT(OnAxialIntersectionsExport()));
 
     //Attributes Menu Actions
     renameColumnAct = new QAction(tr("&Rename Column..."), this);
@@ -3374,7 +3395,9 @@ void MainWindow::createMenus()
     mapMenu->addAction(convertMapShapesAct);
     mapMenu->addSeparator();
     mapMenu->addAction(importAct);
-    mapMenu->addAction(exportAct);
+    exportSubMenu = mapMenu->addMenu(tr("&Export"));
+    exportSubMenu->addAction(exportAct);
+    exportSubMenu->addAction(exportAxialIntersectionsAct);
 
     attributesMenu = menuBar()->addMenu(tr("&Attributes"));
     attributesMenu->addAction(addColumAct);
