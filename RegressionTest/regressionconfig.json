@@ -63,6 +63,78 @@
             "extraArgs": {
                 "-vm": "thruvision"
             }
+        },
+        "isovist_args": {
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "ISOVIST",
+            "extraArgs":
+            {
+                "-ii":  ["1.77,6.6,90,30", "3.1,5.6,270,90" ]
+            }
+        },
+        "isovist_file": {
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "ISOVIST",
+            "extraArgs":
+            {
+                "-if":  "../../../testdata/isovists.csv"
+            }
+        },
+        "axial_makelines": {
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "AXIAL",
+            "extraArgs":{
+                "-xl": "3,5",
+                "-xf": ""
+            }
+        },
+        "axial_rn":{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n"
+            }
+        },
+        "axial_r3":{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "3"
+            }
+        },
+        "axial_rn_rra":{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xar": ""
+            }
+        },
+        "axial_rn_choice":{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xac": ""
+            }
+        },
+        "axial_rn_local":{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xal": ""
+            }
         }
+
+
     }
 }
