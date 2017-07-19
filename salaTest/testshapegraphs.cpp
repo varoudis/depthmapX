@@ -45,7 +45,7 @@ TEST_CASE("Testing ShapeGraph::writeConnectorsAsDotGraph"){
 
     std::stringstream stream;
 
-    displayedShapeGraph.writeConnectorsAsDotGraph(stream);
+    displayedShapeGraph.writeConnectionsAsDotGraph(stream);
 
     REQUIRE(stream.good());
     char line[1000];
