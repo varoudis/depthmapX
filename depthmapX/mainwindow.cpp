@@ -2900,7 +2900,7 @@ void MainWindow::createActions()
 
     exportAxialConnectionsPairAct = new QAction(tr("&Axial Connections as Pairs..."), this);
     exportAxialConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections"));
-    connect(exportAxialConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnAxialConnectionsExportAsPair()));
+    connect(exportAxialConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnAxialConnectionsExportAsPairCSV()));
 
     exportAxialConnectionsDotAct = new QAction(tr("&Axial Connections as Dot..."), this);
     exportAxialConnectionsDotAct->setStatusTip(tr("Export a list of line-line intersections"));
