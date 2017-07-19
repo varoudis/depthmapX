@@ -66,7 +66,8 @@ HEADERS += \
     entityparsing.h \
     linkutils.h \
     gridproperties.h \
-    isovistdef.h
+    isovistdef.h \
+    mgraph_consts.h
 
 DISTFILES += \
     salascript-tests.txt
