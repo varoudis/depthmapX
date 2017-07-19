@@ -153,6 +153,7 @@ private slots:
     void OnLayerConvertDrawing();
     void OnConvertMapShapes();
     void OnFileExport();
+    void OnAxialIntersectionsExport();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -310,6 +311,7 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *mapMenu;
+    QMenu *exportSubMenu;
     QMenu *attributesMenu;
     QMenu *toolsMenu;
     QMenu *visibilitySubMenu;
@@ -374,6 +376,7 @@ private:
     QAction *convertMapShapesAct;
     QAction *importAct;
     QAction *exportAct;
+    QAction *exportAxialIntersectionsAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;
