@@ -93,7 +93,7 @@ void GLView::initializeGL()
     AttributeTable& table = currentPointMap.getAttributeTable();
     for (int i = 0; i < table.getRowCount(); i++) {
        PixelRef pix = table.getRowKey(i);
-       data.setPixelColor(pix.x, pix.y, table.getValue(i,currentPointMap.getDisplayedAttribute()));
+       data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
     }
 
     m_pointData.loadPixelData(data);
