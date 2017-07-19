@@ -95,10 +95,13 @@ struct RadialKey {
    AxialVertexKey vertex;
    float ang;
    bool segend;
+   // padding the remaining three bytes behind the bool - don't use int : 24 as this will grab the next 4 byte block
+   char pad1 : 8;
+   short pad2 : 16;
 
-   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false)
+   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false) : pad1(0), pad2(0)
    { vertex = v; ang = a; segend = se; }
-   RadialKey(const RadialKey& rk)
+   RadialKey(const RadialKey& rk) : pad1(0), pad2(0)
    { vertex = rk.vertex; ang = rk.ang; segend = rk.segend; }
    friend bool operator < (const RadialKey& a, const RadialKey& b);
    friend bool operator > (const RadialKey& a, const RadialKey& b);
