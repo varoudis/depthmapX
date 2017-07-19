@@ -17,6 +17,8 @@
 
 #ifndef __SHAPEGRAPH_H__
 #define __SHAPEGRAPH_H__
+#include "spacepix.h"
+#include "connector.h"
 
 struct AxialVertex;
 struct AxialVertexKey;
@@ -93,7 +95,8 @@ struct RadialKey {
    AxialVertexKey vertex;
    float ang;
    bool segend;
-   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false) 
+
+   RadialKey(const AxialVertexKey& v = NoVertex, float a = -1.0f, bool se = false)
    { vertex = v; ang = a; segend = se; }
    RadialKey(const RadialKey& rk)
    { vertex = rk.vertex; ang = rk.ang; segend = rk.segend; }

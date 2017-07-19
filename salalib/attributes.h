@@ -18,6 +18,8 @@
 #ifndef __ATTRIBUTES_H__
 #define __ATTRIBUTES_H__
 
+#include "vertex.h"
+
 // yet another way to do attributes, but one that is easily expandable
 // it's slow to look for a column, since you have to find the column
 // by name, but other than that it's fairly easy
