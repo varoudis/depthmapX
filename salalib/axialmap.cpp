@@ -2893,7 +2893,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
    return true;
 }
 
-void ShapeGraph::writeConnectorsAsDotGraph(ostream &stream)
+void ShapeGraph::writeConnectionsAsDotGraph(ostream &stream)
 {
     const prefvec<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2908,6 +2908,21 @@ void ShapeGraph::writeConnectorsAsDotGraph(ostream &stream)
         }
     }
     stream << "}" << std::endl;
+}
+
+void ShapeGraph::writeConnectionsAsPairsCSV(ostream &stream)
+{
+    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+
+    stream.precision(12);
+
+    for (size_t i = 0; i < connectors.size(); i++) {
+        pvecint connections = connectors[i].m_connections;
+        for (size_t j = 0; j < connections.size(); j++) {
+            if (j != 0) stream << std::endl;
+            stream << i << "," << connections[j];
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

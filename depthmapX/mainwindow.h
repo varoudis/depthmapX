@@ -153,7 +153,8 @@ private slots:
     void OnLayerConvertDrawing();
     void OnConvertMapShapes();
     void OnFileExport();
-    void OnAxialIntersectionsExport();
+    void OnAxialConnectionsExportAsDot();
+    void OnAxialConnectionsExportAsPairCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -375,7 +376,8 @@ private:
     QAction *convertMapShapesAct;
     QAction *importAct;
     QAction *exportAct;
-    QAction *exportAxialIntersectionsAct;
+    QAction *exportAxialConnectionsDotAct;
+    QAction *exportAxialConnectionsPairAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;
