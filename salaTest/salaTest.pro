@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     testlinkutils.cpp \
     testgridproperties.cpp \
     testisovistdef.cpp \
-    testshapegraphs.cpp
+    testshapegraphs.cpp \
+    teststructsizes.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
