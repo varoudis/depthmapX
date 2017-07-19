@@ -283,6 +283,7 @@ public:
     void OnVGALinksFileImport();
     void OnFileImport();
 	void OnFileExport();
+    void OnAxialIntersectionsExport();
 	void OnToolsMakeGraph();
 	void OnEditClear();
 	void OnVGAOptions();

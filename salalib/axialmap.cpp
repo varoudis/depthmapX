@@ -2893,6 +2893,22 @@ bool ShapeGraph::write( ofstream& stream, int version )
    return true;
 }
 
+void ShapeGraph::writeConnectorsAsDotGraph(ostream &stream)
+{
+    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+
+    stream << "strict graph {" << std::endl;
+
+    stream.precision(12);
+
+    for (size_t i = 0; i < connectors.size(); i++) {
+        pvecint connections = connectors[i].m_connections;
+        for (size_t j = 0; j < connections.size(); j++) {
+            stream << "    " << i << " -- " << connections[j] << std::endl;
+        }
+    }
+    stream << "}" << std::endl;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 
