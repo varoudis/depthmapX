@@ -18,6 +18,8 @@
 #ifndef __POINTDATA_H__
 #define __POINTDATA_H__
 
+#include "vertex.h"
+
 class MetaGraph;
 class PointMap;
 class PafAgent;
