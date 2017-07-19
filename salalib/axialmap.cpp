@@ -2918,6 +2918,7 @@ void ShapeGraph::writeConnectionsAsPairsCSV(ostream &stream)
 
     for (size_t i = 0; i < connectors.size(); i++) {
         pvecint connections = connectors[i].m_connections;
+        if (i != 0) stream << std::endl;
         for (size_t j = 0; j < connections.size(); j++) {
             if (j != 0) stream << std::endl;
             stream << i << "," << connections[j];
