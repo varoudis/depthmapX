@@ -11,6 +11,7 @@ SOURCES += main.cpp \
     testlinkutils.cpp \
     testgridproperties.cpp \
     testisovistdef.cpp \
+    testmgraph.cpp \
     testshapegraphs.cpp \
     teststructsizes.cpp
 

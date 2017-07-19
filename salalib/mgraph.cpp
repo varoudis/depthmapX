@@ -3207,3 +3207,29 @@ streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
    return (stream.tellg());
 }
 
+std::vector<SimpleLine> MetaGraph::getVisibleLines() {
+
+    std::vector<SimpleLine> lines;
+
+    for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
+        for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
+            if (SuperSpacePixel::at(i).at(j).isShown()) {
+                for (size_t k = 0; k < SuperSpacePixel::at(i).at(j).getAllShapes().size(); k++) {
+                    SalaShape& shape = SuperSpacePixel::at(i).at(j).getAllShapes().at(k);
+                    if (shape.isLine()) {
+                        lines.push_back(SimpleLine(shape.getLine()));
+                    }
+                    else if (shape.isPolyLine() || shape.isPolygon()) {
+                        for (size_t n = 0; n < shape.size() - 1; n++) {
+                            lines.push_back(SimpleLine(shape[n],shape[n+1]));
+                        }
+                        if (shape.isPolygon()) {
+                            lines.push_back(SimpleLine(shape.tail(),shape.head()));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return lines;
+}
