@@ -155,6 +155,7 @@ private slots:
     void OnFileExport();
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
+    void OnSegmentConnectionsExportAsPairCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -378,6 +379,7 @@ private:
     QAction *exportAct;
     QAction *exportAxialConnectionsDotAct;
     QAction *exportAxialConnectionsPairAct;
+    QAction *exportSegmentConnectionsPairAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;
