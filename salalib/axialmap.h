@@ -216,8 +216,9 @@ public:
    virtual bool read( ifstream& stream, int version );
    bool readold( ifstream& stream, int version );
    virtual bool write( ofstream& stream, int version );
-   void writeConnectionsAsDotGraph(ostream &stream);
-   void writeConnectionsAsPairsCSV(ostream &stream);
+   void writeAxialConnectionsAsDotGraph(ostream &stream);
+   void writeAxialConnectionsAsPairsCSV(ostream &stream);
+   void writeSegmentConnectionsAsPairsCSV(ostream &stream);
    //
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
