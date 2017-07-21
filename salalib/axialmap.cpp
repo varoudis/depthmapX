@@ -2916,6 +2916,8 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 
     stream.precision(12);
 
+    stream << "refA,refB" << std::endl;
+
     for (size_t i = 0; i < connectors.size(); i++) {
         pvecint connections = connectors[i].m_connections;
         if (i != 0) stream << std::endl;
@@ -2931,23 +2933,23 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
     const prefvec<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
-    stream << "refA,refB,ss_weight,FB,dir" << std::endl;
+
+    stream << "refA,refB,ss_weight,for_back,dir";
+
     // directed links
     for (size_t i = 0; i < connectors.size(); i++) {
-        if (i != 0) stream << std::endl;
-        int cur_size = connectors[i].m_forward_segconns.size();
+        size_t cur_size = connectors[i].m_forward_segconns.size();
         for (size_t j = 0; j < cur_size; j++) {
-            if (j != 0) stream << std::endl;
+            stream << std::endl;
             stream << i << "," << connectors[i].m_forward_segconns.key(j).ref
                    << "," << connectors[i].m_forward_segconns.value(j)
                    << "," << 0 // forward
                    << "," << int(connectors[i].m_forward_segconns.key(j).dir);
         }
 
-        stream << std::endl;
         cur_size = connectors[i].m_back_segconns.size();
         for (size_t j = 0; j < cur_size; j++) {
-            if (j != 0) stream << std::endl;
+            stream << std::endl;
             stream << i << "," << connectors[i].m_back_segconns.key(j).ref
                    << "," << connectors[i].m_back_segconns.value(j)
                    << "," << 1 // back
