@@ -2893,7 +2893,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
    return true;
 }
 
-void ShapeGraph::writeConnectionsAsDotGraph(ostream &stream)
+void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 {
     const prefvec<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2910,7 +2910,7 @@ void ShapeGraph::writeConnectionsAsDotGraph(ostream &stream)
     stream << "}" << std::endl;
 }
 
-void ShapeGraph::writeConnectionsAsPairsCSV(ostream &stream)
+void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 {
     const prefvec<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2926,6 +2926,35 @@ void ShapeGraph::writeConnectionsAsPairsCSV(ostream &stream)
     }
 }
 
+void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
+{
+    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+
+    stream.precision(12);
+    stream << "refA,refB,ss_weight,FB,dir" << std::endl;
+    // directed links
+    for (size_t i = 0; i < connectors.size(); i++) {
+        if (i != 0) stream << std::endl;
+        int cur_size = connectors[i].m_forward_segconns.size();
+        for (size_t j = 0; j < cur_size; j++) {
+            if (j != 0) stream << std::endl;
+            stream << i << "," << connectors[i].m_forward_segconns.key(j).ref
+                   << "," << connectors[i].m_forward_segconns.value(j)
+                   << "," << 0 // forward
+                   << "," << int(connectors[i].m_forward_segconns.key(j).dir);
+        }
+
+        stream << std::endl;
+        cur_size = connectors[i].m_back_segconns.size();
+        for (size_t j = 0; j < cur_size; j++) {
+            if (j != 0) stream << std::endl;
+            stream << i << "," << connectors[i].m_back_segconns.key(j).ref
+                   << "," << connectors[i].m_back_segconns.value(j)
+                   << "," << 1 // back
+                   << "," << int(connectors[i].m_back_segconns.key(j).dir);
+        }
+    }
+}
 ////////////////////////////////////////////////////////////////////////////
 
 // this unlink options was originally excised on the version 7 recode
