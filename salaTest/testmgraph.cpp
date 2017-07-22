@@ -48,7 +48,7 @@ TEST_CASE("Test getVisibleLines", "")
     {
         // first check without hiding anything
 
-        const std::vector<SimpleLine>& visibleLines = mgraph->getVisibleLines();
+        const std::vector<SimpleLine>& visibleLines = mgraph->getVisibleDrawingLines();
 
         REQUIRE(visibleLines.size() == 2);
         REQUIRE(visibleLines[0].start().x == Approx(visibleLineStart.x).epsilon(EPSILON));
@@ -66,7 +66,7 @@ TEST_CASE("Test getVisibleLines", "")
         // now hide the second SpacePixelFile
         mgraph->SuperSpacePixel::tail().tail().setShow(false);
 
-        const std::vector<SimpleLine>& visibleLines = mgraph->getVisibleLines();
+        const std::vector<SimpleLine>& visibleLines = mgraph->getVisibleDrawingLines();
 
         REQUIRE(visibleLines.size() == 1);
         REQUIRE(visibleLines[0].start().x == Approx(visibleLineStart.x).epsilon(EPSILON));
