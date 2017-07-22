@@ -46,7 +46,6 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     }
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
-        std::cout << ";e;" <<std::endl;
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
         QtRegion region = currentPointMap.getRegion();
         m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
