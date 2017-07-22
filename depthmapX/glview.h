@@ -61,8 +61,8 @@ private:
 
     GLLines m_axes;
     GLLines m_visibleAxial;
-    GLLinesUniform m_lineData;
-    GLRasterTexture m_pointData;
+    GLLinesUniform m_visibleDrawingLines;
+    GLRasterTexture m_visiblePointMap;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;

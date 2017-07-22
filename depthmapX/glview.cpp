@@ -32,7 +32,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 
 
     pDoc->m_meta_graph->setLock(this);
-    m_lineData.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
+    m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
     pDoc->m_meta_graph->releaseLock(this);
 
     std::vector<std::pair<SimpleLine, PafColor>> axesData;
@@ -49,7 +49,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
         std::cout << ";e;" <<std::endl;
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
         QtRegion region = currentPointMap.getRegion();
-        m_pointData.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+        m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
         matchViewToRegion(region);
     }
 }
@@ -58,8 +58,8 @@ GLView::~GLView()
 {
     makeCurrent();
     m_axes.cleanup();
-    m_lineData.cleanup();
-    m_pointData.cleanup();
+    m_visibleDrawingLines.cleanup();
+    m_visiblePointMap.cleanup();
     m_visibleAxial.cleanup();
     doneCurrent();
 }
@@ -80,8 +80,8 @@ void GLView::initializeGL()
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
     m_axes.initializeGL(m_core);
-    m_lineData.initializeGL(m_core);
-    m_pointData.initializeGL(m_core);
+    m_visibleDrawingLines.initializeGL(m_core);
+    m_visiblePointMap.initializeGL(m_core);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
@@ -93,7 +93,7 @@ void GLView::initializeGL()
            PixelRef pix = table.getRowKey(i);
            data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
         }
-        m_pointData.loadPixelData(data);
+        m_visiblePointMap.loadPixelData(data);
     }
 
     m_visibleAxial.initializeGL(m_core);
@@ -113,8 +113,8 @@ void GLView::paintGL()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
-    m_lineData.paintGL(m_mProj, m_mView, m_mModel);
-    m_pointData.paintGL(m_mProj, m_mView, m_mModel);
+    m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
+    m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
     m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
 }
 
