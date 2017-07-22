@@ -45,6 +45,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    bool built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
