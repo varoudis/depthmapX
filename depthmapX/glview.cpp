@@ -50,8 +50,9 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
         QtRegion region = currentPointMap.getRegion();
         m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
-        matchViewToRegion(region);
     }
+    QtRegion &region = pDoc->m_meta_graph->getRegion();
+    matchViewToRegion(region);
 }
 
 GLView::~GLView()
