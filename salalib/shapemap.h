@@ -527,6 +527,8 @@ public:
    void ozlemSpecial5(ShapeMap& buildings);
    void ozlemSpecial6();
    void ozlemSpecial7(ShapeMap& linemap);
+   std::vector<SimpleLine> getAllShapesAsLines();
+   std::vector<std::pair<SimpleLine, PafColor>> getAllShapesAsLineColourPairs();
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

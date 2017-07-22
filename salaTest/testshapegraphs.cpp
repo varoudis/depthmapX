@@ -21,8 +21,8 @@
 #include <sstream>
 #include <iostream>
 
-TEST_CASE("Testing ShapeGraph::writeConnectorsAsDotGraph"){
-
+TEST_CASE("Testing ShapeGraph::writeConnectorsAsDotGraph")
+{
     Point2f line1Start(0,0);
     Point2f line1End  (3,0);
     Point2f line2Start(1,1);

@@ -402,7 +402,7 @@ public:
    int read( const pstring& filename );
    int write( const pstring& filename, int version, bool currentlayer = false);
    //
-   std::vector<SimpleLine> getVisibleLines();
+   std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
    pqvector<AttrBody> *m_attr_conv_table;
    int convertAttributes( ifstream& stream, int version );
