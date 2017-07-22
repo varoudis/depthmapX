@@ -67,17 +67,18 @@ GLLines::GLLines()
 
 }
 
-void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, QRgb>> &colouredLines)
+void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, PafColor>> &colouredLines)
 {
+    built = false;
     m_data.resize(colouredLines.size() * 2 * DATA_DIMENSIONS);
-    std::vector<std::pair<SimpleLine, QRgb>>::const_iterator iter = colouredLines.begin(), end =
+    std::vector<std::pair<SimpleLine, PafColor>>::const_iterator iter = colouredLines.begin(), end =
     colouredLines.end();
     for ( ; iter != end; ++iter )
     {
         const SimpleLine &line = iter->first;
-        const QRgb &colour = iter->second;
+        const PafColor &colour = iter->second;
 
-        QVector3D colourVector(qRed(colour)/255.0f, qGreen(colour)/255.0f, qBlue(colour)/255.0f);
+        QVector3D colourVector(colour.redf(), colour.greenf(), colour.bluef());
         add(QVector3D(line.start().x, line.start().y, 0.0f), colourVector);
         add(QVector3D(line.end().x, line.end().y, 0.0f), colourVector);
     }
@@ -98,6 +99,7 @@ void GLLines::setupVertexAttribs()
 
 void GLLines::initializeGL(bool m_core)
 {
+    if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
@@ -124,10 +126,12 @@ void GLLines::initializeGL(bool m_core)
     // Store the vertex attribute bindings for the program.
     setupVertexAttribs();
     m_program->release();
+    built = true;
 }
 
 void GLLines::cleanup()
 {
+    if(!built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
@@ -135,6 +139,7 @@ void GLLines::cleanup()
 
 void GLLines::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
+    if(!built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);

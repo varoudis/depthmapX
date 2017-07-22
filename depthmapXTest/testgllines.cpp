@@ -20,17 +20,17 @@ TEST_CASE("Test GLLines::loadLineData()", "")
 {
     Point2f line1Start(0,0);
     Point2f line1End(2,4);
-    QRgb line1colour = qRgb(255,0,0);
+    PafColor line1colour(255,0,0);
     Point2f line2Start(1,1);
     Point2f line2End(3,5);
-    QRgb line2colour = qRgb(0,255,0);
+    PafColor line2colour(0,255,0);
 
-    std::vector<std::pair<SimpleLine, QRgb>> colouredLines;
+    std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
 
-    std::pair<SimpleLine, QRgb> colouredLine1 = std::pair<SimpleLine, QRgb> (SimpleLine(line1Start, line1End), line1colour);
+    std::pair<SimpleLine, PafColor> colouredLine1 = std::pair<SimpleLine, PafColor> (SimpleLine(line1Start, line1End), line1colour);
     colouredLines.push_back(colouredLine1);
 
-    std::pair<SimpleLine, QRgb> colouredLine2 = std::pair<SimpleLine, QRgb> (SimpleLine(line2Start, line2End), line2colour);
+    std::pair<SimpleLine, PafColor> colouredLine2 = std::pair<SimpleLine, PafColor> (SimpleLine(line2Start, line2End), line2colour);
     colouredLines.push_back(colouredLine2);
 
     GLLines gllines;

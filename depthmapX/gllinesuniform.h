@@ -47,6 +47,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    bool built = false;
     QVector4D m_colour = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 
     QOpenGLVertexArrayObject m_vao;

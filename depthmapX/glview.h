@@ -60,6 +60,7 @@ private:
     const QRgb &m_background;
 
     GLLines m_axes;
+    GLLines m_visibleAxial;
     GLLinesUniform m_lineData;
     GLRasterTexture m_pointData;
 
@@ -76,5 +77,6 @@ private:
     void panBy(int dx, int dy);
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
+    void matchViewToRegion(QtRegion region);
 };
 

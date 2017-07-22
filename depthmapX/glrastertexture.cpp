@@ -68,6 +68,7 @@ GLRasterTexture::GLRasterTexture()
 }
 void GLRasterTexture::loadRegionData(float minX, float minY, float maxX, float maxY)
 {
+    built = false;
     m_data.resize(4 * DATA_DIMENSIONS);
 
     add(QVector3D(minX,minY,0),QVector2D(0, 0));
@@ -90,6 +91,7 @@ void GLRasterTexture::setupVertexAttribs()
 }
 
 void GLRasterTexture::initializeGL(bool m_core) {
+    if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
@@ -116,9 +118,11 @@ void GLRasterTexture::initializeGL(bool m_core) {
     m_program->setUniformValue(m_textureSamplerLoc, 0);
 
     m_program->release();
+    built = true;
 }
 void GLRasterTexture::loadPixelData(QImage &data)
 {
+    if(!built) return;
     m_program->bind();
     texture.setData(data);
     m_program->release();
@@ -126,6 +130,7 @@ void GLRasterTexture::loadPixelData(QImage &data)
 
 void GLRasterTexture::cleanup()
 {
+    if(!built) return;
     m_vbo.destroy();
     texture.destroy();
     delete m_program;
@@ -134,6 +139,7 @@ void GLRasterTexture::cleanup()
 
 void GLRasterTexture::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
+    if(!built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
