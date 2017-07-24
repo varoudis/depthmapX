@@ -32,38 +32,35 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 
 
     pDoc->m_meta_graph->setLock(this);
-    m_lineData.loadLineData(pDoc->m_meta_graph->getVisibleLines(), m_foreground);
+    m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
     pDoc->m_meta_graph->releaseLock(this);
 
-    std::vector<std::pair<SimpleLine, QRgb>> axesData;
-    axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,1,0), qRgb(255,0,0)));
-    axesData.push_back(std::pair<SimpleLine, QRgb> (SimpleLine(0,0,0,1), qRgb(0,255,0)));
+    std::vector<std::pair<SimpleLine, PafColor>> axesData;
+    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,1,0), PafColor(1,0,0)));
+    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,0,1), PafColor(0,1,0)));
     m_axes.loadLineData(axesData);
 
-    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
-    QtRegion region = currentPointMap.getRegion();
-    m_pointData.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+        ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
+        m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+    }
 
-    m_eyePosX = - (region.top_right.x + region.bottom_left.x)*0.5f;
-    m_eyePosY = - (region.top_right.y + region.bottom_left.y)*0.5f;
-    if(region.width() > region.height())
-    {
-        zoomFactor = region.top_right.x - region.bottom_left.x;
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+        PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+        QtRegion region = currentPointMap.getRegion();
+        m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
     }
-    else
-    {
-        zoomFactor = region.top_right.y - region.bottom_left.y;
-    }
-    minZoomFactor = zoomFactor * 0.001;
-    maxZoomFactor = zoomFactor * 10;
+    const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
+    matchViewToRegion(region);
 }
 
 GLView::~GLView()
 {
     makeCurrent();
     m_axes.cleanup();
-    m_lineData.cleanup();
-    m_pointData.cleanup();
+    m_visibleDrawingLines.cleanup();
+    m_visiblePointMap.cleanup();
+    m_visibleAxial.cleanup();
     doneCurrent();
 }
 
@@ -83,20 +80,23 @@ void GLView::initializeGL()
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
     m_axes.initializeGL(m_core);
-    m_lineData.initializeGL(m_core);
-    m_pointData.initializeGL(m_core);
+    m_visibleDrawingLines.initializeGL(m_core);
+    m_visiblePointMap.initializeGL(m_core);
 
-    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
-    QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
-    data.fill(Qt::transparent);
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+        PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+        QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
+        data.fill(Qt::transparent);
 
-    AttributeTable& table = currentPointMap.getAttributeTable();
-    for (int i = 0; i < table.getRowCount(); i++) {
-       PixelRef pix = table.getRowKey(i);
-       data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+        AttributeTable& table = currentPointMap.getAttributeTable();
+        for (int i = 0; i < table.getRowCount(); i++) {
+           PixelRef pix = table.getRowKey(i);
+           data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+        }
+        m_visiblePointMap.loadPixelData(data);
     }
 
-    m_pointData.loadPixelData(data);
+    m_visibleAxial.initializeGL(m_core);
 
     m_mModel.setToIdentity();
 
@@ -112,9 +112,45 @@ void GLView::paintGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    if(datasetChanged) {
+        pDoc->m_meta_graph->setLock(this);
+        m_visibleDrawingLines.cleanup();
+        m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
+        m_visibleDrawingLines.initializeGL(m_core);
+        pDoc->m_meta_graph->releaseLock(this);
+
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+            ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
+            m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+
+            m_visibleAxial.updateGL();
+        }
+
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+            PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+            QtRegion region = currentPointMap.getRegion();
+            m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+
+            m_visiblePointMap.updateGL();
+
+            QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
+            data.fill(Qt::transparent);
+
+            AttributeTable& table = currentPointMap.getAttributeTable();
+            for (int i = 0; i < table.getRowCount(); i++) {
+               PixelRef pix = table.getRowKey(i);
+               data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+            }
+            m_visiblePointMap.loadPixelData(data);
+        }
+
+        datasetChanged = false;
+    }
+
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
-    m_pointData.paintGL(m_mProj, m_mView, m_mModel);
-    m_lineData.paintGL(m_mProj, m_mView, m_mModel);
+    m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
+    m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
+    m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
 }
 
 void GLView::resizeGL(int w, int h)
@@ -185,4 +221,23 @@ void GLView::recalcView()
     }
     m_mProj.translate(m_eyePosX, m_eyePosY, 0.0f);
     update();
+}
+
+void GLView::matchViewToRegion(QtRegion region) {
+    if((region.top_right.x == 0 && region.bottom_left.x == 0)
+            || (region.top_right.y == 0 && region.bottom_left.y == 0))
+        // region is unset, don't try to change the view to it
+        return;
+    m_eyePosX = - (region.top_right.x + region.bottom_left.x)*0.5f;
+    m_eyePosY = - (region.top_right.y + region.bottom_left.y)*0.5f;
+    if(region.width() > region.height())
+    {
+        zoomFactor = region.top_right.x - region.bottom_left.x;
+    }
+    else
+    {
+        zoomFactor = region.top_right.y - region.bottom_left.y;
+    }
+    minZoomFactor = zoomFactor * 0.001;
+    maxZoomFactor = zoomFactor * 10;
 }

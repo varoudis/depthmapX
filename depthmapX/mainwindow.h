@@ -114,6 +114,7 @@ public:
     void update3DToolbar();
     void showContextMenu(QPoint &point);
     void UpdateStatus(QString s1, QString s2, QString s3);
+    void updateGLWindows();
 
 protected:
     QGraphDoc* m_treeDoc;
@@ -153,7 +154,9 @@ private slots:
     void OnLayerConvertDrawing();
     void OnConvertMapShapes();
     void OnFileExport();
-    void OnAxialIntersectionsExport();
+    void OnAxialConnectionsExportAsDot();
+    void OnAxialConnectionsExportAsPairCSV();
+    void OnSegmentConnectionsExportAsPairCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -376,7 +379,9 @@ private:
     QAction *convertMapShapesAct;
     QAction *importAct;
     QAction *exportAct;
-    QAction *exportAxialIntersectionsAct;
+    QAction *exportAxialConnectionsDotAct;
+    QAction *exportAxialConnectionsPairAct;
+    QAction *exportSegmentConnectionsPairAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;

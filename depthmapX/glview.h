@@ -39,6 +39,7 @@ public:
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
+    void notifyDatasetChanged() { datasetChanged = true; update(); }
 
 protected:
     void initializeGL() override;
@@ -60,8 +61,9 @@ private:
     const QRgb &m_background;
 
     GLLines m_axes;
-    GLLinesUniform m_lineData;
-    GLRasterTexture m_pointData;
+    GLLines m_visibleAxial;
+    GLLinesUniform m_visibleDrawingLines;
+    GLRasterTexture m_visiblePointMap;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;
@@ -73,8 +75,11 @@ private:
     int screenWidth;
     int screenHeight;
 
+    bool datasetChanged = false;
+
     void panBy(int dx, int dy);
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
+    void matchViewToRegion(QtRegion region);
 };
 
