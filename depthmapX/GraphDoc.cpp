@@ -701,7 +701,7 @@ void QGraphDoc::OnFileExport()
     }
 }
 
-void QGraphDoc::OnAxialIntersectionsExport()
+void QGraphDoc::OnAxialConnectionsExportAsDot()
 {
     if (m_communicator) {
       QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
@@ -714,7 +714,7 @@ void QGraphDoc::OnAxialIntersectionsExport()
 
     ShapeGraph& shapeGraph = m_meta_graph->getDisplayedShapeGraph();
 
-    QString suffix = tr("axial_intersections");
+    QString suffix = tr("axial_connections");
 
     QFilePath path(m_opened_name);
     QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
@@ -743,11 +743,104 @@ void QGraphDoc::OnAxialIntersectionsExport()
        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
        return;
     }
-    shapeGraph.writeConnectorsAsDotGraph(stream);
+    shapeGraph.writeAxialConnectionsAsDotGraph(stream);
 
     stream.close();
 }
 
+void QGraphDoc::OnAxialConnectionsExportAsPairCSV()
+{
+    if (m_communicator) {
+      QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
+      return;  // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;  // No graph to export
+    }
+
+    ShapeGraph& shapeGraph = m_meta_graph->getDisplayedShapeGraph();
+
+    QString suffix = tr("axial_connections");
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("CSV graph file (*.csv)");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile = QFileDialog::getSaveFileName(
+                                0, tr("Save Output As"),
+                                defaultname,
+                                template_string,
+                                &selectedFilter,
+                                options);
+    if(outfile.isEmpty())
+    {
+        return;
+    }
+
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    ofstream stream(outfile.toLatin1());
+
+    if (stream.fail() || stream.bad()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    shapeGraph.writeAxialConnectionsAsPairsCSV(stream);
+
+    stream.close();
+}
+
+void QGraphDoc::OnSegmentConnectionsExportAsPairCSV()
+{
+    if (m_communicator) {
+      QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
+      return;  // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;  // No graph to export
+    }
+
+    ShapeGraph& shapeGraph = m_meta_graph->getDisplayedShapeGraph();
+
+    QString suffix = tr("segment_connections");
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("CSV graph file (*.csv)");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile = QFileDialog::getSaveFileName(
+                                0, tr("Save Output As"),
+                                defaultname,
+                                template_string,
+                                &selectedFilter,
+                                options);
+    if(outfile.isEmpty())
+    {
+        return;
+    }
+
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    ofstream stream(outfile.toLatin1());
+
+    if (stream.fail() || stream.bad()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    shapeGraph.writeSegmentConnectionsAsPairsCSV(stream);
+
+    stream.close();
+}
 void QGraphDoc::OnSwapColours() 
 {
    DisplayParams displayparams;

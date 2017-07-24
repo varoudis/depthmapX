@@ -364,12 +364,30 @@ void MainWindow::OnFileExport()
     }
 }
 
-void MainWindow::OnAxialIntersectionsExport()
+void MainWindow::OnAxialConnectionsExportAsDot()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnAxialIntersectionsExport();
+        m_p->OnAxialConnectionsExportAsDot();
+    }
+}
+
+void MainWindow::OnAxialConnectionsExportAsPairCSV()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnAxialConnectionsExportAsPairCSV();
+    }
+}
+
+void MainWindow::OnSegmentConnectionsExportAsPairCSV()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnSegmentConnectionsExportAsPairCSV();
     }
 }
 
@@ -2462,7 +2480,9 @@ void MainWindow::updateMapMenu()
         convertMapShapesAct->setEnabled(0);
         importAct->setEnabled(0);
         exportAct->setEnabled(0);
-        exportAxialIntersectionsAct->setEnabled(0);
+        exportAxialConnectionsDotAct->setEnabled(0);
+        exportAxialConnectionsPairAct->setEnabled(0);
+        exportSegmentConnectionsPairAct->setEnabled(0);
         return;
     }
     mapNewAct->setEnabled(true);
@@ -2486,12 +2506,16 @@ void MainWindow::updateMapMenu()
     if (!m_p->m_meta_graph->viewingNone() && !m_p->m_communicator)
     {
         exportAct->setEnabled(true);
-        exportAxialIntersectionsAct->setEnabled(true);
+        exportAxialConnectionsDotAct->setEnabled(true);
+        exportAxialConnectionsPairAct->setEnabled(true);
+        exportSegmentConnectionsPairAct->setEnabled(true);
     }
     else
     {
         exportAct->setEnabled(0);
-        exportAxialIntersectionsAct->setEnabled(0);
+        exportAxialConnectionsDotAct->setEnabled(0);
+        exportAxialConnectionsPairAct->setEnabled(0);
+        exportSegmentConnectionsPairAct->setEnabled(0);
     }
 }
 
@@ -2916,9 +2940,17 @@ void MainWindow::createActions()
     exportAct->setStatusTip(tr("Export the active map\nExport Map"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(OnFileExport()));
 
-    exportAxialIntersectionsAct = new QAction(tr("&Axial intersections..."), this);
-    exportAxialIntersectionsAct->setStatusTip(tr("Export a list of line-line intersections"));
-    connect(exportAxialIntersectionsAct, SIGNAL(triggered()), this, SLOT(OnAxialIntersectionsExport()));
+    exportAxialConnectionsPairAct = new QAction(tr("&Axial Connections as CSV..."), this);
+    exportAxialConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections"));
+    connect(exportAxialConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnAxialConnectionsExportAsPairCSV()));
+
+    exportAxialConnectionsDotAct = new QAction(tr("&Axial Connections as Dot..."), this);
+    exportAxialConnectionsDotAct->setStatusTip(tr("Export a list of line-line intersections"));
+    connect(exportAxialConnectionsDotAct, SIGNAL(triggered()), this, SLOT(OnAxialConnectionsExportAsDot()));
+
+    exportSegmentConnectionsPairAct = new QAction(tr("&Segment Connections as CSV..."), this);
+    exportSegmentConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections and weights"));
+    connect(exportSegmentConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnSegmentConnectionsExportAsPairCSV()));
 
     //Attributes Menu Actions
     renameColumnAct = new QAction(tr("&Rename Column..."), this);
@@ -3431,7 +3463,9 @@ void MainWindow::createMenus()
     mapMenu->addAction(importAct);
     exportSubMenu = mapMenu->addMenu(tr("&Export"));
     exportSubMenu->addAction(exportAct);
-    exportSubMenu->addAction(exportAxialIntersectionsAct);
+    exportSubMenu->addAction(exportAxialConnectionsDotAct);
+    exportSubMenu->addAction(exportAxialConnectionsPairAct);
+    exportSubMenu->addAction(exportSegmentConnectionsPairAct);
 
     attributesMenu = menuBar()->addMenu(tr("&Attributes"));
     attributesMenu->addAction(addColumAct);
