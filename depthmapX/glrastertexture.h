@@ -32,6 +32,7 @@ public:
     void loadPixelData(QImage &data);
     void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
+    void updateGL();
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
@@ -45,6 +46,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    bool built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;

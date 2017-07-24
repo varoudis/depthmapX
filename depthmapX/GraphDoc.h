@@ -283,7 +283,9 @@ public:
     void OnVGALinksFileImport();
     void OnFileImport();
 	void OnFileExport();
-    void OnAxialIntersectionsExport();
+    void OnAxialConnectionsExportAsDot();
+    void OnAxialConnectionsExportAsPairCSV();
+    void OnSegmentConnectionsExportAsPairCSV();
 	void OnToolsMakeGraph();
 	void OnEditClear();
 	void OnVGAOptions();

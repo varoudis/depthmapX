@@ -4418,3 +4418,43 @@ void ShapeMap::ozlemSpecial7(ShapeMap& linemap)
    m_displayed_attribute = -2;
    setDisplayedAttribute(linerefcol);
 }
+
+std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
+    std::vector<SimpleLine> lines;
+    for (size_t k = 0; k < getAllShapes().size(); k++) {
+        SalaShape& shape = getAllShapes().at(k);
+        if (shape.isLine()) {
+            lines.push_back(SimpleLine(shape.getLine()));
+        }
+        else if (shape.isPolyLine() || shape.isPolygon()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                lines.push_back(SimpleLine(shape[n],shape[n+1]));
+            }
+            if (shape.isPolygon()) {
+                lines.push_back(SimpleLine(shape.tail(),shape.head()));
+            }
+        }
+    }
+    return lines;
+}
+
+std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllShapesAsLineColourPairs() {
+    std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
+    const AttributeTable &attributeTable = getAttributeTable();
+    for (size_t k = 0; k < getAllShapes().size(); k++) {
+        SalaShape& shape = getAllShapes()[k];
+        PafColor color(attributeTable.getDisplayColor(k));
+        if (shape.isLine()) {
+            colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
+        }
+        else if (shape.isPolyLine() || shape.isPolygon()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape[n],shape[n+1]), color));
+            }
+            if (shape.isPolygon()) {
+                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.tail(),shape.head()), color));
+            }
+        }
+    }
+    return colouredLines;
+}

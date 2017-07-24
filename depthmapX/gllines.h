@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
+#include "salalib/vertex.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
@@ -32,9 +33,10 @@ class GLLines
 
 public:
     GLLines();
-    void loadLineData(const std::vector<std::pair<SimpleLine, QRgb> > &colouredLines);
+    void loadLineData(const std::vector<std::pair<SimpleLine, PafColor> > &colouredLines);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
+    void updateGL();
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
@@ -48,6 +50,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
+    bool built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
