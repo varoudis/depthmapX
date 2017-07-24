@@ -63,6 +63,8 @@ GLLinesUniform::GLLinesUniform()
 void GLLinesUniform::loadLineData(const std::vector<SimpleLine>& lines, const QRgb &lineColour)
 {
     built = false;
+
+    m_count = 0;
     m_data.resize(lines.size() * 2 * DATA_DIMENSIONS);
 
     std::vector<SimpleLine>::const_iterator iter = lines.begin(), end =
@@ -119,6 +121,14 @@ void GLLinesUniform::initializeGL(bool m_core)
     m_program->release();
     built = true;
 }
+
+void GLLinesUniform::updateGL() {
+    m_vbo.bind();
+    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+    m_vbo.release();
+    built = true;
+}
+
 void GLLinesUniform::updateColour(const QRgb &lineColour)
 {
     m_colour.setX(qRed(lineColour)/255.0f);

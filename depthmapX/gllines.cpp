@@ -70,7 +70,10 @@ GLLines::GLLines()
 void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, PafColor>> &colouredLines)
 {
     built = false;
+
+    m_count = 0;
     m_data.resize(colouredLines.size() * 2 * DATA_DIMENSIONS);
+
     std::vector<std::pair<SimpleLine, PafColor>>::const_iterator iter = colouredLines.begin(), end =
     colouredLines.end();
     for ( ; iter != end; ++iter )
@@ -126,6 +129,13 @@ void GLLines::initializeGL(bool m_core)
     // Store the vertex attribute bindings for the program.
     setupVertexAttribs();
     m_program->release();
+    built = true;
+}
+
+void GLLines::updateGL() {
+    m_vbo.bind();
+    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+    m_vbo.release();
     built = true;
 }
 

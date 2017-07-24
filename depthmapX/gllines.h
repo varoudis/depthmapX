@@ -36,6 +36,7 @@ public:
     void loadLineData(const std::vector<std::pair<SimpleLine, PafColor> > &colouredLines);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
+    void updateGL();
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 

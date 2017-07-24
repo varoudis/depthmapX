@@ -69,6 +69,8 @@ GLRasterTexture::GLRasterTexture()
 void GLRasterTexture::loadRegionData(float minX, float minY, float maxX, float maxY)
 {
     built = false;
+
+    m_count = 0;
     m_data.resize(4 * DATA_DIMENSIONS);
 
     add(QVector3D(minX,minY,0),QVector2D(0, 0));
@@ -120,10 +122,22 @@ void GLRasterTexture::initializeGL(bool m_core) {
     m_program->release();
     built = true;
 }
+
+void GLRasterTexture::updateGL() {
+    m_vbo.bind();
+    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+    m_vbo.release();
+    built = true;
+}
+
 void GLRasterTexture::loadPixelData(QImage &data)
 {
     if(!built) return;
     m_program->bind();
+    if(texture.isCreated())
+    {
+        texture.destroy();
+    }
     texture.setData(data);
     m_program->release();
 }

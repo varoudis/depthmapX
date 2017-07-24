@@ -112,6 +112,41 @@ void GLView::paintGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    if(datasetChanged) {
+        pDoc->m_meta_graph->setLock(this);
+        m_visibleDrawingLines.cleanup();
+        m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
+        m_visibleDrawingLines.initializeGL(m_core);
+        pDoc->m_meta_graph->releaseLock(this);
+
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+            ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
+            m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+
+            m_visibleAxial.updateGL();
+        }
+
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+            PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+            QtRegion region = currentPointMap.getRegion();
+            m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+
+            m_visiblePointMap.updateGL();
+
+            QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
+            data.fill(Qt::transparent);
+
+            AttributeTable& table = currentPointMap.getAttributeTable();
+            for (int i = 0; i < table.getRowCount(); i++) {
+               PixelRef pix = table.getRowKey(i);
+               data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+            }
+            m_visiblePointMap.loadPixelData(data);
+        }
+
+        datasetChanged = false;
+    }
+
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
     m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
@@ -189,6 +224,10 @@ void GLView::recalcView()
 }
 
 void GLView::matchViewToRegion(QtRegion region) {
+    if((region.top_right.x == 0 && region.bottom_left.x == 0)
+            || (region.top_right.y == 0 && region.bottom_left.y == 0))
+        // region is unset, don't try to change the view to it
+        return;
     m_eyePosX = - (region.top_right.x + region.bottom_left.x)*0.5f;
     m_eyePosY = - (region.top_right.y + region.bottom_left.y)*0.5f;
     if(region.width() > region.height())

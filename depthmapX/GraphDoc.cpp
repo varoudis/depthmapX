@@ -92,6 +92,12 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 
 bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *originator) // (almost) thread safe
 {
+
+    if(viewtype == VIEW_ALL && flag != REDRAW_DONE)
+    {
+        ((MainWindow *) m_mainFrame)->updateGLWindows();
+    }
+
    if (!m_flag_lock) {
       m_flag_lock = true;
       if (viewtype) {
