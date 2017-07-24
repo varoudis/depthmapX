@@ -50,7 +50,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
         QtRegion region = currentPointMap.getRegion();
         m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
     }
-    QtRegion &region = pDoc->m_meta_graph->getRegion();
+    const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
     matchViewToRegion(region);
 }
 
