@@ -39,6 +39,7 @@ public:
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
+    void notifyDatasetChanged() { datasetChanged = true; update(); }
 
 protected:
     void initializeGL() override;
@@ -73,6 +74,8 @@ private:
     GLfloat screenRatio;
     int screenWidth;
     int screenHeight;
+
+    bool datasetChanged = false;
 
     void panBy(int dx, int dy);
     void recalcView();

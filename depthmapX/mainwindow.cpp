@@ -102,6 +102,7 @@ MainWindow::MainWindow(const QString &fileToLoad, Settings &settings) : mSetting
     createStatusBar();
     updateToolbar();
     updateActiveWindows();
+    updateGLWindows();
 
     installEventFilter(this);
 //	setWindowIcon(QIcon(tr(":/images/cur/icon-1-1.png")));
@@ -1064,6 +1065,15 @@ void MainWindow::updateActiveWindows()
         QGraphDoc* m_p = activeQDepthmapDoc();
         OnFocusGraph(m_p, QGraphDoc::CONTROLS_LOADALL);
         m_p->SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_FOCUS );
+    }
+}
+
+void MainWindow::updateGLWindows() {
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    for (int i = 0; i < windows.size(); ++i) {
+        GLView *child = qobject_cast<GLView*>(windows.at(i)->widget());
+        if(!child) continue;
+        child->notifyDatasetChanged();
     }
 }
 
