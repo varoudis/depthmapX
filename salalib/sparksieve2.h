@@ -38,6 +38,7 @@ public:
       friend bool operator < (const sparkZone2& a, const sparkZone2& b);
       friend bool operator > (const sparkZone2& a, const sparkZone2& b);
    };
+private:
    Point2f m_centre;
    double m_maxdist; // for creating graphs that only see out a certain distance: set to -1.0 for infinite
    pqvector<sparkZone2> m_blocks;
