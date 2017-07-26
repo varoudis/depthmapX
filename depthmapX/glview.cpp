@@ -50,6 +50,11 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
         QtRegion region = currentPointMap.getRegion();
         m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
     }
+
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
+        ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
+        m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+    }
     const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
     matchViewToRegion(region);
 }
@@ -61,6 +66,7 @@ GLView::~GLView()
     m_visibleDrawingLines.cleanup();
     m_visiblePointMap.cleanup();
     m_visibleAxial.cleanup();
+    m_visibleDataMap.cleanup();
     doneCurrent();
 }
 
@@ -98,6 +104,8 @@ void GLView::initializeGL()
 
     m_visibleAxial.initializeGL(m_core);
 
+    m_visibleDataMap.initializeGL(m_core);
+
     m_mModel.setToIdentity();
 
     m_mView.setToIdentity();
@@ -126,6 +134,14 @@ void GLView::paintGL()
             m_visibleAxial.updateGL();
         }
 
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
+
+            ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
+            m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+
+            m_visibleDataMap.updateGL();
+        }
+
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
             PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
             QtRegion region = currentPointMap.getRegion();
@@ -151,6 +167,7 @@ void GLView::paintGL()
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
     m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
     m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
+    m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
 }
 
 void GLView::resizeGL(int w, int h)
