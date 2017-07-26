@@ -283,6 +283,8 @@ public:
     void OnVGALinksFileImport();
     void OnFileImport();
 	void OnFileExport();
+    void OnConnectionsExportAsDot();
+    void OnConnectionsExportAsPairCSV();
 	void OnToolsMakeGraph();
 	void OnEditClear();
 	void OnVGAOptions();

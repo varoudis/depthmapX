@@ -21,6 +21,9 @@
 #define __SPATIALDATA_H__
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+#include "genlib/pafmath.h"
+#include "genlib/p2dpoly.h"
+#include "salalib/vertex.h"
 
 class SalaShape;
 
