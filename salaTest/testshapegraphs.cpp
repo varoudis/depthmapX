@@ -21,7 +21,7 @@
 #include <sstream>
 #include <iostream>
 
-TEST_CASE("Testing ShapeGraph::writeConnectorsAsDotGraph"){
+TEST_CASE("Testing ShapeGraph::writeAxialConnections"){
 
     Point2f line1Start(0,0);
     Point2f line1End  (3,0);
@@ -43,19 +43,77 @@ TEST_CASE("Testing ShapeGraph::writeConnectorsAsDotGraph"){
     shapeGraphs->convertDrawingToAxial(0, "Test axial", (*spacePixel));
     ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
 
-    std::stringstream stream;
+    SECTION("writeAxialConnectionsAsDotGraph") {
+        std::stringstream stream;
+        displayedShapeGraph.writeAxialConnectionsAsDotGraph(stream);
 
-    displayedShapeGraph.writeConnectionsAsDotGraph(stream);
-
-    REQUIRE(stream.good());
-    char line[1000];
-    std::vector<std::string> lines;
-    while( !stream.eof())
-    {
-        stream.getline(line, 1000);
-        lines.push_back(line);
+        REQUIRE(stream.good());
+        char line[1000];
+        std::vector<std::string> lines;
+        while( !stream.eof())
+        {
+            stream.getline(line, 1000);
+            lines.push_back(line);
+        }
+        std::vector<std::string> expected{ "strict graph {", "    0 -- 1", "    0 -- 2",
+                                           "    1 -- 0", "    2 -- 0", "}", "" };
+        REQUIRE(lines == expected);
     }
-    std::vector<std::string> expected{ "strict graph {", "    0 -- 1", "    0 -- 2",
-                                       "    1 -- 0", "    2 -- 0", "}", "" };
-    REQUIRE(lines == expected);
+    SECTION("writeAxialConnectionsAsPairsCSV") {
+        std::stringstream stream;
+        displayedShapeGraph.writeAxialConnectionsAsPairsCSV(stream);
+
+        REQUIRE(stream.good());
+        char line[1000];
+        std::vector<std::string> lines;
+        while( !stream.eof())
+        {
+            stream.getline(line, 1000);
+            lines.push_back(line);
+        }
+        std::vector<std::string> expected{ "refA,refB", "0,1", "0,2", "1,0", "2,0" };
+        REQUIRE(lines == expected);
+    }
+}
+TEST_CASE("Testing ShapeGraph::writeSegmentConnections")
+{
+    // As we are converting the drawing directly to segments
+    // the lines need to touch, not cross
+
+    Point2f line1Start(1,1);
+    Point2f line1End  (1,0);
+    Point2f line2Start(1,0);
+    Point2f line2End  (2,0);
+    Point2f line3Start(2,0);
+    Point2f line3End  (2,2);
+
+    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+
+    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
+    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
+
+    spacePixel->tail().tail().makeLineShape(Line(line1Start, line1End));
+    spacePixel->tail().tail().makeLineShape(Line(line2Start, line2End));
+    spacePixel->tail().tail().makeLineShape(Line(line3Start, line3End));
+
+    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
+    shapeGraphs->convertDrawingToSegment(0, "Test segment", (*spacePixel));
+    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+
+    SECTION("writeSegmentConnectionsAsPairsCSV") {
+        std::stringstream stream;
+        displayedShapeGraph.writeSegmentConnectionsAsPairsCSV(stream);
+
+        REQUIRE(stream.good());
+        char line[1000];
+        std::vector<std::string> lines;
+        while( !stream.eof())
+        {
+            stream.getline(line, 1000);
+            lines.push_back(line);
+        }
+        std::vector<std::string> expected{ "refA,refB,ss_weight,for_back,dir", "0,1,1,0,1", "1,2,1,0,1", "1,0,1,1,-1",
+                                           "2,1,1,1,-1" };
+        REQUIRE(lines == expected);
+    }
 }
