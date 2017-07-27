@@ -23,6 +23,7 @@
 
 #include <float.h>
 #include "genlib/p2dpoly.h"
+#include <list>
 
 class sparkSieve2
 {
@@ -44,7 +45,7 @@ private:
    double m_maxdist; // for creating graphs that only see out a certain distance: set to -1.0 for infinite
    pqvector<sparkZone2> m_blocks;
 public:
-   plist<sparkZone2> m_gaps;
+   std::list<sparkZone2> m_gaps;
 public:
    sparkSieve2( const Point2f& centre, double maxdist = -1.0 );
    ~sparkSieve2();
