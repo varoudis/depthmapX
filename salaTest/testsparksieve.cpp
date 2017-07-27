@@ -27,9 +27,9 @@ TEST_CASE("One block garbage")
     lines.add(1, Line(Point2f(0.5, 0.2), Point2f(0.5, 0.7)));
     sieve.block(lines,4);
     sieve.collectgarbage();
-    sieve.m_gaps.first();
-    REQUIRE((*sieve.m_gaps).start == 0);
-    REQUIRE((*sieve.m_gaps).end == Approx(0.625));
+    REQUIRE(sieve.m_gaps.size() == 1);
+    REQUIRE(sieve.m_gaps.begin()->start == 0);
+    REQUIRE(sieve.m_gaps.begin()->end == Approx(0.625));
 }
 
 
@@ -44,9 +44,9 @@ TEST_CASE("Shift start and end")
     lines.add(2, Line(Point2f(0.5,0.1),Point2f(1.1,0.9)));
     sieve.block(lines,4);
     sieve.collectgarbage();
-    sieve.m_gaps.first();
-    REQUIRE((*sieve.m_gaps).start == Approx(0.55555555555));
-    REQUIRE((*sieve.m_gaps).end == Approx(0.625));
+    REQUIRE(sieve.m_gaps.size() == 1);
+    REQUIRE(sieve.m_gaps.begin()->start == Approx(0.55555555555));
+    REQUIRE(sieve.m_gaps.begin()->end == Approx(0.625));
 }
 
 TEST_CASE("delete gap")
@@ -58,8 +58,7 @@ TEST_CASE("delete gap")
     lines.add(1, Line(Point2f(1.1, 0.2), Point2f(0.5, 0.7)));
     sieve.block(lines,4);
     sieve.collectgarbage();
-    sieve.m_gaps.first();
-    REQUIRE(sieve.m_gaps.is_tail());
+    REQUIRE(sieve.m_gaps.empty());
 }
 
 TEST_CASE("add gap")
@@ -73,14 +72,11 @@ TEST_CASE("add gap")
     lines.add(2, Line(Point2f(0.5,0.3), Point2f(0.5,0.7)));
     sieve.block(lines,4);
     sieve.collectgarbage();
-    sieve.m_gaps.first();
-    REQUIRE_FALSE(sieve.m_gaps.is_tail());
-    REQUIRE((*sieve.m_gaps).start == 0);
-    REQUIRE((*sieve.m_gaps).end == Approx(0.55555555555));
-    sieve.m_gaps++;
-    REQUIRE_FALSE(sieve.m_gaps.is_tail());
-    REQUIRE((*sieve.m_gaps).start == Approx(0.625));
-    REQUIRE((*sieve.m_gaps).end == Approx( 0.71428571));
-    sieve.m_gaps++;
-    REQUIRE(sieve.m_gaps.is_tail());
+    REQUIRE(sieve.m_gaps.size() == 2);
+    auto iter = sieve.m_gaps.begin();
+    REQUIRE(iter->start == 0);
+    REQUIRE(iter->end == Approx(0.55555555555));
+    iter++;
+    REQUIRE(iter->start == Approx(0.625));
+    REQUIRE(iter->end == Approx( 0.71428571));
 }
