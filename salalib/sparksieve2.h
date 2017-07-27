@@ -22,6 +22,7 @@
 #define __SPARKSIEVE2_H__
 
 #include <float.h>
+#include "genlib/p2dpoly.h"
 
 class sparkSieve2
 {
