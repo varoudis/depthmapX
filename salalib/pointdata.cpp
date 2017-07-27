@@ -2506,7 +2506,7 @@ bool PointMap::sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int
       if ((*(sieve.m_gaps)).remove) {
          continue;
       }
-      for (int ind = (int)ceil((*(sieve.m_gaps)).start * (depth - 0.5) - 0.5); 
+      for (int ind = (int)ceil((*(sieve.m_gaps)).start * (depth - 0.5) - 0.5);
                ind <= (int) floor((*(sieve.m_gaps)).end * (depth + 0.5) + 0.5); ind++) {
 
          if (ind < firstind) {
