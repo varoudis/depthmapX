@@ -87,41 +87,41 @@ void sparkSieve2::block( const pqmap<int,Line>& lines, int q )
 
 void sparkSieve2::collectgarbage()
 {
-   m_gaps.first();
+   auto iter = m_gaps.begin();
 
-   for (size_t i = 0; i < m_blocks.size() && !m_gaps.is_tail(); i++)
+   for (size_t i = 0; i < m_blocks.size() && iter != m_gaps.end(); i++)
    {
-      if (m_blocks[i].end < (*m_gaps).start) {
+      if (m_blocks[i].end < iter->start) {
          continue;
       }
       sparkZone2& block = m_blocks[i];
       bool create = true;
-      if (block.start <= (*m_gaps).start) {
+      if (block.start <= iter->start) {
          create = false;
-         if (block.end > (*m_gaps).start) {
+         if (block.end > iter->start) {
             // simply move the start in front of us
-            (*m_gaps).start = block.end;
+            iter->start = block.end;
          }
       }
-      if (block.end >= (*m_gaps).end) {
+      if (block.end >= iter->end) {
          create = false;
-         if (block.start < (*m_gaps).end) {
+         if (block.start < iter->end) {
             // move the end behind us
-            (*m_gaps).end = block.start;
+            iter->end = block.start;
          }
       }
-      if ((*m_gaps).end <= (*m_gaps).start + 1e-10) { // 1e-10 required for floating point error
+      if (iter->end <= iter->start + 1e-10) { // 1e-10 required for floating point error
          i--;  // on the next iteration, stay with this block
-         m_gaps.postdel();
+         iter = m_gaps.erase(iter);
       }
-      else if (block.end > (*m_gaps).end) {
+      else if (block.end > iter->end) {
          i--;  // on the next iteration, stay with this block
-         m_gaps++;
+         ++iter;
       }
       else if (create) {
          // add a new gap (has to be behind us), and move the start in front of us
-         m_gaps.preins( sparkZone2( (*m_gaps).start, block.start ) );
-         (*m_gaps).start = block.end;
+         m_gaps.insert(iter, sparkZone2( iter->start, block.start ) );
+         iter->start = block.end;
       }
    }
    // reset blocks for next row:

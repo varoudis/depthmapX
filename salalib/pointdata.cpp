@@ -2430,7 +2430,6 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
             lines0.add(key,l);
          }
       }
-      sieve.m_gaps.first();
       sieve.block(lines0, q);
       sieve.collectgarbage();
 
@@ -2501,14 +2500,13 @@ bool PointMap::sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int
    bool hasgaps = false;
    int firstind = 0;
 
-   for (sieve.m_gaps.first(); !sieve.m_gaps.is_tail(); (sieve.m_gaps)++) {
+   for (auto iter = sieve.m_gaps.begin(); iter != sieve.m_gaps.end(); ++iter) {
       // this goes through all open points
-      if ((*(sieve.m_gaps)).remove) {
+      if (iter->remove) {
          continue;
       }
-      for (int ind = (int)ceil((*(sieve.m_gaps)).start * (depth - 0.5) - 0.5); 
-               ind <= (int) floor((*(sieve.m_gaps)).end * (depth + 0.5) + 0.5); ind++) {
-
+      for (int ind = (int)ceil(iter->start * (depth - 0.5) - 0.5);
+               ind <= (int) floor(iter->end * (depth + 0.5) + 0.5); ind++) {
          if (ind < firstind) {
             continue;
          }
@@ -2530,8 +2528,8 @@ bool PointMap::sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int
          if (includes(here)) {
             hasgaps = true;
             // centre gap checks to see if the point is blocked itself
-            bool centregap = (double(ind) >= ((*(sieve.m_gaps)).start * depth) && 
-                              double(ind) <= ((*(sieve.m_gaps)).end * depth));
+            bool centregap = (double(ind) >= (iter->start * depth) &&
+                              double(ind) <= (iter->end * depth));
 
             if (centregap && (getPoint(here).m_state & Point::FILLED)) {
                // don't repeat axes / diagonals
