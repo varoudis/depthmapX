@@ -6,7 +6,8 @@ CONFIG -= qt
 INCLUDEPATH += ../ThirdParty/Catch
 
 SOURCES += convertertest.cpp \
-    main.cpp
+    main.cpp \
+    teststringutils.cpp
 
 HEADERS +=
 
