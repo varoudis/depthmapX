@@ -23,6 +23,6 @@
 #pragma once
 namespace dXstring {
     std::vector<std::string> split(const std::string &s, char delim);
-    std::string readString(const std::istream & stream);
+    std::string readString(std::istream & stream);
     void writeString(std::ostream &stream, const std::string &s);
 }

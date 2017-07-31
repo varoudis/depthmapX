@@ -31,5 +31,28 @@ namespace dXstring {
         return elems;
     }
 
+    std::string readString(std::istream & stream)
+    {
+        unsigned int length;
+        stream.read(reinterpret_cast<char *>(&length), sizeof(length));
+        if ( length == 0)
+        {
+            return std::string();
+        }
+        std::string result( length, '\0');
+        char *ptr  = &result[0];
+        stream.read(ptr, length);
+        return result;
+    }
+
+    void writeString(std::ostream &stream, const std::string &s)
+    {
+        unsigned int length = s.length();
+        stream.write(reinterpret_cast<char *>(&length), sizeof(unsigned int));
+        if (length > 0)
+        {
+            stream.write(s.data(), length);
+        }
+    }
 
 }
