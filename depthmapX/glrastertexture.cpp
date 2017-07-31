@@ -123,11 +123,16 @@ void GLRasterTexture::initializeGL(bool m_core) {
     built = true;
 }
 
-void GLRasterTexture::updateGL() {
-    m_vbo.bind();
-    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
-    m_vbo.release();
-    built = true;
+void GLRasterTexture::updateGL(bool m_core) {
+    if(m_program == 0) {
+        // has not been initialised yet, do that instead
+        initializeGL(m_core);
+    } else {
+        m_vbo.bind();
+        m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+        m_vbo.release();
+        built = true;
+    }
 }
 
 void GLRasterTexture::loadPixelData(QImage &data)

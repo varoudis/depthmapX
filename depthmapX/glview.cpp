@@ -131,7 +131,7 @@ void GLView::paintGL()
             ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
             m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
 
-            m_visibleAxial.updateGL();
+            m_visibleAxial.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
@@ -139,7 +139,7 @@ void GLView::paintGL()
             ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
             m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
 
-            m_visibleDataMap.updateGL();
+            m_visibleDataMap.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
@@ -147,7 +147,7 @@ void GLView::paintGL()
             QtRegion region = currentPointMap.getRegion();
             m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
 
-            m_visiblePointMap.updateGL();
+            m_visiblePointMap.updateGL(m_core);
 
             QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
             data.fill(Qt::transparent);

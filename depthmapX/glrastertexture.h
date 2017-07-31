@@ -32,7 +32,7 @@ public:
     void loadPixelData(QImage &data);
     void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
-    void updateGL();
+    void updateGL(bool m_core);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
