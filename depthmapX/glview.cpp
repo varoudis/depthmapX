@@ -93,11 +93,15 @@ void GLView::initializeGL()
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
         QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
         data.fill(Qt::transparent);
-
-        AttributeTable& table = currentPointMap.getAttributeTable();
-        for (int i = 0; i < table.getRowCount(); i++) {
-           PixelRef pix = table.getRowKey(i);
-           data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+        for (int y = 0; y < currentPointMap.getRows(); y++) {
+            for (int x = 0; x < currentPointMap.getCols(); x++) {
+                PixelRef pix(x, y);
+                PafColor colour = currentPointMap.getPointColor( pix );
+                if (colour.alphab() != 0)
+                { // alpha == 0 is transparent
+                    data.setPixelColor(x, y, qRgb(colour.redb(),colour.greenb(),colour.blueb()));
+                }
+            }
         }
         m_visiblePointMap.loadPixelData(data);
     }
@@ -152,10 +156,15 @@ void GLView::paintGL()
             QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
             data.fill(Qt::transparent);
 
-            AttributeTable& table = currentPointMap.getAttributeTable();
-            for (int i = 0; i < table.getRowCount(); i++) {
-               PixelRef pix = table.getRowKey(i);
-               data.setPixelColor(pix.x, pix.y, table.getDisplayColorByKey( pix ));
+            for (int y = 0; y < currentPointMap.getRows(); y++) {
+                for (int x = 0; x < currentPointMap.getCols(); x++) {
+                    PixelRef pix(x, y);
+                    PafColor colour = currentPointMap.getPointColor( pix );
+                    if (colour.alphab() != 0)
+                    { // alpha == 0 is transparent
+                        data.setPixelColor(x, y, qRgb(colour.redb(),colour.greenb(),colour.blueb()));
+                    }
+                }
             }
             m_visiblePointMap.loadPixelData(data);
         }
