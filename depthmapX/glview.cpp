@@ -83,6 +83,7 @@ GLView::~GLView()
 {
     makeCurrent();
     m_axes.cleanup();
+    m_grid.cleanup();
     m_visibleDrawingLines.cleanup();
     m_visiblePointMap.cleanup();
     m_visibleAxial.cleanup();
