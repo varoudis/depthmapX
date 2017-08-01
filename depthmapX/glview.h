@@ -83,5 +83,12 @@ private:
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
     void matchViewToRegion(QtRegion region);
+
+    void loadAxes();
+    void loadDrawingGLObjects();
+    void loadDataMapGLObjects();
+    void loadAxialGLObjects();
+    void loadVGAGLObjects();
+    void loadVGAGLObjectsRequiringGLContext();
 };
 
