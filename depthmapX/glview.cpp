@@ -125,6 +125,7 @@ void GLView::paintGL()
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
             loadVGAGLObjects();
             m_visiblePointMap.updateGL(m_core);
+            m_grid.updateGL(m_core);
             loadVGAGLObjectsRequiringGLContext();
         }
 
@@ -192,8 +193,6 @@ void GLView::loadVGAGLObjects() {
             gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
         }
         m_grid.loadLineData(gridData, gridColour);
-
-        m_grid.updateGL(m_core);
     }
 }
 void GLView::loadVGAGLObjectsRequiringGLContext() {
