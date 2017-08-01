@@ -218,8 +218,15 @@ void GLView::paintGL()
         }
         m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
     }
-    m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
-    m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+        m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
+    }
+
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
+        m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+    }
+
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 }
 
