@@ -40,6 +40,7 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
     void notifyDatasetChanged() { datasetChanged = true; update(); }
+    void matchViewToCurrentMetaGraph();
 
 protected:
     void initializeGL() override;

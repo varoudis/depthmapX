@@ -114,7 +114,7 @@ public:
     void update3DToolbar();
     void showContextMenu(QPoint &point);
     void UpdateStatus(QString s1, QString s2, QString s3);
-    void updateGLWindows();
+    void updateGLWindows(bool datasetChanged, bool recentreView);
 
 protected:
     QGraphDoc* m_treeDoc;

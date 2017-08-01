@@ -51,8 +51,8 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
         loadDataMapGLObjects();
     }
-    const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
-    matchViewToRegion(region);
+
+    matchViewToCurrentMetaGraph();
 }
 
 GLView::~GLView()
@@ -282,6 +282,12 @@ void GLView::recalcView()
     }
     m_mProj.translate(m_eyePosX, m_eyePosY, 0.0f);
     update();
+}
+
+void GLView::matchViewToCurrentMetaGraph() {
+    const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
+    matchViewToRegion(region);
+    recalcView();
 }
 
 void GLView::matchViewToRegion(QtRegion region) {
