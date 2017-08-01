@@ -36,44 +36,20 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     pDoc = doc;
 
 
-    pDoc->m_meta_graph->setLock(this);
-    m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
-    pDoc->m_meta_graph->releaseLock(this);
+    loadDrawingGLObjects();
 
-    std::vector<std::pair<SimpleLine, PafColor>> axesData;
-    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,1,0), PafColor(1,0,0)));
-    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,0,1), PafColor(0,1,0)));
-    m_axes.loadLineData(axesData);
+    loadAxes();
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
-        ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
-        m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+        loadAxialGLObjects();
     }
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
-        PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
-        QtRegion region = currentPointMap.getRegion();
-        m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
-        if(pDoc->m_meta_graph->m_showgrid) {
-            std::vector<SimpleLine> gridData;
-            double spacing = currentPointMap.getSpacing();
-            QRgb gridColour = colorMerge(m_foreground, m_background);
-            double offsetX = region.bottom_left.x;
-            double offsetY = region.bottom_left.y;
-            for(int x = 1; x < currentPointMap.getCols(); x++) {
-                gridData.push_back(SimpleLine(offsetX + x*spacing, region.bottom_left.y, offsetX + x*spacing, region.top_right.y));
-            }
-            for(int y = 1; y < currentPointMap.getRows(); y++) {
-                gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
-            }
-            m_grid.loadLineData(gridData, gridColour);
-        }
+        loadVGAGLObjects();
     }
 
-
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
-        ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
-        m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+        loadDataMapGLObjects();
     }
     const QtRegion &region = pDoc->m_meta_graph->getBoundingBox();
     matchViewToRegion(region);
@@ -110,27 +86,12 @@ void GLView::initializeGL()
     m_visibleDrawingLines.initializeGL(m_core);
     m_visiblePointMap.initializeGL(m_core);
     m_grid.initializeGL(m_core);
+    m_visibleAxial.initializeGL(m_core);
+    m_visibleDataMap.initializeGL(m_core);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
-        PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
-        QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
-        data.fill(Qt::transparent);
-        for (int y = 0; y < currentPointMap.getRows(); y++) {
-            for (int x = 0; x < currentPointMap.getCols(); x++) {
-                PixelRef pix(x, y);
-                PafColor colour = currentPointMap.getPointColor( pix );
-                if (colour.alphab() != 0)
-                { // alpha == 0 is transparent
-                    data.setPixelColor(x, y, qRgb(colour.redb(),colour.greenb(),colour.blueb()));
-                }
-            }
-        }
-        m_visiblePointMap.loadPixelData(data);
+        loadVGAGLObjectsRequiringGLContext();
     }
-
-    m_visibleAxial.initializeGL(m_core);
-
-    m_visibleDataMap.initializeGL(m_core);
 
     m_mModel.setToIdentity();
 
@@ -147,65 +108,24 @@ void GLView::paintGL()
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
     if(datasetChanged) {
-        pDoc->m_meta_graph->setLock(this);
-        m_visibleDrawingLines.cleanup();
-        m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
-        m_visibleDrawingLines.initializeGL(m_core);
-        pDoc->m_meta_graph->releaseLock(this);
+
+        loadDrawingGLObjects();
+        m_visibleDrawingLines.updateGL(m_core);
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
-            ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
-            m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
-
+            loadAxialGLObjects();
             m_visibleAxial.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
-
-            ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
-            m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
-
+            loadDataMapGLObjects();
             m_visibleDataMap.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
-            PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
-            QtRegion region = currentPointMap.getRegion();
-            m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
-
-            if(pDoc->m_meta_graph->m_showgrid) {
-                std::vector<SimpleLine> gridData;
-                double spacing = currentPointMap.getSpacing();
-                QRgb gridColour = colorMerge(m_foreground, m_background);
-                double offsetX = region.bottom_left.x;
-                double offsetY = region.bottom_left.y;
-                for(int x = 1; x < currentPointMap.getCols(); x++) {
-                    gridData.push_back(SimpleLine(offsetX + x*spacing, region.bottom_left.y, offsetX + x*spacing, region.top_right.y));
-                }
-                for(int y = 1; y < currentPointMap.getRows(); y++) {
-                    gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
-                }
-                m_grid.loadLineData(gridData, gridColour);
-
-                m_grid.updateGL(m_core);
-            }
-
+            loadVGAGLObjects();
             m_visiblePointMap.updateGL(m_core);
-
-            QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
-            data.fill(Qt::transparent);
-
-            for (int y = 0; y < currentPointMap.getRows(); y++) {
-                for (int x = 0; x < currentPointMap.getCols(); x++) {
-                    PixelRef pix(x, y);
-                    PafColor colour = currentPointMap.getPointColor( pix );
-                    if (colour.alphab() != 0)
-                    { // alpha == 0 is transparent
-                        data.setPixelColor(x, y, qRgb(colour.redb(),colour.greenb(),colour.blueb()));
-                    }
-                }
-            }
-            m_visiblePointMap.loadPixelData(data);
+            loadVGAGLObjectsRequiringGLContext();
         }
 
         datasetChanged = false;
@@ -229,6 +149,69 @@ void GLView::paintGL()
     }
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
+}
+
+void GLView::loadAxes() {
+    std::vector<std::pair<SimpleLine, PafColor>> axesData;
+    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,1,0), PafColor(1,0,0)));
+    axesData.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(0,0,0,1), PafColor(0,1,0)));
+    m_axes.loadLineData(axesData);
+}
+
+void GLView::loadDrawingGLObjects() {
+    pDoc->m_meta_graph->setLock(this);
+    m_visibleDrawingLines.loadLineData(pDoc->m_meta_graph->getVisibleDrawingLines(), m_foreground);
+    pDoc->m_meta_graph->releaseLock(this);
+}
+
+void GLView::loadDataMapGLObjects() {
+    ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
+    m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+}
+
+void GLView::loadAxialGLObjects() {
+    ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
+    m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+}
+
+void GLView::loadVGAGLObjects() {
+    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+    QtRegion region = currentPointMap.getRegion();
+    m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+
+    if(pDoc->m_meta_graph->m_showgrid) {
+        std::vector<SimpleLine> gridData;
+        double spacing = currentPointMap.getSpacing();
+        QRgb gridColour = colorMerge(m_foreground, m_background);
+        double offsetX = region.bottom_left.x;
+        double offsetY = region.bottom_left.y;
+        for(int x = 1; x < currentPointMap.getCols(); x++) {
+            gridData.push_back(SimpleLine(offsetX + x*spacing, region.bottom_left.y, offsetX + x*spacing, region.top_right.y));
+        }
+        for(int y = 1; y < currentPointMap.getRows(); y++) {
+            gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
+        }
+        m_grid.loadLineData(gridData, gridColour);
+
+        m_grid.updateGL(m_core);
+    }
+}
+void GLView::loadVGAGLObjectsRequiringGLContext() {
+    PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
+    QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
+    data.fill(Qt::transparent);
+
+    for (int y = 0; y < currentPointMap.getRows(); y++) {
+        for (int x = 0; x < currentPointMap.getCols(); x++) {
+            PixelRef pix(x, y);
+            PafColor colour = currentPointMap.getPointColor( pix );
+            if (colour.alphab() != 0)
+            { // alpha == 0 is transparent
+                data.setPixelColor(x, y, qRgb(colour.redb(),colour.greenb(),colour.blueb()));
+            }
+        }
+    }
+    m_visiblePointMap.loadPixelData(data);
 }
 
 void GLView::resizeGL(int w, int h)
