@@ -61,6 +61,7 @@ private:
     const QRgb &m_background;
 
     GLLines m_axes;
+    GLLinesUniform m_grid;
     GLLines m_visibleAxial;
     GLLinesUniform m_visibleDrawingLines;
     GLRasterTexture m_visiblePointMap;

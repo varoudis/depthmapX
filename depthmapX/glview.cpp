@@ -20,6 +20,11 @@
 #include <QCoreApplication>
 #include <math.h>
 
+static QRgb colorMerge(QRgb color, QRgb mergecolor)
+{
+   return (color & 0x006f6f6f) | (mergecolor & 0x00a0a0a0);
+}
+
 GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, const QRgb &foregroundColour)
     : QOpenGLWidget(parent),
       m_eyePosX(0),
@@ -49,7 +54,22 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
         QtRegion region = currentPointMap.getRegion();
         m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
+        if(pDoc->m_meta_graph->m_showgrid) {
+            std::vector<SimpleLine> gridData;
+            double spacing = currentPointMap.getSpacing();
+            QRgb gridColour = colorMerge(m_foreground, m_background);
+            double offsetX = region.bottom_left.x;
+            double offsetY = region.bottom_left.y;
+            for(int x = 1; x < currentPointMap.getCols(); x++) {
+                gridData.push_back(SimpleLine(offsetX + x*spacing, region.bottom_left.y, offsetX + x*spacing, region.top_right.y));
+            }
+            for(int y = 1; y < currentPointMap.getRows(); y++) {
+                gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
+            }
+            m_grid.loadLineData(gridData, gridColour);
+        }
     }
+
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
         ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
@@ -88,6 +108,7 @@ void GLView::initializeGL()
     m_axes.initializeGL(m_core);
     m_visibleDrawingLines.initializeGL(m_core);
     m_visiblePointMap.initializeGL(m_core);
+    m_grid.initializeGL(m_core);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
@@ -122,7 +143,7 @@ void GLView::paintGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
     if(datasetChanged) {
         pDoc->m_meta_graph->setLock(this);
@@ -151,6 +172,23 @@ void GLView::paintGL()
             QtRegion region = currentPointMap.getRegion();
             m_visiblePointMap.loadRegionData(region.bottom_left.x, region.bottom_left.y, region.top_right.x, region.top_right.y);
 
+            if(pDoc->m_meta_graph->m_showgrid) {
+                std::vector<SimpleLine> gridData;
+                double spacing = currentPointMap.getSpacing();
+                QRgb gridColour = colorMerge(m_foreground, m_background);
+                double offsetX = region.bottom_left.x;
+                double offsetY = region.bottom_left.y;
+                for(int x = 1; x < currentPointMap.getCols(); x++) {
+                    gridData.push_back(SimpleLine(offsetX + x*spacing, region.bottom_left.y, offsetX + x*spacing, region.top_right.y));
+                }
+                for(int y = 1; y < currentPointMap.getRows(); y++) {
+                    gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
+                }
+                m_grid.loadLineData(gridData, gridColour);
+
+                m_grid.updateGL(m_core);
+            }
+
             m_visiblePointMap.updateGL(m_core);
 
             QImage data(currentPointMap.getCols(),currentPointMap.getRows(), QImage::Format_RGBA8888);
@@ -172,11 +210,17 @@ void GLView::paintGL()
         datasetChanged = false;
     }
 
-    m_axes.paintGL(m_mProj, m_mView, m_mModel);
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
-    m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
+
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+        if(pDoc->m_meta_graph->m_showgrid) {
+            m_grid.paintGL(m_mProj, m_mView, m_mModel);
+        }
+        m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
+    }
     m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
     m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+    m_axes.paintGL(m_mProj, m_mView, m_mModel);
 }
 
 void GLView::resizeGL(int w, int h)
