@@ -15,6 +15,7 @@
 
 #include "stringutils.h"
 #include <sstream>
+#include <memory>
 
 namespace dXstring {
     std::vector<std::string> split(const std::string &s, char delim)
@@ -54,5 +55,13 @@ namespace dXstring {
             stream.write(s.data(), length);
         }
     }
+
+    std::string formatString(double value, const char *format)
+    {
+        std::unique_ptr<char[]> buffer(new char[24 + strlen(format)]);
+        sprintf( buffer.get(), format, value );
+        return std::string(buffer.get());
+    }
+
 
 }
