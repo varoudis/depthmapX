@@ -60,7 +60,7 @@ class DxfToken {
 public:
    int code;
    int size;
-   pstring data;
+   std::string data;
    //
    DxfToken();
    friend istream& operator >> (istream& stream, DxfToken& token);
@@ -74,10 +74,10 @@ class DxfTableRow
 {
    friend class DxfParser;
 protected:
-   pstring m_name;
+   std::string m_name;
 public:
-   DxfTableRow( const pstring& name = "" );
-   const pstring& getName() const
+   DxfTableRow( const std::string& name = "" );
+   const std::string& getName() const
       { return m_name; }
    virtual ~DxfTableRow(){}
 protected:
@@ -439,7 +439,7 @@ class DxfLineType : public DxfTableRow
 {
    friend class DxfParser;
 public:
-   DxfLineType( const pstring& name = "" );
+   DxfLineType( const std::string& name = "" );
 protected:
    bool parse( const DxfToken& token, DxfParser *parser );
 };
@@ -460,7 +460,7 @@ protected:
    int                  m_total_point_count;
    int                  m_total_line_count;
 public:
-   DxfLayer( const pstring& name = "" );
+   DxfLayer( const std::string& name = "" );
    //
    const DxfVertex& getPoint( int i ) const;
    const DxfLine& getLine( int i ) const;
@@ -494,7 +494,7 @@ class DxfBlock : public DxfLayer
 protected:
    DxfVertex m_base_point;
 public:
-   DxfBlock( const pstring& name = "" );
+   DxfBlock( const std::string& name = "" );
    //
 protected:
    bool parse( const DxfToken& token, DxfParser *parser );
@@ -537,9 +537,9 @@ public:
    const DxfVertex& getExtMin() const;
    const DxfVertex& getExtMax() const;
    const DxfLayer& getLayerNum( const int i ) const;
-   DxfLayer *getLayer( const pstring& layer_name ); // const; <- removed as will have to add layer when DXF hasn't declared one
+   DxfLayer *getLayer( const std::string& layer_name ); // const; <- removed as will have to add layer when DXF hasn't declared one
    const DxfLineType& getLineType( const int i ) const;
-   DxfLineType *getLineType( const pstring& line_type_name ); // const;
+   DxfLineType *getLineType( const std::string& line_type_name ); // const;
    //
    int numLayers() const;
    int numLineTypes() const;

@@ -1515,7 +1515,7 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
          continue;
       }
       
-      SuperSpacePixel::tail().push_back(ShapeMap(dxf_layer.getName()));
+      SuperSpacePixel::tail().push_back(ShapeMap(dxf_layer.getName().c_str()));
       // note the circle lines are not counted in the total number of lines, as we have to specify number of segments
       SuperSpacePixel::tail().at(i).init(dxf_layer.numTotalPoints() + dxf_layer.numTotalLines() + dxf_layer.numArcs() * DXFCIRCLERES + dxf_layer.numCircles() * DXFCIRCLERES, QtRegion(Point2f(dxf_layer.getExtMin()),Point2f(dxf_layer.getExtMax())) );
 
