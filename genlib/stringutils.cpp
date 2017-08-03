@@ -16,6 +16,7 @@
 #include "stringutils.h"
 #include <sstream>
 #include <memory>
+#include <cstring>
 
 namespace dXstring {
     std::vector<std::string> split(const std::string &s, char delim)
