@@ -52,36 +52,6 @@ class QSignalMapper;
 class QToolButton;
 QT_END_NAMESPACE
 
-enum {
-   ID_MAPBAR_ZOOM_ITEMS = 2,
-   ID_MAPBAR_FILL_ITEMS = 8,
-   ID_MAPBAR_DRAW_ITEMS = 10,
-   ID_MAPBAR_ISOVIST_ITEMS = 12,
-   ID_MAPBAR_JOIN_ITEMS = 15
-};
-
-enum {
-   ID_MAPBAR_ITEM_SELECT = 0,
-   ID_MAPBAR_ITEM_MOVE = 1,
-   ID_MAPBAR_ITEM_ZOOM_IN = 2,
-   ID_MAPBAR_ITEM_ZOOM_OUT = 3,
-   ID_MAPBAR_ITEM_FINDLOC = 4,
-   ID_MAPBAR_ITEM_CENTREVIEW = 5,
-   ID_MAPBAR_ITEM_GRID = 6,
-   ID_MAPBAR_ITEM_FILL = 7,
-   ID_MAPBAR_ITEM_SEMIFILL = 8,
-   ID_MAPBAR_ITEM_PENCIL = 9,
-   ID_MAPBAR_ITEM_LINETOOL = 10,
-   ID_MAPBAR_ITEM_POLYGON = 11,
-   ID_MAPBAR_ITEM_ISOVIST = 12,
-   ID_MAPBAR_ITEM_HALFISOVIST = 13,
-   ID_MAPBAR_ITEM_AL2 = 14,
-   ID_MAPBAR_ITEM_PD = 15,
-   ID_MAPBAR_ITEM_JOIN = 16,
-   ID_MAPBAR_ITEM_UNJOIN = 17,
-   ID_MAPBAR_ITEM_AUGMENT_FILL = 18 // AV test - TV
-};
-
 const int  MaxRecentFiles = 5;
 
 enum { FOCUSGRAPH = 1001, AllTransactionsDone = 1002 };
@@ -486,6 +456,39 @@ private:
     QAction *ExportPolyAct;
     QAction *Bindistance1Act;
     QAction *Bindistance2Act;
+
+    int m_selected_mapbar_item = -1;
+
+
+    enum {
+       ID_MAPBAR_ZOOM_ITEMS = 2,
+       ID_MAPBAR_FILL_ITEMS = 8,
+       ID_MAPBAR_DRAW_ITEMS = 10,
+       ID_MAPBAR_ISOVIST_ITEMS = 12,
+       ID_MAPBAR_JOIN_ITEMS = 15
+    };
+
+    enum {
+       ID_MAPBAR_ITEM_SELECT = 0,
+       ID_MAPBAR_ITEM_MOVE = 1,
+       ID_MAPBAR_ITEM_ZOOM_IN = 2,
+       ID_MAPBAR_ITEM_ZOOM_OUT = 3,
+       ID_MAPBAR_ITEM_FINDLOC = 4,
+       ID_MAPBAR_ITEM_CENTREVIEW = 5,
+       ID_MAPBAR_ITEM_GRID = 6,
+       ID_MAPBAR_ITEM_FILL = 7,
+       ID_MAPBAR_ITEM_SEMIFILL = 8,
+       ID_MAPBAR_ITEM_PENCIL = 9,
+       ID_MAPBAR_ITEM_LINETOOL = 10,
+       ID_MAPBAR_ITEM_POLYGON = 11,
+       ID_MAPBAR_ITEM_ISOVIST = 12,
+       ID_MAPBAR_ITEM_HALFISOVIST = 13,
+       ID_MAPBAR_ITEM_AL2 = 14,
+       ID_MAPBAR_ITEM_PD = 15,
+       ID_MAPBAR_ITEM_JOIN = 16,
+       ID_MAPBAR_ITEM_UNJOIN = 17,
+       ID_MAPBAR_ITEM_AUGMENT_FILL = 18 // AV test - TV
+    };
 };
 
 #endif
