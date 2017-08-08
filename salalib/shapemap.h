@@ -22,6 +22,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <map>
 // each pixel has various lists of information:
 
 struct ShapeRef
@@ -528,7 +529,8 @@ public:
    void ozlemSpecial6();
    void ozlemSpecial7(ShapeMap& linemap);
    std::vector<SimpleLine> getAllShapesAsLines();
-   std::vector<std::pair<SimpleLine, PafColor>> getAllShapesAsLineColourPairs();
+   std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
+   std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

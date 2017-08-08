@@ -62,8 +62,10 @@ GLView::~GLView()
     m_grid.cleanup();
     m_visibleDrawingLines.cleanup();
     m_visiblePointMap.cleanup();
-    m_visibleAxial.cleanup();
-    m_visibleDataMap.cleanup();
+    m_visibleShapeGraph.cleanup();
+    m_visibleShapeGraphPolygons.cleanup();
+    m_visibleDataMapLines.cleanup();
+    m_visibleDataMapPolygons.cleanup();
     doneCurrent();
 }
 
@@ -86,8 +88,10 @@ void GLView::initializeGL()
     m_visibleDrawingLines.initializeGL(m_core);
     m_visiblePointMap.initializeGL(m_core);
     m_grid.initializeGL(m_core);
-    m_visibleAxial.initializeGL(m_core);
-    m_visibleDataMap.initializeGL(m_core);
+    m_visibleShapeGraph.initializeGL(m_core);
+    m_visibleShapeGraphPolygons.initializeGL(m_core);
+    m_visibleDataMapLines.initializeGL(m_core);
+    m_visibleDataMapPolygons.initializeGL(m_core);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         loadVGAGLObjectsRequiringGLContext();
@@ -114,12 +118,14 @@ void GLView::paintGL()
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
             loadAxialGLObjects();
-            m_visibleAxial.updateGL(m_core);
+            m_visibleShapeGraph.updateGL(m_core);
+            m_visibleShapeGraphPolygons.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
             loadDataMapGLObjects();
-            m_visibleDataMap.updateGL(m_core);
+            m_visibleDataMapLines.updateGL(m_core);
+            m_visibleDataMapPolygons.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
@@ -142,11 +148,13 @@ void GLView::paintGL()
     }
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
-        m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleShapeGraph.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleShapeGraphPolygons.paintGL(m_mProj, m_mView, m_mModel);
     }
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
-        m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleDataMapLines.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleDataMapPolygons.paintGL(m_mProj, m_mView, m_mModel);
     }
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
@@ -167,12 +175,14 @@ void GLView::loadDrawingGLObjects() {
 
 void GLView::loadDataMapGLObjects() {
     ShapeMap & currentDataMap = pDoc->m_meta_graph->getDisplayedDataMap();
-    m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+    m_visibleDataMapLines.loadLineData(currentDataMap.getAllLinesWithColour());
+    m_visibleDataMapPolygons.loadPolygonData(currentDataMap.getAllPolygonsWithColour());
 }
 
 void GLView::loadAxialGLObjects() {
     ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
-    m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+    m_visibleShapeGraph.loadLineData(currentShapeGraph.getAllLinesWithColour());
+    m_visibleShapeGraphPolygons.loadPolygonData(currentShapeGraph.getAllPolygonsWithColour());
 }
 
 void GLView::loadVGAGLObjects() {
