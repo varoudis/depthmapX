@@ -47,6 +47,7 @@ protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int width, int height) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
@@ -64,6 +65,7 @@ private:
 
     GLLines m_axes;
     GLLinesUniform m_grid;
+
     GLLines m_visibleShapeGraph;
     GLPolygons m_visibleShapeGraphPolygons;
     GLLinesUniform m_visibleDrawingLines;
@@ -80,6 +82,8 @@ private:
     GLfloat screenRatio;
     int screenWidth;
     int screenHeight;
+
+    Point2f getWorldPoint(const QPoint &screenPoint);
 
     bool datasetChanged = false;
 
