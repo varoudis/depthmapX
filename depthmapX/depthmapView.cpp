@@ -100,7 +100,6 @@ QDepthmapView::QDepthmapView(Settings &settings)
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);
 
-   m_curr_seleted = -1;
    // Several screen drawing booleans:
    m_continue_drawing = false;
    m_drawing = false;
@@ -2229,28 +2228,24 @@ void QDepthmapView::OnViewZoomsel()
 
 void QDepthmapView::OnViewMove() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_MOVE;
    m_mouse_mode = DRAG;
    SetCursor(DRAG);
 }
 
 void QDepthmapView::OnViewZoomIn() 
 {
-	m_curr_seleted = ID_MAPBAR_ITEM_ZOOM_IN;
 	m_mouse_mode = ZOOM_IN;
 	SetCursor(ZOOM_IN);
 }
 
 void QDepthmapView::OnViewZoomOut() 
 {
-	m_curr_seleted = ID_MAPBAR_ITEM_ZOOM_OUT;
 	m_mouse_mode = ZOOM_OUT;
 	SetCursor(ZOOM_OUT);
 }
 
 void QDepthmapView::OnEditSelect() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_SELECT;
    m_mouse_mode = SELECT;
    SetCursor(SELECT);
    if (m_showlinks) {
@@ -2261,7 +2256,6 @@ void QDepthmapView::OnEditSelect()
 
 void QDepthmapView::OnModeIsovist() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_ISOVIST;
    m_mouse_mode = SEEDISOVIST;
    SetCursor(SEEDISOVIST);
    if (m_showlinks) {
@@ -2272,7 +2266,6 @@ void QDepthmapView::OnModeIsovist()
 
 void QDepthmapView::OnModeHalfovist() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_HALFISOVIST;
    m_mouse_mode = SEEDHALFOVIST;
    SetCursor(SEEDHALFOVIST);
    if (m_showlinks) {
@@ -2283,7 +2276,6 @@ void QDepthmapView::OnModeHalfovist()
 
 void QDepthmapView::OnToolsAxialMap() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_AL2;
    m_mouse_mode = SEEDAXIAL;
    SetCursor(SEEDAXIAL);
    if (m_showlinks) {
@@ -2294,7 +2286,6 @@ void QDepthmapView::OnToolsAxialMap()
 
 void QDepthmapView::OnEditFill() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_FILL;
    m_mouse_mode = FILL;
    m_fillmode = FULLFILL;
    SetCursor(FILL);
@@ -2302,7 +2293,6 @@ void QDepthmapView::OnEditFill()
 
 void QDepthmapView::OnEditSemiFill() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_SEMIFILL;
    m_mouse_mode = FILL;
    m_fillmode = SEMIFILL;
    SetCursor(FILL);
@@ -2311,7 +2301,6 @@ void QDepthmapView::OnEditSemiFill()
 // AV TV
 void QDepthmapView::OnEditAugmentFill()
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_AUGMENT_FILL;
    m_mouse_mode = FILL;
    m_fillmode = AUGMENT;
    SetCursor(FILL);
@@ -2319,7 +2308,6 @@ void QDepthmapView::OnEditAugmentFill()
 
 void QDepthmapView::OnEditPencil() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_PENCIL;
    m_mouse_mode = PENCIL;
    SetCursor(PENCIL);
 }
@@ -2332,7 +2320,6 @@ void QDepthmapView::OnEditEraser()
 
 void QDepthmapView::OnEditLineTool() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_LINETOOL;
    m_mouse_mode = LINETOOL;
    SetCursor(LINETOOL);
    if (m_showlinks) {
@@ -2343,7 +2330,6 @@ void QDepthmapView::OnEditLineTool()
 
 void QDepthmapView::OnEditPolygon() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_POLYGON;
    m_mouse_mode = POLYGONTOOL;
    SetCursor(POLYGONTOOL);
    if (m_showlinks) {
@@ -2354,7 +2340,6 @@ void QDepthmapView::OnEditPolygon()
 
 void QDepthmapView::OnModeJoin() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_JOIN;
    if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
       m_mouse_mode = JOIN;
       if (!pDoc->m_meta_graph->isSelected()) {
@@ -2371,7 +2356,6 @@ void QDepthmapView::OnModeJoin()
 
 void QDepthmapView::OnModeUnjoin() 
 {
-   m_curr_seleted = ID_MAPBAR_ITEM_UNJOIN;
    if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
       m_mouse_mode = UNJOIN;
       if (!pDoc->m_meta_graph->isSelected()) {
