@@ -4438,7 +4438,7 @@ std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
     return lines;
 }
 
-std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllShapesAsLineColourPairs() {
+std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
     std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
     const AttributeTable &attributeTable = getAttributeTable();
     for (size_t k = 0; k < getAllShapes().size(); k++) {
@@ -4447,14 +4447,29 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllShapesAsLineColourP
         if (shape.isLine()) {
             colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
         }
-        else if (shape.isPolyLine() || shape.isPolygon()) {
+        else if (shape.isPolyLine()) {
             for (size_t n = 0; n < shape.size() - 1; n++) {
                 colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape[n],shape[n+1]), color));
-            }
-            if (shape.isPolygon()) {
-                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.tail(),shape.head()), color));
             }
         }
     }
     return colouredLines;
+}
+
+std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
+    std::map<std::vector<Point2f>, PafColor> colouredPolygons;
+    const AttributeTable &attributeTable = getAttributeTable();
+    for (size_t k = 0; k < getAllShapes().size(); k++) {
+        SalaShape& shape = getAllShapes()[k];
+        if (shape.isPolygon()) {
+            std::vector<Point2f> vertices;
+            for (size_t n = 0; n < shape.size(); n++) {
+                vertices.push_back(shape[n]);
+            }
+            vertices.push_back(shape.tail());
+            PafColor colour(attributeTable.getDisplayColor(k));
+            colouredPolygons.insert(std::make_pair(vertices, colour));
+        }
+    }
+    return colouredPolygons;
 }

@@ -23,6 +23,7 @@
 #include "depthmapX/gllines.h"
 #include "depthmapX/gllinesuniform.h"
 #include "depthmapX/glrastertexture.h"
+#include "depthmapX/glpolygons.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -63,10 +64,12 @@ private:
 
     GLLines m_axes;
     GLLinesUniform m_grid;
-    GLLines m_visibleAxial;
+    GLLines m_visibleShapeGraph;
+    GLPolygons m_visibleShapeGraphPolygons;
     GLLinesUniform m_visibleDrawingLines;
     GLRasterTexture m_visiblePointMap;
-    GLLines m_visibleDataMap;
+    GLLines m_visibleDataMapLines;
+    GLPolygons m_visibleDataMapPolygons;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;
