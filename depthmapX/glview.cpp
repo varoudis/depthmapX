@@ -231,6 +231,17 @@ void GLView::resizeGL(int w, int h)
     recalcView();
 }
 
+void GLView::mouseReleaseEvent(QMouseEvent *event)
+{
+
+    Point2f worldPoint = getWorldPoint(event->pos());
+    if (!pDoc->m_communicator) {
+       QtRegion r( worldPoint, worldPoint );
+          pDoc->m_meta_graph->setCurSel( r, false ); // <- reset current sel
+       pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION);
+    }
+}
+
 void GLView::mousePressEvent(QMouseEvent *event)
 {
     m_mouseLastPos = event->pos();
@@ -271,8 +282,8 @@ void GLView::zoomBy(float dzf, int mouseX, int mouseY)
 }
 void GLView::panBy(int dx, int dy)
 {
-    m_eyePosX += zoomFactor * screenRatio * GLfloat(dx) / screenWidth;
-    m_eyePosY -= zoomFactor * GLfloat(dy) / screenWidth;
+    m_eyePosX += zoomFactor * GLfloat(dx) / screenHeight;
+    m_eyePosY -= zoomFactor * GLfloat(dy) / screenHeight;
 
     recalcView();
 }
@@ -291,6 +302,12 @@ void GLView::recalcView()
     }
     m_mProj.translate(m_eyePosX, m_eyePosY, 0.0f);
     update();
+}
+
+Point2f GLView::getWorldPoint(const QPoint &screenPoint) {
+    return Point2f(+ zoomFactor * float(screenPoint.x() - screenWidth*0.5)  / screenHeight - m_eyePosX,
+                   - zoomFactor * float(screenPoint.y() - screenHeight*0.5) / screenHeight - m_eyePosY);
+
 }
 
 void GLView::matchViewToCurrentMetaGraph() {
