@@ -43,6 +43,11 @@ public:
     void notifyDatasetChanged() { datasetChanged = true; update(); }
     void matchViewToCurrentMetaGraph();
 
+    QGraphDoc* pDoc;
+
+    void OnModeJoin();
+    void OnModeUnjoin();
+
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -59,7 +64,6 @@ private:
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
 
-    QGraphDoc* pDoc;
     const QRgb &m_foreground;
     const QRgb &m_background;
 
@@ -68,8 +72,13 @@ private:
 
     GLLines m_visibleShapeGraph;
     GLPolygons m_visibleShapeGraphPolygons;
+
     GLLinesUniform m_visibleDrawingLines;
+
     GLRasterTexture m_visiblePointMap;
+    GLLinesUniform m_visiblePointMapLinksLines;
+    GLTrianglesUniform m_visiblePointMapLinksFills;
+
     GLLines m_visibleDataMapLines;
     GLPolygons m_visibleDataMapPolygons;
 
@@ -98,5 +107,7 @@ private:
     void loadAxialGLObjects();
     void loadVGAGLObjects();
     void loadVGAGLObjectsRequiringGLContext();
+
+    bool m_showLinks = false;
 };
 
