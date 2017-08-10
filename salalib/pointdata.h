@@ -19,6 +19,7 @@
 #define __POINTDATA_H__
 
 #include "vertex.h"
+#include <vector>
 
 class MetaGraph;
 class PointMap;
@@ -236,6 +237,16 @@ public:
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
    bool setSpacePixel(const SuperSpacePixel *spacepix);  // (so different threads can use it... dangermouse!)
    bool setGrid(double spacing, const Point2f& offset = Point2f());
+   std::vector<std::pair<PixelRef, PixelRef>> getMergedPixelPairs()
+   {
+       // unnecessary converter until the m_merge_lines variable is
+       // replaced with a std container
+       std::vector<std::pair<PixelRef, PixelRef>> mergedPixelPairs;
+       for (size_t i = 0; i < m_merge_lines.size(); i++) {
+           mergedPixelPairs.push_back(std::make_pair(m_merge_lines[i].a, m_merge_lines[i].b));
+       }
+       return mergedPixelPairs;
+   }
    //
    bool isProcessed() const
    { return m_processed; }
