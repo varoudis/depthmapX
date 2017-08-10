@@ -28,6 +28,7 @@
 #include "settings.h"
 
 #include "version.h"
+#include "glview.h"
 
 class ItemTreeEntry
 {
@@ -489,6 +490,8 @@ private:
        ID_MAPBAR_ITEM_UNJOIN = 17,
        ID_MAPBAR_ITEM_AUGMENT_FILL = 18 // AV test - TV
     };
+
+    GLView* getFirstGLView();
 };
 
 #endif

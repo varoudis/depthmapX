@@ -16,6 +16,7 @@
 
 
 #include "depthmapX/glview.h"
+#include "salalib/linkutils.h"
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <math.h>
@@ -92,6 +93,8 @@ void GLView::initializeGL()
     m_visibleShapeGraphPolygons.initializeGL(m_core);
     m_visibleDataMapLines.initializeGL(m_core);
     m_visibleDataMapPolygons.initializeGL(m_core);
+    m_visiblePointMapLinksLines.initializeGL(m_core);
+    m_visiblePointMapLinksFills.initializeGL(m_core);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         loadVGAGLObjectsRequiringGLContext();
@@ -132,12 +135,22 @@ void GLView::paintGL()
             loadVGAGLObjects();
             m_visiblePointMap.updateGL(m_core);
             m_grid.updateGL(m_core);
+            m_visiblePointMapLinksLines.updateGL(m_core);
+            m_visiblePointMapLinksFills.updateGL(m_core);
             loadVGAGLObjectsRequiringGLContext();
         }
 
         datasetChanged = false;
     }
 
+    if(m_showLinks) {
+        glLineWidth(4);
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+            m_visiblePointMapLinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visiblePointMapLinksLines.paintGL(m_mProj, m_mView, m_mModel);
+        }
+        glLineWidth(1);
+    }
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
@@ -204,6 +217,64 @@ void GLView::loadVGAGLObjects() {
         }
         m_grid.loadLineData(gridData, gridColour);
     }
+    if(m_showLinks) {
+
+        const std::vector<SimpleLine> &mergedPixelLines = depthmapX::getMergedPixelsAsLines(currentPointMap);
+        std::vector<Point2f> mergedPixelLocations;
+        std::vector<SimpleLine>::const_iterator iter = mergedPixelLines.begin(), end =
+        mergedPixelLines.end();
+        for ( ; iter != end; ++iter )
+        {
+            SimpleLine mergeLine = *iter;
+            mergedPixelLocations.push_back(mergeLine.start());
+            mergedPixelLocations.push_back(mergeLine.end());
+        }
+
+        // first create a disk of a given number of sides at 0,0 and then take the coordinates
+        // generated and add the location of the two ends of each link to create a disk at
+        // each point.
+
+        std::vector<Point2f> diskTriangles;
+        int diskSides = 32;
+        float diskRadius = currentPointMap.getSpacing()*0.25;
+        for(int i = 0; i < diskSides; i++) {
+            diskTriangles.push_back(Point2f(0,0));
+            diskTriangles.push_back(Point2f(diskRadius*sin(2*M_PI*(i+1)/diskSides),diskRadius*cos(2*M_PI*(i+1)/diskSides)));
+            diskTriangles.push_back(Point2f(diskRadius*sin(2*M_PI*i/diskSides),diskRadius*cos(2*M_PI*i/diskSides)));
+        }
+        std::vector<Point2f> linkFillTriangles;
+
+        std::vector<Point2f>::const_iterator iterPixelLocations = mergedPixelLocations.begin(), endPixelLocations =
+        mergedPixelLocations.end();
+        for ( ; iterPixelLocations != endPixelLocations; ++iterPixelLocations )
+        {
+            Point2f mergeLocation = *iterPixelLocations;
+            std::vector<Point2f>::const_iterator iterDiskVertices = diskTriangles.begin(), endDiskPoints =
+            diskTriangles.end();
+            for ( ; iterDiskVertices != endDiskPoints; ++iterDiskVertices )
+            {
+                Point2f vertex = *iterDiskVertices;
+                linkFillTriangles.push_back(Point2f(mergeLocation.x + vertex.x,mergeLocation.y + vertex.y));
+            }
+        }
+        m_visiblePointMapLinksFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+
+        std::vector<SimpleLine> linkFillPerimeter;
+
+        std::vector<Point2f>::const_iterator iterFillTriangles = linkFillTriangles.begin(), endFilledTriangles =
+        linkFillTriangles.end();
+        for ( ; iterFillTriangles != endFilledTriangles; ++iterFillTriangles )
+        {
+            // skip first vertex (centre of disk);
+            ++iterFillTriangles;
+            Point2f vertex2 = *iterFillTriangles;
+            ++iterFillTriangles;
+            Point2f vertex3 = *iterFillTriangles;
+            linkFillPerimeter.push_back(SimpleLine(vertex2, vertex3));
+        }
+        linkFillPerimeter.insert( linkFillPerimeter.end(), mergedPixelLines.begin(), mergedPixelLines.end() );
+        m_visiblePointMapLinksLines.loadLineData(linkFillPerimeter, qRgb(0,255,0));
+    }
 }
 void GLView::loadVGAGLObjectsRequiringGLContext() {
     PointMap& currentPointMap = pDoc->m_meta_graph->getDisplayedPointMap();
@@ -233,7 +304,6 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::mouseReleaseEvent(QMouseEvent *event)
 {
-
     Point2f worldPoint = getWorldPoint(event->pos());
     if (!pDoc->m_communicator) {
        QtRegion r( worldPoint, worldPoint );
@@ -333,4 +403,20 @@ void GLView::matchViewToRegion(QtRegion region) {
     }
     minZoomFactor = zoomFactor * 0.001;
     maxZoomFactor = zoomFactor * 10;
+}
+
+void GLView::OnModeJoin()
+{
+   if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+      m_showLinks = true;
+      notifyDatasetChanged();
+   }
+}
+
+void GLView::OnModeUnjoin()
+{
+   if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+      m_showLinks = true;
+      notifyDatasetChanged();
+   }
 }

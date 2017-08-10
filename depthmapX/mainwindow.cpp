@@ -31,7 +31,6 @@
 #include "mainwindow.h"
 #include "depthmapView.h"
 #include "3DView.h"
-#include "glview.h"
 #include "PlotView.h"
 #include "tableView.h"
 #include "DepthmapOptionsDlg.h"
@@ -771,6 +770,11 @@ QDepthmapView *MainWindow::activeQDepthmapView()
             p = qobject_cast<Q3DView *>(activeSubWindow->widget());
             if(p) return (QDepthmapView *)(((Q3DView*)p)->pDoc->m_view[1]);
         }
+        if(!p)
+        {
+            p = qobject_cast<GLView *>(activeSubWindow->widget());
+            if(p) return (QDepthmapView *)(((GLView*)p)->pDoc->m_view[1]);
+        }
     }
     current_view_type = 0;
     return 0;
@@ -1094,6 +1098,16 @@ void MainWindow::updateGLWindows(bool datasetChanged, bool recentreView) {
         if(datasetChanged) child->notifyDatasetChanged();
         if(recentreView) child->matchViewToCurrentMetaGraph();
     }
+}
+
+GLView* MainWindow::getFirstGLView() {
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    for (int i = 0; i < windows.size(); ++i) {
+        GLView *child = qobject_cast<GLView*>(windows.at(i)->widget());
+        if(!child) continue;
+        return child;
+    }
+    return 0;
 }
 
 void MainWindow::switchLayoutDirection()
@@ -1884,6 +1898,8 @@ void MainWindow::joinButtonTriggered()
     if(id == ID_MAPBAR_ITEM_JOIN)
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_JOIN;
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeJoin();
         activeQDepthmapView()->OnModeJoin();
     }
     else
