@@ -17,7 +17,7 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-#include "depthmapX/glpolygon.h"
+#include "depthmapX/gltrianglesuniform.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
@@ -40,5 +40,5 @@ public:
     void cleanup();
 
 private:
-    std::vector<std::unique_ptr<GLPolygon>> polygons;
+    std::vector<std::unique_ptr<GLTrianglesUniform>> polygons;
 };
