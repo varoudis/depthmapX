@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "glpolygon.h"
-#include "glu.h"
-#include "glutriangulator.h"
+#include "gltrianglesuniform.h"
 #include <qmath.h>
 
 static const char *vertexShaderSourceCore =
@@ -52,28 +50,25 @@ static const char *fragmentShaderSource =
 
 /**
  * @brief GLPolygon::GLPolygon
- * This class is an OpenGL representation of a single polygon of uniform colour
+ * This class is an OpenGL representation of a set of triangles of uniform colour
  */
 
-GLPolygon::GLPolygon()
+GLTrianglesUniform::GLTrianglesUniform()
     : m_count(0),
       m_program(0)
 {
 
 }
 
-void GLPolygon::loadPolygonData(const std::vector<Point2f>& points, const PafColor &polyColour)
+void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour)
 {
     built = false;
 
     m_count = 0;
+    m_data.resize(points.size() * DATA_DIMENSIONS);
 
-    vector<Point2f> triangulated = GLUTriangulator::triangulate(points);
-
-    m_data.resize(triangulated.size() * DATA_DIMENSIONS);
-
-    std::vector<Point2f>::const_iterator iter = triangulated.begin(), end =
-    triangulated.end();
+    std::vector<Point2f>::const_iterator iter = points.begin(), end =
+    points.end();
     for ( ; iter != end; ++iter )
     {
         const Point2f & point = *iter;
@@ -84,7 +79,7 @@ void GLPolygon::loadPolygonData(const std::vector<Point2f>& points, const PafCol
     m_colour.setZ(polyColour.bluef());
 }
 
-void GLPolygon::setupVertexAttribs()
+void GLTrianglesUniform::setupVertexAttribs()
 {
     m_vbo.bind();
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -93,7 +88,7 @@ void GLPolygon::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLPolygon::initializeGL(bool m_core)
+void GLTrianglesUniform::initializeGL(bool m_core)
 {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
@@ -120,7 +115,7 @@ void GLPolygon::initializeGL(bool m_core)
     built = true;
 }
 
-void GLPolygon::updateGL(bool m_core) {
+void GLTrianglesUniform::updateGL(bool m_core) {
     if(m_program == 0) {
         // has not been initialised yet, do that instead
         initializeGL(m_core);
@@ -132,7 +127,7 @@ void GLPolygon::updateGL(bool m_core) {
     }
 }
 
-void GLPolygon::updateColour(const PafColor &polyColour)
+void GLTrianglesUniform::updateColour(const PafColor &polyColour)
 {
     m_colour.setX(polyColour.redf());
     m_colour.setY(polyColour.greenf());
@@ -142,7 +137,7 @@ void GLPolygon::updateColour(const PafColor &polyColour)
     m_program->release();
 }
 
-void GLPolygon::cleanup()
+void GLTrianglesUniform::cleanup()
 {
     if(!built) return;
     m_vbo.destroy();
@@ -150,7 +145,7 @@ void GLPolygon::cleanup()
     m_program = 0;
 }
 
-void GLPolygon::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
+void GLTrianglesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
     if(!built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
@@ -163,7 +158,7 @@ void GLPolygon::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, co
     m_program->release();
 }
 
-void GLPolygon::add(const QVector3D &v)
+void GLTrianglesUniform::add(const QVector3D &v)
 {
     GLfloat *p = m_data.data() + m_count;
     *p++ = v.x();

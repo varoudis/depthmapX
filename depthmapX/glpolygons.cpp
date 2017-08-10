@@ -15,10 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "glpolygons.h"
+#include "glu.h"
+#include "glutriangulator.h"
 
 /**
  * @brief GLPolygons::GLPolygons
- * This class is an OpenGL representation of a single polygon of uniform colour
+ * This class is an OpenGL representation of multiple polygons of different colour
  */
 
 void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>& colouredPolygons)
@@ -31,14 +33,16 @@ void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>&
         const std::vector<Point2f> & points = iter->first;
         const PafColor & colour = iter->second;
 
-        polygons.push_back(std::unique_ptr<GLPolygon>(new GLPolygon));
-        polygons[polygons.size() - 1]->loadPolygonData(points, colour);
+        polygons.push_back(std::unique_ptr<GLTrianglesUniform>(new GLTrianglesUniform));
+
+        vector<Point2f> triangulated = GLUTriangulator::triangulate(points);
+        polygons[polygons.size() - 1]->loadTriangleData(triangulated, colour);
     }
 }
 
 void GLPolygons::initializeGL(bool m_core)
 {
-    std::vector<std::unique_ptr<GLPolygon>>::iterator iter = polygons.begin(), end =
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
     polygons.end();
     for ( ; iter != end; ++iter )
     {
@@ -48,7 +52,7 @@ void GLPolygons::initializeGL(bool m_core)
 
 void GLPolygons::updateGL(bool m_core)
 {
-    std::vector<std::unique_ptr<GLPolygon>>::iterator iter = polygons.begin(), end =
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
     polygons.end();
     for ( ; iter != end; ++iter )
     {
@@ -58,7 +62,7 @@ void GLPolygons::updateGL(bool m_core)
 
 void GLPolygons::cleanup()
 {
-    std::vector<std::unique_ptr<GLPolygon>>::iterator iter = polygons.begin(), end =
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
     polygons.end();
     for ( ; iter != end; ++iter )
     {
@@ -68,7 +72,7 @@ void GLPolygons::cleanup()
 
 void GLPolygons::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    std::vector<std::unique_ptr<GLPolygon>>::iterator iter = polygons.begin(), end =
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
     polygons.end();
     for ( ; iter != end; ++iter )
     {

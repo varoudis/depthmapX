@@ -27,11 +27,11 @@
 #include <QOpenGLFunctions>
 #include <QRgb>
 
-class GLPolygon
+class GLTrianglesUniform
 {
 public:
-    GLPolygon();
-    void loadPolygonData(const std::vector<Point2f>& points, const PafColor &polyColour);
+    GLTrianglesUniform();
+    void loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
