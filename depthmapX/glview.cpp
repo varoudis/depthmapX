@@ -17,6 +17,7 @@
 
 #include "depthmapX/glview.h"
 #include "salalib/linkutils.h"
+#include "salalib/geometrygenerators.h"
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <math.h>
@@ -230,50 +231,14 @@ void GLView::loadVGAGLObjects() {
             mergedPixelLocations.push_back(mergeLine.end());
         }
 
-        // first create a disk of a given number of sides at 0,0 and then take the coordinates
-        // generated and add the location of the two ends of each link to create a disk at
-        // each point.
-
-        std::vector<Point2f> diskTriangles;
-        int diskSides = 32;
-        float diskRadius = currentPointMap.getSpacing()*0.25;
-        for(int i = 0; i < diskSides; i++) {
-            diskTriangles.push_back(Point2f(0,0));
-            diskTriangles.push_back(Point2f(diskRadius*sin(2*M_PI*(i+1)/diskSides),diskRadius*cos(2*M_PI*(i+1)/diskSides)));
-            diskTriangles.push_back(Point2f(diskRadius*sin(2*M_PI*i/diskSides),diskRadius*cos(2*M_PI*i/diskSides)));
-        }
-        std::vector<Point2f> linkFillTriangles;
-
-        std::vector<Point2f>::const_iterator iterPixelLocations = mergedPixelLocations.begin(), endPixelLocations =
-        mergedPixelLocations.end();
-        for ( ; iterPixelLocations != endPixelLocations; ++iterPixelLocations )
-        {
-            Point2f mergeLocation = *iterPixelLocations;
-            std::vector<Point2f>::const_iterator iterDiskVertices = diskTriangles.begin(), endDiskPoints =
-            diskTriangles.end();
-            for ( ; iterDiskVertices != endDiskPoints; ++iterDiskVertices )
-            {
-                Point2f vertex = *iterDiskVertices;
-                linkFillTriangles.push_back(Point2f(mergeLocation.x + vertex.x,mergeLocation.y + vertex.y));
-            }
-        }
+        const std::vector<Point2f> &linkFillTriangles =
+                GeometryGenerators::generateMultipleDiskTriangles(32, currentPointMap.getSpacing()*0.25, mergedPixelLocations);
         m_visiblePointMapLinksFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
 
-        std::vector<SimpleLine> linkFillPerimeter;
-
-        std::vector<Point2f>::const_iterator iterFillTriangles = linkFillTriangles.begin(), endFilledTriangles =
-        linkFillTriangles.end();
-        for ( ; iterFillTriangles != endFilledTriangles; ++iterFillTriangles )
-        {
-            // skip first vertex (centre of disk);
-            ++iterFillTriangles;
-            Point2f vertex2 = *iterFillTriangles;
-            ++iterFillTriangles;
-            Point2f vertex3 = *iterFillTriangles;
-            linkFillPerimeter.push_back(SimpleLine(vertex2, vertex3));
-        }
-        linkFillPerimeter.insert( linkFillPerimeter.end(), mergedPixelLines.begin(), mergedPixelLines.end() );
-        m_visiblePointMapLinksLines.loadLineData(linkFillPerimeter, qRgb(0,255,0));
+        std::vector<SimpleLine> linkFillPerimeters =
+                GeometryGenerators::generateMultipleCircleLines(32, currentPointMap.getSpacing()*0.25, mergedPixelLocations);
+        linkFillPerimeters.insert( linkFillPerimeters.end(), mergedPixelLines.begin(), mergedPixelLines.end() );
+        m_visiblePointMapLinksLines.loadLineData(linkFillPerimeters, qRgb(0,255,0));
     }
 }
 void GLView::loadVGAGLObjectsRequiringGLContext() {
