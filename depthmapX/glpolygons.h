@@ -25,6 +25,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
+#include <memory>
 
 /**
  * @brief The GLPolygons class is a plain wrapper class for multiple GLPolygon
