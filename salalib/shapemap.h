@@ -20,6 +20,7 @@
 #ifndef __SHAPEMAP_H__
 #define __SHAPEMAP_H__
 
+#include "genlib/p2dpoly.h"
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -518,9 +519,11 @@ public:
    // generic for all types of graphs
    bool findNextLinkLine() const;
    Line getNextLinkLine() const;
+   std::vector<SimpleLine> getAllLinkLines();
    // specific to axial line graphs 
    bool findNextUnlinkPoint() const;
    Point2f getNextUnlinkPoint() const;
+   std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
    void ozlemSpecial(ShapeMap& output);

@@ -3503,6 +3503,19 @@ Line ShapeMap::getNextLinkLine() const
    return Line();
 }
 
+std::vector<SimpleLine> ShapeMap::getAllLinkLines()
+{
+    std::vector<SimpleLine> linkLines;
+    for(size_t i = 0; i < m_links.size(); i++)
+    {
+        linkLines.push_back(SimpleLine(
+                                m_shapes.value(m_links[i].a).getCentroid(),
+                                m_shapes.value(m_links[i].b).getCentroid()
+                                ));
+    }
+    return linkLines;
+}
+
 // note: these functions would need slight work for arbitrary shape overlaps
 
 bool ShapeMap::findNextUnlinkPoint() const
@@ -3521,6 +3534,17 @@ Point2f ShapeMap::getNextUnlinkPoint() const
                                 m_shapes.value(m_unlinks[m_curunlinkpoint].b).getLine(), TOLERANCE_A);
    }
    return Point2f();
+}
+std::vector<Point2f> ShapeMap::getAllUnlinkPoints()
+{
+    std::vector<Point2f> unlinkPoints;
+    for(size_t i = 0; i < m_unlinks.size(); i++)
+    {
+        unlinkPoints.push_back(intersection_point(m_shapes.value(m_unlinks[i].a).getLine(),
+                                                  m_shapes.value(m_unlinks[i].b).getLine(), TOLERANCE_A));
+    }
+    return unlinkPoints;
+
 }
 
 void ShapeMap::outputUnlinkPoints( ofstream& stream, char delim )
