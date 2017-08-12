@@ -11,8 +11,6 @@ SOURCES += main.cpp \
     testglrastertexture.cpp
 INCLUDEPATH += ../ThirdParty/Catch
 
-win32:RC_ICONS += icons/depthmapX.ico
-
 win32:Release:LIBS += -L../depthmapX/release -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../depthmapX/debug -L../genlib/debug -L../salalib/debug
 !win32:LIBS += -L../depthmapX -L../genlib -L../salalib
