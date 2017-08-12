@@ -72,6 +72,10 @@ private:
 
     GLLines m_visibleShapeGraph;
     GLPolygons m_visibleShapeGraphPolygons;
+    GLLinesUniform m_visibleShapeGraphLinksLines;
+    GLTrianglesUniform m_visibleShapeGraphLinksFills;
+    GLLinesUniform m_visibleShapeGraphUnlinksLines;
+    GLTrianglesUniform m_visibleShapeGraphUnlinksFills;
 
     GLLinesUniform m_visibleDrawingLines;
 

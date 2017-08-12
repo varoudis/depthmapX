@@ -66,6 +66,10 @@ GLView::~GLView()
     m_visiblePointMap.cleanup();
     m_visibleShapeGraph.cleanup();
     m_visibleShapeGraphPolygons.cleanup();
+    m_visibleShapeGraphLinksFills.cleanup();
+    m_visibleShapeGraphLinksLines.cleanup();
+    m_visibleShapeGraphUnlinksFills.cleanup();
+    m_visibleShapeGraphUnlinksLines.cleanup();
     m_visibleDataMapLines.cleanup();
     m_visibleDataMapPolygons.cleanup();
     doneCurrent();
@@ -92,6 +96,10 @@ void GLView::initializeGL()
     m_grid.initializeGL(m_core);
     m_visibleShapeGraph.initializeGL(m_core);
     m_visibleShapeGraphPolygons.initializeGL(m_core);
+    m_visibleShapeGraphLinksFills.initializeGL(m_core);
+    m_visibleShapeGraphLinksLines.initializeGL(m_core);
+    m_visibleShapeGraphUnlinksFills.initializeGL(m_core);
+    m_visibleShapeGraphUnlinksLines.initializeGL(m_core);
     m_visibleDataMapLines.initializeGL(m_core);
     m_visibleDataMapPolygons.initializeGL(m_core);
     m_visiblePointMapLinksLines.initializeGL(m_core);
@@ -124,6 +132,10 @@ void GLView::paintGL()
             loadAxialGLObjects();
             m_visibleShapeGraph.updateGL(m_core);
             m_visibleShapeGraphPolygons.updateGL(m_core);
+            m_visibleShapeGraphLinksFills.updateGL(m_core);
+            m_visibleShapeGraphLinksLines.updateGL(m_core);
+            m_visibleShapeGraphUnlinksFills.updateGL(m_core);
+            m_visibleShapeGraphUnlinksLines.updateGL(m_core);
         }
 
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWDATA) {
@@ -149,6 +161,12 @@ void GLView::paintGL()
         if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
             m_visiblePointMapLinksFills.paintGL(m_mProj, m_mView, m_mModel);
             m_visiblePointMapLinksLines.paintGL(m_mProj, m_mView, m_mModel);
+        }
+        if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+            m_visibleShapeGraphLinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphLinksLines.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphUnlinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphUnlinksLines.paintGL(m_mProj, m_mView, m_mModel);
         }
         glLineWidth(1);
     }
@@ -197,6 +215,37 @@ void GLView::loadAxialGLObjects() {
     ShapeGraph &currentShapeGraph = pDoc->m_meta_graph->getDisplayedShapeGraph();
     m_visibleShapeGraph.loadLineData(currentShapeGraph.getAllLinesWithColour());
     m_visibleShapeGraphPolygons.loadPolygonData(currentShapeGraph.getAllPolygonsWithColour());
+
+    const std::vector<SimpleLine> &linkLines = currentShapeGraph.getAllLinkLines();
+    std::vector<Point2f> linkPointLocations;
+    std::vector<SimpleLine>::const_iterator iter = linkLines.begin(), end =
+    linkLines.end();
+    for ( ; iter != end; ++iter )
+    {
+        SimpleLine linkLine = *iter;
+        linkPointLocations.push_back(linkLine.start());
+        linkPointLocations.push_back(linkLine.end());
+    }
+
+    const std::vector<Point2f> &linkFillTriangles =
+            GeometryGenerators::generateMultipleDiskTriangles(32, currentShapeGraph.getSpacing()*0.1, linkPointLocations);
+    m_visibleShapeGraphLinksFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+
+    std::vector<SimpleLine> linkFillPerimeters =
+            GeometryGenerators::generateMultipleCircleLines(32, currentShapeGraph.getSpacing()*0.1, linkPointLocations);
+    linkFillPerimeters.insert( linkFillPerimeters.end(), linkLines.begin(), linkLines.end() );
+    m_visibleShapeGraphLinksLines.loadLineData(linkFillPerimeters, qRgb(0,255,0));
+
+
+    const std::vector<Point2f> &unlinkPoints = currentShapeGraph.getAllUnlinkPoints();
+
+    const std::vector<Point2f> &unlinkFillTriangles =
+            GeometryGenerators::generateMultipleDiskTriangles(32, currentShapeGraph.getSpacing()*0.1, unlinkPoints);
+    m_visibleShapeGraphUnlinksFills.loadTriangleData(unlinkFillTriangles, PafColor(1, 1, 1));
+
+    const std::vector<SimpleLine> &unlinkFillPerimeters =
+            GeometryGenerators::generateMultipleCircleLines(32, currentShapeGraph.getSpacing()*0.1, unlinkPoints);
+    m_visibleShapeGraphUnlinksLines.loadLineData(unlinkFillPerimeters, qRgb(255,0,0));
 }
 
 void GLView::loadVGAGLObjects() {
