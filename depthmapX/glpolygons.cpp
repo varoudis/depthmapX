@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "glpolygons.h"
-#include "glu.h"
 #include "glutriangulator.h"
 
 /**
