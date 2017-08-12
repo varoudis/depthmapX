@@ -1,7 +1,6 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-#include "gl.h"
 #include <vector>
 
 #ifdef __linux__
