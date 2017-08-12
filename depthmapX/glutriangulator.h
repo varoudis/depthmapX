@@ -2,8 +2,13 @@
 
 #include "genlib/p2dpoly.h"
 #include "gl.h"
-#include "glu.h"
 #include <vector>
+
+#ifdef __linux__
+#include "GL/glu.h"
+#else
+#include "glu.h"
+#endif
 
 class GLUTriangulator
 {
