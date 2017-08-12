@@ -11,7 +11,7 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get -y install qt573d qt57tools libgl1-mesa-dev libglu1-mesa-dev python3.5 freeglut-devel
+  - sudo apt-get -y install qt573d qt57tools libgl1-mesa-dev libglu1-mesa-dev python3.5
 
 script:
   - source /opt/qt57/bin/qt57-env.sh
