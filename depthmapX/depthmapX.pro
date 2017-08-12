@@ -142,4 +142,3 @@ FORMS += \
     UI/AboutDlg.ui \
     UI/licenseagreement.ui
 
-!win32:!macx:LIBS += -lGL -lGLU
