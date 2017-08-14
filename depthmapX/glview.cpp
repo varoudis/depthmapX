@@ -320,9 +320,88 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
 {
     Point2f worldPoint = getWorldPoint(event->pos());
     if (!pDoc->m_communicator) {
-       QtRegion r( worldPoint, worldPoint );
-          pDoc->m_meta_graph->setCurSel( r, false ); // <- reset current sel
-       pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION);
+        QtRegion r( worldPoint, worldPoint );
+        bool selected = false;
+        switch(m_mouseMode)
+        {
+        case MOUSE_MODE_NONE:
+        {
+            // nothing, deselect
+            pDoc->m_meta_graph->clearSel();
+            break;
+        }
+        case MOUSE_MODE_SELECT:
+        {
+            // typical selection
+            pDoc->m_meta_graph->setCurSel( r, false );
+            break;
+        }
+        case MOUSE_MODE_JOIN:
+        {
+            selected = pDoc->m_meta_graph->setCurSel( r, false );
+            if(selected) {
+                m_mouseMode = MOUSE_MODE_JOIN | MOUSE_MODE_SECOND_POINT;
+            }
+            break;
+        }
+        case MOUSE_MODE_JOIN | MOUSE_MODE_SECOND_POINT:
+        {
+            int selectedCount = pDoc->m_meta_graph->getSelCount();
+            if (selectedCount > 0) {
+                if (pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                    pDoc->m_meta_graph->getDisplayedPointMap().mergePoints( worldPoint );
+                } else if (pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                    pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
+                    const pvecint& selectedSet = pDoc->m_meta_graph->getSelSet();
+                    if (selectedSet.size() == 2) {
+                        // axial is only joined one-by-one
+                        pDoc->modifiedFlag = true;
+                        pDoc->m_meta_graph->getDisplayedShapeGraph().linkShapes(selectedSet[0], selectedSet[1], true);
+                        pDoc->m_meta_graph->clearSel();
+                    }
+                }
+                pDoc->m_meta_graph->clearSel();
+                m_mouseMode = MOUSE_MODE_JOIN;
+            }
+            break;
+        }
+        case MOUSE_MODE_UNJOIN:
+        {
+            selected = pDoc->m_meta_graph->setCurSel( r, false );
+            if(selected) {
+                if (pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                    if (pDoc->m_meta_graph->getDisplayedPointMap().unmergePoints()) {
+                        pDoc->modifiedFlag = true;
+                        pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
+                    }
+                } else {
+                    m_mouseMode = MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT;
+                }
+            }
+            break;
+        }
+        case MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT:
+        {
+            int selectedCount = pDoc->m_meta_graph->getSelCount();
+            if (selectedCount > 0) {
+                if (pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                    pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
+                    const pvecint& selectedSet = pDoc->m_meta_graph->getSelSet();
+                    if (selectedSet.size() == 2) {
+                        // axial is only joined one-by-one
+                        pDoc->modifiedFlag = true;
+                        pDoc->m_meta_graph->getDisplayedShapeGraph().unlinkShapes(selectedSet[0], selectedSet[1], true);
+                        pDoc->m_meta_graph->clearSel();
+                    }
+                }
+                pDoc->m_meta_graph->clearSel();
+                m_mouseMode = MOUSE_MODE_UNJOIN;
+            }
+            break;
+        }
+        }
+
+        pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION);
     }
 }
 
@@ -421,16 +500,20 @@ void GLView::matchViewToRegion(QtRegion region) {
 
 void GLView::OnModeJoin()
 {
-   if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
-      m_showLinks = true;
-      notifyDatasetChanged();
-   }
+    if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        m_mouseMode = MOUSE_MODE_JOIN;
+        m_showLinks = true;
+        pDoc->m_meta_graph->clearSel();
+        notifyDatasetChanged();
+    }
 }
 
 void GLView::OnModeUnjoin()
 {
-   if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
-      m_showLinks = true;
-      notifyDatasetChanged();
-   }
+    if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        m_mouseMode = MOUSE_MODE_UNJOIN;
+        m_showLinks = true;
+        pDoc->m_meta_graph->clearSel();
+        notifyDatasetChanged();
+    }
 }
