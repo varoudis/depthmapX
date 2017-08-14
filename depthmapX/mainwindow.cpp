@@ -1905,6 +1905,8 @@ void MainWindow::joinButtonTriggered()
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_UNJOIN;
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeUnjoin();
         activeQDepthmapView()->OnModeUnjoin();
     }
 }
