@@ -24,6 +24,8 @@
 #include "depthmapX/gllinesuniform.h"
 #include "depthmapX/glrastertexture.h"
 #include "depthmapX/glpolygons.h"
+#include "depthmapX/glpointmap.h"
+#include "depthmapX/glshapegraph.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -68,23 +70,10 @@ private:
     const QRgb &m_background;
 
     GLLines m_axes;
-    GLLinesUniform m_grid;
-
-    GLLines m_visibleShapeGraph;
-    GLPolygons m_visibleShapeGraphPolygons;
-    GLLinesUniform m_visibleShapeGraphLinksLines;
-    GLTrianglesUniform m_visibleShapeGraphLinksFills;
-    GLLinesUniform m_visibleShapeGraphUnlinksLines;
-    GLTrianglesUniform m_visibleShapeGraphUnlinksFills;
-
+    GLShapeGraph m_visibleShapeGraph;
     GLLinesUniform m_visibleDrawingLines;
-
-    GLRasterTexture m_visiblePointMap;
-    GLLinesUniform m_visiblePointMapLinksLines;
-    GLTrianglesUniform m_visiblePointMapLinksFills;
-
-    GLLines m_visibleDataMapLines;
-    GLPolygons m_visibleDataMapPolygons;
+    GLPointMap m_visiblePointMap;
+    GLShapeMap m_visibleDataMap;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;
@@ -107,12 +96,6 @@ private:
 
     void loadAxes();
     void loadDrawingGLObjects();
-    void loadDataMapGLObjects();
-    void loadAxialGLObjects();
-    void loadVGAGLObjects();
-    void loadVGAGLObjectsRequiringGLContext();
-
-    bool m_showLinks = false;
 
     enum {
         MOUSE_MODE_NONE = 0x0000,
