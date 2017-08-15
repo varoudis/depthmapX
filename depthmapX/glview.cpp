@@ -274,7 +274,8 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     int dx = event->x() - m_mouseLastPos.x();
     int dy = event->y() - m_mouseLastPos.y();
 
-    if (event->buttons() & Qt::RightButton) {
+    if (event->buttons() & Qt::RightButton
+            || m_mouseMode == MOUSE_MODE_DRAG) {
         panBy(dx, dy);
     }
     m_mouseLastPos = event->pos();
@@ -377,4 +378,8 @@ void GLView::OnModeUnjoin()
         pDoc->m_meta_graph->clearSel();
         notifyDatasetChanged();
     }
+}
+void GLView::OnViewMove()
+{
+   m_mouseMode = MOUSE_MODE_DRAG;
 }
