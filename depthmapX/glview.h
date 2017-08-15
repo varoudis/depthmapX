@@ -49,7 +49,9 @@ public:
 
     void OnModeJoin();
     void OnModeUnjoin();
-    void OnViewMove();
+    void OnViewPan();
+    void OnViewZoomIn();
+    void OnViewZoomOut();
 
 protected:
     void initializeGL() override;
@@ -101,7 +103,9 @@ private:
     enum {
         MOUSE_MODE_NONE = 0x0000,
         MOUSE_MODE_SELECT = 0x10000,
-        MOUSE_MODE_DRAG = 0x0101,
+        MOUSE_MODE_PAN = 0x0101,
+        MOUSE_MODE_ZOOM_IN = 0x0202,
+        MOUSE_MODE_ZOOM_OUT = 0x0204,
         MOUSE_MODE_JOIN = 0x20001,
         MOUSE_MODE_UNJOIN = 0x20002,
         MOUSE_MODE_SECOND_POINT = 0x00400,

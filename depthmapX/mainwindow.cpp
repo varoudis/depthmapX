@@ -1800,7 +1800,7 @@ void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeQDepthmapView()->OnViewMove();
-    getFirstGLView()->OnViewMove();
+    getFirstGLView()->OnViewPan();
 }
 
 void MainWindow::SelectPenTriggered()
@@ -1827,11 +1827,13 @@ void MainWindow::zoomButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_IN;
         activeQDepthmapView()->OnViewZoomIn();
+        getFirstGLView()->OnViewZoomIn();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_OUT;
         activeQDepthmapView()->OnViewZoomOut();
+        getFirstGLView()->OnViewZoomOut();
     }
 }
 
