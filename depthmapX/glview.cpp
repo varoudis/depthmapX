@@ -177,7 +177,8 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::mouseReleaseEvent(QMouseEvent *event)
 {
-    Point2f worldPoint = getWorldPoint(event->pos());
+    QPoint mousePoint = event->pos();
+    Point2f worldPoint = getWorldPoint(mousePoint);
     if (!pDoc->m_communicator) {
         QtRegion r( worldPoint, worldPoint );
         bool selected = false;
@@ -193,6 +194,16 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         {
             // typical selection
             pDoc->m_meta_graph->setCurSel( r, false );
+            break;
+        }
+        case MOUSE_MODE_ZOOM_IN:
+        {
+            zoomBy(0.8, mousePoint.x(), mousePoint.y());
+            break;
+        }
+        case MOUSE_MODE_ZOOM_OUT:
+        {
+            zoomBy(1.2, mousePoint.x(), mousePoint.y());
             break;
         }
         case MOUSE_MODE_JOIN:
@@ -275,7 +286,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     int dy = event->y() - m_mouseLastPos.y();
 
     if (event->buttons() & Qt::RightButton
-            || m_mouseMode == MOUSE_MODE_DRAG) {
+            || m_mouseMode == MOUSE_MODE_PAN) {
         panBy(dx, dy);
     }
     m_mouseLastPos = event->pos();
@@ -379,7 +390,17 @@ void GLView::OnModeUnjoin()
         notifyDatasetChanged();
     }
 }
-void GLView::OnViewMove()
+void GLView::OnViewPan()
 {
-   m_mouseMode = MOUSE_MODE_DRAG;
+    m_mouseMode = MOUSE_MODE_PAN;
+}
+
+void GLView::OnViewZoomIn()
+{
+    m_mouseMode = MOUSE_MODE_ZOOM_IN;
+}
+
+void GLView::OnViewZoomOut()
+{
+    m_mouseMode = MOUSE_MODE_ZOOM_OUT;
 }
