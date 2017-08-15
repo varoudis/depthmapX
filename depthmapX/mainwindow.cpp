@@ -1800,6 +1800,7 @@ void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeQDepthmapView()->OnViewMove();
+    getFirstGLView()->OnViewMove();
 }
 
 void MainWindow::SelectPenTriggered()
