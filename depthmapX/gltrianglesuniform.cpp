@@ -49,7 +49,7 @@ static const char *fragmentShaderSource =
     "}\n";
 
 /**
- * @brief GLPolygon::GLPolygon
+ * @brief GLTrianglesUniform::GLTrianglesUniform
  * This class is an OpenGL representation of a set of triangles of uniform colour
  */
 
