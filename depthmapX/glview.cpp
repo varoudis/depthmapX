@@ -59,6 +59,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 GLView::~GLView()
 {
     makeCurrent();
+    selectionRect.cleanup();
     m_axes.cleanup();
     m_visibleDrawingLines.cleanup();
     m_visiblePointMap.cleanup();
@@ -82,6 +83,7 @@ void GLView::initializeGL()
     initializeOpenGLFunctions();
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
+    selectionRect.initializeGL(m_core);
     m_axes.initializeGL(m_core);
     m_visibleDrawingLines.initializeGL(m_core);
     m_visiblePointMap.initializeGL(m_core);
@@ -129,6 +131,14 @@ void GLView::paintGL()
 
         datasetChanged = false;
     }
+
+    float pos [] = {
+        float(min(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
+        float(min(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y())),
+        float(max(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
+        float(max(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y()))
+    };
+    selectionRect.paintGL(m_mProj, m_mView, m_mModel, QMatrix2x2(pos));
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         m_visiblePointMap.paintGLOverlay(m_mProj, m_mView, m_mModel);
@@ -273,6 +283,8 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
 
         pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION);
     }
+    m_mouseDragRect.setWidth(0);
+    m_mouseDragRect.setHeight(0);
 }
 
 void GLView::mousePressEvent(QMouseEvent *event)
@@ -288,6 +300,16 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     if (event->buttons() & Qt::RightButton
             || m_mouseMode == MOUSE_MODE_PAN) {
         panBy(dx, dy);
+    } else if (event->buttons() & Qt::LeftButton) {
+        Point2f lastWorldPoint = getWorldPoint(m_mouseLastPos);
+        Point2f worldPoint = getWorldPoint(event->pos());
+        if(m_mouseDragRect.isNull()) {
+            m_mouseDragRect.setX(lastWorldPoint.x);
+            m_mouseDragRect.setY(lastWorldPoint.y);
+        }
+        m_mouseDragRect.setWidth(worldPoint.x - m_mouseDragRect.x());
+        m_mouseDragRect.setHeight(worldPoint.y - m_mouseDragRect.y());
+        update();
     }
     m_mouseLastPos = event->pos();
 }

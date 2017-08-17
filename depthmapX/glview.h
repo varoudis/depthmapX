@@ -26,6 +26,7 @@
 #include "depthmapX/glpolygons.h"
 #include "depthmapX/glpointmap.h"
 #include "depthmapX/glshapegraph.h"
+#include "depthmapX/gldynamicrect.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -72,6 +73,7 @@ private:
     const QRgb &m_foreground;
     const QRgb &m_background;
 
+    GLDynamicRect selectionRect;
     GLLines m_axes;
     GLShapeGraph m_visibleShapeGraph;
     GLLinesUniform m_visibleDrawingLines;
@@ -112,5 +114,7 @@ private:
     };
 
     int m_mouseMode = MOUSE_MODE_NONE;
+
+    QRectF m_mouseDragRect = QRectF(0,0,0,0);
 };
 
