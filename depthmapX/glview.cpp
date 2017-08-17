@@ -191,7 +191,19 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
     QPoint mousePoint = event->pos();
     Point2f worldPoint = getWorldPoint(mousePoint);
     if (!pDoc->m_communicator) {
-        QtRegion r( worldPoint, worldPoint );
+        QtRegion r;
+        if(m_mouseDragRect.isNull())
+        {
+            r.bottom_left = worldPoint;
+            r.top_right = worldPoint;
+        }
+        else
+        {
+            r.bottom_left.x = min(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x());
+            r.bottom_left.y = min(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y());
+            r.top_right.x = max(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x());
+            r.top_right.y = max(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y());
+        }
         bool selected = false;
         switch(m_mouseMode)
         {
