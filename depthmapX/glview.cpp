@@ -103,7 +103,6 @@ void GLView::initializeGL()
 void GLView::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
@@ -132,22 +131,8 @@ void GLView::paintGL()
         datasetChanged = false;
     }
 
-    float pos [] = {
-        float(min(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
-        float(min(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y())),
-        float(max(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
-        float(max(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y()))
-    };
-    selectionRect.paintGL(m_mProj, m_mView, m_mModel, QMatrix2x2(pos));
 
-    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
-        m_visiblePointMap.paintGLOverlay(m_mProj, m_mView, m_mModel);
-    }
-    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
-        m_visibleShapeGraph.paintGLOverlay(m_mProj, m_mView, m_mModel);
-    }
-
-    m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
+    m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
         m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
@@ -161,7 +146,23 @@ void GLView::paintGL()
         m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
     }
 
-    m_axes.paintGL(m_mProj, m_mView, m_mModel);
+    m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
+
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+        m_visiblePointMap.paintGLOverlay(m_mProj, m_mView, m_mModel);
+    }
+    if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWAXIAL) {
+        m_visibleShapeGraph.paintGLOverlay(m_mProj, m_mView, m_mModel);
+    }
+
+
+    float pos [] = {
+        float(min(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
+        float(min(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y())),
+        float(max(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x())),
+        float(max(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y()))
+    };
+    selectionRect.paintGL(m_mProj, m_mView, m_mModel, QMatrix2x2(pos));
 }
 
 void GLView::loadAxes() {
