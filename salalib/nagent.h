@@ -183,7 +183,7 @@ struct AgentProgram
    void mutate();
    friend AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b);
    // to reload later:
-   void save(const pstring& filename);
+   void save(const std::string& filename);
    bool open(const std::string& filename);
 };
 

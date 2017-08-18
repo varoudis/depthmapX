@@ -395,7 +395,7 @@ AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b)
    return child;
 }
 
-void AgentProgram::save(const pstring& filename)
+void AgentProgram::save(const std::string& filename)
 {
    // standard ascii:
    ofstream file(filename.c_str());
