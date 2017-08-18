@@ -229,6 +229,22 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             zoomBy(1.2, mousePoint.x(), mousePoint.y());
             break;
         }
+        case MOUSE_MODE_FILL_FULL:
+        {
+            pDoc->OnFillPoints( worldPoint, 0 );
+            break;
+        }
+        case MOUSE_MODE_PENCIL:
+        {
+            pDoc->m_meta_graph->getDisplayedPointMap().fillPoint(worldPoint,true);
+            break;
+        }
+        case MOUSE_MODE_POINT_STEP_DEPTH:
+        {
+            pDoc->m_meta_graph->setCurSel( r, false );
+            pDoc->OnToolsPD();
+            break;
+        }
         case MOUSE_MODE_JOIN:
         {
             selected = pDoc->m_meta_graph->setCurSel( r, false );
@@ -438,4 +454,28 @@ void GLView::OnViewZoomIn()
 void GLView::OnViewZoomOut()
 {
     m_mouseMode = MOUSE_MODE_ZOOM_OUT;
+}
+
+void GLView::OnEditFill()
+{
+    m_mouseMode = MOUSE_MODE_FILL_FULL;
+}
+
+void GLView::OnEditSemiFill()
+{
+    m_mouseMode = MOUSE_MODE_FILL_SEMI;
+}
+
+void GLView::OnEditAugmentFill()
+{
+    m_mouseMode = MOUSE_MODE_FILL_AUGMENT;
+}
+
+void GLView::OnEditPencil()
+{
+    m_mouseMode = MOUSE_MODE_PENCIL;
+}
+void GLView::OnModeStepDepth()
+{
+    m_mouseMode = MOUSE_MODE_POINT_STEP_DEPTH;
 }

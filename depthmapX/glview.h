@@ -53,6 +53,11 @@ public:
     void OnViewPan();
     void OnViewZoomIn();
     void OnViewZoomOut();
+    void OnEditFill();
+    void OnEditSemiFill();
+    void OnEditAugmentFill();
+    void OnEditPencil();
+    void OnModeStepDepth();
 
 protected:
     void initializeGL() override;
@@ -108,6 +113,11 @@ private:
         MOUSE_MODE_PAN = 0x0101,
         MOUSE_MODE_ZOOM_IN = 0x0202,
         MOUSE_MODE_ZOOM_OUT = 0x0204,
+        MOUSE_MODE_FILL_FULL = 0x0001,
+        MOUSE_MODE_FILL_SEMI = 0x0002,
+        MOUSE_MODE_FILL_AUGMENT = 0x0003,
+        MOUSE_MODE_PENCIL = 0x0801,
+        MOUSE_MODE_POINT_STEP_DEPTH = 0x5000,
         MOUSE_MODE_JOIN = 0x20001,
         MOUSE_MODE_UNJOIN = 0x20002,
         MOUSE_MODE_SECOND_POINT = 0x00400,

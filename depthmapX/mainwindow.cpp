@@ -1807,6 +1807,7 @@ void MainWindow::SelectPenTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_PENCIL;
     activeQDepthmapView()->OnEditPencil();
+    getFirstGLView()->OnEditPencil();
 }
 
 void MainWindow::AxialMapTriggered()
@@ -1818,6 +1819,7 @@ void MainWindow::AxialMapTriggered()
 void MainWindow::StepDepthTriggered()
 {
     activeQDepthmapDoc()->OnToolsPD();
+    getFirstGLView()->OnModeStepDepth();
 }
 
 void MainWindow::zoomButtonTriggered()
@@ -1852,16 +1854,19 @@ void MainWindow::FillButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_FILL;
         activeQDepthmapView()->OnEditFill();
+        getFirstGLView()->OnEditFill();
     }
     else if (id == ID_MAPBAR_ITEM_SEMIFILL)         // AV TV
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_SEMIFILL;
         activeQDepthmapView()->OnEditSemiFill();
+        getFirstGLView()->OnEditSemiFill();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_AUGMENT_FILL;
         activeQDepthmapView()->OnEditAugmentFill(); // AV TV
+        getFirstGLView()->OnEditAugmentFill();
     }
 }
 
