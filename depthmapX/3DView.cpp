@@ -527,7 +527,7 @@ void Q3DView::OnToolsAgentLoadProgram()
 	   return;
    }
 
-   std::string filename = infiles[0].toLatin1();
+   std::string filename = infiles[0].toStdString();
    
    if (!filename.empty()) {
       m_animating = false;
@@ -1148,7 +1148,7 @@ void Q3DView::OnToolsImportTraces()
 	   return;
    }
 
-   std::string filename = infiles[0].toLatin1();
+   std::string filename = infiles[0].toStdString();
    
    if (!filename.empty()) {
       m_animating = false;
