@@ -17,6 +17,8 @@
 #include <sstream>
 #include <memory>
 #include <cstring>
+#include <algorithm>
+#include <ctype.h>
 
 namespace dXstring {
     std::vector<std::string> split(const std::string &s, char delim)
@@ -64,5 +66,17 @@ namespace dXstring {
         return std::string(buffer.get());
     }
 
+    std::string& toLower(std::string &str)
+    {
+        std::transform(str.begin(), str.end(), str.begin(), tolower);
+        return str;
+    }
+
+    // trim from start (in place)
+    void ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+            return !::isspace(ch);
+        }));
+    }
 
 }
