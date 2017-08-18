@@ -239,6 +239,26 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             pDoc->m_meta_graph->getDisplayedPointMap().fillPoint(worldPoint,true);
             break;
         }
+        case MOUSE_MODE_SEED_ISOVIST:
+        {
+            pDoc->OnMakeIsovist( worldPoint );
+            break;
+        }
+        case MOUSE_MODE_SEED_TARGETED_ISOVIST:
+        {
+            m_tempFirstPoint = worldPoint;
+            m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST | MOUSE_MODE_SECOND_POINT;
+            break;
+        }
+        case MOUSE_MODE_SEED_TARGETED_ISOVIST | MOUSE_MODE_SECOND_POINT:
+        {
+            Line directionLine(m_tempFirstPoint,worldPoint);
+            Point2f vec = directionLine.vector();
+            vec.normalise();
+            pDoc->OnMakeIsovist( m_tempFirstPoint, vec.angle() );
+            m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST;
+            break;
+        }
         case MOUSE_MODE_POINT_STEP_DEPTH:
         {
             pDoc->m_meta_graph->setCurSel( r, false );
@@ -475,6 +495,17 @@ void GLView::OnEditPencil()
 {
     m_mouseMode = MOUSE_MODE_PENCIL;
 }
+
+void GLView::OnModeIsovist()
+{
+    m_mouseMode = MOUSE_MODE_SEED_ISOVIST;
+}
+
+void GLView::OnModeTargetedIsovist()
+{
+    m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST;
+}
+
 void GLView::OnModeStepDepth()
 {
     m_mouseMode = MOUSE_MODE_POINT_STEP_DEPTH;

@@ -1900,11 +1900,15 @@ void MainWindow::isoButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ISOVIST;
         activeQDepthmapView()->OnModeIsovist();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeIsovist();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_HALFISOVIST;
         activeQDepthmapView()->OnModeHalfovist();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeTargetedIsovist();
     }
 }
 
