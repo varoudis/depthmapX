@@ -1800,14 +1800,16 @@ void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeQDepthmapView()->OnViewMove();
-    getFirstGLView()->OnViewPan();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnViewPan();
 }
 
 void MainWindow::SelectPenTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_PENCIL;
     activeQDepthmapView()->OnEditPencil();
-    getFirstGLView()->OnEditPencil();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnEditPencil();
 }
 
 void MainWindow::AxialMapTriggered()
@@ -1819,7 +1821,8 @@ void MainWindow::AxialMapTriggered()
 void MainWindow::StepDepthTriggered()
 {
     activeQDepthmapDoc()->OnToolsPD();
-    getFirstGLView()->OnModeStepDepth();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnModeStepDepth();
 }
 
 void MainWindow::zoomButtonTriggered()
@@ -1829,13 +1832,15 @@ void MainWindow::zoomButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_IN;
         activeQDepthmapView()->OnViewZoomIn();
-        getFirstGLView()->OnViewZoomIn();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnViewZoomIn();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_OUT;
         activeQDepthmapView()->OnViewZoomOut();
-        getFirstGLView()->OnViewZoomOut();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnViewZoomOut();
     }
 }
 
@@ -1854,19 +1859,22 @@ void MainWindow::FillButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_FILL;
         activeQDepthmapView()->OnEditFill();
-        getFirstGLView()->OnEditFill();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditFill();
     }
     else if (id == ID_MAPBAR_ITEM_SEMIFILL)         // AV TV
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_SEMIFILL;
         activeQDepthmapView()->OnEditSemiFill();
-        getFirstGLView()->OnEditSemiFill();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditSemiFill();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_AUGMENT_FILL;
         activeQDepthmapView()->OnEditAugmentFill(); // AV TV
-        getFirstGLView()->OnEditAugmentFill();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditAugmentFill();
     }
 }
 
