@@ -184,7 +184,7 @@ struct AgentProgram
    friend AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b);
    // to reload later:
    void save(const pstring& filename);
-   bool open(const pstring& filename);
+   bool open(const std::string& filename);
 };
 
 struct AgentSet : public AgentProgram, public prefvec<Agent>
