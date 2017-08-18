@@ -156,3 +156,30 @@ TEST_CASE("test string format")
     REQUIRE(dXstring::formatString(1.0, "foo") == "foo");
     REQUIRE(dXstring::formatString(1.0, "%+.16le") == "+1.0000000000000000e+00");
 }
+
+TEST_CASE("test tolower")
+{
+    std::string tstr = "AbdUgs24*hHÜ";
+    auto result = dXstring::toLower(tstr);
+    REQUIRE(tstr == "abdugs24*hhÜ");
+    REQUIRE(result == "abdugs24*hhÜ");
+}
+
+TEST_CASE("test ltrim")
+{
+    std::string normal = "   fo o ";
+    dXstring::ltrim(normal);
+    REQUIRE( normal == "fo o ");
+    std::string tabs = "\t \tba r\t";
+    dXstring::ltrim(tabs) ;
+    REQUIRE(tabs == "ba r\t");
+    std::string empty = "";
+    dXstring::ltrim(empty);
+    REQUIRE( empty == "" );
+    std::string justBlanks = "\t   ";
+    dXstring::ltrim(justBlanks);
+    REQUIRE( justBlanks == "");
+    std::string noBlanks = "foo ";
+    dXstring::ltrim(noBlanks);
+    REQUIRE(noBlanks == "foo ");
+}

@@ -26,4 +26,7 @@ namespace dXstring {
     std::string readString(std::istream & stream);
     void writeString(std::ostream &stream, const std::string &s);
     std::string formatString(double value, const char *format);
+    /// Inplace conversion to lower case
+    std::string &toLower(std::string &str);
+    void ltrim(std::string &s);
 }
