@@ -57,6 +57,8 @@ public:
     void OnEditSemiFill();
     void OnEditAugmentFill();
     void OnEditPencil();
+    void OnModeIsovist();
+    void OnModeTargetedIsovist();
     void OnModeStepDepth();
 
 protected:
@@ -117,6 +119,8 @@ private:
         MOUSE_MODE_FILL_SEMI = 0x0002,
         MOUSE_MODE_FILL_AUGMENT = 0x0003,
         MOUSE_MODE_PENCIL = 0x0801,
+        MOUSE_MODE_SEED_ISOVIST = 0x4001,
+        MOUSE_MODE_SEED_TARGETED_ISOVIST = 0x4002,
         MOUSE_MODE_POINT_STEP_DEPTH = 0x5000,
         MOUSE_MODE_JOIN = 0x20001,
         MOUSE_MODE_UNJOIN = 0x20002,
@@ -126,5 +130,7 @@ private:
     int m_mouseMode = MOUSE_MODE_NONE;
 
     QRectF m_mouseDragRect = QRectF(0,0,0,0);
+
+    Point2f m_tempFirstPoint;
 };
 
