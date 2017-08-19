@@ -35,25 +35,31 @@ public:
     void cleanup();
     void updateColour(const PafColor &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+
+protected:
+    void add(const GLfloat v);
+
+    int m_count;
+    bool built = false;
+    QVector<GLfloat> m_data;
+
+    QOpenGLBuffer m_vbo;
+    QOpenGLVertexArrayObject m_vao;
+    QOpenGLShaderProgram *m_program;
+
+    int m_diagVertices2DLoc;
+    int m_projMatrixLoc;
+    int m_mvMatrixLoc;
+    int m_colourVectorLoc;
+
 private:
     bool dataLoaded = false;
     const int DATA_DIMENSIONS = 1;
     void setupVertexAttribs();
     int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
-    void add(const GLfloat v);
 
-    QVector<GLfloat> m_data;
-    int m_count;
-    bool built = false;
 
     QVector4D m_colour = QVector4D(0.0f, 1.0f, 0.0f, 0.3f);
 
-    QOpenGLVertexArrayObject m_vao;
-    QOpenGLBuffer m_vbo;
-    QOpenGLShaderProgram *m_program;
-    int m_diagVertices2DLoc;
-    int m_projMatrixLoc;
-    int m_mvMatrixLoc;
-    int m_colourVectorLoc;
 };

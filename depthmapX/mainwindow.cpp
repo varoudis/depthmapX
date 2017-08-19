@@ -1885,11 +1885,15 @@ void MainWindow::LineButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_LINETOOL;
         activeQDepthmapView()->OnEditLineTool();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeLineTool();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_POLYGON;
         activeQDepthmapView()->OnEditPolygon();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModePolygonTool();
     }
 }
 

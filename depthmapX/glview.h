@@ -27,6 +27,7 @@
 #include "depthmapX/glpointmap.h"
 #include "depthmapX/glshapegraph.h"
 #include "depthmapX/gldynamicrect.h"
+#include "depthmapX/gldynamicline.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -60,6 +61,8 @@ public:
     void OnModeIsovist();
     void OnModeTargetedIsovist();
     void OnModeStepDepth();
+    void OnModeLineTool();
+    void OnModePolygonTool();
 
 protected:
     void initializeGL() override;
@@ -81,6 +84,7 @@ private:
     const QRgb &m_background;
 
     GLDynamicRect selectionRect;
+    GLDynamicLine dragLine;
     GLLines m_axes;
     GLShapeGraph m_visibleShapeGraph;
     GLLinesUniform m_visibleDrawingLines;
@@ -98,6 +102,7 @@ private:
     int screenHeight;
 
     Point2f getWorldPoint(const QPoint &screenPoint);
+    QPoint getScreenPoint(const Point2f &worldPoint);
 
     bool datasetChanged = false;
 
@@ -121,6 +126,8 @@ private:
         MOUSE_MODE_PENCIL = 0x0801,
         MOUSE_MODE_SEED_ISOVIST = 0x4001,
         MOUSE_MODE_SEED_TARGETED_ISOVIST = 0x4002,
+        MOUSE_MODE_LINE_TOOL = 0x0008,
+        MOUSE_MODE_POLYGON_TOOL = 0x0010,
         MOUSE_MODE_POINT_STEP_DEPTH = 0x5000,
         MOUSE_MODE_JOIN = 0x20001,
         MOUSE_MODE_UNJOIN = 0x20002,
@@ -132,5 +139,14 @@ private:
     QRectF m_mouseDragRect = QRectF(0,0,0,0);
 
     Point2f m_tempFirstPoint;
+    Point2f m_tempSecondPoint;
+
+    Point2f m_polyStart;
+    int m_polyPoints;
+
+    inline int PixelDist(QPoint a, QPoint b)
+    {
+       return (int)sqrt(double((b.x()-a.x())*(b.x()-a.x())+(b.y()-a.y())*(b.y()-a.y())));
+    }
 };
 
