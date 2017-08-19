@@ -793,6 +793,8 @@ QGraphDoc *MainWindow::activeQDepthmapDoc()
         if(p) return ((tableView *)p)->pDoc;
         p = qobject_cast<Q3DView *>(activeSubWindow->widget());
         if(p) return ((Q3DView *)p)->pDoc;
+        p = qobject_cast<GLView *>(activeSubWindow->widget());
+        if(p) return ((GLView *)p)->pDoc;
     }
     return 0;
 }
