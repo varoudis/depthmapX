@@ -63,6 +63,7 @@ public:
     void OnModeStepDepth();
     void OnModeLineTool();
     void OnModePolygonTool();
+    void OnModeSeedAxial();
 
 protected:
     void initializeGL() override;
@@ -126,6 +127,7 @@ private:
         MOUSE_MODE_PENCIL = 0x0801,
         MOUSE_MODE_SEED_ISOVIST = 0x4001,
         MOUSE_MODE_SEED_TARGETED_ISOVIST = 0x4002,
+        MOUSE_MODE_SEED_AXIAL = 0x0004,
         MOUSE_MODE_LINE_TOOL = 0x0008,
         MOUSE_MODE_POLYGON_TOOL = 0x0010,
         MOUSE_MODE_POINT_STEP_DEPTH = 0x5000,

@@ -274,6 +274,11 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST;
             break;
         }
+        case MOUSE_MODE_SEED_AXIAL:
+        {
+            pDoc->OnToolsAxialMap( worldPoint );
+            break;
+        }
         case MOUSE_MODE_LINE_TOOL:
         {
             m_tempFirstPoint = worldPoint;
@@ -598,6 +603,11 @@ void GLView::OnModeIsovist()
 void GLView::OnModeTargetedIsovist()
 {
     m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST;
+}
+
+void GLView::OnModeSeedAxial()
+{
+    m_mouseMode = MOUSE_MODE_SEED_AXIAL;
 }
 
 void GLView::OnModeStepDepth()
