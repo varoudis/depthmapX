@@ -1816,6 +1816,8 @@ void MainWindow::AxialMapTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_AL2;
     activeQDepthmapView()->OnToolsAxialMap();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnModeSeedAxial();
 }
 
 void MainWindow::StepDepthTriggered()
