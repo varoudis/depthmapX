@@ -108,6 +108,7 @@ private:
     bool datasetChanged = false;
 
     void panBy(int dx, int dy);
+    bool wasPanning = false;
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
     void matchViewToRegion(QtRegion region);

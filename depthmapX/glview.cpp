@@ -202,6 +202,10 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::mouseReleaseEvent(QMouseEvent *event)
 {
+    if(wasPanning) {
+        wasPanning = false;
+        return;
+    }
     QPoint mousePoint = event->pos();
     Point2f worldPoint = getWorldPoint(mousePoint);
     if (!pDoc->m_communicator) {
@@ -437,6 +441,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     if (event->buttons() & Qt::RightButton
             || m_mouseMode == MOUSE_MODE_PAN) {
         panBy(dx, dy);
+        wasPanning = true;
     } else if (event->buttons() & Qt::LeftButton) {
         Point2f lastWorldPoint = getWorldPoint(m_mouseLastPos);
         Point2f worldPoint = getWorldPoint(event->pos());
