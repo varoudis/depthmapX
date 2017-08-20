@@ -64,6 +64,7 @@ public:
     void OnModeLineTool();
     void OnModePolygonTool();
     void OnModeSeedAxial();
+    void OnEditSelect();
 
 protected:
     void initializeGL() override;
@@ -73,6 +74,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    bool eventFilter(QObject *object, QEvent *e);
 
 private:
     bool perspectiveView = false;
@@ -112,6 +114,7 @@ private:
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
     void matchViewToRegion(QtRegion region);
+    void resetView();
 
     void loadAxes();
     void loadDrawingGLObjects();
@@ -137,7 +140,7 @@ private:
         MOUSE_MODE_SECOND_POINT = 0x00400,
     };
 
-    int m_mouseMode = MOUSE_MODE_NONE;
+    int m_mouseMode = MOUSE_MODE_SELECT;
 
     QRectF m_mouseDragRect = QRectF(0,0,0,0);
 

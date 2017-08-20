@@ -1012,7 +1012,8 @@ void MainWindow::updateActiveWindows()
         current_view_type = VIEW_3D;
         return;
     }
-    else if(p = qobject_cast<QDepthmapView *>(activeSubWindow->widget()))
+    else if((p = qobject_cast<QDepthmapView *>(activeSubWindow->widget()))
+            || (p = qobject_cast<GLView *>(activeSubWindow->widget())))
     {
         editToolBar->show();
         thirdViewToolBar->hide();
@@ -1796,6 +1797,8 @@ void MainWindow::SelectButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_SELECT;
     activeQDepthmapView()->OnEditSelect();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnEditSelect();
 }
 
 void MainWindow::DragButtonTriggered()

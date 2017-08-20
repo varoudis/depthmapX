@@ -51,7 +51,7 @@ public:
     {
         if(m_showLinks)
         {
-            glLineWidth(4);
+            glLineWidth(3);
             m_linkFills.paintGL(m_mProj, m_mView, m_mModel);
             m_linkLines.paintGL(m_mProj, m_mView, m_mModel);
             m_unlinkFills.paintGL(m_mProj, m_mView, m_mModel);
