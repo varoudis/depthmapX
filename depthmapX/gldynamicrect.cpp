@@ -106,7 +106,7 @@ void GLDynamicRect::initializeGL(bool m_core)
     m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
 
     setupVertexAttribs();
-    m_program->setUniformValue(m_colourVectorLoc, m_colour);
+    m_program->setUniformValue(m_colourVectorLoc, m_colour_fill);
     m_program->release();
     m_built = true;
 }
@@ -122,14 +122,18 @@ void GLDynamicRect::updateGL(bool m_core) {
     }
 }
 
-void GLDynamicRect::updateColour(const PafColor &polyColour)
+void GLDynamicRect::setFillColour(const PafColor &fillColour)
 {
-    m_colour.setX(polyColour.redf());
-    m_colour.setY(polyColour.greenf());
-    m_colour.setZ(polyColour.bluef());
-    m_program->bind();
-    m_program->setUniformValue(m_colourVectorLoc, m_colour);
-    m_program->release();
+    m_colour_fill.setX(fillColour.redf());
+    m_colour_fill.setY(fillColour.greenf());
+    m_colour_fill.setZ(fillColour.bluef());
+}
+
+void GLDynamicRect::setStrokeColour(const PafColor &strokeColour)
+{
+    m_colour_stroke.setX(strokeColour.redf());
+    m_colour_stroke.setY(strokeColour.greenf());
+    m_colour_stroke.setZ(strokeColour.bluef());
 }
 
 void GLDynamicRect::cleanup()
@@ -148,10 +152,10 @@ void GLDynamicRect::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
     m_program->setUniformValue(m_diagVertices2DLoc, m_selectionBounds);
 
-    m_program->setUniformValue(m_colourVectorLoc, m_colour);
+    m_program->setUniformValue(m_colourVectorLoc, m_colour_fill);
     glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount());
 
-    m_program->setUniformValue(m_colourVectorLoc, QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
+    m_program->setUniformValue(m_colourVectorLoc, m_colour_stroke);
     glDrawArrays(GL_LINE_LOOP, 0, vertexCount());
 
     m_program->release();

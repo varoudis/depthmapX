@@ -33,7 +33,8 @@ public:
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
     void cleanup();
-    void updateColour(const PafColor &polyColour);
+    void setFillColour(const PafColor &fillColour);
+    void setStrokeColour(const PafColor &strokeColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
 protected:
@@ -52,13 +53,12 @@ protected:
     int m_mvMatrixLoc;
     int m_colourVectorLoc;
 
+    QVector4D m_colour_fill = QVector4D(0.0f, 1.0f, 0.0f, 0.3f);
+    QVector4D m_colour_stroke = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+
 private:
     const int DATA_DIMENSIONS = 1;
     void setupVertexAttribs();
     int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
-
-
-    QVector4D m_colour = QVector4D(0.0f, 1.0f, 0.0f, 0.3f);
-
 };
