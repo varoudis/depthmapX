@@ -150,7 +150,7 @@ private:
     Point2f m_tempSecondPoint;
 
     Point2f m_polyStart;
-    int m_polyPoints;
+    int m_polyPoints = 0;
 
     inline int PixelDist(QPoint a, QPoint b)
     {

@@ -328,6 +328,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         {
             m_tempFirstPoint = worldPoint;
             m_tempSecondPoint = worldPoint;
+            m_polyPoints == 0;
             m_mouseMode = MOUSE_MODE_POLYGON_TOOL | MOUSE_MODE_SECOND_POINT;
             break;
         }
