@@ -36,6 +36,12 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     pDoc = doc;
 
+    if(m_multiSampleSamples) {
+        QSurfaceFormat format;
+        format.setSamples(m_multiSampleSamples);    // Set the number of samples used for multisampling
+        setFormat(format);
+    }
+
     loadDrawingGLObjects();
 
     loadAxes();
@@ -106,6 +112,7 @@ void GLView::initializeGL()
 
 void GLView::paintGL()
 {
+    glEnable(GL_MULTISAMPLE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
