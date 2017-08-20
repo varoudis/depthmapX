@@ -104,6 +104,8 @@ private:
     int screenWidth;
     int screenHeight;
 
+    int m_multiSampleSamples = 16; // set this to 0 if rendering is too slow
+
     Point2f getWorldPoint(const QPoint &screenPoint);
     QPoint getScreenPoint(const Point2f &worldPoint);
 
