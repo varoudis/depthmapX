@@ -773,7 +773,7 @@ QDepthmapView *MainWindow::activeQDepthmapView()
         if(!p)
         {
             p = qobject_cast<GLView *>(activeSubWindow->widget());
-            if(p) return (QDepthmapView *)(((GLView*)p)->pDoc->m_view[1]);
+            if(p) return (QDepthmapView *)(((GLView*)p)->m_pDoc->m_view[1]);
         }
     }
     current_view_type = 0;
@@ -794,7 +794,7 @@ QGraphDoc *MainWindow::activeQDepthmapDoc()
         p = qobject_cast<Q3DView *>(activeSubWindow->widget());
         if(p) return ((Q3DView *)p)->pDoc;
         p = qobject_cast<GLView *>(activeSubWindow->widget());
-        if(p) return ((GLView *)p)->pDoc;
+        if(p) return ((GLView *)p)->m_pDoc;
     }
     return 0;
 }

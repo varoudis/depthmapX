@@ -108,7 +108,7 @@ void GLDynamicRect::initializeGL(bool m_core)
     setupVertexAttribs();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
 void GLDynamicRect::updateGL(bool m_core) {
@@ -141,7 +141,7 @@ void GLDynamicRect::cleanup()
 
 void GLDynamicRect::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel, const QMatrix2x2 &m_selectionBounds)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);

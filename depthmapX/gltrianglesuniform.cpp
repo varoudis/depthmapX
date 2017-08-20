@@ -62,7 +62,7 @@ GLTrianglesUniform::GLTrianglesUniform()
 
 void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour)
 {
-    built = false;
+    m_built = false;
 
     m_count = 0;
     m_data.resize(points.size() * DATA_DIMENSIONS);
@@ -112,7 +112,7 @@ void GLTrianglesUniform::initializeGL(bool m_core)
     setupVertexAttribs();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
 void GLTrianglesUniform::updateGL(bool m_core) {
@@ -123,7 +123,7 @@ void GLTrianglesUniform::updateGL(bool m_core) {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
         m_vbo.release();
-        built = true;
+        m_built = true;
     }
 }
 
@@ -139,7 +139,7 @@ void GLTrianglesUniform::updateColour(const PafColor &polyColour)
 
 void GLTrianglesUniform::cleanup()
 {
-    if(!built) return;
+    if(!m_built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
@@ -147,7 +147,7 @@ void GLTrianglesUniform::cleanup()
 
 void GLTrianglesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
