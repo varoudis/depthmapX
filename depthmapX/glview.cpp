@@ -36,7 +36,6 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     pDoc = doc;
 
-
     loadDrawingGLObjects();
 
     loadAxes();
@@ -55,6 +54,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 
     matchViewToCurrentMetaGraph();
 
+    installEventFilter(this);
     setMouseTracking(true);
 }
 
@@ -139,6 +139,7 @@ void GLView::paintGL()
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
     if(pDoc->m_meta_graph->getViewClass() & pDoc->m_meta_graph->VIEWVGA) {
+        m_visiblePointMap.showGrid(pDoc->m_meta_graph->m_showgrid);
         m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
     }
 
@@ -239,7 +240,15 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         }
         case MOUSE_MODE_ZOOM_IN:
         {
-            zoomBy(0.8, mousePoint.x(), mousePoint.y());
+            if(r.width() > 0)
+            {
+                matchViewToRegion(r);
+                recalcView();
+            }
+            else
+            {
+                zoomBy(0.8, mousePoint.x(), mousePoint.y());
+            }
             break;
         }
         case MOUSE_MODE_ZOOM_OUT:
@@ -439,7 +448,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     int dy = event->y() - m_mouseLastPos.y();
 
     if (event->buttons() & Qt::RightButton
-            || m_mouseMode == MOUSE_MODE_PAN) {
+            || (event->buttons() & Qt::LeftButton && m_mouseMode == MOUSE_MODE_PAN)) {
         panBy(dx, dy);
         wasPanning = true;
     } else if (event->buttons() & Qt::LeftButton) {
@@ -471,6 +480,40 @@ void GLView::wheelEvent(QWheelEvent *event)
     zoomBy(1 - 0.25f * numDegrees.y() / 15.0f, x, y);
 
     event->accept();
+}
+
+bool GLView::eventFilter(QObject *object, QEvent *e)
+{
+    if(e->type() == QEvent::ToolTip)
+    {
+        if (!pDoc->m_communicator)
+        {
+            if(pDoc->m_meta_graph)
+            {
+                if (pDoc->m_meta_graph->viewingProcessed() && pDoc->m_meta_graph->getSelCount() > 1) {
+                    float val = pDoc->m_meta_graph->getSelAvg();
+                    int count = pDoc->m_meta_graph->getSelCount();
+                    if (val == -1.0f)
+                        setToolTip("Null selection");
+                    else if (val != -2.0f)
+                        setToolTip(QString("Selection\nAverage: %1\nCount: %2").arg(val).arg(count));
+                    else setToolTip("");
+                }
+                else if (pDoc->m_meta_graph->viewingProcessed()) {
+                    // and that it has an appropriate state to display a hover wnd
+                    QHelpEvent *helpEvent = static_cast<QHelpEvent*>(e); // Tool tip events come as the type QHelpEvent
+                    float val = pDoc->m_meta_graph->getLocationValue(getWorldPoint(helpEvent->pos()));
+                    if (val == -1.0f)
+                        setToolTip("No value");
+                    else if (val != -2.0f)
+                        setToolTip(QString("%1").arg(val));
+                    else setToolTip("");
+                }
+            }
+        }
+    }
+
+    return QObject::eventFilter(object, e);
 }
 
 void GLView::zoomBy(float dzf, int mouseX, int mouseY)
@@ -544,9 +587,17 @@ void GLView::matchViewToRegion(QtRegion region) {
     maxZoomFactor = zoomFactor * 10;
 }
 
+void GLView::resetView() {
+    m_visiblePointMap.showLinks(false);
+    m_visibleShapeGraph.showLinks(false);
+    pDoc->m_meta_graph->clearSel();
+    update();
+}
+
 void GLView::OnModeJoin()
 {
     if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        resetView();
         m_mouseMode = MOUSE_MODE_JOIN;
         m_visiblePointMap.showLinks(true);
         m_visibleShapeGraph.showLinks(true);
@@ -558,6 +609,7 @@ void GLView::OnModeJoin()
 void GLView::OnModeUnjoin()
 {
     if (pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        resetView();
         m_mouseMode = MOUSE_MODE_UNJOIN;
         m_visiblePointMap.showLinks(true);
         m_visibleShapeGraph.showLinks(true);
@@ -582,50 +634,66 @@ void GLView::OnViewZoomOut()
 
 void GLView::OnEditFill()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_FILL_FULL;
 }
 
 void GLView::OnEditSemiFill()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_FILL_SEMI;
 }
 
 void GLView::OnEditAugmentFill()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_FILL_AUGMENT;
 }
 
 void GLView::OnEditPencil()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_PENCIL;
 }
 
 void GLView::OnModeIsovist()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_SEED_ISOVIST;
 }
 
 void GLView::OnModeTargetedIsovist()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_SEED_TARGETED_ISOVIST;
 }
 
 void GLView::OnModeSeedAxial()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_SEED_AXIAL;
 }
 
 void GLView::OnModeStepDepth()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_POINT_STEP_DEPTH;
 }
 
 void GLView::OnModeLineTool()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_LINE_TOOL;
 }
 
 void GLView::OnModePolygonTool()
 {
+    resetView();
     m_mouseMode = MOUSE_MODE_POLYGON_TOOL;
+}
+
+void GLView::OnEditSelect()
+{
+    resetView();
+    m_mouseMode = MOUSE_MODE_SELECT;
 }

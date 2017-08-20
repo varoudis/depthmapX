@@ -221,7 +221,7 @@ bool QDepthmapView::eventFilter(QObject *object, QEvent *e)
 					if (val == -1.0f)
 						setToolTip("No value");
 					else if (val != -2.0f)
-						setToolTip(QString("%1").arg(val));
+                        setToolTip(QString("%1").arg(val));
 					else setToolTip("");
 				}
 			}

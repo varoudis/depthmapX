@@ -47,21 +47,27 @@ public:
     }
     void paintGLOverlay(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
     {
-        glLineWidth(4);
-        m_linkLines.paintGL(m_mProj, m_mView, m_mModel);
-        m_linkFills.paintGL(m_mProj, m_mView, m_mModel);
-        glLineWidth(1);
+        if(m_showLinks) {
+            glLineWidth(3);
+            m_linkLines.paintGL(m_mProj, m_mView, m_mModel);
+            m_linkFills.paintGL(m_mProj, m_mView, m_mModel);
+            glLineWidth(1);
+        }
     }
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
     {
         m_pointMap.paintGL(m_mProj, m_mView, m_mModel);
-        m_grid.paintGL(m_mProj, m_mView, m_mModel);
+        if(m_showGrid)
+            m_grid.paintGL(m_mProj, m_mView, m_mModel);
     }
     void setGridColour(QRgb gridColour) {
         m_gridColour = gridColour;
     }
     void showLinks(bool showLinks) {
         m_showLinks = showLinks;
+    }
+    void showGrid(bool showGrid) {
+        m_showGrid = showGrid;
     }
     void loadGLObjects(PointMap& pointMap);
     void loadGLObjectsRequiringGLContext(const PointMap& currentPointMap);
