@@ -24,7 +24,7 @@
 
 void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>& colouredPolygons)
 {
-    polygons.clear();
+    m_polygons.clear();
     std::map<std::vector<Point2f>, PafColor>::const_iterator iter = colouredPolygons.begin(), end =
     colouredPolygons.end();
     for ( ; iter != end; ++iter )
@@ -32,17 +32,17 @@ void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>&
         const std::vector<Point2f> & points = iter->first;
         const PafColor & colour = iter->second;
 
-        polygons.push_back(std::unique_ptr<GLTrianglesUniform>(new GLTrianglesUniform));
+        m_polygons.push_back(std::unique_ptr<GLTrianglesUniform>(new GLTrianglesUniform));
 
         vector<Point2f> triangulated = GLUTriangulator::triangulate(points);
-        polygons[polygons.size() - 1]->loadTriangleData(triangulated, colour);
+        m_polygons[m_polygons.size() - 1]->loadTriangleData(triangulated, colour);
     }
 }
 
 void GLPolygons::initializeGL(bool m_core)
 {
-    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
-    polygons.end();
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = m_polygons.begin(), end =
+    m_polygons.end();
     for ( ; iter != end; ++iter )
     {
         (*iter)->initializeGL(m_core);
@@ -51,8 +51,8 @@ void GLPolygons::initializeGL(bool m_core)
 
 void GLPolygons::updateGL(bool m_core)
 {
-    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
-    polygons.end();
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = m_polygons.begin(), end =
+    m_polygons.end();
     for ( ; iter != end; ++iter )
     {
         (*iter)->updateGL(m_core);
@@ -61,8 +61,8 @@ void GLPolygons::updateGL(bool m_core)
 
 void GLPolygons::cleanup()
 {
-    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
-    polygons.end();
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = m_polygons.begin(), end =
+    m_polygons.end();
     for ( ; iter != end; ++iter )
     {
         (*iter)->cleanup();
@@ -71,8 +71,8 @@ void GLPolygons::cleanup()
 
 void GLPolygons::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = polygons.begin(), end =
-    polygons.end();
+    std::vector<std::unique_ptr<GLTrianglesUniform>>::iterator iter = m_polygons.begin(), end =
+    m_polygons.end();
     for ( ; iter != end; ++iter )
     {
         (*iter)->paintGL(m_mProj, m_mView, m_mModel);

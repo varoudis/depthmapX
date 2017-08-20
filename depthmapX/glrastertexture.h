@@ -46,7 +46,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
-    bool built = false;
+    bool m_built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
@@ -55,5 +55,5 @@ private:
     int m_mvMatrixLoc;
     int m_textureSamplerLoc;
 
-    QOpenGLTexture texture;
+    QOpenGLTexture m_texture;
 };

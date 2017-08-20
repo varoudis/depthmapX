@@ -69,7 +69,7 @@ GLLines::GLLines()
 
 void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, PafColor>> &colouredLines)
 {
-    built = false;
+    m_built = false;
 
     m_count = 0;
     m_data.resize(colouredLines.size() * 2 * DATA_DIMENSIONS);
@@ -129,7 +129,7 @@ void GLLines::initializeGL(bool m_core)
     // Store the vertex attribute bindings for the program.
     setupVertexAttribs();
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
 void GLLines::updateGL(bool m_core) {
@@ -140,13 +140,13 @@ void GLLines::updateGL(bool m_core) {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
         m_vbo.release();
-        built = true;
+        m_built = true;
     }
 }
 
 void GLLines::cleanup()
 {
-    if(!built) return;
+    if(!m_built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
@@ -154,7 +154,7 @@ void GLLines::cleanup()
 
 void GLLines::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);

@@ -40,7 +40,7 @@ protected:
     void add(const GLfloat v);
 
     int m_count;
-    bool built = false;
+    bool m_built = false;
     QVector<GLfloat> m_data;
 
     QOpenGLBuffer m_vbo;
@@ -53,7 +53,6 @@ protected:
     int m_colourVectorLoc;
 
 private:
-    bool dataLoaded = false;
     const int DATA_DIMENSIONS = 1;
     void setupVertexAttribs();
     int count() const { return m_count; }
