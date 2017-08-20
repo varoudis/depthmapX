@@ -41,7 +41,7 @@ void GLDynamicLine::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
     m_program->setUniformValue(m_diagVertices2DLoc, m_selectionBounds);
 
-    m_program->setUniformValue(m_colourVectorLoc, QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
+    m_program->setUniformValue(m_colourVectorLoc, m_colour_stroke);
     glDrawArrays(GL_LINE_LOOP, 0, vertexCount());
 
     m_program->release();
