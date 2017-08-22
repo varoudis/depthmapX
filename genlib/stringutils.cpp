@@ -90,7 +90,7 @@ namespace dXstring {
     {
         bool literal = false;
         bool reset = true;
-        for( auto c : s)
+        for( auto& c : s)
         {
             if (!isalpha(c))
             {
