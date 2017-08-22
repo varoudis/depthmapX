@@ -520,7 +520,7 @@ public:
    bool isLeaf() {
       return left == NULL && right == NULL;
    }
-   void make(Communicator *communicator, comm_time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par);
+   void make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par);
    int classify(const Point2f& p);
    const Line& getLine() const { return line; }
    const int getTag() const { return m_tag; }

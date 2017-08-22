@@ -96,19 +96,9 @@ Line NtfMap::makeLine(const NtfPoint& a, const NtfPoint& b)
    );
 }
 
-// Quick mod - TV
-#if defined(_WIN32)
-void NtfMap::open(const pqvector<wstring>& fileset, Communicator *comm)
-#else
 void NtfMap::open(const pqvector<string>& fileset, Communicator *comm)
-#endif
 {
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t time = 0;
-#else
    time_t time = 0;
-#endif   
    qtimer( time, 0 );
 
    pvecint featcodes;

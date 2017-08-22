@@ -785,7 +785,7 @@ void Line::ray(short dir, const QtRegion& r)
 
 // Binary Space Partition
 
-void BSPNode::make(Communicator *communicator, comm_time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par)
+void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par)
 {
    m_count++;
 

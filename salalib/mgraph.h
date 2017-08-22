@@ -109,12 +109,7 @@ public:
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadDxf( istream& stream, Communicator *communicator );
-   // Quick mod - TV
-#if defined(_WIN32)   
-   int loadRT1(const pqvector<wstring>& fileset, Communicator *communicator);
-#else
    int loadRT1(const pqvector<string>& fileset, Communicator *communicator);
-#endif   
    int importTxt( istream& stream, const std::string& layername, bool csv );
    bool undoPoints();
    bool clearPoints();

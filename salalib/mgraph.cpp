@@ -1722,12 +1722,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
    return 1;
 }
 
-// Quick mod - TV
-#if defined(_WIN32)
-int MetaGraph::loadRT1(const pqvector<wstring>& fileset, Communicator *communicator)
-#else
 int MetaGraph::loadRT1(const pqvector<string>& fileset, Communicator *communicator)
-#endif
 {
    TigerMap map;
 

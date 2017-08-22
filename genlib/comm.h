@@ -29,26 +29,13 @@
 
 #endif
 
-// distinguish between UTF-16 used by Windows and UTF-8 used by Linus / MacOS:
-// converted to Unicode path for Win32 (AT 31.01.11)
-// typedef solution AT 29.04.11
-#ifdef _MSC_VER // MSVC compiler
-    typedef wstring comm_string;
-    typedef wchar_t comm_char;
-    typedef __time64_t comm_time_t;
-    const comm_char *const g_default_file_set = L"File set";
-#else
-    typedef string comm_string;
-    typedef char comm_char;
-    typedef time_t comm_time_t;
-    const comm_char *const g_default_file_set = "File set";
-#endif
+    const char *const g_default_file_set = "File set";
 
 struct FilePath {
-   comm_string m_path;
-   comm_string m_name;
-   comm_string m_ext;
-   FilePath(const comm_string& pathname)
+   string m_path;
+   string m_name;
+   string m_ext;
+   FilePath(const string& pathname)
    {
       size_t dot   = pathname.find_last_of('.');
 #ifdef _WIN32
@@ -82,12 +69,12 @@ protected:
    bool m_cancelled;
    bool m_delete_flag;
    // nb. converted to Win32 UTF-16 Unicode path (AT 31.01.11) Linux, MacOS use UTF-8 (AT 29.04.11)
-   comm_string m_infilename;
+   string m_infilename;
    ifstream *m_infile;
    ifstream *m_infile2; // <- MapInfo MIF files come in two parts
    ofstream *m_outfile;
    // nb. converted to Win32 UTF-16 Unicode path (AT 31.01.11) Linux, MacOS use UTF-8 (AT 29.04.11)
-   pqvector<comm_string> m_fileset;   // <- sometimes you want to load a whole set of files
+   pqvector<string> m_fileset;   // <- sometimes you want to load a whole set of files
 public:
    Communicator()
    { m_infile = NULL; m_infile2 = NULL; m_outfile = NULL; m_cancelled = false; m_delete_flag = false; }
@@ -100,19 +87,19 @@ public:
      if (m_infile2) delete m_infile2; m_infile2 = NULL;
      if (m_outfile) delete m_outfile; m_outfile = NULL; }
    //
-   void SetInfile( const comm_char* filename )
+   void SetInfile( const char* filename )
    {
       m_infile = new ifstream( filename );
       FilePath fp(filename);
       m_infilename = fp.m_name;
    }
-   void SetInfile2( const comm_char* filename )
+   void SetInfile2( const char* filename )
    {
       m_infile2 = new ifstream( filename );
    }
-   comm_string GetInfileName()
+   string GetInfileName()
    {
-      return m_fileset.size() ? comm_string(g_default_file_set) : m_infilename;
+      return m_fileset.size() ? string(g_default_file_set) : m_infilename;
    }
    std::string GetMBInfileName()
    {
@@ -152,7 +139,7 @@ public:
    ifstream& GetInfile2()
    { return *m_infile2; }
    //
-   const pqvector<comm_string>& GetFileSet() const
+   const pqvector<string>& GetFileSet() const
    { return m_fileset; }
    //
    virtual void CommPostMessage(int m, int x, int y = 0) const = 0; // Override for specific operating system

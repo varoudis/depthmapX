@@ -515,7 +515,7 @@ public:
                        POINT, LINE, POLYLINE, LWPOLYLINE, ARC, CIRCLE, SPLINE, INSERT, VERTEX,
                        ENDSEC };
 protected:
-   comm_time_t            m_time;
+   time_t            m_time;
 protected:
    DxfRegion              m_region;
    pqvector<DxfLayer>     m_layers;
