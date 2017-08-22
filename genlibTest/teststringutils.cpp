@@ -184,16 +184,16 @@ TEST_CASE("test ltrim")
 TEST_CASE("test rtrim")
 {
     std::string normal = "   fo o ";
-    dXstring::ltrim(normal);
+    dXstring::rtrim(normal);
     REQUIRE( normal == "   fo o");
     std::string empty = "";
-    dXstring::ltrim(empty);
+    dXstring::rtrim(empty);
     REQUIRE( empty == "" );
     std::string justBlanks = "   ";
-    dXstring::ltrim(justBlanks);
+    dXstring::rtrim(justBlanks);
     REQUIRE( justBlanks == "");
     std::string noBlanks = "foo ";
-    dXstring::ltrim(noBlanks);
+    dXstring::rtrim(noBlanks);
     REQUIRE(noBlanks == "foo");
 }
 
