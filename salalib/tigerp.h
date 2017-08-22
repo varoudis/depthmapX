@@ -38,7 +38,7 @@ public:
    TigerCategory() {;}
 };
 
-class TigerMap : public pqmap<pstring,TigerCategory>
+class TigerMap : public pqmap<std::string,TigerCategory>
 {
 protected:
    QtRegion m_region;

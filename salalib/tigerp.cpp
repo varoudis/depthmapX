@@ -50,21 +50,21 @@ void TigerMap::parse(const pqvector<string>& fileset, Communicator *comm)
       ifstream stream(fileset[i].c_str());
       while (!stream.eof())
       {
-         pstring line;
+         std::string line;
          stream >> line;
 
          if (line.length()) {
             // grab major code:
-            pstring code = line.substr(55,2);
+            std::string code = line.substr(55,2);
             if (code[0] == 'A' || code[0] == 'B') {
                size_t index = searchindex(code);
                if (index == paftl::npos) {
                   index = add(code,TigerCategory(),paftl::ADD_HERE);
                }
-               int long1 = line.substr(190,10).c_int();
-               int lat1  = line.substr(200,9).c_int();
-               int long2 = line.substr(209,10).c_int();
-               int lat2  = line.substr(219,9).c_int();
+               int long1 = stoi(line.substr(190,10));
+               int lat1  = stoi(line.substr(200,9));
+               int long2 = stoi(line.substr(209,10));
+               int lat2  = stoi(line.substr(219,9));
                Point2f p1(double(long1)/1e6,double(lat1)/1e6);
                Point2f p2(double(long2)/1e6,double(lat2)/1e6);
                Line li(p1,p2);
