@@ -28,5 +28,7 @@ namespace dXstring {
     std::string formatString(double value, const char *format);
     /// Inplace conversion to lower case
     std::string &toLower(std::string &str);
-    void ltrim(std::string &s);
+    void ltrim(std::string &s, char c = ' ');
+    void rtrim(std::string &s, char c = ' ');
+    void makeInitCaps(std::string &s);
 }
