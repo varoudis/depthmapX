@@ -34,12 +34,7 @@ using namespace std;
 
 // Thank you US Census Bureau -- this is a great easy flat file format:
 
-// Quick mod - TV
-#if defined(_WIN32)
-void TigerMap::parse(const pqvector<wstring>& fileset, Communicator *comm)
-#else
 void TigerMap::parse(const pqvector<string>& fileset, Communicator *comm)
-#endif
 {
 
    // Quick mod - TV

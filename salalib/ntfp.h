@@ -60,12 +60,7 @@ public:
    NtfMap() {;}
    Line makeLine(const NtfPoint& a, const NtfPoint& b);
    
-   // Modified by Dream
-#if defined(_WIN32)   
-   void open(const pqvector<wstring>& fileset, Communicator *comm);
-#else
    void open(const pqvector<string>& fileset, Communicator *comm);
-#endif   
    const QtRegion& getRegion() const
    { return m_region; }
    int getLineCount() const

@@ -46,12 +46,7 @@ protected:
 public:
    TigerMap() { m_init = false;}
 
-   // Modified by Dream
-#if defined(_WIN32)
-   void parse(const pqvector<wstring>& fileset, Communicator *communicator);
-#else
    void parse(const pqvector<string>& fileset, Communicator *communicator);
-#endif
 
    Point2f getBottomLeft()
    { return m_region.bottom_left; }
