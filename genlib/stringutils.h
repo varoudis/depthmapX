@@ -31,4 +31,6 @@ namespace dXstring {
     void ltrim(std::string &s, char c = ' ');
     void rtrim(std::string &s, char c = ' ');
     void makeInitCaps(std::string &s);
+    bool isDouble(const std::string &s);
+
 }

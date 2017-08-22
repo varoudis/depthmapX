@@ -203,3 +203,11 @@ TEST_CASE("test makeInitCaps")
     dXstring::makeInitCaps(tstr);
     REQUIRE(tstr == "Abc Def Def \"fOO Bar\" Blah Blub");
 }
+
+TEST_CASE("test isDouble")
+{
+    REQUIRE(dXstring::isDouble("0"));
+    REQUIRE(dXstring::isDouble(" 1.345e23.1"));
+    REQUIRE_FALSE(dXstring::isDouble(""));
+    REQUIRE_FALSE(dXstring::isDouble("foo1234"));
+}
