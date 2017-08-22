@@ -114,14 +114,14 @@ public:
    {
       return m_fileset.size() ? comm_string(g_default_file_set) : m_infilename;
    }
-   pstring GetMBInfileName()
+   std::string GetMBInfileName()
    {
-      pstring ret;
+      std::string ret;
       if (m_fileset.size()) {
          ret = "File set";
       }
       else {
-         ret = pstring(m_infilename.c_str());
+         ret = std::string(m_infilename.c_str());
       }
       return ret;
    }
