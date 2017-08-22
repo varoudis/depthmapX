@@ -31,8 +31,8 @@ public:
     void loadRegionData(float minX, float minY, float maxX, float maxY);
     void loadPixelData(QImage &data);
     void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool m_core);
-    void updateGL(bool m_core);
+    void initializeGL(bool coreProfile);
+    void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
@@ -46,7 +46,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
-    bool built = false;
+    bool m_built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
@@ -55,5 +55,5 @@ private:
     int m_mvMatrixLoc;
     int m_textureSamplerLoc;
 
-    QOpenGLTexture texture;
+    QOpenGLTexture m_texture;
 };
