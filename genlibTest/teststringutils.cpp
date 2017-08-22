@@ -230,3 +230,11 @@ TEST_CASE("test isDouble")
     REQUIRE_FALSE(dXstring::isDouble("foo1234"));
 }
 
+TEST_CASE("test begins with")
+{
+    REQUIRE(dXstring::beginsWith<std::string>("abcd", "abcd"));
+    REQUIRE(dXstring::beginsWith<std::string>("abcde", "abcd"));
+    REQUIRE_FALSE(dXstring::beginsWith<std::string>("abcd", "abcde"));
+    REQUIRE_FALSE(dXstring::beginsWith<std::string>("abcd", "ef"));
+    REQUIRE_FALSE(dXstring::beginsWith<std::string>("abcd", "aec"));
+}

@@ -32,5 +32,11 @@ namespace dXstring {
     void rtrim(std::string &s, char c = ' ');
     void makeInitCaps(std::string &s);
     bool isDouble(const std::string &s);
+    template<class T> bool beginsWith(const T &input, const T match)
+    {
+        return input.size() >= match.size() &&
+                equal(match.begin(), match.end(), input.begin());
+    }
+
 
 }
