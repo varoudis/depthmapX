@@ -471,7 +471,7 @@ template <class T>
 bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer )
 {
    if (version >= VERSION_SPACEPIXELGROUPS) {
-      m_name.read(stream);
+      m_name = dXstring::readString(stream);
       stream.read( (char *) &m_region, sizeof(m_region) );
       int count;
       stream.read( (char *) &count, sizeof(count) );
@@ -494,7 +494,7 @@ bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer 
 template <class T>
 bool SpacePixelGroup<T>::write( ofstream& stream, int version )
 {
-   m_name.write(stream);
+   dXstring::writeString(stream, m_name);
    stream.write( (char *) &m_region, sizeof(m_region) );
    
    // Quick mod - TV

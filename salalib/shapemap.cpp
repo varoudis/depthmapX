@@ -24,6 +24,7 @@
 #include <genlib/paftl.h>
 #include <genlib/comm.h> // for communicator
 #include <genlib/stringutils.h>
+#include <genlib/exceptions.h>
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
@@ -528,7 +529,7 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
 #ifdef _DEBUG
    if (rowid1 != rowid2) {
       // rowids should match, they're both pqmaps, but if someone is stupid enough to change it, they'll know pretty quickly:
-      throw pstring("Arrrrgghhh: important! insertRow does not index in the same way as add shapes, this will badly mess up the system!");
+      throw depthmapX::RuntimeException("Arrrrgghhh: important! insertRow does not index in the same way as add shapes, this will badly mess up the system!");
    }
 #endif
 
@@ -1786,7 +1787,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
 
    }
    else {
-      throw pstring("this function is to be used for polygons only");
+      throw depthmapX::RuntimeException("this function is to be used for polygons only");
    }
 }
 
