@@ -46,15 +46,15 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
 
     loadAxes();
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
         m_visibleShapeGraph.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedShapeGraph());
     }
     m_visiblePointMap.setGridColour(colorMerge(foregroundColour, backgroundColour));
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
         m_visiblePointMap.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedPointMap());
     }
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
         m_visibleDataMap.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedDataMap());
     }
     PafColor pafForegroundColour;
@@ -106,7 +106,7 @@ void GLView::initializeGL()
     m_visibleShapeGraph.initializeGL(m_core);
     m_visibleDataMap.initializeGL(m_core);
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
          m_visiblePointMap.loadGLObjectsRequiringGLContext(m_pDoc->m_meta_graph->getDisplayedPointMap());
     }
 
@@ -129,17 +129,17 @@ void GLView::paintGL()
         loadDrawingGLObjects();
         m_visibleDrawingLines.updateGL(m_core);
 
-        if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
+        if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
             m_visibleShapeGraph.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedShapeGraph());
             m_visibleShapeGraph.updateGL(m_core);
         }
 
-        if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
+        if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
             m_visibleDataMap.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedDataMap());
             m_visibleDataMap.updateGL(m_core);
         }
 
-        if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+        if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
             m_visiblePointMap.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedPointMap());
             m_visiblePointMap.updateGL(m_core);
             m_visiblePointMap.loadGLObjectsRequiringGLContext(m_pDoc->m_meta_graph->getDisplayedPointMap());
@@ -151,25 +151,25 @@ void GLView::paintGL()
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
         m_visiblePointMap.showGrid(m_pDoc->m_meta_graph->m_showgrid);
         m_visiblePointMap.paintGL(m_mProj, m_mView, m_mModel);
     }
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
         m_visibleShapeGraph.paintGL(m_mProj, m_mView, m_mModel);
     }
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
         m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
     }
 
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
 
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
         m_visiblePointMap.paintGLOverlay(m_mProj, m_mView, m_mModel);
     }
-    if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
+    if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
         m_visibleShapeGraph.paintGLOverlay(m_mProj, m_mView, m_mModel);
     }
 
@@ -371,9 +371,9 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     selectionCentre.y = (selBounds.bottom_left.y + selBounds.top_right.y)*0.5;
                 } else {
                     const pvecint &selectedSet = m_pDoc->m_meta_graph->getSelSet();
-                    if (m_pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                    if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
                         selectionCentre = m_pDoc->m_meta_graph->getDisplayedPointMap().depixelate(selectedSet[0]);
-                    } else if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS) {
+                    } else if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
                         selectionCentre = m_pDoc->m_meta_graph->getDisplayedShapeGraph().getAllShapes()[selectedSet[0]].getCentroid();
                     }
                 }
@@ -387,9 +387,9 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         {
             int selectedCount = m_pDoc->m_meta_graph->getSelCount();
             if (selectedCount > 0) {
-                if (m_pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
                     m_pDoc->m_meta_graph->getDisplayedPointMap().mergePoints( worldPoint );
-                } else if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                } else if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
                     const pvecint& selectedSet = m_pDoc->m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
@@ -409,12 +409,12 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             m_pDoc->m_meta_graph->setCurSel( r, false );
             int selectedCount = m_pDoc->m_meta_graph->getSelCount();
             if(selectedCount > 0) {
-                if (m_pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
                     if (m_pDoc->m_meta_graph->getDisplayedPointMap().unmergePoints()) {
                         m_pDoc->modifiedFlag = true;
                         m_pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
                     }
-                } else if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS) {
+                } else if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
                     const pvecint &selectedSet = m_pDoc->m_meta_graph->getSelSet();
                     Point2f selectionCentre = m_pDoc->m_meta_graph->getDisplayedShapeGraph().getAllShapes()[selectedSet[0]].getCentroid();
                     m_tempFirstPoint = selectionCentre;
@@ -428,7 +428,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         {
             int selectedCount = m_pDoc->m_meta_graph->getSelCount();
             if (selectedCount > 0) {
-                if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                if (m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
                     const pvecint& selectedSet = m_pDoc->m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
@@ -610,7 +610,7 @@ void GLView::resetView() {
 
 void GLView::OnModeJoin()
 {
-    if (m_pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+    if (m_pDoc->m_meta_graph->getViewClass() & (MetaGraph::VIEWVGA | MetaGraph::VIEWAXIAL)) {
         resetView();
         m_mouseMode = MOUSE_MODE_JOIN;
         m_visiblePointMap.showLinks(true);
@@ -622,7 +622,7 @@ void GLView::OnModeJoin()
 
 void GLView::OnModeUnjoin()
 {
-    if (m_pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+    if (m_pDoc->m_meta_graph->getState() & (MetaGraph::VIEWVGA | MetaGraph::VIEWAXIAL)) {
         resetView();
         m_mouseMode = MOUSE_MODE_UNJOIN;
         m_visiblePointMap.showLinks(true);
