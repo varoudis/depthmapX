@@ -497,7 +497,10 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
                layer->m_points.push_back( point );
                layer->merge(point); // <- merge bounding box
                layer->m_total_point_count += 1;
+               point.clear();
+               subsection = ZEROTOKEN;
             }
+            break;
          case LINE:
             stream >> token;
             m_size += token.size;
