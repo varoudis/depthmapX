@@ -114,7 +114,10 @@ void tableView::PrepareCache(int to)
 	AttributeIndex& index = table.m_display_index;
 
     int diff = PG_COUNT;
-    if(to+PG_COUNT >= m_row_count) diff = m_row_count - to;
+    if(to+PG_COUNT >= m_row_count)
+    {
+        diff = m_row_count - to;
+    }
     for (int i = 0; i < diff; i++)
 	{
 		for (int j = 0; j < m_column_count+1; j++)
