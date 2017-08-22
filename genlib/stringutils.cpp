@@ -59,11 +59,11 @@ namespace dXstring {
         }
     }
 
-    std::string formatString(double value, const char *format)
+    std::string formatString(double value, const std::string &format)
     {
-        std::unique_ptr<char[]> buffer(new char[24 + strlen(format)]);
-        sprintf( buffer.get(), format, value );
-        return std::string(buffer.get());
+        std::vector<char> buffer(24 + format.length(), '\0');
+        sprintf( &buffer[0], format.c_str(), value );
+        return std::string(&buffer[0]);
     }
 
     std::string& toLower(std::string &str)
