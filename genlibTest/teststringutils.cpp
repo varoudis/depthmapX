@@ -3,6 +3,8 @@
 #include "../cliTest/selfcleaningfile.h"
 #include <fstream>
 
+#include "genlib/paftl.h"
+
 TEST_CASE("Tests for split function", "")
 {
     {
@@ -38,12 +40,28 @@ TEST_CASE("Tests for split function", "")
         // skip last blank element
         std::vector<std::string> stringParts = dXstring::split("foo,bar,",',');
         REQUIRE(stringParts.size() == 2);
+
+        pstring p("foo,bar,");
+        REQUIRE(p.tokenize(',').size() == 2);
     }
 
     {
         // do not skip middle blank element
         std::vector<std::string> stringParts = dXstring::split("foo,,bar",',');
         REQUIRE(stringParts.size() == 3);
+
+        pstring p("foo,,bar");
+        REQUIRE(p.tokenize(',').size() == 3);
+    }
+
+    {
+        // do skip any empty elements when flag is set
+        // do not skip middle blank element
+        std::vector<std::string> stringParts = dXstring::split("foo,,bar",',', true);
+        REQUIRE(stringParts.size() == 2);
+
+        pstring p("foo,,bar");
+        REQUIRE(p.tokenize(',', true).size() == 2);
     }
 }
 
@@ -211,3 +229,4 @@ TEST_CASE("test isDouble")
     REQUIRE_FALSE(dXstring::isDouble(""));
     REQUIRE_FALSE(dXstring::isDouble("foo1234"));
 }
+
