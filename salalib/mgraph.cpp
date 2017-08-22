@@ -710,7 +710,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
 
 //////////////////////////////////////////////////////////////////
 
-int MetaGraph::addShapeGraph(const pstring& name, int type)
+int MetaGraph::addShapeGraph(const std::string& name, int type)
 {
    int mapref= m_shape_graphs.addMap(name,type);
    m_state |= SHAPEGRAPHS;
@@ -723,7 +723,7 @@ int MetaGraph::addShapeGraph(const pstring& name, int type)
    }
    return mapref;
 }
-int MetaGraph::addShapeMap(const pstring& name)
+int MetaGraph::addShapeMap(const std::string& name)
 {
    int ref = m_data_maps.addMap(name,ShapeMap::DATAMAP);
    m_state |= DATAMAPS;
@@ -762,7 +762,7 @@ void MetaGraph::removeDisplayedMap()
 //////////////////////////////////////////////////////////////////
 
 
-bool MetaGraph::convertDrawingToAxial(Communicator *comm, pstring layer_name)
+bool MetaGraph::convertDrawingToAxial(Communicator *comm, std::string layer_name)
 {
    int oldstate = m_state;
 
@@ -790,7 +790,7 @@ bool MetaGraph::convertDrawingToAxial(Communicator *comm, pstring layer_name)
    return retvar;
 }
 
-bool MetaGraph::convertDataToAxial(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues)
+bool MetaGraph::convertDataToAxial(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues)
 {
    int oldstate = m_state;
 
@@ -826,7 +826,7 @@ bool MetaGraph::convertDataToAxial(Communicator *comm, pstring layer_name, bool 
 }
 
 // typeflag: -1 convert drawing to convex, 0 or 1, convert data to convex (1 is pushvalues)
-bool MetaGraph::convertToConvex(Communicator *comm, pstring layer_name, bool keeporiginal, int typeflag)
+bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag)
 {
    int oldstate = m_state;
 
@@ -867,7 +867,7 @@ bool MetaGraph::convertToConvex(Communicator *comm, pstring layer_name, bool kee
    return retvar;
 }
 
-bool MetaGraph::convertDrawingToSegment(Communicator *comm, pstring layer_name)
+bool MetaGraph::convertDrawingToSegment(Communicator *comm, std::string layer_name)
 {
    int oldstate = m_state;
 
@@ -895,7 +895,7 @@ bool MetaGraph::convertDrawingToSegment(Communicator *comm, pstring layer_name)
    return retvar;
 }
 
-bool MetaGraph::convertDataToSegment(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues)
+bool MetaGraph::convertDataToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues)
 {
    int oldstate = m_state;
 
@@ -932,7 +932,7 @@ bool MetaGraph::convertDataToSegment(Communicator *comm, pstring layer_name, boo
 
 // note: type flag says whether this is graph to data map or drawing to data map
 
-bool MetaGraph::convertToData(Communicator *comm, pstring layer_name, bool keeporiginal, int typeflag)
+bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag)
 {
    int oldstate = m_state;
 
@@ -1010,7 +1010,7 @@ bool MetaGraph::convertToData(Communicator *comm, pstring layer_name, bool keepo
    return retvar;
 }
 
-bool MetaGraph::convertToDrawing(Communicator *comm, pstring layer_name, int typeflag)
+bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int typeflag)
 {
    bool retvar = false;
 
@@ -1036,7 +1036,7 @@ bool MetaGraph::convertToDrawing(Communicator *comm, pstring layer_name, int typ
             }
          }
          if (group == -1) {
-            SuperSpacePixel::push_back(pstring("Converted Maps"));
+            SuperSpacePixel::push_back(std::string("Converted Maps"));
             group = SuperSpacePixel::size() - 1;
          }
          SuperSpacePixel::at(group).push_back(ShapeMap(layer_name));
@@ -1085,7 +1085,7 @@ bool MetaGraph::convertPointsToShape()
    m_state &= ~DATAMAPS;
 
    if (m_data_maps.getMapCount() == 0) {
-      m_data_maps.addMap(pstring("Gates"),ShapeMap::DATAMAP);
+      m_data_maps.addMap("Gates",ShapeMap::DATAMAP);
    }
 
    if (m_data_maps.getDisplayedMap().makeShapeFromPointSet(getDisplayedPointMap()) != -1) {
@@ -1130,7 +1130,7 @@ bool MetaGraph::convertBoundaryGraph( Communicator *communicator )
 }
 */
 
-bool MetaGraph::convertAxialToSegment(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues, double stubremoval)
+bool MetaGraph::convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval)
 {
    int oldstate = m_state;
 
@@ -1611,23 +1611,24 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    while (!stream.eof()) {
 
-      pstring inputline;
+      std::string inputline;
       stream >> inputline;
       if (inputline.length() > 1 && inputline[0] != '#') {
          if (!parsing) {
-            if (inputline.makelower() == "begin polygon") {
+            if (dXstring::toLower(inputline) == "begin polygon") {
                parsing = 1;
             }
-            else if (inputline.makelower() == "begin polyline") {
+            else if (dXstring::toLower(inputline) == "begin polyline") {
                parsing = 2;
             }
          }
-         else if (inputline.makelower().substr(0,3) == "end") {
+         else if (dXstring::toLower(inputline).substr(0,3) == "end") {
             parsing = 0;
          }
          else {
-            current_point.x = inputline.ltrim().splice(' ').c_double();
-            current_point.y = inputline.ltrim().c_double();
+            auto tokens = dXstring::split(inputline, ' ', true);
+            current_point.x = stod(tokens[0]);
+            current_point.y = stod(tokens[1]);
             numlines++;
             if (first) {
                min_point = current_point;
@@ -1666,21 +1667,21 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    while (!stream.eof()) {
 
-      pstring inputline;
+      std::string inputline;
       stream >> inputline;
 
       if (inputline.length() > 1 && inputline[0] != '#') {
          if (!parsing) {
-            if (inputline.makelower() == "begin polygon") {
+            if (dXstring::toLower(inputline) == "begin polygon") {
                parsing = 1;
                first = true;
             }
-            else if (inputline.makelower() == "begin polyline") {
+            else if (dXstring::toLower(inputline) == "begin polyline") {
                parsing = 2;
                first = true;
             }
          }
-         else if (inputline.makelower().substr(0,3) == "end") {
+         else if (dXstring::toLower(inputline).substr(0,3) == "end") {
             if (points.size() > 2) {
                if (parsing == 1) { // polygon
                   SuperSpacePixel::tail().tail().makePolyShape(points, false);
@@ -1696,8 +1697,9 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
             parsing = 0;
          }
          else {
-            current_point.x = inputline.ltrim().splice(' ').c_double();
-            current_point.y = inputline.ltrim().c_double();
+             auto tokens = dXstring::split(inputline, ' ', true);
+            current_point.x = stod(tokens[0]);
+            current_point.y = stod(tokens[1]);
             points.push_back(current_point);
          }
       }
@@ -1914,7 +1916,7 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
-int MetaGraph::importTxt( istream& stream, const pstring& name, bool csv )
+int MetaGraph::importTxt( istream& stream, const std::string& name, bool csv )
 {
    int oldstate = m_state;
 
@@ -2109,16 +2111,16 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
    AttributeTable& table_out = getAttributeTable(desttype, destlayer);
 
    if (col_out == -2) {
-      pstring name = table_in.getColumnName(col_in);
+      std::string name = table_in.getColumnName(col_in);
       if ((table_out.isValidColumn(name) && table_out.isColumnLocked(table_out.getColumnIndex(name))) || name == "Object Count") {
-         name = pstring("Copied ") + name;
+         name = std::string("Copied ") + name;
       }
       col_out = table_out.insertColumn(name);
    }
 
    int col_count = -1;
    if (count_col) {
-      col_count = table_out.insertColumn(pstring("Object Count"));
+      col_count = table_out.insertColumn("Object Count");
       if (col_count <= col_out) {
          col_out++;
       }
@@ -2500,7 +2502,7 @@ void MetaGraph::undo()
 
 // Moving to global ways of doing things:
 
-int MetaGraph::addAttribute(const pstring& name)
+int MetaGraph::addAttribute(const std::string& name)
 {
    int col;
    switch (m_view_class & VIEWFRONT) {
@@ -2706,7 +2708,7 @@ void MetaGraph::unloadGraphAgent()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int MetaGraph::read( const pstring& filename )
+int MetaGraph::read( const std::string& filename )
 {
    m_state = 0;   // <- clear the state out
 
@@ -2961,7 +2963,7 @@ int MetaGraph::read( const pstring& filename )
    return OK;
 }
 
-int MetaGraph::write( const pstring& filename, int version, bool currentlayer )
+int MetaGraph::write( const std::string& filename, int version, bool currentlayer )
 {
    ofstream stream;
 

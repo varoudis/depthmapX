@@ -26,6 +26,7 @@
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/spacepix.h>
 
+#include "genlib/stringutils.h"
 #ifndef _WIN32
 #define _finite finite
 #endif
@@ -272,7 +273,7 @@ PixelRefList PixelBase::quickPixelateLine(PixelRef p, PixelRef q)
    return list;
 }
 
-SpacePixel::SpacePixel(const pstring& name)
+SpacePixel::SpacePixel(const std::string& name)
 {
    m_name = name;
    m_show = true;
@@ -962,7 +963,7 @@ bool SpacePixel::read( ifstream& stream, int version )
 
    // read name:
    if (version >= VERSION_SPACEPIXELGROUPS) {
-      m_name.read( stream );
+      m_name = dXstring::readString(stream );
       stream.read( (char *) &m_show, sizeof(m_show) );
    }
    else {
@@ -1034,7 +1035,7 @@ bool SpacePixel::read( ifstream& stream, int version )
 bool SpacePixel::write( ofstream& stream )
 {
    // write name:
-   m_name.write( stream );
+   dXstring::writeString(stream, m_name );
    stream.write( (char *) &m_show, sizeof(m_show) );
    stream.write( (char *) &m_color, sizeof(m_color) );
 

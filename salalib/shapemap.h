@@ -21,6 +21,7 @@
 #define __SHAPEMAP_H__
 
 #include <string>
+#include "genlib/stringutils.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -653,8 +654,8 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    if (version < VERSION_NO_SHAPEMAP_NAME_LOOKUP) {
       for (size_t i = 0; i < size_t(count); i++) {
          // dummy name lookup (now simply creates on fly, as the name lookup may be corrupted in earlier versions)
-         std::string name; int number;
-         name.read(stream);
+         std::string name = dXstring::readString(stream);
+         int number;
          stream.read((char *)&number,sizeof(number));
       }
    }
