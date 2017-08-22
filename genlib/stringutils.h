@@ -22,7 +22,7 @@
 
 #pragma once
 namespace dXstring {
-    std::vector<std::string> split(const std::string &s, char delim);
+    std::vector<std::string> split(const std::string &s, char delim, bool skipEmptyTokens = false);
     std::string readString(std::istream & stream);
     void writeString(std::ostream &stream, const std::string &s);
     std::string formatString(double value, const std::string &format);
