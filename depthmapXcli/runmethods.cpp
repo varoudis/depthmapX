@@ -38,7 +38,7 @@ namespace dm_runmethods
     perfWriter.addData(message, CONCAT(t_, __LINE__).getTimeInSeconds());
 
 
-    std::unique_ptr<MetaGraph> loadGraph(const pstring& filename, IPerformanceSink &perfWriter) {
+    std::unique_ptr<MetaGraph> loadGraph(const std::string& filename, IPerformanceSink &perfWriter) {
         std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
         std::cout << "Loading graph " << filename << std::flush;
         DO_TIMED( "Load graph file", auto result = mgraph->read(filename);)
