@@ -118,4 +118,12 @@ namespace dXstring {
         }
     }
 
+    bool isDouble(const std::string &s)
+    {
+        // nasty const cast to satisfy the function signature - we will not change the value of endPtr
+        char *endPtr = const_cast<char *>(&s[0]);
+        strtod(s.c_str(), &endPtr);
+        return endPtr != &s[0];
+    }
+
 }
