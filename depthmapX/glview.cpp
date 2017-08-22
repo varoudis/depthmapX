@@ -32,7 +32,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
       m_background(backgroundColour),
       m_foreground(foregroundColour)
 {
-    m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
+    m_coreProfile = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     m_pDoc = doc;
 
 
@@ -82,12 +82,12 @@ void GLView::initializeGL()
     initializeOpenGLFunctions();
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
-    m_axes.initializeGL(m_core);
-    m_visibleDrawingLines.initializeGL(m_core);
-    m_visiblePointMap.initializeGL(m_core);
-    m_grid.initializeGL(m_core);
-    m_visibleAxial.initializeGL(m_core);
-    m_visibleDataMap.initializeGL(m_core);
+    m_axes.initializeGL(m_coreProfile);
+    m_visibleDrawingLines.initializeGL(m_coreProfile);
+    m_visiblePointMap.initializeGL(m_coreProfile);
+    m_grid.initializeGL(m_coreProfile);
+    m_visibleAxial.initializeGL(m_coreProfile);
+    m_visibleDataMap.initializeGL(m_coreProfile);
 
     if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
         loadVGAGLObjectsRequiringGLContext();
@@ -110,22 +110,22 @@ void GLView::paintGL()
     if(m_datasetChanged) {
 
         loadDrawingGLObjects();
-        m_visibleDrawingLines.updateGL(m_core);
+        m_visibleDrawingLines.updateGL(m_coreProfile);
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
             loadAxialGLObjects();
-            m_visibleAxial.updateGL(m_core);
+            m_visibleAxial.updateGL(m_coreProfile);
         }
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
             loadDataMapGLObjects();
-            m_visibleDataMap.updateGL(m_core);
+            m_visibleDataMap.updateGL(m_coreProfile);
         }
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
             loadVGAGLObjects();
-            m_visiblePointMap.updateGL(m_core);
-            m_grid.updateGL(m_core);
+            m_visiblePointMap.updateGL(m_coreProfile);
+            m_grid.updateGL(m_coreProfile);
             loadVGAGLObjectsRequiringGLContext();
         }
 
