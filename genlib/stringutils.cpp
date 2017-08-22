@@ -70,6 +70,14 @@ namespace dXstring {
         return std::string(&buffer[0]);
     }
 
+    std::string formatString(int value, const std::string &format)
+    {
+        std::vector<char> buffer(24 + format.length(), '\0');
+        sprintf( &buffer[0], format.c_str(), value );
+        return std::string(&buffer[0]);
+    }
+
+
     std::string& toLower(std::string &str)
     {
         std::transform(str.begin(), str.end(), str.begin(), tolower);

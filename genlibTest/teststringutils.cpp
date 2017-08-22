@@ -173,6 +173,9 @@ TEST_CASE("test string format")
 {
     REQUIRE(dXstring::formatString(1.0, "foo") == "foo");
     REQUIRE(dXstring::formatString(1.0, "%+.16le") == "+1.0000000000000000e+00");
+    REQUIRE(dXstring::formatString(1.0) == "+1.0000000000000000e+00");
+    REQUIRE(dXstring::formatString(1.0, "%+.8le") == "+1.00000000e+00");
+    REQUIRE(dXstring::formatString(1 ) == "               1");
 }
 
 TEST_CASE("test tolower")
