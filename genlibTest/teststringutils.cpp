@@ -170,16 +170,36 @@ TEST_CASE("test ltrim")
     std::string normal = "   fo o ";
     dXstring::ltrim(normal);
     REQUIRE( normal == "fo o ");
-    std::string tabs = "\t \tba r\t";
-    dXstring::ltrim(tabs) ;
-    REQUIRE(tabs == "ba r\t");
     std::string empty = "";
     dXstring::ltrim(empty);
     REQUIRE( empty == "" );
-    std::string justBlanks = "\t   ";
+    std::string justBlanks = "   ";
     dXstring::ltrim(justBlanks);
     REQUIRE( justBlanks == "");
     std::string noBlanks = "foo ";
     dXstring::ltrim(noBlanks);
     REQUIRE(noBlanks == "foo ");
+}
+
+TEST_CASE("test rtrim")
+{
+    std::string normal = "   fo o ";
+    dXstring::ltrim(normal);
+    REQUIRE( normal == "   fo o");
+    std::string empty = "";
+    dXstring::ltrim(empty);
+    REQUIRE( empty == "" );
+    std::string justBlanks = "   ";
+    dXstring::ltrim(justBlanks);
+    REQUIRE( justBlanks == "");
+    std::string noBlanks = "foo ";
+    dXstring::ltrim(noBlanks);
+    REQUIRE(noBlanks == "foo");
+}
+
+TEST_CASE("test makeInitCaps")
+{
+    std::string tstr = "abC DEf dEf \"fOO Bar\" blah bLuB";
+    dXstring::makeInitCaps(tstr);
+    REQUIRE(tstr == "Abc Def Def \"fOO Bar\" Blah Blub");
 }

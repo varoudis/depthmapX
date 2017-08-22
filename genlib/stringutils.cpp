@@ -73,10 +73,49 @@ namespace dXstring {
     }
 
     // trim from start (in place)
-    void ltrim(std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-            return !::isspace(ch);
+    void ltrim(std::string &s, char c) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&c](int ch) {
+            return ch != c;
         }));
+    }
+
+    // trim from end (in place)
+    void rtrim(std::string &s, char c) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [&c](int ch) {
+            return ch != c;
+        }).base(), s.end());
+    }
+
+    void makeInitCaps(std::string &s)
+    {
+        bool literal = false;
+        bool reset = true;
+        for( auto c : s)
+        {
+            if (!isalpha(c))
+            {
+                if ( c == '"')
+                {
+                    literal = !literal;
+                }
+                reset = true;
+            }
+            else
+            {
+                if (!literal)
+                {
+                    if (reset)
+                    {
+                        c = toupper(c);
+                    }
+                    else
+                    {
+                        c = tolower(c);
+                    }
+                }
+                reset = false;
+            }
+        }
     }
 
 }
