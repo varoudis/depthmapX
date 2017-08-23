@@ -25,6 +25,8 @@
 #include "genlib/p2dpoly.h"
 #include "salalib/vertex.h"
 
+#include "genlib/stringutils.h"
+
 class SalaShape;
 
 class PixelRef
