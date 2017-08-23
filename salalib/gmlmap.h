@@ -17,6 +17,9 @@
 #ifndef __GMLMAP_H__
 #define __GMLMAP_H__
 
+#include <string>
+#include <vector>
+
 typedef prefvec<pvecpoint> polyset;
 
 class GMLMap
@@ -24,10 +27,10 @@ class GMLMap
 protected:
    QtRegion m_region;
 public:
-   pqmap<pstring,polyset> m_keys;
+   pqmap<std::string,polyset> m_keys;
 public:
    GMLMap() {;}
-   bool parse(const pvecstring& fileset, Communicator *communicator);
+   bool parse(const std::vector<std::string>& fileset, Communicator *communicator);
    Point2f getBottomLeft()
    { return m_region.bottom_left; }
    Point2f getTopRight()
