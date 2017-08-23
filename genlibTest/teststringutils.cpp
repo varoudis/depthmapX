@@ -3,8 +3,6 @@
 #include "../cliTest/selfcleaningfile.h"
 #include <fstream>
 
-#include "genlib/paftl.h"
-
 TEST_CASE("Tests for split function", "")
 {
     {
@@ -40,18 +38,12 @@ TEST_CASE("Tests for split function", "")
         // skip last blank element
         std::vector<std::string> stringParts = dXstring::split("foo,bar,",',');
         REQUIRE(stringParts.size() == 2);
-
-        pstring p("foo,bar,");
-        REQUIRE(p.tokenize(',').size() == 2);
     }
 
     {
         // do not skip middle blank element
         std::vector<std::string> stringParts = dXstring::split("foo,,bar",',');
         REQUIRE(stringParts.size() == 3);
-
-        pstring p("foo,,bar");
-        REQUIRE(p.tokenize(',').size() == 3);
     }
 
     {
@@ -59,9 +51,6 @@ TEST_CASE("Tests for split function", "")
         // do not skip middle blank element
         std::vector<std::string> stringParts = dXstring::split("foo,,bar",',', true);
         REQUIRE(stringParts.size() == 2);
-
-        pstring p("foo,,bar");
-        REQUIRE(p.tokenize(',', true).size() == 2);
     }
 }
 
@@ -134,37 +123,6 @@ TEST_CASE("Write String")
         char dummy[1];
         REQUIRE_FALSE(fs.read(dummy, 1));
         REQUIRE(fs.eof());
-    }
-}
-
-#include "../genlib/paftl.h"
-TEST_CASE("pstring compatibility")
-{
-    // case 1 write pstring and read std:string
-    {
-        pstring testString = "pstring";
-        SelfCleaningFile f("test.bin");
-        {
-            std::ofstream fs(f.Filename());
-            testString.write(fs);
-        }
-        ifstream fs(f.Filename());
-        auto result = dXstring::readString(fs);
-        REQUIRE(result == testString.c_str());
-    }
-
-    // case 2 write std::string and read pstring
-    {
-        std::string testString = "std::string";
-        SelfCleaningFile f("test.bin");
-        {
-            std::ofstream fs(f.Filename());
-            dXstring::writeString(fs, testString);
-        }
-        std::ifstream fs(f.Filename());
-        pstring result;
-        result.read(fs);
-        REQUIRE(testString == result.c_str());
     }
 }
 
