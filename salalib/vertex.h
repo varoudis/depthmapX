@@ -159,7 +159,7 @@ struct Options
    int weighted_measure_col;
    int weighted_measure_col2;  //EFEF
 	int routeweight_col;			//EFEF
-   pstring output_file; // To save an output graph (for example)
+   std::string output_file; // To save an output graph (for example)
    // default values
    Options() 
    { local = 0; global = 1; cliques = 0; 
@@ -510,7 +510,7 @@ public:
 protected:  
    // stored here for ease of use
    int m_metagraph_version;
-   pstring m_filename;
+   std::string m_filename;
    fstream *m_stream;
    AttrHeader m_attr_header;
    prefvec<AttrBody> m_attributes;
@@ -520,7 +520,7 @@ protected:
    prefvec<ArVertex> m_mem_data;  // ...or all in memory
    int m_which_attributes;
 public:
-   ArVertexList( const pstring& filename = pstring() )   {
+   ArVertexList( const std::string& filename = std::string() )   {
       m_metagraph_version = METAGRAPH_VERSION;
       m_filename = filename;
       m_stream = NULL;
@@ -561,10 +561,10 @@ public:
       m_mem_loaded = false;
    }
    //
-   void setFilename( const pstring& filename ) {
+   void setFilename( const std::string& filename ) {
       m_filename = filename;
    }
-   const pstring& getFilename() const {
+   const std::string& getFilename() const {
       return m_filename;
    }
    //

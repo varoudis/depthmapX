@@ -7,7 +7,8 @@ INCLUDEPATH += ../ThirdParty/Catch
 
 SOURCES += convertertest.cpp \
     main.cpp \
-    dxfptest.cpp
+    dxfptest.cpp \
+    teststringutils.cpp
 
 HEADERS +=
 
