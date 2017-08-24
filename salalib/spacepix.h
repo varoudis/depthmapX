@@ -25,6 +25,8 @@
 #include "genlib/p2dpoly.h"
 #include "salalib/vertex.h"
 
+#include "genlib/stringutils.h"
+
 class SalaShape;
 
 class PixelRef
@@ -262,7 +264,7 @@ protected:
 protected:
    PafColor m_color;
    int m_style;   // allows for bold / dotted lines etc
-   pstring m_name;
+   std::string m_name;
    bool m_show;
    bool m_edit;
    pvecint **m_pixel_lines;
@@ -283,7 +285,7 @@ protected:
    mutable unsigned int m_test;
    //
 public:
-   SpacePixel(const pstring& name = pstring("Default"));
+   SpacePixel(const std::string& name = std::string("Default"));
    virtual ~SpacePixel();
    //
    SpacePixel(const SpacePixel& spacepixel);
@@ -331,9 +333,9 @@ public:
       { return m_lines; }
    //
    // For easy layer manipulation:
-   void setName(const pstring& name)
+   void setName(const std::string& name)
       { m_name = name; }
-   pstring getName() 
+   std::string getName()
       { return m_name; }
    void setShow(bool show = true)
       { m_show = show; }
@@ -376,16 +378,16 @@ template <class T>
 class SpacePixelGroup : public pqvector<T>
 {
 protected:
-   pstring m_name;   // <- file name
+   std::string m_name;   // <- file name
    mutable int m_current_layer;
 public:
    QtRegion m_region;  // easier public for now
    //
-   SpacePixelGroup(const pstring& name = pstring()) 
+   SpacePixelGroup(const std::string& name = std::string())
    { m_name = name; m_current_layer = -1; }
-   void setName(const pstring& name)
+   void setName(const std::string& name)
    { m_name = name; }
-   const pstring& getName() const
+   const std::string& getName() const
    { return m_name; }
    //
    QtRegion& getRegion() const
@@ -471,7 +473,7 @@ template <class T>
 bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer )
 {
    if (version >= VERSION_SPACEPIXELGROUPS) {
-      m_name.read(stream);
+      m_name = dXstring::readString(stream);
       stream.read( (char *) &m_region, sizeof(m_region) );
       int count;
       stream.read( (char *) &count, sizeof(count) );
@@ -494,7 +496,7 @@ bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer 
 template <class T>
 bool SpacePixelGroup<T>::write( ofstream& stream, int version )
 {
-   m_name.write(stream);
+   dXstring::writeString(stream, m_name);
    stream.write( (char *) &m_region, sizeof(m_region) );
    
    // Quick mod - TV
