@@ -60,11 +60,11 @@ IGraphFile *newGraphFile()
    IGraphFile *graphfile = NULL;
    MetaGraph *graph = new MetaGraph();
    // REMINDER: fill in some more details here:
-	pstring version = "Sala.dll version";
+    std::string version = "Sala.dll version";
 	char tmpbuf[9];
     // Quick mod - TV
 #if defined(_WIN32)
-	pstring date = pstring(_strdate(tmpbuf));
+    std::string date = _strdate(tmpbuf);
 #else
     char nowDate[20];
     {
@@ -73,10 +73,10 @@ IGraphFile *newGraphFile()
         gettimeofday(&tv, NULL);
         datelen = strftime(nowDate, 20, "%m/%d/%y", localtime(&tv.tv_sec));
     }
-    pstring date = pstring(nowDate);
+    std::string date = nowDate;
 #endif
 
-   graph->setProperties(pstring("Name"),pstring("Organisation"),pstring(date),pstring(version));
+   graph->setProperties("Name","Organisation",date,version);
 	graphfile = new IGraphFile();
 	graphfile->setData(graph);
    // ensure the graph is labelled for deletion after use
@@ -91,7 +91,7 @@ IGraphFile *openGraphFile(const char *filename)
    }
    IGraphFile *graphfile = NULL;
    MetaGraph *graph = new MetaGraph();
-   if (graph->read( pstring(filename) ) == MetaGraph::OK) {
+   if (graph->read( filename ) == MetaGraph::OK) {
 	   graphfile = new IGraphFile();
 		graphfile->setData(graph);
       // ensure the graph is labelled for deletion after use
@@ -431,7 +431,7 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
 		   return NULL;
       }
       else {
-         int mapref = graph->importTxt( file, pstring(newmapname), (type_str.compare("CSV")==0) );
+         int mapref = graph->importTxt( file, newmapname, (type_str.compare("CSV")==0) );
          
          if (mapref != -1) {
             // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together
@@ -442,14 +442,14 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
    }
    else if (type_str.compare("MIF") == 0) {
 
-      pstring miffilename = pstring(filename) + ".mif";
-	   pstring midfilename = pstring(filename) + ".mid";
+      string miffilename = string(filename) + ".mif";
+       string midfilename = string(filename) + ".mid";
 
 	   ifstream miffile( miffilename.c_str() );
 	   ifstream midfile( midfilename.c_str() );
 
 	   if (miffile && midfile) {
-		   int mapref = graph->m_data_maps.addMap(pstring(newmapname),ShapeMap::DATAMAP);
+           int mapref = graph->m_data_maps.addMap(newmapname,ShapeMap::DATAMAP);
 
 		   ShapeMap& mifmap = graph->m_data_maps.getMap(mapref);
 	
@@ -940,7 +940,7 @@ void IVGAMap::setDisplayedAttributeColumn(const char *attribute)
       ((PointMap *)m_data)->setDisplayedAttribute(-1);
    }
    else {
-      int col = ((PointMap *)m_data)->getAttributeTable().getColumnIndex(pstring(attribute));
+      int col = ((PointMap *)m_data)->getAttributeTable().getColumnIndex(attribute);
       if (col != -1) {
          ((PointMap *)m_data)->setDisplayedAttribute(col);
       }
@@ -1328,7 +1328,7 @@ void IShapeMap::setDisplayedAttributeColumn(const char *attribute)
       ((ShapeMap *)m_data)->setDisplayedAttribute(-1);
    }
    else {
-      int col = ((ShapeMap *)m_data)->getAttributeTable().getColumnIndex(pstring(attribute));
+      int col = ((ShapeMap *)m_data)->getAttributeTable().getColumnIndex(attribute);
       if (col != -1) {
          // invalidate it, as it's almost certain the user wants to redraw the output:
          ((ShapeMap *)m_data)->invalidateDisplayedAttribute();
@@ -1500,7 +1500,7 @@ int IShapeMap::analyseSegments(IComm *comm, size_t radius_count, float *radius_l
 	  created_comm = true;
    }
    
-   pstring weighting_column_str;
+   std::string weighting_column_str;
    if (weighting_column != NULL) {
       weighting_column_str = weighting_column;
    }
@@ -1509,7 +1509,7 @@ int IShapeMap::analyseSegments(IComm *comm, size_t radius_count, float *radius_l
    }
    options.weighted_measure_col = map.getAttributeTable().getColumnIndex(weighting_column_str);
 	//EFEF
-   pstring weighting_column_str2;
+   std::string weighting_column_str2;
    if (weighting_column2 != NULL) {
       weighting_column_str2 = weighting_column2;
    }
@@ -1518,7 +1518,7 @@ int IShapeMap::analyseSegments(IComm *comm, size_t radius_count, float *radius_l
    }
    options.weighted_measure_col2 = map.getAttributeTable().getColumnIndex(weighting_column_str2);
 	//routeweight
-	pstring routeweight_column_str;
+    std::string routeweight_column_str;
 	if (routeweight_column != NULL) {
       routeweight_column_str = routeweight_column;
    }
@@ -1658,9 +1658,9 @@ bool IAttributes::insertAttributeColumn(const char *attribute)
 {
    if (strcmp(attribute,"Ref Number") != 0) {
       AttributeTable *table = (AttributeTable *)m_data;
-      int n = table->getColumnIndex(pstring(attribute));
+      int n = table->getColumnIndex(attribute);
       if (n == -1 || !table->isColumnLocked(n)) {
-         table->insertColumn(pstring(attribute));
+         table->insertColumn(attribute);
          return true;
       }
    }
@@ -1670,7 +1670,7 @@ bool IAttributes::insertAttributeColumn(const char *attribute)
 bool IAttributes::deleteAttributeColumn(const char *attribute)
 {
    AttributeTable *table = (AttributeTable *)m_data;
-   int n = table->getColumnIndex(pstring(attribute));
+   int n = table->getColumnIndex(attribute);
    if (n != -1 && !table->isColumnLocked(n)) {
       table->removeColumn(n);
       if (n >= table->getDisplayColumn()) {
@@ -1686,7 +1686,7 @@ bool IAttributes::deleteAttributeColumn(const char *attribute)
 bool IAttributes::renameAttributeColumn(const char *oldname, const char *newname)
 {
    AttributeTable *table = (AttributeTable *)m_data;
-   int n = table->getColumnIndex(pstring(oldname));
+   int n = table->getColumnIndex(oldname);
    if (n != -1 && !table->isColumnLocked(n)) {
       table->renameColumn(n,newname);
       return true;
@@ -1696,13 +1696,13 @@ bool IAttributes::renameAttributeColumn(const char *oldname, const char *newname
 
 bool IAttributes::isValidAttributeColumn(const char *attribute)
 {
-   return ((AttributeTable *)m_data)->isValidColumn(pstring(attribute));
+   return ((AttributeTable *)m_data)->isValidColumn(attribute);
 }
 
 bool IAttributes::isLockedAttributeColumn(const char *attribute)
 {
    AttributeTable *table = (AttributeTable *)m_data;
-   int n = table->getColumnIndex(pstring(attribute));
+   int n = table->getColumnIndex(attribute);
    if (n != -1 && !table->isColumnLocked(n)) {
       return table->isColumnLocked(n);
    }
@@ -1718,7 +1718,7 @@ float IAttributes::getAttribute(int id, const char *attribute)
    if (index == -1) {
       return -1.0f;
    }
-   return table.getValue(index,pstring(attribute));
+   return table.getValue(index,attribute);
 }
 
 // set an attribute in the attribute table for the current point:
@@ -1730,7 +1730,7 @@ void IAttributes::setAttribute(int id, const char *attribute, float value)
       return;
    }
    // nb., changeValue modifies tot value (but not reduce min/max)
-   table.changeValue(index,pstring(attribute),value);
+   table.changeValue(index,attribute,value);
 }
 
 // set an attribute in the attribute table for the current point:
@@ -1742,7 +1742,7 @@ void IAttributes::incrAttribute(int id, const char *attribute)
       return;
    }
    // nb., changeValue modifies tot value (but not reduce min/max)
-   table.incrValue(index,pstring(attribute));
+   table.incrValue(index,attribute);
 }
 
 /////////////////////////////////////////////////////////////////////////

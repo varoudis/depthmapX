@@ -198,7 +198,7 @@ class PointMap : public PixelBase
    // (e.g., when making DataLayers into ShapeMaps)
    friend class MetaGraph;
 protected:
-   pstring m_name;
+   std::string m_name;
    Point **m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
@@ -216,12 +216,12 @@ protected:
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
-   PointMap(const pstring& name = pstring("VGA Map"));
+   PointMap(const std::string& name = std::string("VGA Map"));
    PointMap(const PointMap& pointdata);
    PointMap& operator = (const PointMap& pointdata);
    void construct( const PointMap& pointdata );
    virtual ~PointMap();
-   const pstring& getName() const
+   const std::string& getName() const
    { return m_name; }
    //
    // Quick mod - TV
@@ -354,13 +354,13 @@ protected:
    // which attribute is currently displayed:
    mutable int m_displayed_attribute;
 public:
-   int addAttribute(const pstring& name)
+   int addAttribute(const std::string& name)
       { return m_attributes.insertColumn(name); }
    void removeAttribute(int col)
       { m_attributes.removeColumn(col); }
-   void setAttribute(PixelRef pix, const pstring& name, float val)
+   void setAttribute(PixelRef pix, const std::string& name, float val)
       { m_attributes.setValue(m_attributes.getRowid(pix),name,val); }
-   void incrementAttribute(PixelRef pix, const pstring& name)
+   void incrementAttribute(PixelRef pix, const std::string& name)
       { m_attributes.incrValue(m_attributes.getRowid(pix),name); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
@@ -501,7 +501,7 @@ public:
    { return at(m_displayed_map); }
    int getDisplayedPointMapRef() const
    { return m_displayed_map; }
-   int addNewMap(const pstring& name = pstring("VGA Map"));
+   int addNewMap(const std::string& name = std::string("VGA Map"));
    void removeMap(int i) 
    { if (m_displayed_map >= i) m_displayed_map--; remove_at(i); }
    //
