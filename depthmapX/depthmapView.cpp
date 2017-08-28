@@ -46,10 +46,6 @@ class QToolBar;
 #define DMP_TIMER_3DVIEW      4
 
 
-// You don't want Depthmap to warn you about alerts way in the past,
-// so this sets the earliest date Depthmap will pick up an alert from
-const pstring g_earliest_alert_date = pstring("2010-11-01T00:00:01");
-
 // version 5.0 dll exports have split out the attribute table
 // functionality, so a single class operates with the VGA interface
 // and the Axial interface, this means previous DLLs will not work
@@ -1365,7 +1361,7 @@ bool QDepthmapView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
       ShapeMap& map = pDoc->m_meta_graph->getDisplayedDataMap();
       for (int i = 0; i < map.getObjectCount(); i++) {
          if (map.getDisplayedAttributeValue(i) > 0) {
-            pstring text = map.getDisplayedAttributeText(i);
+            std::string text = map.getDisplayedAttributeText(i);
             QPoint p = PhysicalUnits(map.getCentroid(i));
             QSize sz = pDC->GetTextExtent(text.c_str());
             pDC->drawText(p.x(), p.y()-(sz.height()/2), text.c_str());

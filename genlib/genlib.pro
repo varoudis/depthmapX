@@ -29,7 +29,8 @@ SOURCES += \
     dxfp.cpp \
     p2dpoly.cpp \
     pafmath.cpp \
-    xmlparse.cpp
+    xmlparse.cpp \
+    stringutils.cpp
 
 HEADERS += \
     comm.h \
@@ -40,4 +41,5 @@ HEADERS += \
     paftl_old.h \
     xmlparse.h \
     exceptions.h \
-    legacyconverters.h
+    legacyconverters.h \
+    stringutils.h

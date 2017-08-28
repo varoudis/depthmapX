@@ -23,6 +23,8 @@
 #include <time.h>
 #include <genlib/paftl.h>
 #include <genlib/comm.h> // for communicator
+#include <genlib/stringutils.h>
+#include <genlib/exceptions.h>
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
@@ -153,7 +155,7 @@ double SalaShape::getAngDev() const
 
 // the replacement for datalayers
 
-ShapeMap::ShapeMap(const pstring& name, int type) : m_attributes(name)
+ShapeMap::ShapeMap(const std::string& name, int type) : m_attributes(name)
 {
    m_name = name;
    m_map_type = type;
@@ -527,7 +529,7 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
 #ifdef _DEBUG
    if (rowid1 != rowid2) {
       // rowids should match, they're both pqmaps, but if someone is stupid enough to change it, they'll know pretty quickly:
-      throw pstring("Arrrrgghhh: important! insertRow does not index in the same way as add shapes, this will badly mess up the system!");
+      throw depthmapX::RuntimeException("Arrrrgghhh: important! insertRow does not index in the same way as add shapes, this will badly mess up the system!");
    }
 #endif
 
@@ -1785,7 +1787,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
 
    }
    else {
-      throw pstring("this function is to be used for polygons only");
+      throw depthmapX::RuntimeException("this function is to be used for polygons only");
    }
 }
 
@@ -2568,7 +2570,7 @@ QtRegion ShapeMap::getSelBounds()
    return r;
 }
 
-bool ShapeMap::selectionToLayer(const pstring& name)
+bool ShapeMap::selectionToLayer(const std::string& name)
 {
    bool retvar = false;
    if (m_selection_set.size()) {
@@ -2656,7 +2658,7 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
    }
 
    // name
-   m_name.read(stream);
+   m_name = dXstring::readString(stream);
 
    if (version >= VERSION_MAP_TYPES) {
       stream.read( (char *) &m_map_type, sizeof(m_map_type));
@@ -2782,7 +2784,7 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
 bool ShapeMap::write( ofstream& stream, int version )
 {
    // name
-   m_name.write(stream);
+   dXstring::writeString(stream, m_name);
 
    stream.write( (char *) &m_map_type, sizeof(m_map_type));
    stream.write( (char *) &m_show, sizeof(m_show) );
@@ -2876,16 +2878,16 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
 
 bool ShapeMap::importTxt(istream& stream, bool csv)
 {
-   pstring inputline;
+   std::string inputline;
    stream >> inputline;
    
    // if not known to be csv or tab delimited, try both:
    if (!csv) {
-      size_t n = inputline.findindex('\t');
+      size_t n = inputline.find_first_of('\t');
       // if can't find tabs, then try commas:
-      if (n == paftl::npos) {
-         n = inputline.findindex(',');
-         if (n == paftl::npos) {
+      if (n == std::string::npos) {
+         n = inputline.find_first_of(',');
+         if (n == std::string::npos) {
             // neither tabs nor commas
             return false;
          }
@@ -2897,7 +2899,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
    }
 
    // check for a tab delimited header line...
-   pvecstring strings = inputline.tokenize(csv ? ',' : '\t');
+   auto strings = dXstring::split(inputline, csv ? ',' : '\t');
    if (strings.size() < 2) {
       return false;
    }
@@ -2905,9 +2907,9 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
    size_t i;
    for (i = 0; i < strings.size(); i++) {
       if (!strings[i].empty()) {
-         strings[i].makelower();
-         strings[i].ltrim('\"');
-         strings[i].rtrim('\"');
+         dXstring::toLower(strings[i]);
+         dXstring::ltrim(strings[i],'\"');
+         dXstring::rtrim(strings[i],'\"');
       }
    }
 
@@ -2926,8 +2928,8 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
       else if (strings[i] == "y2")
          y2col = i;
       else {
-         strings[i].replace('_',' ');
-         strings[i].makeinitcaps();
+         std::replace(strings[i].begin(), strings[i].end(), '_',' ');
+         dXstring::makeInitCaps(strings[i]);
          if (strings[i].empty() || m_attributes.insertColumn(strings[i]) == -1) {
             // error adding column (e.g., duplicate column names)
             return false;
@@ -2947,7 +2949,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
 
    // note, these have been ordered alphabetically by the attribute table, so we need to find out what they are now:
    pvecint colmap;
-   prefvec<pqmap<pstring,size_t> > colcodes;
+   prefvec<pqmap<std::string,size_t> > colcodes;
    for (i = 0; i < strings.size(); i++) {
       if (i != xcol && i != ycol && i != x1col && i != y1col && i != x2col && i != y2col) {
          colmap.push_back( m_attributes.getColumnIndex(strings[i]) );
@@ -2964,7 +2966,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
    while (!stream.eof()) {
       stream >> inputline;
       if (!inputline.empty()) {
-         pvecstring strings = inputline.tokenize(csv ? ',' : '\t');
+         auto strings = dXstring::split(inputline, csv ? ',' : '\t');
          if (!strings.size()) {
             continue;
          }
@@ -2983,23 +2985,23 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
             else {
                try {
                   if (i == xcol || i == x1col)
-                     p1.x = strings[i].c_double();
+                     p1.x = stod(strings[i]);
                   else if (i == ycol || i == y1col) 
-                     p1.y = strings[i].c_double();
+                     p1.y = stod(strings[i]);
                   else if (i == x2col) 
-                     p2.x = strings[i].c_double();
+                     p2.x = stod(strings[i]);
                   else if (i == y2col) 
-                     p2.y = strings[i].c_double();
+                     p2.y = stod(strings[i]);
                   else {
-                     if (strings[i].is_double()) {
-                        table.tail().push_back( (float) strings[i].c_double() );
+                     if (dXstring::isDouble(strings[i])) {
+                        table.tail().push_back( stof(strings[i]));
                      }
                      else {
                         // the data column we're on
                         // Quick mod - TV
                         unsigned int datacol = table.tail().size();
                         while (colcodes.size() <= datacol) {
-                           colcodes.push_back( pqmap<pstring,size_t>() ); // <- note due to numbering need one for each
+                           colcodes.push_back( pqmap<std::string,size_t>() ); // <- note due to numbering need one for each
                         }
                         if (colcodes[datacol].size() < 32) {
                            size_t n = colcodes[datacol].searchindex(strings[i]);
@@ -3024,7 +3026,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
                      }
                   }
                }
-               catch (pstring::exception) {
+               catch (std::invalid_argument &) {
                   return false;
                }
             }
@@ -3435,19 +3437,19 @@ bool ShapeMap::clearLinks()
 
 bool ShapeMap::unlinkShapeSet(istream& idset, int refcol)
 {
-   pstring line;
+   std::string line;
    prefvec<IntPair> unlinks;
    do {
       IntPair unlink;
       idset >> line;
       if (!line.empty()) {
-         pvecstring tokens = line.tokenize('\t');
+         auto tokens = dXstring::split(line, '\t');
          if (tokens.size() < 2) {
             return false;
          }
          try {
-            unlink.a = tokens[0].c_int();
-            unlink.b = tokens[1].c_int();
+            unlink.a = stoi(tokens[0]);
+            unlink.b = stoi(tokens[1]);
             unlinks.push_back(unlink);
          }
          catch (pexception) {;}   // don't do anything if it can't parse the numbers, just ignore (e.g., first line)
@@ -4027,7 +4029,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
    for (int ii = 0; ii < m_attributes.getRowCount(); ii++) {
       int featcode = (int)m_attributes.getValue(ii,incodecol);
       if (exposureranks.searchindex(featcode) == paftl::npos) {
-         pstring blah = pstringify(featcode,"Error: wasn't expecting feature code %d");
+         std::string blah = dXstring::formatString(featcode,"Error: wasn't expecting feature code %d");
          // Quick mod - TV
          // MessageBox(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
          fprintf(stderr, "%s --- %s\n", blah.c_str(), "Error: ozlemSpecial5");
@@ -4076,7 +4078,7 @@ void ShapeMap::ozlemSpecial5(ShapeMap& buildings)
          buildinglkup.value = idxlines[start].value;
          size_t idxb = idxbuildings.searchindex(buildinglkup);
          if (idxb == paftl::npos) {
-            pstring blah = pstringify(idxlines[start].value,"Error: couldn't find PolyID %d in Buildings table");
+            std::string blah = dXstring::formatString(idxlines[start].value,"Error: couldn't find PolyID %d in Buildings table");
             // Quick mod - TV
             // MessageBox(NULL,blah.c_str(),"Error: ozlemSpecial5",MB_OK|MB_ICONEXCLAMATION);
     	    fprintf(stderr, "%s --- %s\n",blah.c_str(),"Error: ozlemSpecial5");
@@ -4214,219 +4216,15 @@ void ShapeMap::ozlemSpecial6() // ShapeMap& border)
          m_attributes.setValue(i,delcol,0.0);
       }
    }
-   pstring blah;
-   blah = pstringify(count,"%d duplicates found");
+   std::string blah;
+   blah = dXstring::formatString(count,"%d duplicates found");
 
    // Quick mod - TV
    // MessageBox(NULL,blah.c_str(),"Message: ozlemSpecial6",MB_OK|MB_ICONINFORMATION);
    fprintf(stderr, "%s --- %s\n",blah.c_str(),"Message: ozlemSpecial6");
 
-   /*
-   pvecint removelist;
-
-   for (i = 0; i < m_shapes.size(); i++) {
-      if (m_attributes.getValue(i,delcol) == 1.0) {
-         removelist.push_back(i);
-      }
-      else {
-         Point2f& p = m_shapes[i].getPoint();
-         if (border.m_region.contains(p) && border.pointInPoly(p,0)) {
-            removelist.push_back(i);
-         }
-      }
-   }
-
-   MessageBox(NULL,"Message: point in poly test complete","Message: ozlemSpecial6",MB_OK|MB_ICONINFORMATION);   
-
-
-   for (i = 0; i < removelist.size(); i++) {
-      removePolyPixels(m_shapes.key(removelist[i]));
-   }
-   m_shapes.remove_at(removelist);
-   m_attributes.removeRowids(removelist);
-   */
 }
 
-/*
-void ShapeMap::ozlemSpecial(ostream& file)
-{
-   int imposcount = 0;
-   int diffcount = 0;
-   int diffcol = m_attributes.insertColumn("Difficult");
-   int imposcol = m_attributes.insertColumn("Impossible");
-   int refcol = m_attributes.getColumnIndex("BuildIDInt");
-   for (int i = 0; i < m_attributes.getRowCount(); i++) {
-      // buildintid just used in output as key for MapInfo table
-      int buildintid = m_attributes.getValue(i,refcol);
-      // put the poly edges into bins:
-      double bins32[8];
-      double bins72[18];
-      for (int j = 0; j < 8; j++) {
-         bins32[j] = 0;
-      }
-      for (j = 0; j < 18; j++) {
-         bins72[j] = 0;
-      }
-      SalaShape& poly = m_shapes[i];
-      Point2f start = poly[0];
-      for (j = 1; j < poly.size() + 1; j++) {
-         Point2f end = (j != poly.size()) ? poly[j] : poly[0];
-         {
-            Point2f vec = end - start;
-            double len = vec.length();
-            vec.normalise();
-            double ang = vec.angle(); // test angle okay
-            ang /= (M_PI * 0.5);
-            while (ang > 1) {
-               ang -= 1;
-            }
-            bins32[round(ang * 8) % 8] += len;
-            bins72[round(ang * 18) % 18] += len;
-         }
-         start = end;
-      }
-      int difficult = 0, impossible = 0;
-      int winner72 = findwinner(bins72,18,difficult,impossible);
-      int winner32 = findwinner(bins32,8,difficult,impossible);
-      file << buildintid << "\t";
-      double bearing = double((8 - winner32) % 8) * 11.25;
-      for (j = 0; j < 4; j++) {
-         file << bearing << "\t";
-         bearing += 90;
-      }
-      bearing = double((18 - winner72) % 18) * 5;
-      for (j = 0; j < 4; j++) {
-         file << bearing << "\t";
-         bearing += 90;
-      }
-      file << difficult << "\t" << impossible << endl;
-      if (difficult) {
-         m_attributes.setValue(i,diffcol,1);
-         diffcount += 1;
-      }
-      else {
-         m_attributes.setValue(i,diffcol,0);
-      }
-      if (impossible) {
-         m_attributes.setValue(i,imposcol,1);
-         imposcount += 1;
-      }
-      else {
-         m_attributes.setValue(i,imposcol,0);
-      }
-   }
-
-   // let me know:
-   pstring di = pstringify(diffcount,"Difficult %d, ");
-   pstring im = pstringify(imposcount,"Impossible %d");
-   pstring out = di + im;
-   MessageBox(NULL,out.c_str(),"Success: ozlemSpecial",MB_OK|MB_ICONINFORMATION);
-
-   m_displayed_attribute = -2;
-   setDisplayedAttribute(imposcol);
-}
-*/
-/*
-void ShapeMap::ozlemSpecial(ostream& file, ShapeMap& linemap)
-{
-   int refcol = m_attributes.getColumnIndex("BuildIDInt");
-   AttributeIndex idxbuildings;
-   if (refcol != -1) {
-      idxbuildings.makeIndex(m_attributes,refcol,false);
-   }
-   else {
-      MessageBox(NULL,"Error: no BuildIDInt column found in the points table","Error: ozlemSpecial",MB_OK|MB_ICONEXCLAMATION);
-      return;
-   }
-   AttributeIndex idxlines;
-   int ref2col = linemap.m_attributes.getColumnIndex("Rdctr_id");
-   if (ref2col != -1) {
-      idxlines.makeIndex(linemap.m_attributes,ref2col,false);
-   }
-   else {
-      MessageBox(NULL,"Error: no Rdctr_id column found in the line table","Error: ozlemSpecial",MB_OK|MB_ICONEXCLAMATION);
-      return;
-   }
-   int lookupcol = m_attributes.getColumnIndex("Rdctr_id");
-   if (lookupcol == -1) {
-      MessageBox(NULL,"Error: no Rdctr_id column found in the building table","Error: ozlemSpecial",MB_OK|MB_ICONEXCLAMATION);
-      return;
-   }
-
-   int errors = 0;
-   int curbuilding = idxbuildings[0].value;
-   int start = 0;
-   for (int i = 1; i <= idxbuildings.size(); i++) {
-      if (i == idxbuildings.size() || curbuilding != idxbuildings[i].value) {
-         {
-            if (curbuilding == 298613) {
-               cerr << "pause";
-            }
-            // do intercheck here:
-            bool found = false, error = false;
-            IntPair couplet;
-            double ang;
-            for (int j = start; j < i && !found && !error; j++) {
-               for (int k = j + 1; k < i && !found && !error; k++) {
-                  ValuePair linelkup1;
-                  linelkup1.value = m_attributes.getValue(idxbuildings[j].index,lookupcol);
-                  ValuePair linelkup2;
-                  linelkup2.value = m_attributes.getValue(idxbuildings[k].index,lookupcol);
-                  size_t lineref1ind = idxlines.searchindex(linelkup1);
-                  size_t lineref2ind = idxlines.searchindex(linelkup2);
-                  if (lineref1ind == paftl::npos || lineref2ind == paftl::npos) {
-                     error = true;
-                     break;
-                  }
-                  ValuePair lineref1 = idxlines.at(lineref1ind);
-                  ValuePair lineref2 = idxlines.at(lineref2ind);
-                  if ((lineref1.value == 213308 && lineref2.value == 213310) || (lineref2.value == 213308 && lineref1.value == 213310)) {
-                     cerr << "pause 2";
-                  }
-                  const Line& line1 = linemap.m_shapes[lineref1.index].getLine();
-                  const Line& line2 = linemap.m_shapes[lineref2.index].getLine();
-                  const Point2f& p1 = m_shapes[idxbuildings[j].index].getPoint();
-                  const Point2f& p2 = m_shapes[idxbuildings[k].index].getPoint();
-                  Point2f pn1 = line1.vector();
-                  pn1.normalise();
-                  Point2f pn2 = line2.vector();
-                  pn2.normalise();
-                  if (fabs(dot(pn1,pn2)) < 0.99) { // parallel lines confuse this script with their intersection points
-                     Point2f p3 = intersection_point(line1,line2,1e-9);
-                     ang = angle(p1,p3,p2);
-                     if (ang < 2.35619449) {  // 135 degrees
-                        found = true;
-                        couplet.a = linelkup1.value;
-                        couplet.b = linelkup2.value;
-                     }
-                  }
-               }
-            }
-            if (found) {
-               file << curbuilding << "\t" << couplet.a << "\t" << couplet.b << "\t" << ang << endl;
-            }
-            else if (error) {
-               errors++;
-            }
-         }
-         if (i == idxbuildings.size()) {
-            break;
-         }
-         start = i;
-         curbuilding = idxbuildings[i].value;
-      }
-   }
-   if (errors) {
-      pstring errormsg = pstringify(errors,"There were %d cases where a point did not have an associated line");
-      MessageBox(NULL,errormsg.c_str(),"Error: ozlemSpecial",MB_OK|MB_ICONEXCLAMATION);
-      return;
-
-   }
-   else {
-      MessageBox(NULL,"Successfully completed ozlemSpecial function","Success: ozlemSpecial",MB_OK|MB_ICONINFORMATION);
-   }
-}
-*/
 
 // expects to be the points layer... expects passed map to be lines layer
 void ShapeMap::ozlemSpecial7(ShapeMap& linemap)

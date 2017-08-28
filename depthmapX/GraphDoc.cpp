@@ -83,10 +83,10 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
    m_step = 0;
    m_num_records = 0;
 
-   pstring date = ViewHelpers::getCurrentDate();
+   std::string date = ViewHelpers::getCurrentDate();
    QString version = QString("depthmapX v%1.%2").arg(DEPTHMAPX_VERSION).arg(DEPTHMAPX_MINOR_VERSION);
 
-   m_meta_graph->setProperties(pstring(author.toLatin1()),pstring(organisation.toLatin1()),date,pstring(version.toLatin1()));
+   m_meta_graph->setProperties(author.toStdString(),organisation.toStdString(),date,version.toStdString());
 
 }
 
@@ -193,19 +193,19 @@ void QGraphDoc::OnLayerNew()
       // for now, 0 = axial map, and 1 = data map
       ShapeMap *map;
       if (dlg.m_layer_type == 0) {
-          int ref = m_meta_graph->addShapeMap(pstring(dlg.m_name.toLatin1()));
+          int ref = m_meta_graph->addShapeMap(dlg.m_name.toStdString());
          map = &(m_meta_graph->getDataMaps().getMap(ref));
       }
       else if (dlg.m_layer_type == 1) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::CONVEXMAP);
+         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
       else if (dlg.m_layer_type == 2) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::AXIALMAP);
+         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
       else if (dlg.m_layer_type == 3) {
-         int ref = m_meta_graph->addShapeGraph(pstring(dlg.m_name.toLatin1()),ShapeMap::PESHMAP);
+         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
          map = &(m_meta_graph->getShapeGraphs().getMap(ref));
       }
 
@@ -447,11 +447,7 @@ void QGraphDoc::OnFileImport()
       if (ok) {
          m_communicator = new CMSCommunicator;
          if (ext != tr("RT1") && ext != tr("NTF") && ext != tr("GML")) {  // ntf, gml & rt1 use filesets (all others use standard file at a time)
-#ifndef _WIN32
-            m_communicator->SetInfile( (comm_char *)(infiles[0].toLatin1().data()) );
-#else
-            m_communicator->SetInfile( (comm_char *)(infiles[0].utf16()) );
-#endif
+            m_communicator->SetInfile( qPrintable(infiles[0]) );
          }
          if (ext != tr("MIF")) {
             CreateWaitDialog(tr("Importing file..."));
@@ -478,11 +474,7 @@ void QGraphDoc::OnFileImport()
          else {
             int thedot = infiles[0].lastIndexOf('.');
             QString infile2 = infiles[0].left(thedot+1) + tr("mid");
-#ifndef _WIN32
-            m_communicator->SetInfile2( (comm_char *)infile2.toLatin1().data());
-#else
-            m_communicator->SetInfile2( (comm_char *)infile2.utf16() );
-#endif
+            m_communicator->SetInfile2( qPrintable(infile2));
             CreateWaitDialog(tr("Importing file..."));
             m_communicator->SetFunction( CMSCommunicator::IMPORTMIF );
          }
@@ -496,7 +488,7 @@ void QGraphDoc::OnFileImport()
              QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         if (m_meta_graph->importTxt( file, pstring(filepath.m_name.toLatin1()), (ext == tr("CSV")) ) != -1) {
+         if (m_meta_graph->importTxt( file, filepath.m_name.toStdString(), (ext == tr("CSV")) ) != -1) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
 
@@ -661,7 +653,7 @@ void QGraphDoc::OnFileExport()
             return;
         }
 
-        if (m_meta_graph->write(pstring(outfile.toLatin1()), METAGRAPH_VERSION, true) != MetaGraph::OK) { // <- true writes current layer only
+        if (m_meta_graph->write(outfile.toStdString(), METAGRAPH_VERSION, true) != MetaGraph::OK) { // <- true writes current layer only
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
         }
     }
@@ -1348,7 +1340,7 @@ void QGraphDoc::OnToolsAgentRun()
    dlg.m_steps = eng.tail().m_steps;
    dlg.m_record_trails = eng.m_record_trails;
    dlg.m_trail_count = eng.m_trail_count;
-   dlg.m_names.push_back(pstring("<None>"));
+   dlg.m_names.push_back("<None>");
    for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
        dlg.m_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
    }
@@ -1526,7 +1518,7 @@ void QGraphDoc::OnVGAOptions()
 {
    COptionsDlg dlg;
 
-   dlg.m_layer_names.push_back(pstring("<None>"));
+   dlg.m_layer_names.push_back("<None>");
    for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
        dlg.m_layer_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
    }
@@ -1544,7 +1536,7 @@ void QGraphDoc::OnToolsRun()
    // This is easy!
    COptionsDlg dlg;
 
-   dlg.m_layer_names.push_back(pstring("<None>"));
+   dlg.m_layer_names.push_back("<None>");
    for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
        dlg.m_layer_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
    }
@@ -1745,7 +1737,7 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
       break;
    default:
       {
-         pstring err = pstringify(ok);
+         std::string err = dXstring::formatString(ok);
          QMessageBox::warning(this, tr("Warning"), tr("Unable to open graph: error number "), QMessageBox::Ok, QMessageBox::Ok);
       }
       break;
@@ -1838,7 +1830,7 @@ int QGraphDoc::OnSaveDocument(QString lpszPathName, int version)
 
    modifiedFlag = true;
 
-   int ok = m_meta_graph->write( pstring(lpszPathName.toLatin1()), version );
+   int ok = m_meta_graph->write( lpszPathName.toStdString(), version );
    if (ok == MetaGraph::OK) {
 	   modifiedFlag = false;
       return TRUE;
@@ -1916,27 +1908,27 @@ void QGraphDoc::OnPushToLayer()
 {
    if (m_meta_graph->viewingProcessed()) {
       int toplayerclass = (m_meta_graph->getViewClass() & MetaGraph::VIEWFRONT);
-      pstring origin_layer;
-      pstring origin_attribute;
-      pqmap<IntPair,pstring> names;
+      std::string origin_layer;
+      std::string origin_attribute;
+      pqmap<IntPair,std::string> names;
       // I'm just going to allow push from any layer to any other layer
       // (apart from VGA graphs, which cannot map onto themselves
       if (toplayerclass == MetaGraph::VIEWVGA) {
          // bit clunky just to get two names out...
          PointMap& map = m_meta_graph->getDisplayedPointMap();
-         origin_layer = pstring("Visibility Graphs: ") + map.getName(); 
+         origin_layer = std::string("Visibility Graphs: ") + map.getName();
          origin_attribute = map.getAttributeTable().getColumnName(map.getDisplayedAttribute());
       }
       else if (toplayerclass == MetaGraph::VIEWAXIAL) {
          // bit clunky just to get two names out...
          ShapeGraph& map = m_meta_graph->getDisplayedShapeGraph();
-         origin_layer = pstring("Shape Graphs: ") + map.getName(); 
+         origin_layer = std::string("Shape Graphs: ") + map.getName();
          origin_attribute = map.getAttributeTable().getColumnName(map.getDisplayedAttribute());
       }
       else if (toplayerclass == MetaGraph::VIEWDATA) {
          // bit clunky just to get two names out...
          ShapeMap& map = m_meta_graph->getDisplayedDataMap();
-         origin_layer = pstring("Data Maps: ") + map.getName(); 
+         origin_layer = std::string("Data Maps: ") + map.getName();
          origin_attribute = map.getAttributeTable().getColumnName(map.getDisplayedAttribute());
       }
       else {
@@ -1949,20 +1941,20 @@ void QGraphDoc::OnPushToLayer()
       ShapeMaps<ShapeMap>& datamaps = m_meta_graph->getDataMaps();
       for (i = 0; i < datamaps.getMapCount(); i++) {
          if (toplayerclass != MetaGraph::VIEWDATA || i != datamaps.getDisplayedMapRef()) {
-            names.add(IntPair(MetaGraph::VIEWDATA,int(i)),pstring("Data Maps: ") + datamaps.getMap(i).getName());
+            names.add(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps.getMap(i).getName());
          }
       }
       ShapeGraphs& shapegraphs = m_meta_graph->getShapeGraphs();
       for (i = 0; i < shapegraphs.getMapCount(); i++) {
          if (toplayerclass != MetaGraph::VIEWAXIAL || i != shapegraphs.getDisplayedMapRef()) {
-            names.add(IntPair(MetaGraph::VIEWAXIAL,int(i)),pstring("Shape Graphs: ") + shapegraphs.getMap(i).getName());
+            names.add(IntPair(MetaGraph::VIEWAXIAL,int(i)),std::string("Shape Graphs: ") + shapegraphs.getMap(i).getName());
          }
       }
       for (i = 0; i < m_meta_graph->PointMaps::size(); i++) {
          // note 1: no VGA graph can push to another VGA graph (point onto point transforms)
          // note 2: I simply haven't written "axial" -> vga yet, not that it can't be possible (e.g., "axial" could actually be a convex map)
          if (toplayerclass != MetaGraph::VIEWVGA && toplayerclass != MetaGraph::VIEWAXIAL) {
-            names.add(IntPair(MetaGraph::VIEWVGA,int(i)),pstring("Visibility Graphs: ") + m_meta_graph->PointMaps::at(i).getName());
+            names.add(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->PointMaps::at(i).getName());
          }
       }
       CPushDialog dlg(names);
@@ -2203,7 +2195,7 @@ void QGraphDoc::OnAddColumn()
          AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
          for (int i = 0; i < tab.getColumnCount(); i++) {
-            if (tab.getColumnName(i) == pstring(dlg.m_object_name.toLatin1())) {
+            if (tab.getColumnName(i) == dlg.m_object_name.toStdString()) {
 				QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
                found = true;
                break;
@@ -2216,7 +2208,7 @@ void QGraphDoc::OnAddColumn()
       }
    }
    if (success) {
-      int col = m_meta_graph->addAttribute(pstring(dlg.m_object_name.toLatin1()));
+      int col = m_meta_graph->addAttribute(dlg.m_object_name.toStdString());
       m_meta_graph->setDisplayedAttribute(col);
       SetUpdateFlag(QGraphDoc::NEW_DATA);
       // Tell the views to update their menus
@@ -2248,7 +2240,7 @@ int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
    bool success = false;
    while (dlg.exec() == QDialog::Accepted && !success && dlg.m_object_name != colname) {
-      int newcol = tab->renameColumn(col,pstring(dlg.m_object_name.toLatin1()));
+      int newcol = tab->renameColumn(col,dlg.m_object_name.toStdString());
       if (newcol == -1) {
 		  QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
       }
@@ -2413,8 +2405,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
    bool error = true;
    while (error && QDialog::Accepted == dlg.exec()) {
       error = false;
-      // unicode conversion (AT 31.01.11) -- seems easiest at the mo to simply feed through pstring converter
-      pstring multibytetext(((MainWindow*)m_mainFrame)->m_formula_cache.toLatin1());
+      std::string multibytetext(((MainWindow*)m_mainFrame)->m_formula_cache.toStdString());
       char *text = new char[multibytetext.length()+1];
       strcpy(text,multibytetext.c_str());
       istringstream stream(text);
@@ -2468,7 +2459,7 @@ void QGraphDoc::OnEditSelectToLayer()
       CRenameObjectDlg dlg("Layer"); // note, without specifying existing layer name, this defaults to "New layer" behaviour
       if (QDialog::Accepted == dlg.exec()) {
 
-         pstring layer_name = pstring(dlg.m_object_name.toLatin1());
+         auto layer_name = dlg.m_object_name.toStdString();
          if (layer_name.empty()) {
             layer_name = "Untitled";
          }
@@ -2537,9 +2528,9 @@ void QGraphDoc::OnFileProperties()
          dlg.m_file_version = tr("<Unsaved>");
       }
       if (QDialog::Accepted == dlg.exec()) {
-         m_meta_graph->setTitle(pstring(dlg.m_title.toLatin1()));
-         m_meta_graph->setLocation(pstring(dlg.m_location.toLatin1()));
-         m_meta_graph->setDescription(pstring(dlg.m_description.toLatin1()));
+         m_meta_graph->setTitle(dlg.m_title.toStdString());
+         m_meta_graph->setLocation(dlg.m_location.toStdString());
+         m_meta_graph->setDescription(dlg.m_description.toStdString());
       }
    }
 }
@@ -2665,9 +2656,9 @@ void QGraphDoc::OnToolsAxialConvShapeMap()
       return;
    }
 
-   pvecstring names;
+   std::vector<std::string> names;
    for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
-      names.push_back(pstring("Data Maps: ") + m_meta_graph->getDataMaps().getMap(i).getName());
+      names.push_back(std::string("Data Maps: ") + m_meta_graph->getDataMaps().getMap(i).getName());
    }
 
    // choose shape map...

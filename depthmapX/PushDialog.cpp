@@ -15,7 +15,7 @@
 
 #include "PushDialog.h"
 
-CPushDialog::CPushDialog(pqmap<IntPair,pstring>& names, QWidget *parent)
+CPushDialog::CPushDialog(pqmap<IntPair,std::string>& names, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);
