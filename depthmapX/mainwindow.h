@@ -156,7 +156,7 @@ private slots:
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
-    void OnPointmapExportConnectivityAsCSV();
+    void OnPointmapExportConnectionsAsCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
