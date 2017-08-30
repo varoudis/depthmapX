@@ -19,6 +19,7 @@
 #define __POINTDATA_H__
 
 #include "vertex.h"
+#include <vector>
 
 class MetaGraph;
 class PointMap;
@@ -462,6 +463,7 @@ public:
    bool write( ofstream& stream, int version );
    void convertAttributes( int which_attributes );
    void addGridConnections(); // adds grid connections where graph does not include them
+   void outputConnectionsAsCSV(ostream &myout, std::string delim = ",");
 };
 
 // inlined to make thread safe
