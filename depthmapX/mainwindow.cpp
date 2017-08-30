@@ -389,12 +389,12 @@ void MainWindow::OnSegmentConnectionsExportAsPairCSV()
     }
 }
 
-void MainWindow::OnPointmapExportConnectivityAsCSV()
+void MainWindow::OnPointmapExportConnectionsAsCSV()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnPointmapExportConnectivityAsCSV();
+        m_p->OnPointmapExportConnectionsAsCSV();
     }
 }
 
@@ -2932,8 +2932,8 @@ void MainWindow::createActions()
     connect(exportSegmentConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnSegmentConnectionsExportAsPairCSV()));
 
     exportPointmapConnectionsPairAct = new QAction(tr("Visibility Graph Connections as CSV..."), this);
-    exportPointmapConnectionsPairAct->setStatusTip(tr("Export connectivity of the cells in a visibility graph as an adjacency list"));
-    connect(exportPointmapConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnPointmapExportConnectivityAsCSV()));
+    exportPointmapConnectionsPairAct->setStatusTip(tr("Export connections between cells in a visibility graph as an adjacency list"));
+    connect(exportPointmapConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnPointmapExportConnectionsAsCSV()));
 
     //Attributes Menu Actions
     renameColumnAct = new QAction(tr("&Rename Column..."), this);

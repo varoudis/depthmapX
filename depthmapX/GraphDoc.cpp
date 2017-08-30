@@ -836,7 +836,7 @@ void QGraphDoc::OnSegmentConnectionsExportAsPairCSV()
     stream.close();
 }
 
-void QGraphDoc::OnPointmapExportConnectivityAsCSV()
+void QGraphDoc::OnPointmapExportConnectionsAsCSV()
 {
     if (m_communicator) {
       QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
