@@ -389,6 +389,15 @@ void MainWindow::OnSegmentConnectionsExportAsPairCSV()
     }
 }
 
+void MainWindow::OnPointmapExportConnectionsAsCSV()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnPointmapExportConnectionsAsCSV();
+    }
+}
+
 void MainWindow::OnAddColumn()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
@@ -2922,6 +2931,10 @@ void MainWindow::createActions()
     exportSegmentConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections and weights"));
     connect(exportSegmentConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnSegmentConnectionsExportAsPairCSV()));
 
+    exportPointmapConnectionsPairAct = new QAction(tr("Visibility Graph Connections as CSV..."), this);
+    exportPointmapConnectionsPairAct->setStatusTip(tr("Export connections between cells in a visibility graph as an adjacency list"));
+    connect(exportPointmapConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnPointmapExportConnectionsAsCSV()));
+
     //Attributes Menu Actions
     renameColumnAct = new QAction(tr("&Rename Column..."), this);
     renameColumnAct->setStatusTip(tr("Rename the currently displayed attribute"));
@@ -3432,6 +3445,7 @@ void MainWindow::createMenus()
     exportSubMenu->addAction(exportAxialConnectionsDotAct);
     exportSubMenu->addAction(exportAxialConnectionsPairAct);
     exportSubMenu->addAction(exportSegmentConnectionsPairAct);
+    exportSubMenu->addAction(exportPointmapConnectionsPairAct);
 
     attributesMenu = menuBar()->addMenu(tr("&Attributes"));
     attributesMenu->addAction(addColumAct);

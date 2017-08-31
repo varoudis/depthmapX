@@ -827,6 +827,64 @@ void QGraphDoc::OnSegmentConnectionsExportAsPairCSV()
 
     stream.close();
 }
+
+void QGraphDoc::OnPointmapExportConnectionsAsCSV()
+{
+    if (m_communicator) {
+      QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
+      return;  // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;  // No graph to export
+    }
+    if (!(m_meta_graph->getViewClass() & MetaGraph::VIEWVGA)) {
+       QMessageBox::warning(this, tr("Error"), tr("Make sure a Visibility Graph is visible"), QMessageBox::Ok, QMessageBox::Ok);
+       return;  // No graph to export
+    }
+    if (!m_meta_graph->viewingProcessedPoints()) {
+       QMessageBox::warning(this, tr("Error"),
+                            tr("Make sure the visibility graph was created (Tools -> Visibility -> Make Visibility Graph)"),
+                            QMessageBox::Ok, QMessageBox::Ok);
+       return;  // No graph to export
+    }
+
+    PointMap& pointMap = m_meta_graph->getDisplayedPointMap();
+
+    QString suffix = tr("connectivity");
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("CSV graph file (*.csv)");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile = QFileDialog::getSaveFileName(
+                                0, tr("Save Output As"),
+                                defaultname,
+                                template_string,
+                                &selectedFilter,
+                                options);
+    if(outfile.isEmpty())
+    {
+        return;
+    }
+
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    ofstream stream(outfile.toLatin1());
+
+    if (stream.fail() || stream.bad()) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    pointMap.outputConnectionsAsCSV(stream, ",");
+
+    stream.close();
+}
+
 void QGraphDoc::OnSwapColours() 
 {
    DisplayParams displayparams;
