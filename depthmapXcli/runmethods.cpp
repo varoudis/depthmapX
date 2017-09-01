@@ -394,6 +394,10 @@ namespace dm_runmethods
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
                 break;
             }
+            default:
+            {
+                throw depthmapX::SetupCheckException("Error, unsupported export mode");
+            }
         }
     }
 
