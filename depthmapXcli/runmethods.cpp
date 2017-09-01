@@ -379,4 +379,26 @@ namespace dm_runmethods
         std::cout << " ok" << std::endl;
     }
 
+    void exportData(const CommandLineParser &cmdP, const ExportParser &exportP, IPerformanceSink &perfWriter ) {
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
+
+        PointMap& currentMap = mgraph->getDisplayedPointMap();
+
+        switch(exportP.getExportMode()) {
+            case ExportParser::POINTMAP_CONNECTIONS_CSV:
+            {
+                ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
+                break;
+            }
+            default:
+            {
+                throw depthmapX::SetupCheckException("Error, unsupported export mode");
+            }
+        }
+    }
+
 }
