@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     axialparser.cpp \
     parsingutils.cpp \
     agentparser.cpp \
-    isovistparser.cpp
+    isovistparser.cpp \
+    exportparser.cpp
 
 HEADERS += \
     commandlineparser.h \
@@ -35,7 +36,8 @@ HEADERS += \
     parsingutils.h \
     axialparser.h \
     agentparser.h \
-    isovistparser.h
+    isovistparser.h \
+    exportparser.h
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../salalib/debug
