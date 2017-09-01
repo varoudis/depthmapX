@@ -25,7 +25,7 @@ using namespace depthmapX;
 ExportParser::ExportParser() : _exportMode(ExportMode::NONE)
 {}
 
-void ExportParser   ::parse(int argc, char *argv[])
+void ExportParser::parse(int argc, char *argv[])
 {
     for ( int i = 1; i < argc;  )
     {
