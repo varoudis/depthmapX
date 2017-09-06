@@ -338,8 +338,8 @@ public:
 	void OnLayerConvertDrawing();
     void OnEditSelectToLayer();
     void OnToolsIsovistpath();
-    void OnFileSave();
-    void OnFileSaveAs();
+    bool OnFileSave();
+    bool OnFileSaveAs();
 	void OnConvertMapShapes();
 	void OnToolsBoundaryToAxial();
 	void OnToolsLineLoadUnlinks();
