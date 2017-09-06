@@ -721,10 +721,14 @@ void MainWindow::OnFileSave()
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnFileSave();
-        statusBar()->showMessage(tr("File saved"), 2000);
-        setCurrentFile(m_p->m_opened_name);
-        updateSubWindowTitles(m_p->m_base_title);
+        bool saved = m_p->OnFileSave();
+        if(saved) {
+            statusBar()->showMessage(tr("File saved"), 2000);
+            setCurrentFile(m_p->m_opened_name);
+            updateSubWindowTitles(m_p->m_base_title);
+        } else {
+            statusBar()->showMessage(tr("File not saved"), 2000);
+        }
     }
 }
 
@@ -733,10 +737,14 @@ void MainWindow::OnFileSaveAs()
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnFileSaveAs();
-        statusBar()->showMessage(tr("File saved"), 2000);
-        setCurrentFile(m_p->m_opened_name);
-        updateSubWindowTitles(m_p->m_base_title);
+        bool saved = m_p->OnFileSaveAs();
+        if(saved) {
+            statusBar()->showMessage(tr("File saved"), 2000);
+            setCurrentFile(m_p->m_opened_name);
+            updateSubWindowTitles(m_p->m_base_title);
+        } else {
+            statusBar()->showMessage(tr("File not saved"), 2000);
+        }
     }
 }
 void MainWindow::updateSubWindowTitles(QString newTitle) {
