@@ -23,6 +23,7 @@
 #include "vgaparser.h"
 #include "axialparser.h"
 #include "agentparser.h"
+#include "exportparser.h"
 #include "salalib/isovistdef.h"
 #include <vector>
 
@@ -36,5 +37,6 @@ namespace dm_runmethods{
     void runAxialAnalysis(const CommandLineParser& clp, const AxialParser &ap, IPerformanceSink &perfWriter);
     void runAgentAnalysis(const CommandLineParser &cmdP, const AgentParser &agentP, IPerformanceSink &perfWriter );
     void runIsovists(const CommandLineParser &cmdP, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter );
+    void exportData(const CommandLineParser &cmdP, const ExportParser &exportP, IPerformanceSink &perfWriter );
 }
 #endif // RUNMETHODS_H

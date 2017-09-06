@@ -1082,6 +1082,35 @@ void PointMap::outputConnections(ostream& myout)
    }
 }
 
+void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
+{
+    myout << "RefFrom" << delim << "RefTo";
+    std::vector<PixelRef> seenPix;
+    for (int i = 0; i < m_cols; i++)
+    {
+        for (int j = 0; j < m_rows; j++)
+        {
+            if (m_points[i][j].filled() && m_points[i][j].m_node)
+            {
+                PixelRef pix(i,j);
+                seenPix.push_back(pix);
+                for (int b = 0; b < 32; b++)
+                {
+                    PixelRefList hood;
+                    m_points[i][j].m_node->bin(b).contents(hood);
+                    for(size_t p = 0; p < hood.size(); p++)
+                    {
+                        if(!(std::find(seenPix.begin(), seenPix.end(), hood[p]) != seenPix.end()))
+                        {
+                            myout << std::endl << pix << delim << hood[p];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void PointMap::outputBinSummaries(ostream& myout)
 {
    myout << "cols " << m_cols << " rows " << m_rows << endl;
