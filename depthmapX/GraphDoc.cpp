@@ -1837,7 +1837,7 @@ void QGraphDoc::OnFileSaveAs()
     OnSaveDocument(outfile.toLatin1());
 	
 	// reset the title and change the document name
-	m_opened_name = newName;
+    m_opened_name = outfile;
 }
 
 int QGraphDoc::OnSaveDocument(QString lpszPathName) 
