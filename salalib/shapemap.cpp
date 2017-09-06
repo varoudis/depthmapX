@@ -1033,7 +1033,7 @@ void ShapeMap::removeSelected()
 
    // pray that the selection set is in order! 
    // (it should be: code currently uses add() throughout)
-   for (size_t i = m_selection_set.size(); i != paftl::npos; i--) {
+   for (size_t i = m_selection_set.size() - 1; i != paftl::npos; i--) {
       removeShape(m_shapes.key(m_selection_set[i]));
    }
    m_selection_set.clear();
