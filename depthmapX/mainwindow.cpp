@@ -724,6 +724,7 @@ void MainWindow::OnFileSave()
         m_p->OnFileSave();
         statusBar()->showMessage(tr("File saved"), 2000);
         setCurrentFile(m_p->m_opened_name);
+        updateSubWindowTitles(m_p->m_base_title);
     }
 }
 
@@ -735,7 +736,29 @@ void MainWindow::OnFileSaveAs()
         m_p->OnFileSaveAs();
         statusBar()->showMessage(tr("File saved"), 2000);
         setCurrentFile(m_p->m_opened_name);
+        updateSubWindowTitles(m_p->m_base_title);
     }
+}
+void MainWindow::updateSubWindowTitles(QString newTitle) {
+    QList<QMdiSubWindow *> windowList = mdiArea->subWindowList();
+    QList<QMdiSubWindow *>::iterator iter = windowList.begin(), end =
+    windowList.end();
+    for ( ; iter != end; ++iter )
+    {
+        QWidget *p = 0;
+        if (QMdiSubWindow *subWindow = *iter)
+        {
+            p = qobject_cast<QDepthmapView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Map View");
+            p = qobject_cast<QPlotView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Scatter Plot");
+            p = qobject_cast<tableView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Table View");
+            p = qobject_cast<Q3DView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":3D View");
+        }
+    }
+
 }
 
 void MainWindow::OnAppAbout()
