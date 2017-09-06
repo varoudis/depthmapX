@@ -2782,6 +2782,11 @@ int MetaGraph::read( const std::string& filename )
    else {
       FileProperties::setProperties("<unknown>","<unknown>","<unknown>","<unknown>");
    }
+   if (stream.eof()) {
+       // file is still ok, just empty
+       stream.close();
+       return OK;
+   }
    if (type == 'v') {
 
       conversion_required = true;
