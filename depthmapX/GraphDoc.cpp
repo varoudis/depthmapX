@@ -1787,7 +1787,7 @@ void QGraphDoc::OnFileSave()
 {
 	QString newName = m_opened_name;
 	if (newName.isEmpty()) {
-		newName = windowTitle() + tr(".graph");
+        newName = m_base_title + tr(".graph");
 		QFileDialog::Options options = 0;
 		QString outfile = QFileDialog::getSaveFileName(
 								   0, tr("Save As"),
@@ -1802,11 +1802,14 @@ void QGraphDoc::OnFileSave()
         FILE* fp = fopen(m_opened_name.toLatin1(), "wb");
 		fclose(fp);
 
-		OnSaveDocument(outfile);
+        OnSaveDocument(outfile);
+
+        QFilePath path(m_opened_name);
+        m_base_title = path.m_name;
 		return;
 	}
 	
-	OnSaveDocument(newName);
+    OnSaveDocument(newName);
 }
 
 void QGraphDoc::OnFileSaveAs()
@@ -1817,7 +1820,7 @@ void QGraphDoc::OnFileSaveAs()
 
 	QString newName = m_opened_name;
  	if (newName.isEmpty()) {
-       newName = windowTitle() + tr(".graph");
+       newName = m_base_title + tr(".graph");
 	}
 
 	QFileDialog::Options options = 0;
@@ -1838,6 +1841,8 @@ void QGraphDoc::OnFileSaveAs()
 	
 	// reset the title and change the document name
     m_opened_name = outfile;
+    QFilePath path(m_opened_name);
+    m_base_title = path.m_name;
 }
 
 int QGraphDoc::OnSaveDocument(QString lpszPathName) 
