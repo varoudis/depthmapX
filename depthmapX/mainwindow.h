@@ -128,6 +128,7 @@ private slots:
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
+    void OnPointmapExportConnectionsAsCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -353,6 +354,7 @@ private:
     QAction *exportAxialConnectionsDotAct;
     QAction *exportAxialConnectionsPairAct;
     QAction *exportSegmentConnectionsPairAct;
+    QAction *exportPointmapConnectionsPairAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;

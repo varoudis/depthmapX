@@ -343,6 +343,7 @@ public:
 	void OnConvertMapShapes();
 	void OnToolsBoundaryToAxial();
 	void OnToolsLineLoadUnlinks();
+    void OnPointmapExportConnectionsAsCSV();
 
 protected:
     virtual void timerEvent(QTimerEvent *event);
