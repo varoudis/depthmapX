@@ -63,11 +63,11 @@ std::vector< Point2f > GLUTriangulator::triangulate
     }
 
     GLUtesselator* tess = gluNewTess();
-    gluTessCallback( tess, GLU_TESS_BEGIN,          (void (*)())   tess_begin      );
-    gluTessCallback( tess, GLU_TESS_EDGE_FLAG,      (void (*)())   tess_edgeFlag   );
-    gluTessCallback( tess, GLU_TESS_VERTEX_DATA,    (void (*)())   tess_vertex     );
-    gluTessCallback( tess, GLU_TESS_END,            (void (*)())   tess_end        );
-    gluTessCallback( tess, GLU_TESS_COMBINE_DATA,   (void (*)())   tess_combine    );
+    gluTessCallback( tess, GLU_TESS_BEGIN,          (void (__stdcall *)())   tess_begin      );
+    gluTessCallback( tess, GLU_TESS_EDGE_FLAG,      (void (__stdcall *)())   tess_edgeFlag   );
+    gluTessCallback( tess, GLU_TESS_VERTEX_DATA,    (void (__stdcall *)())   tess_vertex     );
+    gluTessCallback( tess, GLU_TESS_END,            (void (__stdcall *)())   tess_end        );
+    gluTessCallback( tess, GLU_TESS_COMBINE_DATA,   (void (__stdcall *)())   tess_combine    );
     gluTessNormal( tess, 0.0, 0.0, 1.0 );
 
     TessContext ctx;
