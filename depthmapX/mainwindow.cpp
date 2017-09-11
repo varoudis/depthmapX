@@ -33,7 +33,6 @@
 #include "3DView.h"
 #include "PlotView.h"
 #include "tableView.h"
-#include "DepthmapOptionsDlg.h"
 #include "AboutDlg.h"
 #include "configdialog/configdialog.h"
 
