@@ -3,7 +3,7 @@ CONFIG+=ordered
 SUBDIRS = \
     genlib \
     salalib \
-    configdialog \
+    settingsdialog \
     depthmapX \
     GuiUnitTest \
     GuiApp \
@@ -11,4 +11,4 @@ SUBDIRS = \
     cliTest \
     salaTest \
     genlibTest
-GuiApp.depends = depthmapX genlib salalib configdialog
+GuiApp.depends = depthmapX genlib salalib settingsdialog

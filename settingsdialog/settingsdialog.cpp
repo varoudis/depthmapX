@@ -15,11 +15,11 @@
 
 #include <QtWidgets>
 
-#include "configdialog.h"
+#include "settingsdialog.h"
 #include "generalpage.h"
 #include "interfacepage.h"
 
-ConfigDialog::ConfigDialog(Settings &settings) : m_settings(settings)
+SettingsDialog::SettingsDialog(Settings &settings) : m_settings(settings)
 {
     contentsWidget = new QListWidget;
     contentsWidget->setIconSize(QSize(96, 84));
@@ -39,7 +39,7 @@ ConfigDialog::ConfigDialog(Settings &settings) : m_settings(settings)
     }
 
     QPushButton *saveButton = new QPushButton(tr("Save"));
-    connect(saveButton, &QAbstractButton::clicked, this, &ConfigDialog::saveChangesAndClose);
+    connect(saveButton, &QAbstractButton::clicked, this, &SettingsDialog::saveChangesAndClose);
 
     QPushButton *cancelButton = new QPushButton(tr("Cancel"));
     connect(cancelButton, &QAbstractButton::clicked, this, &QDialog::reject);
@@ -67,7 +67,7 @@ ConfigDialog::ConfigDialog(Settings &settings) : m_settings(settings)
     setWindowTitle(tr("Settings"));
 }
 
-void ConfigDialog::saveChanges() {
+void SettingsDialog::saveChanges() {
     std::vector<std::unique_ptr<SettingsPage>>::iterator iter = settingsPages.begin(),
                                         end = settingsPages.end();
     for ( ; iter != end; ++iter )
@@ -76,12 +76,12 @@ void ConfigDialog::saveChanges() {
     }
 }
 
-void ConfigDialog::saveChangesAndClose() {
+void SettingsDialog::saveChangesAndClose() {
     saveChanges();
     QDialog::accept();
 }
 
-void ConfigDialog::createIcons()
+void SettingsDialog::createIcons()
 {
     QListWidgetItem *generalButton = new QListWidgetItem(contentsWidget);
     generalButton->setIcon(QIcon(":/images/general.png"));
@@ -93,10 +93,10 @@ void ConfigDialog::createIcons()
     interfaceButton->setText(tr("Interface"));
     interfaceButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-    connect(contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::changePage);
+    connect(contentsWidget, &QListWidget::currentItemChanged, this, &SettingsDialog::changePage);
 }
 
-void ConfigDialog::changePage(QListWidgetItem *current, QListWidgetItem *previous)
+void SettingsDialog::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 {
     if (!current)
         current = previous;

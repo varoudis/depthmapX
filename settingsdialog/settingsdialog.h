@@ -18,18 +18,18 @@
 #include "depthmapX/settings.h"
 #include <vector>
 #include <memory>
-#include "configdialog/settingspage.h"
+#include "settingsdialog/settingspage.h"
 
 class QListWidget;
 class QListWidgetItem;
 class QStackedWidget;
 
-class ConfigDialog : public QDialog
+class SettingsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ConfigDialog(Settings &settings);
+    SettingsDialog(Settings &settings);
 
 public slots:
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
