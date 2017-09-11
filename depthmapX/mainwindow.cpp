@@ -34,7 +34,7 @@
 #include "PlotView.h"
 #include "tableView.h"
 #include "AboutDlg.h"
-#include "configdialog/configdialog.h"
+#include "settingsdialog/settingsdialog.h"
 
 
 static int current_view_type = 0;
@@ -617,7 +617,7 @@ void MainWindow::OnToolsAPD()
 
 void MainWindow::OnToolsOptions()
 {
-    ConfigDialog dialog(mSettings);
+    SettingsDialog dialog(mSettings);
     if(QDialog::Accepted == dialog.exec()) {
         readSettings();
     }
