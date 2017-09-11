@@ -1175,7 +1175,11 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 
 void QDepthmapView::keyPressEvent(QKeyEvent *e)
 {
-	char key = e->key();
+    switch(e->key()) {
+    case Qt::Key_Delete:
+        pDoc->OnEditClear();
+        e->accept();
+    }
 }
 
 
