@@ -1024,11 +1024,11 @@ void ShapeMap::shapesCommit()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShapeMap::removeSelected()
+bool ShapeMap::removeSelected()
 {
    // note, map must have editable flag on if we are to remove shape:
    if (!m_editable) {
-      return;
+      return false;
    }
 
    // pray that the selection set is in order! 
@@ -1041,6 +1041,7 @@ void ShapeMap::removeSelected()
 
    invalidateDisplayedAttribute();
    setDisplayedAttribute(m_displayed_attribute);
+   return true;
 }
 
 void ShapeMap::removeShape(int shaperef, bool undoing)

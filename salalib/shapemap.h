@@ -272,7 +272,7 @@ public:
    // move a shape (currently only a line shape) -- in the future should use SalaShape
    bool moveShape(int shaperef, const Line& line, bool undoing = false);
    // delete selected shapes
-   void removeSelected();
+   bool removeSelected();
    // delete a shape
    void removeShape(int shaperef, bool undoing = false);
    //
