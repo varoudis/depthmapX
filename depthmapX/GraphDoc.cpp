@@ -1492,14 +1492,19 @@ void QGraphDoc::OnEditClear()
       return;
    }
 
+   bool modified = false;
    if (m_meta_graph->viewingUnprocessedPoints()) {
-	   m_meta_graph->clearPoints();
+      modified = m_meta_graph->clearPoints();
    }
    else if (m_meta_graph->viewingProcessedLines()) {
-      m_meta_graph->getDisplayedShapeGraph().removeSelected();
+      modified = m_meta_graph->getDisplayedShapeGraph().removeSelected();
    }
    else if (m_meta_graph->viewingProcessedShapes()) {
-      m_meta_graph->getDisplayedDataMap().removeSelected();
+      modified = m_meta_graph->getDisplayedDataMap().removeSelected();
+   }
+
+   if(modified) {
+       modifiedFlag = true;
    }
 
    SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_DATA );
