@@ -153,8 +153,6 @@ private slots:
     void OnToolsPointConvShapeMap();
     void OnToolsOptions();
     void OnShowResearchtoolbar();
-    void OnWindowBackground();
-    void OnWindowForeground();
     void OnViewCentreView();
     void OnViewShowGrid();
     void OnViewSummary();
@@ -385,8 +383,6 @@ private:
     QAction *optionsAct;
 
     //View Menu Actions
-    QAction *BackgroundAct;
-    QAction *foregroundAct;
     QAction *showGridAct;
     QAction *attributeSummaryAct;
 
