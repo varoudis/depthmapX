@@ -1476,10 +1476,10 @@ DxfToken::DxfToken()
 
 istream& operator >> (istream& stream, DxfToken& token)
 {
-    static std::string codeInputLine;
+    std::string codeInputLine;
     std::getline(stream,codeInputLine);
     token.code = std::stoi(codeInputLine);
-    static std::string dataInputLine;
+    std::string dataInputLine;
     std::getline(stream,dataInputLine);
     dXstring::ltrim(dataInputLine,'\r');
     dXstring::ltrim(dataInputLine,'\n');
