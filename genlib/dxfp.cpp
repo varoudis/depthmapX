@@ -22,6 +22,7 @@
 #include <fstream>
 #include <math.h>
 #include <string>
+#include "genlib/stringutils.h"
 
 using namespace std;
 
@@ -1475,12 +1476,18 @@ DxfToken::DxfToken()
 
 istream& operator >> (istream& stream, DxfToken& token)
 {
-   static std::string inputline;
-   stream >> inputline;
-   token.code = std::stoi(inputline);
-   stream >> token.data;
-   token.size = inputline.length() + token.data.length() + 2;   // might be missing a few end line characters --- never mind
-   return stream;
+    std::string codeInputLine;
+    std::getline(stream,codeInputLine);
+    token.code = std::stoi(codeInputLine);
+    std::string dataInputLine;
+    std::getline(stream,dataInputLine);
+    dXstring::ltrim(dataInputLine,'\r');
+    dXstring::ltrim(dataInputLine,'\n');
+    dXstring::rtrim(dataInputLine,'\r');
+    dXstring::rtrim(dataInputLine,'\n');
+    token.data = dataInputLine;
+    token.size = codeInputLine.length() + token.data.length() + 2;   // might be missing a few end line characters --- never mind
+    return stream;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
