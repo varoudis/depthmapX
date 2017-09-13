@@ -445,7 +445,8 @@ public:
    bool findNextMergeLine() const;
    Line getNextMergeLine() const;
    bool getPointSelected() const;
-   PafColor getPointColor() const;
+   PafColor getPointColor(PixelRef pixelRef) const;
+   PafColor getCurrentPointColor() const;
    int getSelCount()
       { return (int) m_selection_set.size(); }
    const QtRegion& getSelBounds() const

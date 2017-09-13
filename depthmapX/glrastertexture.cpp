@@ -62,13 +62,13 @@ static const char *fragmentShaderSource =
 GLRasterTexture::GLRasterTexture()
     : m_count(0),
       m_program(0),
-      texture(QOpenGLTexture::Target2D)
+      m_texture(QOpenGLTexture::Target2D)
 {
 
 }
 void GLRasterTexture::loadRegionData(float minX, float minY, float maxX, float maxY)
 {
-    built = false;
+    m_built = false;
 
     m_count = 0;
     m_data.resize(4 * DATA_DIMENSIONS);
@@ -92,11 +92,11 @@ void GLRasterTexture::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLRasterTexture::initializeGL(bool m_core) {
+void GLRasterTexture::initializeGL(bool coreProfile) {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->bindAttributeLocation("texCoord", 1);
     m_program->link();
@@ -120,46 +120,51 @@ void GLRasterTexture::initializeGL(bool m_core) {
     m_program->setUniformValue(m_textureSamplerLoc, 0);
 
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
-void GLRasterTexture::updateGL() {
-    m_vbo.bind();
-    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
-    m_vbo.release();
-    built = true;
+void GLRasterTexture::updateGL(bool coreProfile) {
+    if(m_program == 0) {
+        // has not been initialised yet, do that instead
+        initializeGL(coreProfile);
+    } else {
+        m_vbo.bind();
+        m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+        m_vbo.release();
+        m_built = true;
+    }
 }
 
 void GLRasterTexture::loadPixelData(QImage &data)
 {
-    if(!built) return;
+    if(!m_built) return;
     m_program->bind();
-    if(texture.isCreated())
+    if(m_texture.isCreated())
     {
-        texture.destroy();
+        m_texture.destroy();
     }
-    texture.setData(data);
+    m_texture.setData(data);
     m_program->release();
 }
 
 void GLRasterTexture::cleanup()
 {
-    if(!built) return;
+    if(!m_built) return;
     m_vbo.destroy();
-    texture.destroy();
+    m_texture.destroy();
     delete m_program;
     m_program = 0;
 }
 
 void GLRasterTexture::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
 
-    texture.bind();
+    m_texture.bind();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 

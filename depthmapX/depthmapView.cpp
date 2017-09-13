@@ -311,7 +311,7 @@ void QDepthmapView::SetRedrawflag()
 
 void QDepthmapView::paintEvent(QPaintEvent *)
 {
-	QPainter pDC(this);
+    QPainter pDC(pix);
 
 	SetRedrawflag();
 
@@ -474,6 +474,9 @@ void QDepthmapView::paintEvent(QPaintEvent *)
 
    m_drawing = false;
    pDoc->m_meta_graph->releaseLock(this);
+
+   QPainter screenPainter(this);
+   screenPainter.drawPixmap(0,0,width(),height(),*pix);
 }
 
 void QDepthmapView::resizeEvent(QResizeEvent *)
@@ -482,6 +485,7 @@ void QDepthmapView::resizeEvent(QResizeEvent *)
    m_redraw_all = true;
    m_resize_viewport = true;
    pDoc->m_view[QGraphDoc::VIEW_MAP] = this;
+   pix = new QPixmap(width(),height());
 }
 
 void QDepthmapView::BeginDrag(QPoint point)
@@ -1438,7 +1442,7 @@ bool QDepthmapView::DrawPoints(QPainter *pDC, QGraphDoc *pDoc, int spacer, unsig
       Point2f logical = map.getNextPointLocation();
 
       PafColor color;
-      color = map.getPointColor();
+      color = map.getCurrentPointColor();
 
       if (color.alphab() != 0) 
 	  { // alpha == 0 is transparent
@@ -1786,7 +1790,7 @@ void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc )
 
          Point2f logical = map.getNextPointLocation();
 
-         PafColor color = map.getPointColor();
+         PafColor color = map.getCurrentPointColor();
 
          if (color.alphab() != 0) { // alpha == 0 is transparent
 
@@ -2566,7 +2570,7 @@ void QDepthmapView::OutputSVG( ofstream& stream, QGraphDoc *pDoc )
       while ( map.findNextPoint() ) {
 
          Point2f logical = map.getNextPointLocation();
-         PafColor color = map.getPointColor();
+         PafColor color = map.getCurrentPointColor();
          
          if (color.alphab() != 0) { // alpha == 0 is transparent
 

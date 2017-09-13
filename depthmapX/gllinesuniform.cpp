@@ -62,7 +62,7 @@ GLLinesUniform::GLLinesUniform()
 
 void GLLinesUniform::loadLineData(const std::vector<SimpleLine>& lines, const QRgb &lineColour)
 {
-    built = false;
+    m_built = false;
 
     m_count = 0;
     m_data.resize(lines.size() * 2 * DATA_DIMENSIONS);
@@ -89,12 +89,12 @@ void GLLinesUniform::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLLinesUniform::initializeGL(bool m_core)
+void GLLinesUniform::initializeGL(bool coreProfile)
 {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->link();
 
@@ -119,14 +119,19 @@ void GLLinesUniform::initializeGL(bool m_core)
     setupVertexAttribs();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
-void GLLinesUniform::updateGL() {
-    m_vbo.bind();
-    m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
-    m_vbo.release();
-    built = true;
+void GLLinesUniform::updateGL(bool coreProfile) {
+    if(m_program == 0) {
+        // has not been initialised yet, do that instead
+        initializeGL(coreProfile);
+    } else {
+        m_vbo.bind();
+        m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
+        m_vbo.release();
+        m_built = true;
+    }
 }
 
 void GLLinesUniform::updateColour(const QRgb &lineColour)
@@ -141,7 +146,7 @@ void GLLinesUniform::updateColour(const QRgb &lineColour)
 
 void GLLinesUniform::cleanup()
 {
-    if(!built) return;
+    if(!m_built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
@@ -149,7 +154,7 @@ void GLLinesUniform::cleanup()
 
 void GLLinesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);

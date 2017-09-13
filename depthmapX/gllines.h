@@ -35,13 +35,12 @@ public:
     GLLines();
     void loadLineData(const std::vector<std::pair<SimpleLine, PafColor> > &colouredLines);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool m_core);
-    void updateGL();
+    void initializeGL(bool coreProfile);
+    void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
 private:
-    bool dataLoaded = false;
     const int DATA_DIMENSIONS = 6;
     void setupVertexAttribs();
     int count() const { return m_count; }
@@ -50,7 +49,7 @@ private:
 
     QVector<GLfloat> m_data;
     int m_count;
-    bool built = false;
+    bool m_built = false;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
