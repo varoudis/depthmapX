@@ -14,11 +14,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <qwidget.h>
 #include <QRect>
 #include <QPoint>
 #include <QSize>
 
+#include <QOpenGLWidget>
 #include <qpixmap.h>
 #include "GraphDoc.h"
 
@@ -30,7 +30,7 @@
 #define MK_CONTROL          0x0008
 #define MK_MBUTTON          0x0010
 
-class QDepthmapView : public QWidget
+class QDepthmapView : public QOpenGLWidget
 {
     Q_OBJECT
 
@@ -72,7 +72,7 @@ public:
 protected:
     virtual void timerEvent(QTimerEvent *event);
     virtual void paintEvent(QPaintEvent *event);
-    virtual void resizeEvent(QResizeEvent *event);
+    virtual void resizeGL(int w, int h);
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
