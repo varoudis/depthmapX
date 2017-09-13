@@ -37,10 +37,9 @@ class GLView : public MapView, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    GLView(QWidget *parent = 0,
-           QGraphDoc* doc = NULL,
-           const QRgb &backgroundColour = qRgb(0,0,0),
-           const QRgb &foregroundColour = qRgb(255,255,255));
+    GLView(QGraphDoc &pDoc,
+           Settings &settings,
+           QWidget *parent = Q_NULLPTR);
     ~GLView();
 
     QSize minimumSizeHint() const override;
@@ -48,24 +47,22 @@ public:
     void notifyDatasetChanged() { m_datasetChanged = true; update(); }
     void matchViewToCurrentMetaGraph();
 
-    QGraphDoc* m_pDoc;
-
-    void OnModeJoin();
-    void OnModeUnjoin();
-    void OnViewPan();
-    void OnViewZoomIn();
-    void OnViewZoomOut();
-    void OnEditFill();
-    void OnEditSemiFill();
-    void OnEditAugmentFill();
-    void OnEditPencil();
-    void OnModeIsovist();
-    void OnModeTargetedIsovist();
+    virtual void OnModeJoin() override;
+    virtual void OnModeUnjoin() override;
+    virtual void OnViewPan() override;
+    virtual void OnViewZoomIn() override;
+    virtual void OnViewZoomOut() override;
+    virtual void OnEditFill() override;
+    virtual void OnEditSemiFill() override;
+    virtual void OnEditAugmentFill() override;
+    virtual void OnEditPencil() override;
+    virtual void OnModeIsovist() override;
+    virtual void OnModeTargetedIsovist() override;
+    virtual void OnEditLineTool() override;
+    virtual void OnEditPolygonTool() override;
+    virtual void OnModeSeedAxial() override;
+    virtual void OnEditSelect() override;
     void OnModeStepDepth();
-    void OnModeLineTool();
-    void OnModePolygonTool();
-    void OnModeSeedAxial();
-    void OnEditSelect();
 
 protected:
     void initializeGL() override;
@@ -84,8 +81,8 @@ private:
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
 
-    const QRgb &m_foreground;
-    const QRgb &m_background;
+    QRgb m_foreground;
+    QRgb m_background;
 
     GLDynamicRect m_selectionRect;
     GLDynamicLine m_dragLine;
