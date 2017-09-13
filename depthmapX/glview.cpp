@@ -27,7 +27,7 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
 }
 
 GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, const QRgb &foregroundColour)
-    : QOpenGLWidget(parent),
+    : MapView(parent),
       m_eyePosX(0),
       m_eyePosY(0),
       m_background(backgroundColour),
