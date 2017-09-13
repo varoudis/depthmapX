@@ -14,11 +14,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "depthmapX/mapview.h"
 #include <QRect>
 #include <QPoint>
 #include <QSize>
 
-#include <QOpenGLWidget>
 #include <qpixmap.h>
 #include "GraphDoc.h"
 
@@ -30,7 +30,7 @@
 #define MK_CONTROL          0x0008
 #define MK_MBUTTON          0x0010
 
-class QDepthmapView : public QOpenGLWidget
+class QDepthmapView : public MapView
 {
     Q_OBJECT
 

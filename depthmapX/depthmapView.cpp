@@ -91,7 +91,7 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
 }
 
 QDepthmapView::QDepthmapView(Settings &settings)
-    : QOpenGLWidget(0), mSettings(settings)
+    : MapView(0), mSettings(settings)
 {
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);

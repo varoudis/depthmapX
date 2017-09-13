@@ -57,7 +57,8 @@ HEADERS       = depthmapView.h \
     glshapegraph.h \
     glshapemap.h \
     gldynamicrect.h \
-    gldynamicline.h
+    gldynamicline.h \
+    mapview.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -110,7 +111,8 @@ SOURCES       = depthmapView.cpp \
     glshapegraph.cpp \
     glshapemap.cpp \
     gldynamicrect.cpp \
-    gldynamicline.cpp
+    gldynamicline.cpp \
+    mapview.cpp
 
 RESOURCES     = resource.qrc
 

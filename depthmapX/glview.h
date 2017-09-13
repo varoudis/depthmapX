@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "depthmapX/mapview.h"
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
@@ -31,7 +32,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
-class GLView : public QOpenGLWidget, protected QOpenGLFunctions
+class GLView : public MapView, protected QOpenGLFunctions
 {
     Q_OBJECT
 
