@@ -102,7 +102,7 @@ MainWindow::MainWindow(const QString &fileToLoad, Settings &settings) : mSetting
     createStatusBar();
     updateToolbar();
     updateActiveWindows();
-    updateGLWindows();
+    updateGLWindows(true, true);
 
     installEventFilter(this);
 //	setWindowIcon(QIcon(tr(":/images/cur/icon-1-1.png")));
@@ -1086,12 +1086,13 @@ void MainWindow::updateActiveWindows()
     }
 }
 
-void MainWindow::updateGLWindows() {
+void MainWindow::updateGLWindows(bool datasetChanged, bool recentreView) {
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
     for (int i = 0; i < windows.size(); ++i) {
         GLView *child = qobject_cast<GLView*>(windows.at(i)->widget());
         if(!child) continue;
-        child->notifyDatasetChanged();
+        if(datasetChanged) child->notifyDatasetChanged();
+        if(recentreView) child->matchViewToCurrentMetaGraph();
     }
 }
 

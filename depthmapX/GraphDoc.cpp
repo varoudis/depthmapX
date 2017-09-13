@@ -95,7 +95,11 @@ bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *origi
 
     if(viewtype == VIEW_ALL && flag != REDRAW_DONE)
     {
-        ((MainWindow *) m_mainFrame)->updateGLWindows();
+        ((MainWindow *) m_mainFrame)->updateGLWindows(true, flag == REDRAW_TOTAL);
+    }
+    if(viewtype == VIEW_MAP && flag == REDRAW_TOTAL)
+    {
+        ((MainWindow *) m_mainFrame)->updateGLWindows(false, true);
     }
 
    if (!m_flag_lock) {
@@ -416,6 +420,12 @@ void QGraphDoc::OnFileImport()
       return;
    }
 
+    // this is placed here as a proxy to be queried later so that we can find
+    // if there was something else in the graph after importing. If there was
+    // then the view should not be reset, if there wasn't then the view can
+    // be reset to point to the newly imported objects
+    bool graphHadNullBoundsBeforeImport = m_meta_graph->getBoundingBox().isNull();
+
    QFilePath filepath(infiles[0]);
    QString ext = filepath.m_ext;
    if (ext == tr("CAT") || ext == tr("DXF") || ext == tr("NTF") || ext == tr("RT1") || ext == tr("MIF") || ext == tr("GML") || ext == tr("")) {
@@ -489,7 +499,12 @@ void QGraphDoc::OnFileImport()
          if (m_meta_graph->importTxt( file, pstring(filepath.m_name.toLatin1()), (ext == tr("CSV")) ) != -1) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
-            SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_TABLE);
+
+            if(graphHadNullBoundsBeforeImport) {
+                SetRedrawFlag(VIEW_ALL, REDRAW_TOTAL, NEW_TABLE);
+            } else {
+                SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_TABLE);
+            }
          }
          else {
 			QMessageBox::warning(this, tr("Warning"), tr("Unable to import text file.\n \
