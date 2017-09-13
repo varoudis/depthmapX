@@ -91,7 +91,7 @@ static QRgb colorMerge(QRgb color, QRgb mergecolor)
 }
 
 QDepthmapView::QDepthmapView(Settings &settings)
-    : QWidget(0), mSettings(settings)
+    : QOpenGLWidget(0), mSettings(settings)
 {
    m_drag_rect_a.setRect(0, 0, 0, 0);
    m_drag_rect_b.setRect(0, 0, 0, 0);
@@ -474,13 +474,14 @@ void QDepthmapView::paintEvent(QPaintEvent *)
    screenPainter.drawPixmap(0,0,width(),height(),*m_pixmap);
 }
 
-void QDepthmapView::resizeEvent(QResizeEvent *)
+void QDepthmapView::resizeGL(int w, int h)
 {
 //   m_viewport_set = false;
    m_redraw_all = true;
    m_resize_viewport = true;
    pDoc->m_view[QGraphDoc::VIEW_MAP] = this;
-   m_pixmap = new QPixmap(width(),height());
+   m_pixmap = new QPixmap(w, h);
+   update();
 }
 
 void QDepthmapView::BeginDrag(QPoint point)
