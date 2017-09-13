@@ -20,9 +20,6 @@
 #include <QSize>
 
 #include <qpixmap.h>
-#include "GraphDoc.h"
-
-#include "settings.h"
 
 #define MK_LBUTTON          0x0001
 #define MK_RBUTTON          0x0002
@@ -35,9 +32,9 @@ class QDepthmapView : public MapView
     Q_OBJECT
 
 public:
-	QGraphDoc* pDoc;
-
-    QDepthmapView(Settings &settings);
+    QDepthmapView(QGraphDoc &pDoc,
+                  Settings &settings,
+                  QWidget *parent = Q_NULLPTR);
     ~QDepthmapView();
     QSize sizeHint() const;
 	void SetRedrawflag();
@@ -46,8 +43,6 @@ public:
     void saveToFile();
 	QString m_open_file_name;
 	QString currentFile() {return m_open_file_name;}
-
-    Settings &mSettings;
 
 	bool m_showgrid;
 	bool m_showtext;
@@ -68,40 +63,40 @@ public:
          GENERICJOIN = 0x20000, JOINB = 0x00400, JOIN = 0x20001, UNJOIN = 0x20002
    };
    enum {FULLFILL = 0, SEMIFILL = 1, AUGMENT = 2}; // AV TV
+   virtual void OnModeJoin() override;
+   virtual void OnModeUnjoin() override;
+   virtual void OnModeSeedAxial() override;
+   virtual void OnModeIsovist() override;
+   virtual void OnModeTargetedIsovist() override;
+   virtual void OnEditLineTool() override;
+   virtual void OnEditPolygonTool() override;
+   virtual void OnEditFill() override;
+   virtual void OnEditSemiFill() override;
+   virtual void OnEditAugmentFill() override; // AV TV
+   virtual void OnViewZoomIn() override;
+   virtual void OnViewZoomOut() override;
+   virtual void OnViewPan() override;
+   virtual void OnEditSelect() override;
+   virtual void OnEditPencil() override;
 
 protected:
-    virtual void timerEvent(QTimerEvent *event);
-    virtual void paintEvent(QPaintEvent *event);
-    virtual void resizeGL(int w, int h);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
-	virtual void closeEvent(QCloseEvent *event);
-	virtual void mouseDoubleClickEvent(QMouseEvent *e);
-	virtual void wheelEvent(QWheelEvent *e);
-	virtual void keyPressEvent(QKeyEvent *event);
-	virtual bool eventFilter(QObject *object, QEvent *e);
+    virtual void timerEvent(QTimerEvent *event) override;
+    virtual void paintEvent(QPaintEvent *event) override;
+    virtual void resizeGL(int w, int h) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QMouseEvent *event) override;
+    virtual void closeEvent(QCloseEvent *event) override;
+    virtual void mouseDoubleClickEvent(QMouseEvent *e) override;
+    virtual void wheelEvent(QWheelEvent *e) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual bool eventFilter(QObject *object, QEvent *e) override;
 
 public slots:
-	int OnRedraw(int wParam, int lParam);
-	void OnEditEraser();
-	void OnEditFill();
-	void OnEditSemiFill();
-    void OnEditAugmentFill(); // AV TV
-	void OnViewZoomIn();
-	void OnViewZoomOut();
-	void OnViewMove();
-	void OnEditSelect();
-	void OnEditPencil();
+    int OnRedraw(int wParam, int lParam);
+    void OnEditEraser();
 	void OnEditCopy();
-	void OnEditSave();
-	void OnModeJoin();
-	void OnModeUnjoin();
-	void OnToolsAxialMap();
-	void OnModeIsovist();
-	void OnModeHalfovist();
-	void OnEditLineTool();
-	void OnEditPolygon();
+    void OnEditSave();
 	void OnViewZoomsel();
 
 private:

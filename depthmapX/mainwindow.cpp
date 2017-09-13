@@ -113,7 +113,7 @@ MainWindow::MainWindow(const QString &fileToLoad, Settings &settings) : mSetting
         {
              statusBar()->showMessage(tr("File loaded"), 2000);
              child->show();
-             OnFocusGraph(child->pDoc, QGraphDoc::CONTROLS_LOADALL);
+             OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
              setCurrentFile(fileToLoad);
         } else {
              child->close();
@@ -172,7 +172,7 @@ void MainWindow::OnFileNew()
     QDepthmapView *child = createQDepthmapView();
     child->newFile();
     child->show();
-    OnFocusGraph(child->pDoc, QGraphDoc::CONTROLS_LOADALL);
+    OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
 }
 
 void MainWindow::OnFileOpen()
@@ -199,7 +199,7 @@ void MainWindow::OnFileOpen()
           {
                statusBar()->showMessage(tr("File loaded"), 2000);
                child->show();
-               OnFocusGraph(child->pDoc, QGraphDoc::CONTROLS_LOADALL);
+               OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
                setCurrentFile(fileName);
           } else {
                child->close();
@@ -762,8 +762,7 @@ QDepthmapView *MainWindow::createQDepthmapView()
     QGraphDoc* doc = new QGraphDoc("", "");
     doc->m_mainFrame = this;
 
-    QDepthmapView *child = new QDepthmapView(mSettings);
-    child->pDoc = doc;
+    QDepthmapView *child = new QDepthmapView(*doc, mSettings);
 
     mdiArea->addSubWindow(child);
     return child;
@@ -794,7 +793,7 @@ QDepthmapView *MainWindow::activeQDepthmapView()
         if(!p)
         {
             p = qobject_cast<GLView *>(activeSubWindow->widget());
-            if(p) return (QDepthmapView *)(((GLView*)p)->m_pDoc->m_view[1]);
+            if(p) return (QDepthmapView *)(((GLView*)p)->getGraphDoc()->m_view[1]);
         }
     }
     current_view_type = 0;
@@ -807,7 +806,7 @@ QGraphDoc *MainWindow::activeQDepthmapDoc()
     if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
     {
         p = qobject_cast<QDepthmapView *>(activeSubWindow->widget());
-        if(p) return ((QDepthmapView *)p)->pDoc;
+        if(p) return ((QDepthmapView *)p)->getGraphDoc();
         p = qobject_cast<QPlotView *>(activeSubWindow->widget());
         if(p) return ((QPlotView *)p)->pDoc;
         p = qobject_cast<tableView *>(activeSubWindow->widget());
@@ -815,7 +814,7 @@ QGraphDoc *MainWindow::activeQDepthmapDoc()
         p = qobject_cast<Q3DView *>(activeSubWindow->widget());
         if(p) return ((Q3DView *)p)->pDoc;
         p = qobject_cast<GLView *>(activeSubWindow->widget());
-        if(p) return ((GLView *)p)->m_pDoc;
+        if(p) return ((GLView *)p)->getGraphDoc();
     }
     return 0;
 }
@@ -841,10 +840,10 @@ void MainWindow::OnViewTable()
     QDepthmapView* m_p = activeQDepthmapView();
     if(m_p)
     {
-        if(m_p->pDoc->m_view[QGraphDoc::VIEW_TABLE])
-            return setActiveSubWindow(m_p->pDoc->m_view[QGraphDoc::VIEW_TABLE]);
-        tableView *child = new tableView(this, m_p->pDoc);
-        child->pDoc = m_p->pDoc;
+        if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE])
+            return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE]);
+        tableView *child = new tableView(this, m_p->getGraphDoc());
+        child->pDoc = m_p->getGraphDoc();
         mdiArea->addSubWindow(child);
         child->show();
     }
@@ -855,10 +854,10 @@ void MainWindow::OnWindow3dView()
     QDepthmapView* m_p = activeQDepthmapView();
     if(m_p)
     {
-        if(m_p->pDoc->m_view[QGraphDoc::VIEW_3D])
-            return setActiveSubWindow(m_p->pDoc->m_view[QGraphDoc::VIEW_3D]);
-        Q3DView *child = new Q3DView(this, m_p->pDoc);
-        child->pDoc = m_p->pDoc;
+        if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_3D])
+            return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_3D]);
+        Q3DView *child = new Q3DView(this, m_p->getGraphDoc());
+        child->pDoc = m_p->getGraphDoc();
         mdiArea->addSubWindow(child);
         child->show();
     }
@@ -869,9 +868,9 @@ void MainWindow::OnWindowGLView()
     QDepthmapView* m_p = activeQDepthmapView();
     if(m_p)
     {
-        if(m_p->pDoc->m_view[QGraphDoc::VIEW_GL])
-            return setActiveSubWindow(m_p->pDoc->m_view[QGraphDoc::VIEW_GL]);
-        GLView *child = new GLView(this, m_p->pDoc, m_background, m_foreground);
+        if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_GL])
+            return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_GL]);
+        GLView *child = new GLView(*m_p->getGraphDoc(), mSettings);
         mdiArea->addSubWindow(child);
         child->show();
     }
@@ -882,10 +881,10 @@ void MainWindow::OnViewScatterplot()
     QDepthmapView* m_p = activeQDepthmapView();
     if(m_p)
     {
-        if(m_p->pDoc->m_view[QGraphDoc::VIEW_SCATTER])
-            return setActiveSubWindow(m_p->pDoc->m_view[QGraphDoc::VIEW_SCATTER]);
+        if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_SCATTER])
+            return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_SCATTER]);
         QPlotView *child = new QPlotView;
-        child->pDoc = m_p->pDoc;
+        child->pDoc = m_p->getGraphDoc();
         child->m_parent = this;
         mdiArea->addSubWindow(child);
         child->show();
@@ -1825,7 +1824,7 @@ void MainWindow::SelectButtonTriggered()
 void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
-    activeQDepthmapView()->OnViewMove();
+    activeQDepthmapView()->OnViewPan();
     GLView* glView = getFirstGLView();
     if(glView) glView->OnViewPan();
 }
@@ -1841,7 +1840,7 @@ void MainWindow::SelectPenTriggered()
 void MainWindow::AxialMapTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_AL2;
-    activeQDepthmapView()->OnToolsAxialMap();
+    activeQDepthmapView()->OnModeSeedAxial();
     GLView* glView = getFirstGLView();
     if(glView) glView->OnModeSeedAxial();
 }
@@ -1914,14 +1913,14 @@ void MainWindow::LineButtonTriggered()
         m_selected_mapbar_item = ID_MAPBAR_ITEM_LINETOOL;
         activeQDepthmapView()->OnEditLineTool();
         GLView* glView = getFirstGLView();
-        if(glView) glView->OnModeLineTool();
+        if(glView) glView->OnEditLineTool();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_POLYGON;
-        activeQDepthmapView()->OnEditPolygon();
+        activeQDepthmapView()->OnEditPolygonTool();
         GLView* glView = getFirstGLView();
-        if(glView) glView->OnModePolygonTool();
+        if(glView) glView->OnEditPolygonTool();
     }
 }
 
@@ -1938,7 +1937,7 @@ void MainWindow::isoButtonTriggered()
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_HALFISOVIST;
-        activeQDepthmapView()->OnModeHalfovist();
+        activeQDepthmapView()->OnModeTargetedIsovist();
         GLView* glView = getFirstGLView();
         if(glView) glView->OnModeTargetedIsovist();
     }
@@ -2018,7 +2017,7 @@ void MainWindow::joinTriggered()
 
 void MainWindow::OnFileProperties()
 {
-   QGraphDoc* gd = activeQDepthmapView()->pDoc;
+   QGraphDoc* gd = activeQDepthmapView()->getGraphDoc();
    gd->OnFileProperties();
 }
 
@@ -2230,7 +2229,7 @@ void MainWindow::openRecentFile()
             setCurrentFile(action->data().toString());
             statusBar()->showMessage(tr("File loaded"), 2000);
             child->show();
-            OnFocusGraph(child->pDoc, QGraphDoc::CONTROLS_LOADALL);
+            OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
         }
         else child->close();
     }
