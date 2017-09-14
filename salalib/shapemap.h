@@ -20,8 +20,8 @@
 #ifndef __SHAPEMAP_H__
 #define __SHAPEMAP_H__
 
-#include "genlib/p2dpoly.h"
-#include <vector>
+#include "genlib/stringutils.h"
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -194,7 +194,7 @@ public:
           ALLLINEMAP = 0x0010, AXIALMAP = 0x0020, SEGMENTMAP = 0x0040, PESHMAP = 0x0080, LINEMAP = 0x0070 };
    enum { COPY_NAME = 0x0001, COPY_GEOMETRY = 0x0002, COPY_ATTRIBUTES = 0x0004, COPY_GRAPH = 0x0008, COPY_ALL = 0x000f };
 protected:
-   pstring m_name;
+   std::string m_name;
    int m_map_type;
    bool m_hasgraph;
    // counters
@@ -229,7 +229,7 @@ protected:
    mutable bool m_invalidate;
    //
 public:
-   ShapeMap(const pstring& name = pstring(),int type = EMPTYMAP);
+   ShapeMap(const std::string& name = std::string(),int type = EMPTYMAP);
    virtual ~ShapeMap();
    void copy(const ShapeMap& shapemap, int copyflags = 0);
    void clearAll();
@@ -273,7 +273,7 @@ public:
    // move a shape (currently only a line shape) -- in the future should use SalaShape
    bool moveShape(int shaperef, const Line& line, bool undoing = false);
    // delete selected shapes
-   void removeSelected();
+   bool removeSelected();
    // delete a shape
    void removeShape(int shaperef, bool undoing = false);
    //
@@ -358,15 +358,15 @@ protected:
    // which attribute is currently displayed:
    mutable int m_displayed_attribute;
 public:
-   const pstring& getName() const
+   const std::string& getName() const
       { return m_name; }
-   int addAttribute(const pstring& name)
+   int addAttribute(const std::string& name)
       { return m_attributes.insertColumn(name); }
    void removeAttribute(int col)
       { m_attributes.removeColumn(col); }
-   void setAttribute(int obj, const pstring& name, float val)
+   void setAttribute(int obj, const std::string& name, float val)
       { m_attributes.setValue(m_attributes.getRowid(obj),name,val); }
-   void incrementAttribute(int obj, const pstring& name)
+   void incrementAttribute(int obj, const std::string& name)
       { m_attributes.incrValue(m_attributes.getRowid(obj),name); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
@@ -380,7 +380,7 @@ public:
    { return m_attributes.isLayerVisible(layerid); }
    void setLayerVisible(int layerid, bool show)
    { m_attributes.setLayerVisible(layerid,show); }
-   bool selectionToLayer(const pstring& name = pstring("Unnamed"));
+   bool selectionToLayer(const std::string& name = std::string("Unnamed"));
 public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
@@ -550,7 +550,7 @@ public:
    ShapeMaps() { m_displayed_map = paftl::npos;}
    virtual ~ShapeMaps() {;}
    //
-   size_t addMap(const pstring& name, int type);
+   size_t addMap(const std::string& name, int type);
    void removeMap(size_t map);
 
    //
@@ -581,7 +581,7 @@ public:
    const T& getLastMap() const
    { return prefvec<T>::tail(); }
    //
-   size_t getMapRef(const pstring& name) const;
+   size_t getMapRef(const std::string& name) const;
    //
    size_t getObjectCount() const
    { return prefvec<T>::at(m_displayed_map).getObjectCount(); }
@@ -612,7 +612,7 @@ public:
 };
 
 template <class T>
-size_t ShapeMaps<T>::addMap(const pstring& name, int type)
+size_t ShapeMaps<T>::addMap(const std::string& name, int type)
 {
    ShapeMaps<T>::push_back(T(name,type));
    setDisplayedMapRef(pmemvec<T*>::size()-1);
@@ -629,7 +629,7 @@ void ShapeMaps<T>::removeMap(size_t map)
       m_displayed_map--; 
 }
 template <class T>
-size_t ShapeMaps<T>::getMapRef(const pstring& name) const
+size_t ShapeMaps<T>::getMapRef(const std::string& name) const
 {  
    // note, only finds first map with this name
    for (size_t i = 0; i < pmemvec<T*>::size(); i++) {
@@ -660,8 +660,8 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    if (version < VERSION_NO_SHAPEMAP_NAME_LOOKUP) {
       for (size_t i = 0; i < size_t(count); i++) {
          // dummy name lookup (now simply creates on fly, as the name lookup may be corrupted in earlier versions)
-         pstring name; int number;
-         name.read(stream);
+         std::string name = dXstring::readString(stream);
+         int number;
          stream.read((char *)&number,sizeof(number));
       }
    }

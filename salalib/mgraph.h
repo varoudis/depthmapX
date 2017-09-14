@@ -111,13 +111,8 @@ public:
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadDxf( istream& stream, Communicator *communicator );
-   // Quick mod - TV
-#if defined(_WIN32)   
-   int loadRT1(const pqvector<wstring>& fileset, Communicator *communicator);
-#else
    int loadRT1(const pqvector<string>& fileset, Communicator *communicator);
-#endif   
-   int importTxt( istream& stream, const pstring& layername, bool csv );
+   int importTxt( istream& stream, const std::string& layername, bool csv );
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
@@ -139,19 +134,19 @@ public:
    bool polyClose();
    bool polyCancel();
    //
-   int addShapeGraph(const pstring& name, int type);
-   int addShapeMap(const pstring& name);
+   int addShapeGraph(const std::string& name, int type);
+   int addShapeMap(const std::string& name);
    void removeDisplayedMap();
    //
    // various map conversions
-   bool convertDrawingToAxial(Communicator *comm, pstring layer_name);  // n.b., name copied for thread safety
-   bool convertDataToAxial(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues);
-   bool convertDrawingToSegment(Communicator *comm, pstring layer_name);
-   bool convertDataToSegment(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues);
-   bool convertToData(Communicator *comm, pstring layer_name, bool keeporiginal, int typeflag);  // -1 signifies convert from drawing layer, else convert from data map
-   bool convertToDrawing(Communicator *comm, pstring layer_name, int typeflag); // 0 signifies convert from data map, else convert from graph
-   bool convertToConvex(Communicator *comm, pstring layer_name, bool keeporiginal, int typeflag); // -1 signifies convert from drawing layer, else convert from data map
-   bool convertAxialToSegment(Communicator *comm, pstring layer_name, bool keeporiginal, bool pushvalues, double stubremoval);
+   bool convertDrawingToAxial(Communicator *comm, std::string layer_name);  // n.b., name copied for thread safety
+   bool convertDataToAxial(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
+   bool convertDrawingToSegment(Communicator *comm, std::string layer_name);
+   bool convertDataToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
+   bool convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag);  // -1 signifies convert from drawing layer, else convert from data map
+   bool convertToDrawing(Communicator *comm, std::string layer_name, int typeflag); // 0 signifies convert from data map, else convert from graph
+   bool convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag); // -1 signifies convert from drawing layer, else convert from data map
+   bool convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval);
    // note: not same categories
    bool convertPointsToShape();
    //bool convertBoundaryGraph( Communicator *communicator );
@@ -196,7 +191,7 @@ public:
    //
    int getDisplayedAttribute() const;
    void setDisplayedAttribute(int col);
-   int addAttribute(const pstring& name);
+   int addAttribute(const std::string& name);
    void removeAttribute(int col);
    bool isAttributeLocked(int col);
    AttributeTable& getAttributeTable(int type = -1, int layer = -1);
@@ -209,7 +204,7 @@ public:
       { return (int) SuperSpacePixel::size(); }
 
    // Quick mod - TV
-   const pstring& getLineFileName(int file) const
+   const std::string& getLineFileName(int file) const
       { return SuperSpacePixel::at(file).getName(); }
    int getLineLayerCount(int file) const
       { return (int) SuperSpacePixel::at(file).size(); }
@@ -232,9 +227,9 @@ public:
    class Error 
    {
    protected:
-      pstring error;
+      std::string error;
    public:
-      Error(const pstring& err = pstring()) { error = err; }
+      Error(const std::string& err = std::string()) { error = err; }
    };
 protected:
    Error m_last_error;
@@ -399,8 +394,8 @@ public:
    // a few read-write returns:
    enum { OK, WARN_BUGGY_VERSION, WARN_CONVERTED, NOT_A_GRAPH, DAMAGED_FILE, DISK_ERROR, NEWER_VERSION, DEPRECATED_VERSION };
    // likely to use communicator if too slow...
-   int read( const pstring& filename );
-   int write( const pstring& filename, int version, bool currentlayer = false);
+   int read( const std::string& filename );
+   int write( const std::string& filename, int version, bool currentlayer = false);
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:

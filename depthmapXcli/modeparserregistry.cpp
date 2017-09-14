@@ -20,6 +20,7 @@
 #include "axialparser.h"
 #include "agentparser.h"
 #include "isovistparser.h"
+#include "exportparser.h"
 
 
 void ModeParserRegistry::populateParsers()
@@ -31,5 +32,6 @@ void ModeParserRegistry::populateParsers()
     REGISTER_PARSER(AxialParser);
     REGISTER_PARSER(AgentParser);
     REGISTER_PARSER(IsovistParser);
+    REGISTER_PARSER(ExportParser);
     // *********
 }

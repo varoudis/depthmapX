@@ -379,14 +379,14 @@ bool SalaProgram::runselect(pvecint& selsetout, const pvecint& selsetin)
    return true;
 }
 
-pstring SalaProgram::getLastErrorMessage() const
+std::string SalaProgram::getLastErrorMessage() const
 { 
    const SalaError& error = m_error_stack.tail();
    if (error.lineno == -1) {
       return error.message; 
    }
    else {
-      return error.message + " on line " + pstringify(error.lineno+1,"%d");
+      return error.message + " on line " + dXstring::formatString(error.lineno+1,"%d");
    }
 }
 
@@ -443,7 +443,7 @@ int SalaCommand::parse(istream& program, int line)
                program.get(); // take off closing quote and discard
             }
             // add even if the string constant is empty:
-            m_eval_stack.push_back( pstring(buffer) );
+            m_eval_stack.push_back( std::string(buffer) );
             buffer.clear();
             last = SP_DATA;
          }
@@ -501,7 +501,7 @@ int SalaCommand::parse(istream& program, int line)
             last = decode(buffer);
             buffer.clear();
          }
-         last = decode(pstring(1,alpha));
+         last = decode(std::string(1,alpha));
          break;
       case '(':
          // note: the opening bracket forms a function
@@ -679,7 +679,7 @@ int SalaCommand::parse(istream& program, int line)
          }
          if (alpha != EOF && alpha != 13) {  // 13 ignored, as it appears \n is 10 in this stream...
             if (!isalphanum_(alpha) && alpha != '&' && alpha != '|') { // include & and | for and and or
-               throw SalaError("Unrecognised symbol ('" + pstring(1,alpha) + "')",m_line);
+               throw SalaError("Unrecognised symbol ('" + std::string(1,alpha) + "')",m_line);
             }
             buffer.add(alpha);
          }
@@ -745,12 +745,12 @@ int SalaCommand::parse(istream& program, int line)
    return line;
 }
 
-int SalaCommand::decode(pstring string)   // string copied as makelower applied
+int SalaCommand::decode(std::string string)   // string copied as makelower applied
 {
    // ideally, some form of hashing the string should be performed so that
    // functions can be found quicker than a long list of "else ifs"
    int retvar = SP_NONE;
-   string.makelower();
+   dXstring::toLower(string);
 
    if (m_command == SC_NONE) {
       if (string == "return") {
@@ -791,7 +791,7 @@ int SalaCommand::decode(pstring string)   // string copied as makelower applied
          m_last_string = string; // make a copy for debugging purposes
          return SP_NUMBER;
       }
-      if (string.findindex('.') != paftl::npos || string.findindex('e') != paftl::npos) {
+      if (string.find_first_of('.') != std::string::npos || string.find_first_of('e') != std::string::npos) {
          m_eval_stack.push_back( atof(string.c_str()) );
       }
       else {
@@ -868,8 +868,8 @@ int SalaCommand::decode(pstring string)   // string copied as makelower applied
    }
 
    if (retvar == SP_NONE) {
-      size_t n = string.findindex(".");
-      if (n != paftl::npos) {
+      size_t n = string.find_first_of(".");
+      if (n != std::string::npos) {
          if (n > 0) {
             decode(string.substr(0,n));
          }
@@ -930,7 +930,7 @@ int SalaCommand::decode(pstring string)   // string copied as makelower applied
 //    a graph node / table row (for "select by query" and "edit connections")
 //    a map (not yet implemented, but intended for scripting agents)
 
-int SalaCommand::decode_member(const pstring& string, bool apply_to_this)
+int SalaCommand::decode_member(const std::string& string, bool apply_to_this)
 {
    int retvar = SP_NONE;
 
@@ -1522,7 +1522,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                switch (func) {
                case SalaObj::S_FVALUE:
                   {
-                     const pstring& str = param.toStringRef();
+                     const std::string& str = param.toStringRef();
                      AttributeTable *table = obj.getTable();
                      int col = -1;
                      if (str != "Ref Number") {
@@ -1541,7 +1541,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      if (param.length() != 2) {
                         throw SalaError("Function takes 2 parameters");
                      }
-                     const pstring& str = param.list_at(0).toStringRef();
+                     const std::string& str = param.list_at(0).toStringRef();
                      float val = (float) param.list_at(1).toDouble();
                      AttributeTable *table = obj.getTable();
                      int col = -1;
@@ -1662,7 +1662,7 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       const Connector& connector = graphobj.data.graph.map.shape->getConnections().at(graphobj.data.graph.node);
       int mode = Connector::CONN_ALL;
       if (graphobj.data.graph.map.shape->isSegmentMap()) {
-         const pstring& str = param.toStringRef();
+         const std::string& str = param.toStringRef();
          if (str == "forward") {
             mode = Connector::SEG_CONN_FW;
          }
