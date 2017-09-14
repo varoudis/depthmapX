@@ -36,7 +36,7 @@ bool GMLMap::parse(const pvecstring& fileset, Communicator *comm)
    int tracking = 0;
    int linecount = 0;
    int feature = -1;
-   pstring key;
+   std::string key;
 
    for (int i = 0; i < fileset.size(); i++) {
 
@@ -44,7 +44,7 @@ bool GMLMap::parse(const pvecstring& fileset, Communicator *comm)
 
       while (!stream.eof())
       {
-         pstring line(4096);
+         std::string line(4096);
          stream >> line;
          linecount++;
 
@@ -74,12 +74,12 @@ bool GMLMap::parse(const pvecstring& fileset, Communicator *comm)
                      int begin = line.findindex('>');
                      int end = line.findindexreverse('<');
                      if (begin != -1 && end != -1) {
-                        pstring thisdesc = line.substr(begin+1,end-begin-1);
+                        auto thisdesc = line.substr(begin+1,end-begin-1);
                         if (key.empty()) {
                            key = thisdesc;
                         }
                         else {
-                           key = key + pstring(" / ") + thisdesc;
+                           key = key + " / " + thisdesc;
                         }
                      }
                   }
