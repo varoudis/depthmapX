@@ -38,7 +38,6 @@
 
 
 static int current_view_type = 0;
-enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_MAP_GL = 5, VIEW_TYPES = 6};
 
 const QString editstatetext[] = {"Not Editable", "Editable Off", "Editable On"};
 
@@ -935,7 +934,7 @@ void MainWindow::updateActiveWindows()
         editToolBar->hide();
         thirdViewToolBar->hide();
         plotToolBar->show();
-        current_view_type = VIEW_SCATTER;
+        current_view_type = QGraphDoc::VIEW_SCATTER;
         OnFocusGraph(((QPlotView*)p)->pDoc, QGraphDoc::CONTROLS_LOADALL);
         RedoPlotViewMenu(((QPlotView*)p)->pDoc);
 
@@ -955,7 +954,7 @@ void MainWindow::updateActiveWindows()
         editToolBar->hide();
         thirdViewToolBar->hide();
         plotToolBar->hide();
-        current_view_type = VIEW_TABLE;
+        current_view_type = QGraphDoc::VIEW_TABLE;
         return;
     }
     else if(p = qobject_cast<Q3DView *>(activeSubWindow->widget()))
@@ -1050,7 +1049,7 @@ void MainWindow::updateActiveWindows()
         else {
             thirdFilledAct->setChecked(0);
         }
-        current_view_type = VIEW_3D;
+        current_view_type = QGraphDoc::VIEW_3D;
         return;
     }
     else if((p = qobject_cast<MapView *>(activeSubWindow->widget())))
@@ -1058,9 +1057,9 @@ void MainWindow::updateActiveWindows()
         editToolBar->show();
         thirdViewToolBar->hide();
         plotToolBar->hide();
-        current_view_type = VIEW_MAP;
+        current_view_type = QGraphDoc::VIEW_MAP;
         QWidget* v = qobject_cast<MapView *>(activeSubWindow->widget());
-        if(v) current_view_type = VIEW_MAP_GL;
+        if(v) current_view_type = QGraphDoc::VIEW_MAP_GL;
         switch(m_selected_mapbar_item)
         {
         case ID_MAPBAR_ITEM_SELECT:
@@ -1131,7 +1130,7 @@ void MainWindow::updateActiveWindows()
         }
         QGraphDoc* m_p = activeMapDoc();
         OnFocusGraph(m_p, QGraphDoc::CONTROLS_LOADALL);
-        m_p->SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_FOCUS );
+        m_p->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_FOCUS );
     }
 }
 
@@ -2469,7 +2468,7 @@ void MainWindow::updateAgentToolsSubMenu()
     if (m_p->m_meta_graph && m_p->m_meta_graph->viewingProcessedPoints() && !m_p->m_communicator)
         runAgentAnalysisAct->setEnabled(true);
     else runAgentAnalysisAct->setEnabled(0);
-    if(current_view_type == VIEW_3D) loadAgentProgramAct->setEnabled(true);
+    if(current_view_type == QGraphDoc::VIEW_3D) loadAgentProgramAct->setEnabled(true);
     else loadAgentProgramAct->setEnabled(0);
 }
 
@@ -2699,7 +2698,7 @@ void MainWindow::updateFileMenu()
         saveAct->setEnabled( true );
         saveAsAct->setEnabled( true );
         propertiesAct->setEnabled( true );
-        if(current_view_type == VIEW_3D)
+        if(current_view_type == QGraphDoc::VIEW_3D)
         {
             printAct->setEnabled( 0 );
             printPreviewAct->setEnabled( 0 );
