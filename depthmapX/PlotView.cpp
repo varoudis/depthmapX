@@ -130,7 +130,7 @@ bool QPlotView::eventFilter(QObject *object, QEvent *e)
 
 void QPlotView::paintEvent(QPaintEvent *event)
 {
-	QPainter pDC(this);
+    QPainter pDC(m_pixmap);
 
 	QRect rect = QRect(0, 0, width(), height());
 	PafColor selcol(SALA_SELECTED_COLOR);
@@ -159,13 +159,17 @@ void QPlotView::paintEvent(QPaintEvent *event)
 			Output(&pDC, pDoc, true);
             OnRedraw(0, 0);
 		}
-	}
+    }
+
+    QPainter screenPainter(this);
+    screenPainter.drawPixmap(0,0,width(),height(),*m_pixmap);
 }
 
 void QPlotView::resizeEvent(QResizeEvent *event)
 {
    pDoc->m_view[QGraphDoc::VIEW_SCATTER] = this;
    setWindowTitle(pDoc->m_base_title+":Scatter Plot");
+   m_pixmap = new QPixmap(width(),height());
 }
 
 void QPlotView::closeEvent(QCloseEvent *event)

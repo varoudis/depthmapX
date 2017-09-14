@@ -31,7 +31,6 @@ HEADERS       = depthmapView.h \
     FilePropertiesDlg.h \
     FewestLineOptionsDlg.h \
     EditConnectionsDlg.h \
-    DepthmapOptionsDlg.h \
     ConvertShapesDlg.h \
     ColumnPropertiesDlg.h \
     ColourScaleDlg.h \
@@ -80,7 +79,6 @@ SOURCES       = depthmapView.cpp \
     FilePropertiesDlg.cpp \
     FewestLineOptionsDlg.cpp \
     EditConnectionsDlg.cpp \
-    DepthmapOptionsDlg.cpp \
     ConvertShapesDlg.cpp \
     ColumnPropertiesDlg.cpp \
     ColourScaleDlg.cpp \

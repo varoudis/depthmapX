@@ -191,7 +191,7 @@ public:
    bool outputMifPolygons(ostream& miffile, ostream& midfile) const;
    void outputNet(ostream& netfile) const;
 public:
-   ShapeGraph(const pstring& name = "<axial map>", int type = ShapeMap::AXIALMAP);
+   ShapeGraph(const std::string& name = "<axial map>", int type = ShapeMap::AXIALMAP);
    virtual ~ShapeGraph() {;}
    void makeConnections(const prefvec<pvecint>& keyvertices = prefvec<pvecint>());
    //void initAttributes();
@@ -240,13 +240,13 @@ public:
    // ShapeGraphs just have extra functionality over ShapeMaps here:
    bool makeAllLineMap(Communicator *comm, SuperSpacePixel& superspacepix, const Point2f& seed);
    bool makeFewestLineMap(Communicator *comm, bool replace_existing);
-   int convertDrawingToAxial(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix);
-   int convertDataToAxial(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata = false);
-   int convertDrawingToConvex(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix);
-   int convertDataToConvex(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata = false);
-   int convertDrawingToSegment(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix);
-   int convertDataToSegment(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata = false);
-   int convertAxialToSegment(Communicator *comm, const pstring& name, bool keeporiginal = true, bool pushvalues = false, double stubremoval = 0.0);
+   int convertDrawingToAxial(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix);
+   int convertDataToAxial(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
+   int convertDrawingToConvex(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix);
+   int convertDataToConvex(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
+   int convertDrawingToSegment(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix);
+   int convertDataToSegment(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
+   int convertAxialToSegment(Communicator *comm, const std::string& name, bool keeporiginal = true, bool pushvalues = false, double stubremoval = 0.0);
    //
    bool hasAllLineMap()
    { return m_all_line_map != -1; }

@@ -25,6 +25,7 @@
 #include <QRect>
 #include <QPoint>
 #include <QSize>
+#include "qpixmap.h"
 
 #include "GraphDoc.h"
 
@@ -115,4 +116,7 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void closeEvent(QCloseEvent *event);
     virtual void timerEvent(QTimerEvent *event);
+
+private:
+    QPixmap *m_pixmap;
 };
