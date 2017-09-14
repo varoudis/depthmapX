@@ -40,7 +40,7 @@ public:
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
-    void notifyDatasetChanged() { datasetChanged = true; update(); }
+    void notifyDatasetChanged() { m_datasetChanged = true; update(); }
     void matchViewToCurrentMetaGraph();
 
     QGraphDoc* pDoc;
@@ -58,11 +58,13 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 
 private:
-    bool perspectiveView = false;
+    bool m_perspectiveView = false;
     bool m_core;
     QMatrix4x4 m_mProj;
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
+
+    QGraphDoc* m_pDoc;
 
     const QRgb &m_foreground;
     const QRgb &m_background;
@@ -89,16 +91,16 @@ private:
     QPoint m_mouseLastPos;
     float m_eyePosX;
     float m_eyePosY;
-    float minZoomFactor = 1;
-    float zoomFactor = 20;
-    float maxZoomFactor = 200;
-    GLfloat screenRatio;
-    int screenWidth;
-    int screenHeight;
+    float m_minZoomFactor = 1;
+    float m_zoomFactor = 20;
+    float m_maxZoomFactor = 200;
+    GLfloat m_screenRatio;
+    int m_screenWidth;
+    int m_screenHeight;
 
     Point2f getWorldPoint(const QPoint &screenPoint);
 
-    bool datasetChanged = false;
+    bool m_datasetChanged = false;
 
     void panBy(int dx, int dy);
     void recalcView();
