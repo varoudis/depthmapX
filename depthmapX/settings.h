@@ -29,6 +29,7 @@ namespace SettingTag
     const QString size = "size";
     const QString foregroundColour = "forColor";
     const QString backgroundColour = "backColor";
+    const QString antialiasingSamples = "antialisingSamples";
     const QString simpleVersion = "simple";
     const QString recentFileList = "recentFileList";
     const QString mwMaximised = "mainWindowMaximised";

@@ -38,10 +38,11 @@ GLView::GLView(QGraphDoc &pDoc,
     m_foreground = settings.readSetting(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
     m_background = settings.readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
     m_initialSize = m_settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
+    m_antialiasingSamples = settings.readSetting(SettingTag::antialiasingSamples, 0).toInt();
 
-    if(m_multiSampleSamples) {
+    if(m_antialiasingSamples) {
         QSurfaceFormat format;
-        format.setSamples(m_multiSampleSamples);    // Set the number of samples used for multisampling
+        format.setSamples(m_antialiasingSamples);    // Set the number of samples used for multisampling
         setFormat(format);
     }
 

@@ -107,7 +107,7 @@ private:
     int m_screenHeight;
     bool m_wasPanning = false;
 
-    int m_multiSampleSamples = 0; // set this to 0 if rendering is too slow
+    int m_antialiasingSamples = 0; // set this to 0 if rendering is too slow
 
     Point2f getWorldPoint(const QPoint &screenPoint);
     QPoint getScreenPoint(const Point2f &worldPoint);
