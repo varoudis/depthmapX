@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <string>
+#include "genlib/stringutils.h"
 
 using namespace std;
 
@@ -71,7 +73,7 @@ const DxfLayer& DxfParser::getLayerNum( const int i ) const
    return m_layers[i];
 }
 
-DxfLayer *DxfParser::getLayer( const pstring& layer_name ) // const <- removed as m_layers may be changed if DXF is poor
+DxfLayer *DxfParser::getLayer( const std::string& layer_name ) // const <- removed as m_layers may be changed if DXF is poor
 {
    static DxfLayer layer;
 
@@ -89,7 +91,7 @@ const DxfLineType& DxfParser::getLineType( const int i ) const
    return m_line_types[i];
 }
 
-DxfLineType *DxfParser::getLineType( const pstring& line_type_name )  // const <- removed as m_layers may be changed if DXF is poor
+DxfLineType *DxfParser::getLineType( const std::string& line_type_name )  // const <- removed as m_layers may be changed if DXF is poor
 {
    static DxfLineType line_type;
 
@@ -449,8 +451,8 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
    DxfSpline      spline;
    DxfInsert      insert;
 
-   pstring layer_name;
-   pstring line_type_name;
+   std::string layer_name;
+   std::string line_type_name;
 
    while (!stream.eof() && subsection != ENDSEC) {
       switch (subsection) {
@@ -497,7 +499,10 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
                layer->m_points.push_back( point );
                layer->merge(point); // <- merge bounding box
                layer->m_total_point_count += 1;
+               point.clear();
+               subsection = ZEROTOKEN;
             }
+            break;
          case LINE:
             stream >> token;
             m_size += token.size;
@@ -641,7 +646,7 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
 
 // Individual parsing of the types
 
-DxfTableRow::DxfTableRow(const pstring& name)
+DxfTableRow::DxfTableRow(const std::string& name)
 {
    m_name = name;
 }
@@ -681,7 +686,7 @@ bool DxfEntity::parse( const DxfToken& token, DxfParser *parser )
 
    switch (token.code) {
       case 5:
-         m_tag = (pstring("0x") + token.data).c_int();   // tag is in hex
+         m_tag = std::stoi(std::string("0x") + token.data);   // tag is in hex
          break;
       case 6:
          m_p_line_type = parser->getLineType( token.data );
@@ -732,13 +737,13 @@ bool DxfVertex::parse( const DxfToken& token, DxfParser *parser )
 
    switch (token.code) {
       case 10:
-         x = token.data.c_double();
+         x = std::stod(token.data);
          break;
       case 20:
-         y = token.data.c_double();
+         y = std::stod(token.data);
          break;
       case 30:
-         z = token.data.c_double();
+         z = std::stod(token.data);
          break;
       case 0: case 9:   // 0 is standard vertex, 9 is for header section variables
          parsed = true;
@@ -768,22 +773,22 @@ bool DxfLine::parse( const DxfToken& token, DxfParser *parser )
 
    switch (token.code) {
       case 10:
-         m_start.x = token.data.c_double();
+         m_start.x = std::stod(token.data);
          break;
       case 20:
-         m_start.y = token.data.c_double();
+         m_start.y = std::stod(token.data);
          break;
       case 30:
-         m_start.z = token.data.c_double();
+         m_start.z = std::stod(token.data);
          break;
       case 11:
-         m_end.x = token.data.c_double();
+         m_end.x = std::stod(token.data);
          break;
       case 21:
-         m_end.y = token.data.c_double();
+         m_end.y = std::stod(token.data);
          break;
       case 31:
-         m_end.z = token.data.c_double();
+         m_end.z = std::stod(token.data);
          break;
       case 0:
          add(m_start);  // <- add to region
@@ -846,7 +851,7 @@ bool DxfPolyLine::parse( const DxfToken& token, DxfParser *parser )
             }
             break;
          case 70:
-            m_attributes = token.data.c_int();
+            m_attributes = std::stoi(token.data);
          default:
             DxfEntity::parse( token, parser ); // base class parse
             break;
@@ -915,9 +920,9 @@ bool DxfLwPolyLine::parse( const DxfToken& token, DxfParser *parser )
          vertex.parse( token, parser );
          break;
       case 70:
-         m_attributes = token.data.c_int();
+         m_attributes = std::stoi(token.data);
       case 90:
-         m_expected_vertex_count = token.data.c_int();
+         m_expected_vertex_count = std::stoi(token.data);
       default:
          DxfEntity::parse( token, parser ); // base class parse
          break;
@@ -947,22 +952,22 @@ bool DxfArc::parse( const DxfToken& token, DxfParser *parser )
 
    switch (token.code) {
       case 10:
-         m_centre.x = token.data.c_double();
+         m_centre.x = std::stod(token.data);
          break;
       case 20:
-         m_centre.y = token.data.c_double();
+         m_centre.y = std::stod(token.data);
          break;
       case 30:
-         m_centre.z = token.data.c_double();
+         m_centre.z = std::stod(token.data);
          break;
       case 40:
-         m_radius = token.data.c_double();
+         m_radius = std::stod(token.data);
          break;
       case 50:
-         m_start = token.data.c_double();
+         m_start = std::stod(token.data);
          break;
       case 51:
-         m_end = token.data.c_double();
+         m_end = std::stod(token.data);
          break;
       case 0:
          {
@@ -1053,16 +1058,16 @@ bool DxfCircle::parse( const DxfToken& token, DxfParser *parser )
 
    switch (token.code) {
       case 10:
-         m_centre.x = token.data.c_double();
+         m_centre.x = std::stod(token.data);
          break;
       case 20:
-         m_centre.y = token.data.c_double();
+         m_centre.y = std::stod(token.data);
          break;
       case 30:
-         m_centre.z = token.data.c_double();
+         m_centre.z = std::stod(token.data);
          break;
       case 40:
-         m_radius = token.data.c_double();
+         m_radius = std::stod(token.data);
          break;
       case 0:
          {
@@ -1139,26 +1144,26 @@ bool DxfSpline::parse( const DxfToken& token, DxfParser *parser )
          parsed = true;
          break;
       case 70:
-         m_attributes = token.data.c_int();
+         m_attributes = std::stoi(token.data);
          break;
       case 72:
-         m_knot_count = token.data.c_int();
+         m_knot_count = std::stoi(token.data);
          break;
       case 73:
-         m_ctrl_pt_count = token.data.c_int();
+         m_ctrl_pt_count = std::stoi(token.data);
          break;
       case 40:
-         m_knots.push_back( token.data.c_double() );
+         m_knots.push_back( std::stod(token.data) );
       case 10:
-         vertex.x = token.data.c_double();
+         vertex.x = std::stod(token.data);
          m_xyz |= 0x0001;
          break;
       case 20:
-         vertex.y = token.data.c_double();
+         vertex.y = std::stod(token.data);
          m_xyz |= 0x0010;
          break;
       case 30:
-         vertex.z = token.data.c_double();
+         vertex.z = std::stod(token.data);
          m_xyz |= 0x0100;
          break;
       default:
@@ -1236,25 +1241,25 @@ bool DxfInsert::parse( const DxfToken& token, DxfParser *parser )
          }
          break;
       case 10:
-         m_translation.x = token.data.c_double();
+         m_translation.x = std::stod(token.data);
          break;
       case 20:
-         m_translation.y = token.data.c_double();
+         m_translation.y = std::stod(token.data);
          break;
       case 30:
-         m_translation.z = token.data.c_double();
+         m_translation.z = std::stod(token.data);
          break;
       case 41:
-         m_scale.x = token.data.c_double();
+         m_scale.x = std::stod(token.data);
          break;
       case 42:
-         m_scale.y = token.data.c_double();
+         m_scale.y = std::stod(token.data);
          break;
       case 43:
-         m_scale.z = token.data.c_double();
+         m_scale.z = std::stod(token.data);
          break;
       case 50:
-         m_rotation = token.data.c_double();
+         m_rotation = std::stod(token.data);
          break;
       default:
          DxfEntity::parse( token, parser ); // base class parse
@@ -1266,7 +1271,7 @@ bool DxfInsert::parse( const DxfToken& token, DxfParser *parser )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DxfLineType::DxfLineType(const pstring& name) : DxfTableRow( name )
+DxfLineType::DxfLineType(const std::string& name) : DxfTableRow( name )
 {
 }
 
@@ -1296,7 +1301,7 @@ DxfVertex& DxfLine::getEnd() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DxfLayer::DxfLayer(const pstring& name) : DxfTableRow( name )
+DxfLayer::DxfLayer(const std::string& name) : DxfTableRow( name )
 {
    m_total_line_count = 0;
 }
@@ -1443,7 +1448,7 @@ void DxfLayer::insert(DxfInsert& insert, DxfParser *parser)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DxfBlock::DxfBlock(const pstring& name) : DxfLayer( name )
+DxfBlock::DxfBlock(const std::string& name) : DxfLayer( name )
 {
 }
 
@@ -1471,12 +1476,18 @@ DxfToken::DxfToken()
 
 istream& operator >> (istream& stream, DxfToken& token)
 {
-   static pstring inputline;
-   stream >> inputline;
-   token.code = inputline.c_int();
-   stream >> token.data;
-   token.size = inputline.length() + token.data.length() + 2;   // might be missing a few end line characters --- never mind
-   return stream;
+    std::string codeInputLine;
+    std::getline(stream,codeInputLine);
+    token.code = std::stoi(codeInputLine);
+    std::string dataInputLine;
+    std::getline(stream,dataInputLine);
+    dXstring::ltrim(dataInputLine,'\r');
+    dXstring::ltrim(dataInputLine,'\n');
+    dXstring::rtrim(dataInputLine,'\r');
+    dXstring::rtrim(dataInputLine,'\n');
+    token.data = dataInputLine;
+    token.size = codeInputLine.length() + token.data.length() + 2;   // might be missing a few end line characters --- never mind
+    return stream;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

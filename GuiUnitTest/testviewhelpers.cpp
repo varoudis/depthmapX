@@ -41,6 +41,6 @@ TEST_CASE("Date string format", "[getCurrentDate]"){
             setfill('0') << setw(2) << ltime->tm_mon + 1 << "/" <<
             setfill('0') << setw(2) << ltime->tm_mday << std::flush;
 
-    REQUIRE(ViewHelpers::getCurrentDate() ==  pstring(sstream.str().c_str()));
+    REQUIRE(ViewHelpers::getCurrentDate() ==  sstream.str().c_str());
 }
 
