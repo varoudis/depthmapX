@@ -86,6 +86,7 @@ private:
 
     QRgb m_foreground;
     QRgb m_background;
+    QSize m_initialSize;
 
     GLDynamicRect m_selectionRect;
     GLDynamicLine m_dragLine;

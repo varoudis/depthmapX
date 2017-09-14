@@ -773,10 +773,19 @@ MapView *MainWindow::createMapView()
     QGraphDoc* doc = new QGraphDoc("", "");
     doc->m_mainFrame = this;
 
-    QDepthmapView *child = new QDepthmapView(*doc, mSettings);
+    if(m_defaultMapWindowIsLegacy)
+    {
+        QDepthmapView *child = new QDepthmapView(*doc, mSettings);
+        mdiArea->addSubWindow(child);
+        return child;
+    }
+    else
+    {
+        GLView *child = new GLView(*doc, mSettings);
+        mdiArea->addSubWindow(child);
+        return child;
+    }
 
-    mdiArea->addSubWindow(child);
-    return child;
 }
 
 MapView *MainWindow::activeMapView()
@@ -2161,6 +2170,7 @@ void MainWindow::readSettings()
     m_foreground = settings->readSetting(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
     m_background = settings->readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
     m_simpleVersion = settings->readSetting(SettingTag::simpleVersion, true).toBool();
+    m_defaultMapWindowIsLegacy = settings->readSetting(SettingTag::legacyMapWindow, false).toBool();
     if (settings->readSetting(SettingTag::mwMaximised, true).toBool())
     {
          setWindowState(Qt::WindowMaximized);

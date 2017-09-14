@@ -34,6 +34,7 @@ namespace SettingTag
     const QString mwMaximised = "mainWindowMaximised";
     const QString licenseAccepted = "licenseAccepted";
     const QString depthmapViewSize = "depthmapViewSize";
+    const QString legacyMapWindow = "legacyMapWindow";
 }
 
 /**
