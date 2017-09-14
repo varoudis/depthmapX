@@ -157,6 +157,7 @@ private slots:
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
+    void OnPointmapExportConnectionsAsCSV();
     void OnAddColumn();
     void OnRenameColumn();
     void OnUpdateColumn();
@@ -180,8 +181,6 @@ private slots:
     void OnToolsPointConvShapeMap();
     void OnToolsOptions();
     void OnShowResearchtoolbar();
-    void OnWindowBackground();
-    void OnWindowForeground();
     void OnViewCentreView();
     void OnViewShowGrid();
     void OnViewSummary();
@@ -274,7 +273,7 @@ private:
 //////////////////////////////////////////////////////
 //	treeContorl
     QVector<QIcon> m_tree_icon;
-    pqmap<int, pstring> m_view_map_entries;
+    pqmap<int, std::string> m_view_map_entries;
 
     pvector<bool> m_attribute_locked;
     pmap<QTreeWidgetItem*, ItemTreeEntry> m_treegraphmap;
@@ -382,6 +381,7 @@ private:
     QAction *exportAxialConnectionsDotAct;
     QAction *exportAxialConnectionsPairAct;
     QAction *exportSegmentConnectionsPairAct;
+    QAction *exportPointmapConnectionsPairAct;
 
     //Attributes Menu Actions
     QAction *renameColumnAct;
@@ -411,8 +411,6 @@ private:
     QAction *optionsAct;
 
     //View Menu Actions
-    QAction *BackgroundAct;
-    QAction *foregroundAct;
     QAction *showGridAct;
     QAction *attributeSummaryAct;
 

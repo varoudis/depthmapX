@@ -565,7 +565,7 @@ void ArVertexList::remove()
 #else
       unlink(m_filename.c_str());
 #endif      
-      m_filename = pstring();
+      m_filename = "";
    }
 }
 

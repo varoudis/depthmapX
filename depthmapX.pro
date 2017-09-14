@@ -3,6 +3,7 @@ CONFIG+=ordered
 SUBDIRS = \
     genlib \
     salalib \
+    settingsdialog \
     depthmapX \
     GuiUnitTest \
     GuiApp \
@@ -11,4 +12,4 @@ SUBDIRS = \
     salaTest \
     genlibTest \
     depthmapXTest
-GuiApp.depends = depthmapX genlib salalib
+GuiApp.depends = depthmapX genlib salalib settingsdialog

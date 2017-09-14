@@ -22,6 +22,8 @@
 #define __SPARKSIEVE2_H__
 
 #include <float.h>
+#include "genlib/p2dpoly.h"
+#include <list>
 
 class sparkSieve2
 {
@@ -38,11 +40,12 @@ public:
       friend bool operator < (const sparkZone2& a, const sparkZone2& b);
       friend bool operator > (const sparkZone2& a, const sparkZone2& b);
    };
+private:
    Point2f m_centre;
    double m_maxdist; // for creating graphs that only see out a certain distance: set to -1.0 for infinite
    pqvector<sparkZone2> m_blocks;
 public:
-   plist<sparkZone2> m_gaps;
+   std::list<sparkZone2> m_gaps;
 public:
    sparkSieve2( const Point2f& centre, double maxdist = -1.0 );
    ~sparkSieve2();
