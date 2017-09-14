@@ -44,9 +44,36 @@ InterfacePage::InterfacePage(Settings &settings, QWidget *parent)
     QVBoxLayout *interfaceColoursLayout = new QVBoxLayout;
     interfaceColoursLayout->addWidget(interfaceColoursList);
     interfaceColoursGroup->setLayout(interfaceColoursLayout);
+    QGroupBox *glOptionsGroup = new QGroupBox(tr("OpenGL view options"));
+
+    QLabel *samplesLabel = new QLabel(tr("Number of antialising samples:"));
+    QComboBox *samplesCombo = new QComboBox;
+    samplesCombo->addItem(tr("0 (fastest)"), 0);
+    samplesCombo->addItem(tr("2"), 2);
+    samplesCombo->addItem(tr("4"), 4);
+    samplesCombo->addItem(tr("8"), 8);
+    samplesCombo->addItem(tr("16 (prettiest)"), 16);
+
+    int index = samplesCombo->findData(m_antialiasingSamples);
+    if ( index != -1 ) {
+       samplesCombo->setCurrentIndex(index);
+    }
+
+    connect(samplesCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated),
+        [=](int index){ m_antialiasingSamples = samplesCombo->itemData(index).toInt();});
+
+    QHBoxLayout *samplesLayout = new QHBoxLayout;
+    samplesLayout->addWidget(samplesLabel);
+    samplesLayout->addWidget(samplesCombo);
+
+    QVBoxLayout *configLayout = new QVBoxLayout;
+    configLayout->addLayout(samplesLayout);
+    glOptionsGroup->setLayout(configLayout);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(interfaceColoursGroup);
+    mainLayout->addSpacing(1);
+    mainLayout->addWidget(glOptionsGroup);
     mainLayout->addStretch(1);
     setLayout(mainLayout);
 }
