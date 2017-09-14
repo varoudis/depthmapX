@@ -38,7 +38,7 @@
 
 
 static int current_view_type = 0;
-enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_GL = 5, VIEW_TYPES = 6};
+enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_MAP_GL = 5, VIEW_TYPES = 6};
 
 const QString editstatetext[] = {"Not Editable", "Editable Off", "Editable On"};
 
@@ -1051,6 +1051,8 @@ void MainWindow::updateActiveWindows()
         thirdViewToolBar->hide();
         plotToolBar->hide();
         current_view_type = VIEW_MAP;
+        QWidget* v = qobject_cast<MapView *>(activeSubWindow->widget());
+        if(v) current_view_type = VIEW_MAP_GL;
         switch(m_selected_mapbar_item)
         {
         case ID_MAPBAR_ITEM_SELECT:

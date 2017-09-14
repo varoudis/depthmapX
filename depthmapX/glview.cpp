@@ -71,6 +71,7 @@ GLView::GLView(QGraphDoc &pDoc,
 
     installEventFilter(this);
     setMouseTracking(true);
+    m_pDoc.m_view[QGraphDoc::VIEW_MAP_GL] = this;
 }
 
 GLView::~GLView()
