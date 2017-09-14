@@ -20,8 +20,8 @@
 #ifndef __SHAPEMAP_H__
 #define __SHAPEMAP_H__
 
-#include "genlib/stringutils.h"
 #include <string>
+#include "genlib/stringutils.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
