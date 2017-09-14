@@ -213,7 +213,7 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKEDRAWING:
          // option 1 is: 0 a data map, 1 an axial map
-         ok = pDoc->m_meta_graph->convertToDrawing( comm, pstring(comm->GetString().toLatin1()), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToDrawing( comm, comm->GetString().toStdString(), comm->GetOption(1) );
          if (ok) {
 			 pDoc->modifiedFlag = true;
          }
@@ -226,7 +226,7 @@ void RenderThread::run()
          break;
 
       case CMSCommunicator::MAKEUSERMAP:
-         ok = pDoc->m_meta_graph->convertDrawingToAxial( comm, pstring(comm->GetString().toLatin1()) );
+         ok = pDoc->m_meta_graph->convertDrawingToAxial( comm, comm->GetString().toStdString());
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
@@ -237,7 +237,7 @@ void RenderThread::run()
          break;
 
       case CMSCommunicator::MAKEUSERMAPSHAPE:
-         ok = pDoc->m_meta_graph->convertDataToAxial( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
+         ok = pDoc->m_meta_graph->convertDataToAxial( comm, comm->GetString().toStdString(), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -254,7 +254,7 @@ void RenderThread::run()
          break;
 
       case CMSCommunicator::MAKEUSERSEGMAP:
-         ok = pDoc->m_meta_graph->convertDrawingToSegment( comm, pstring(comm->GetString().toLatin1()) );
+         ok = pDoc->m_meta_graph->convertDrawingToSegment( comm, comm->GetString().toStdString() );
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
          }
@@ -265,7 +265,7 @@ void RenderThread::run()
          break;
 
       case CMSCommunicator::MAKEUSERSEGMAPSHAPE:
-         ok = pDoc->m_meta_graph->convertDataToSegment( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
+         ok = pDoc->m_meta_graph->convertDataToSegment( comm, comm->GetString().toStdString(), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -283,7 +283,7 @@ void RenderThread::run()
       
       case CMSCommunicator::MAKEGATESMAP:
          // note: relies on the fact that make data map from drawing sets option 1 to -1, whereas make data layer from graph it to either 0 or 1
-         ok = pDoc->m_meta_graph->convertToData( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToData( comm, comm->GetString().toStdString(), (comm->GetOption(0) == 1), comm->GetOption(1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -301,7 +301,7 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKECONVEXMAP:
          // note: relies on the fact that make convex map from drawing sets option 1 to -1, whereas make convex map from data sets it to either 0 or 1
-         ok = pDoc->m_meta_graph->convertToConvex( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), comm->GetOption(1) );
+         ok = pDoc->m_meta_graph->convertToConvex( comm, comm->GetString().toStdString(), (comm->GetOption(0) == 1), comm->GetOption(1) );
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
@@ -322,7 +322,7 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKESEGMENTMAP:
          // convert percentage to fraction, and pass to metagraph
-         ok = pDoc->m_meta_graph->convertAxialToSegment( comm, pstring(comm->GetString().toLatin1()), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1), double(comm->GetOption(2)) / 100.0);
+         ok = pDoc->m_meta_graph->convertAxialToSegment( comm, comm->GetString().toStdString(), (comm->GetOption(0) == 1), (comm->GetOption(1) == 1), double(comm->GetOption(2)) / 100.0);
          if (ok) {
             if (comm->GetOption(0) == 0) {
                // note: there is both a new table and a deleted table, but deleted table leads to a greater redraw:
