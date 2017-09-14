@@ -76,6 +76,9 @@ public:
    virtual void OnEditSelect() override;
    virtual void OnEditPencil() override;
    virtual void postLoadFile() override;
+   virtual void OnEditCopy() override;
+   virtual void OnEditSave() override;
+   virtual void OnViewZoomToRegion(QtRegion regionToZoomAt) override;
 
 protected:
     virtual void timerEvent(QTimerEvent *event) override;
@@ -93,8 +96,6 @@ protected:
 public slots:
     int OnRedraw(int wParam, int lParam);
     void OnEditEraser();
-	void OnEditCopy();
-    void OnEditSave();
 
 private:
    int m_mouse_mode;

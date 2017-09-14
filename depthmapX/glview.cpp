@@ -16,6 +16,7 @@
 
 
 #include "depthmapX/glview.h"
+#include "depthmapX/depthmapView.h"
 #include "salalib/linkutils.h"
 #include "salalib/geometrygenerators.h"
 #include <QMouseEvent>
@@ -261,7 +262,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         {
             if(r.width() > 0)
             {
-                matchViewToRegion(r);
+                OnViewZoomToRegion(r);
                 recalcView();
             }
             else
@@ -584,11 +585,11 @@ QPoint GLView::getScreenPoint(const Point2f &worldPoint) {
 
 void GLView::matchViewToCurrentMetaGraph() {
     const QtRegion &region = m_pDoc.m_meta_graph->getBoundingBox();
-    matchViewToRegion(region);
+    OnViewZoomToRegion(region);
     recalcView();
 }
 
-void GLView::matchViewToRegion(QtRegion region) {
+void GLView::OnViewZoomToRegion(QtRegion region) {
     if((region.top_right.x == 0 && region.bottom_left.x == 0)
             || (region.top_right.y == 0 && region.bottom_left.y == 0))
         // region is unset, don't try to change the view to it
@@ -727,7 +728,7 @@ void GLView::postLoadFile()
 void GLView::OnViewZoomsel()
 {
    if (m_pDoc.m_meta_graph && m_pDoc.m_meta_graph->isSelected()) {
-      matchViewToRegion(m_pDoc.m_meta_graph->getSelBounds());
+      OnViewZoomToRegion(m_pDoc.m_meta_graph->getSelBounds());
    }
 }
 
@@ -739,4 +740,31 @@ void GLView::closeEvent(QCloseEvent *event)
         m_pDoc.m_view[QGraphDoc::VIEW_MAP_GL] = this;
         event->ignore();
     }
+}
+
+void GLView::OnEditCopy()
+{
+    std::unique_ptr<QDepthmapView> tmp(new QDepthmapView(m_pDoc, m_settings));
+    Point2f topLeftWorld = getWorldPoint(QPoint(0,0));
+    Point2f bottomRightWorld = getWorldPoint(QPoint(width(),height()));
+
+    tmp->setAttribute(Qt::WA_DontShowOnScreen);
+    tmp->show();
+    tmp->postLoadFile();
+    tmp->OnViewZoomToRegion(QtRegion(topLeftWorld, bottomRightWorld));
+    tmp->OnEditCopy();
+}
+
+void GLView::OnEditSave()
+{
+    std::unique_ptr<QDepthmapView> tmp(new QDepthmapView(m_pDoc, m_settings));
+    Point2f topLeftWorld = getWorldPoint(QPoint(0,0));
+    Point2f bottomRightWorld = getWorldPoint(QPoint(width(),height()));
+
+    tmp->setAttribute(Qt::WA_DontShowOnScreen);
+    tmp->show();
+    tmp->postLoadFile();
+    tmp->OnViewZoomToRegion(QtRegion(topLeftWorld, bottomRightWorld));
+    tmp->OnEditSave();
+
 }

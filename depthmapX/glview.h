@@ -65,6 +65,9 @@ public:
     virtual void OnViewZoomsel() override;
     void OnModeStepDepth();
     virtual void postLoadFile() override;
+    virtual void OnEditCopy() override;
+    virtual void OnEditSave() override;
+    virtual void OnViewZoomToRegion(QtRegion region) override;
 
 protected:
     void initializeGL() override;
@@ -117,7 +120,6 @@ private:
     void panBy(int dx, int dy);
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
-    void matchViewToRegion(QtRegion region);
     void resetView();
 
     void loadAxes();
