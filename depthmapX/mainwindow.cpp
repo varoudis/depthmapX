@@ -845,7 +845,15 @@ QMdiSubWindow *MainWindow::findMapView(const QString &fileName)
 
 void MainWindow::OnWindowMap()
 {
-    return setActiveSubWindow(activeMapView());
+    MapView* m_p = activeMapView();
+    if(m_p)
+    {
+        if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_MAP])
+            return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_MAP]);
+        QDepthmapView *child = new QDepthmapView(*m_p->getGraphDoc(), mSettings);
+        mdiArea->addSubWindow(child);
+        child->show();
+    }
 }
 
 void MainWindow::OnViewTable()
