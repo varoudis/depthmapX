@@ -83,6 +83,7 @@ GLView::~GLView()
     m_visibleShapeGraph.cleanup();
     m_visibleDataMap.cleanup();
     doneCurrent();
+    m_settings.writeSetting(SettingTag::depthmapViewSize, size());
 }
 
 QSize GLView::minimumSizeHint() const
@@ -712,4 +713,27 @@ void GLView::OnEditSelect()
 {
     resetView();
     m_mouseMode = MOUSE_MODE_SELECT;
+}
+
+void GLView::postLoadFile()
+{
+    matchViewToCurrentMetaGraph();
+    setWindowTitle(m_pDoc.m_base_title+":Map View (GL)");
+}
+
+void GLView::OnViewZoomsel()
+{
+   if (m_pDoc.m_meta_graph && m_pDoc.m_meta_graph->isSelected()) {
+      matchViewToRegion(m_pDoc.m_meta_graph->getSelBounds());
+   }
+}
+
+void GLView::closeEvent(QCloseEvent *event)
+{
+    m_pDoc.m_view[QGraphDoc::VIEW_MAP_GL] = NULL;
+    if (!m_pDoc.OnCloseDocument(QGraphDoc::VIEW_MAP_GL))
+    {
+        m_pDoc.m_view[QGraphDoc::VIEW_MAP_GL] = this;
+        event->ignore();
+    }
 }

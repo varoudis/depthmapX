@@ -37,12 +37,8 @@ public:
                   QWidget *parent = Q_NULLPTR);
     ~QDepthmapView();
     QSize sizeHint() const;
-	void SetRedrawflag();
-	bool loadFile(const QString &fileName);
-	bool newFile();
+    void SetRedrawflag();
     void saveToFile();
-	QString m_open_file_name;
-	QString currentFile() {return m_open_file_name;}
 
 	bool m_showgrid;
 	bool m_showtext;
@@ -76,8 +72,10 @@ public:
    virtual void OnViewZoomIn() override;
    virtual void OnViewZoomOut() override;
    virtual void OnViewPan() override;
+   virtual void OnViewZoomsel() override;
    virtual void OnEditSelect() override;
    virtual void OnEditPencil() override;
+   virtual void postLoadFile() override;
 
 protected:
     virtual void timerEvent(QTimerEvent *event) override;
@@ -97,7 +95,6 @@ public slots:
     void OnEditEraser();
 	void OnEditCopy();
     void OnEditSave();
-	void OnViewZoomsel();
 
 private:
    int m_mouse_mode;

@@ -6,9 +6,12 @@
 
 class MapView : public QOpenGLWidget
 {
+    Q_OBJECT
+
 protected:
     QGraphDoc &m_pDoc;
     Settings &m_settings;
+    QString m_currentFile;
 
 public:
     MapView(QGraphDoc &pDoc,
@@ -29,5 +32,9 @@ public:
     virtual void OnEditPolygonTool() = 0;
     virtual void OnModeSeedAxial() = 0;
     virtual void OnEditSelect() = 0;
+    virtual void postLoadFile() = 0;
+    virtual void OnViewZoomsel() = 0;
     QGraphDoc *getGraphDoc() { return &m_pDoc; }
+    void setCurrentFile(const QString &fileName) { m_currentFile = fileName; }
+    QString getCurrentFile() { return m_currentFile; }
 };
