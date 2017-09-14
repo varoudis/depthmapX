@@ -238,10 +238,10 @@ private:
 
     void switchLayoutDirection();
     QWidget * setupAttributesListWidget();
-    QDepthmapView *createQDepthmapView();
-    QDepthmapView *activeQDepthmapView();
-    QGraphDoc *activeQDepthmapDoc();
-    QMdiSubWindow *findQDepthmapView(const QString &fileName);
+    MapView *createMapView();
+    MapView *activeMapView();
+    QGraphDoc *activeMapDoc();
+    QMdiSubWindow *findMapView(const QString &fileName);
 //////////////////////////////////////////////////////
 //	treeContorl
     QVector<QIcon> m_tree_icon;

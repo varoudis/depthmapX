@@ -1237,27 +1237,10 @@ void QDepthmapView::saveToFile()
 {
 }
 
-bool QDepthmapView::loadFile(const QString &fileName)
+void QDepthmapView::postLoadFile()
 {
-    m_open_file_name = fileName;
-	m_redraw_all = 1;
-    QByteArray ba = fileName.toUtf8(); // quick fix for weird chars (russian filename bug report)
-    char *file = ba.data(); // quick fix for weird chars (russian filename bug report)
-    if(m_pDoc.OnOpenDocument(file)) // quick fix for weird chars (russian filename bug report)
-	{
-        setWindowTitle(m_pDoc.m_base_title+":Map View");
-		return true;
-	}
-	return false;
-}
-
-bool QDepthmapView::newFile()
-{
-	m_open_file_name = "";
-	m_redraw_all = 1;
-    m_pDoc.OnNewDocument();
+    m_redraw_all = 1;
     setWindowTitle(m_pDoc.m_base_title+":Map View");
-	return true;
 }
 
 bool QDepthmapView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
@@ -2381,45 +2364,45 @@ void QDepthmapView::OnModeUnjoin()
    }
 }
 
-void QDepthmapView::OnEditCopy() 
+void QDepthmapView::OnEditCopy()
 {
-	QRect rectin = QRect(0,0,width(),height());
+    QRect rectin = QRect(0,0,width(),height());
     int state = m_pDoc.m_meta_graph->getState();
 
     if (state & MetaGraph::POINTMAPS && (!m_pDoc.m_meta_graph->getDisplayedPointMap().isProcessed() || m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWVGA | MetaGraph::VIEWBACKVGA))) {
         m_pDoc.m_meta_graph->getDisplayedPointMap().setScreenPixel( m_unit ); // only used by points (at the moment!)
         m_pDoc.m_meta_graph->getDisplayedPointMap().makeViewportPoints( LogicalViewport(rectin, &m_pDoc) );
-	}
+    }
     if (state & MetaGraph::SHAPEGRAPHS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKAXIAL | MetaGraph::VIEWAXIAL))) {
         m_pDoc.m_meta_graph->getDisplayedShapeGraph().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-	}
+    }
     if (state & MetaGraph::DATAMAPS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKDATA | MetaGraph::VIEWDATA))) {
         m_pDoc.m_meta_graph->getDisplayedDataMap().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-	}
-	if (state & MetaGraph::LINEDATA) {
+    }
+    if (state & MetaGraph::LINEDATA) {
         m_pDoc.m_meta_graph->SuperSpacePixel::makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-	}
+    }
 
    // Copy to Clipboard
-	QPixmap image(0, 0);
-	QPainter painter;
-	painter.begin(&image);           // paint in picture
+    QPixmap image(0, 0);
+    QPainter painter;
+    painter.begin(&image);           // paint in picture
 
     Output(&painter, &m_pDoc, false);
-	painter.end();                     // painting done
+    painter.end();                     // painting done
 
-	QImage img = image.toImage();
-	QClipboard *clipboard = QApplication::clipboard();
+    QImage img = image.toImage();
+    QClipboard *clipboard = QApplication::clipboard();
 //	clipboard->setImage(img);
-	clipboard->setPixmap(image);
+    clipboard->setPixmap(image);
 
 }
 
-void QDepthmapView::OnEditSave() 
+void QDepthmapView::OnEditSave()
 {
    // Very similar to copy to clipboard, only writes an EPS instead of a WMF
    if (m_pDoc.m_communicator) {
-	   QMessageBox::warning(this, tr("Warning"), tr("Another Depthmap process is running, please wait until it completes"), QMessageBox::Ok, QMessageBox::Ok);
+       QMessageBox::warning(this, tr("Warning"), tr("Another Depthmap process is running, please wait until it completes"), QMessageBox::Ok, QMessageBox::Ok);
       return;
    }
 
@@ -2433,12 +2416,12 @@ void QDepthmapView::OnEditSave()
    QFileDialog::Options options = 0;
    QString selectedFilter;
    QString outfile = QFileDialog::getSaveFileName(
-	   0, tr("Save Screen As"),
-	   saveas,
-	   template_string,
-	   &selectedFilter,
-	   options);
-   
+       0, tr("Save Screen As"),
+       saveas,
+       template_string,
+       &selectedFilter,
+       options);
+
    if(outfile.isEmpty()) return;
 
   FILE* fp = fopen(outfile.toLatin1(), "wb");
@@ -2447,20 +2430,20 @@ void QDepthmapView::OnEditSave()
   ofstream stream( outfile.toLatin1() );
   if (stream.fail()) {
      QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open ") + outfile + tr(" for writing"), QMessageBox::Ok, QMessageBox::Ok );
-	 return;
+     return;
   }
 
-	QFilePath newpath(outfile);
+    QFilePath newpath(outfile);
 
-	QString ext = newpath.m_ext.toLower();
-	if (ext == "svg") {
+    QString ext = newpath.m_ext.toLower();
+    if (ext == "svg") {
        OutputSVG( stream, &m_pDoc );
-	}
-	else {
-	 // Set up complete... run the .eps outputter (copied from standard output!)
+    }
+    else {
+     // Set up complete... run the .eps outputter (copied from standard output!)
        OutputEPS( stream, &m_pDoc );
-	}
-	stream.close();
+    }
+    stream.close();
 }
 
 void QDepthmapView::closeEvent(QCloseEvent *event)

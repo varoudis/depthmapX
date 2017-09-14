@@ -62,7 +62,9 @@ public:
     virtual void OnEditPolygonTool() override;
     virtual void OnModeSeedAxial() override;
     virtual void OnEditSelect() override;
+    virtual void OnViewZoomsel() override;
     void OnModeStepDepth();
+    virtual void postLoadFile() override;
 
 protected:
     void initializeGL() override;
@@ -73,6 +75,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     bool eventFilter(QObject *object, QEvent *e) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     bool m_perspectiveView = false;
