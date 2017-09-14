@@ -37,6 +37,7 @@ GLView::GLView(QGraphDoc &pDoc,
 
     m_foreground = settings.readSetting(SettingTag::foregroundColour, qRgb(128,255,128)).toInt();
     m_background = settings.readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
+    m_initialSize = m_settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 
     if(m_multiSampleSamples) {
         QSurfaceFormat format;
@@ -93,7 +94,7 @@ QSize GLView::minimumSizeHint() const
 
 QSize GLView::sizeHint() const
 {
-    return QSize(400, 400);
+    return m_initialSize;
 }
 
 void GLView::initializeGL()

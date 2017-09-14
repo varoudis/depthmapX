@@ -236,6 +236,8 @@ private:
     void readSettings();
     void writeSettings();
 
+    bool m_defaultMapWindowIsLegacy;
+
     void switchLayoutDirection();
     QWidget * setupAttributesListWidget();
     MapView *createMapView();
