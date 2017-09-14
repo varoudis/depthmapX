@@ -21,6 +21,16 @@ InterfacePage::InterfacePage(Settings &settings, QWidget *parent)
     : SettingsPage(settings, parent)
 {
     readSettings(settings);
+
+    QGroupBox *generalGroup = new QGroupBox(tr("General"));
+    QCheckBox *legacyMapCheckBox = new QCheckBox(tr("Legacy map window as default"));
+    legacyMapCheckBox->setChecked(m_defaultMapWindowIsLegacy);
+    connect(legacyMapCheckBox, &QCheckBox::stateChanged, [=] () {m_defaultMapWindowIsLegacy = !m_defaultMapWindowIsLegacy;});
+
+    QVBoxLayout *generalLayout = new QVBoxLayout;
+    generalLayout->addWidget(legacyMapCheckBox);
+    generalGroup->setLayout(generalLayout);
+
     QGroupBox *interfaceColoursGroup = new QGroupBox(tr("Interface colours"));
     QListWidget *interfaceColoursList = new QListWidget;
     connect(interfaceColoursList, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
@@ -71,6 +81,8 @@ InterfacePage::InterfacePage(Settings &settings, QWidget *parent)
     glOptionsGroup->setLayout(configLayout);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(generalGroup);
+    mainLayout->addSpacing(1);
     mainLayout->addWidget(interfaceColoursGroup);
     mainLayout->addSpacing(1);
     mainLayout->addWidget(glOptionsGroup);
