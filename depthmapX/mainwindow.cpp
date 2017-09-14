@@ -264,17 +264,17 @@ void MainWindow::OnEditCopyData()
 
 void MainWindow::OnEditCopy()
 {
-//    MapView* m_p = activeMapView();
-//    if(m_p) m_p->OnEditCopy();
+    MapView* m_p = activeMapView();
+    if(m_p) m_p->OnEditCopy();
 }
 
 void MainWindow::OnEditSave()
 {
-//    MapView* m_p = activeMapView();
-//    if(m_p)
-//    {
-//        m_p->OnEditSave();
-//    }
+    MapView* m_p = activeMapView();
+    if(m_p)
+    {
+        m_p->OnEditSave();
+    }
 }
 
 void MainWindow::OnEditClear()

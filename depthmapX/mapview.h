@@ -17,6 +17,7 @@ public:
     MapView(QGraphDoc &pDoc,
             Settings &settings,
             QWidget* parent = Q_NULLPTR);
+
     virtual void OnModeJoin() = 0;
     virtual void OnModeUnjoin() = 0;
     virtual void OnViewPan() = 0;
@@ -34,6 +35,10 @@ public:
     virtual void OnEditSelect() = 0;
     virtual void postLoadFile() = 0;
     virtual void OnViewZoomsel() = 0;
+    virtual void OnEditCopy() = 0;
+    virtual void OnEditSave() = 0;
+    virtual void OnViewZoomToRegion(QtRegion region) = 0;
+
     QGraphDoc *getGraphDoc() { return &m_pDoc; }
     void setCurrentFile(const QString &fileName) { m_currentFile = fileName; }
     QString getCurrentFile() { return m_currentFile; }

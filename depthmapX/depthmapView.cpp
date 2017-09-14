@@ -2800,3 +2800,10 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
    }
 }
 
+void QDepthmapView::OnViewZoomToRegion(QtRegion regionToZoomAt) {
+
+    m_centre = regionToZoomAt.getCentre();
+    QRect phys_bounds = this->rect();
+       m_unit =  1.1 * __max( regionToZoomAt.width() / double(phys_bounds.width()),
+                             regionToZoomAt.height() / double(phys_bounds.height()) );
+}
