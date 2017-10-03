@@ -1,8 +1,8 @@
 ## depthmapX - multi-platform spatial network analyses software
 
+
 This is the home for the development of depthmapX.
 
-##
 
 Latest releases can be found at the [releases page](https://github.com/SpaceGroupUCL/depthmapX/releases)
 
