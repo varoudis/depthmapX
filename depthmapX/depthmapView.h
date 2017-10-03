@@ -189,7 +189,7 @@ private:
    void DrawPointHandle(QPainter *pDC, QPoint pt);
 
    //
-   void OutputEPS( ofstream& stream, QGraphDoc *pDoc );
+   void OutputEPS(ofstream& stream, QGraphDoc *pDoc , bool includeScale = true);
    void OutputEPSMap(ofstream& stream, ShapeMap& map, QtRegion& logicalviewport, QRect& rect, float spacer);
    void OutputEPSLine(ofstream& stream, Line& line, int spacer, QtRegion& logicalviewport, QRect& rect);
    void OutputEPSPoly(ofstream& stream, const SalaShape& shape, int spacer, QtRegion& logicalviewport, QRect& rect);
