@@ -329,7 +329,8 @@ void QGraphDoc::OnVGALinksFileImport()
     }
 
     // change the view before loading the file to make the changes apparent
-    ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
+    if(m_view[VIEW_MAP])
+        ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
     SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
 
     QString template_string;
@@ -533,39 +534,19 @@ void QGraphDoc::OnFileExport()
    QString suffix;
    int mode = -1;
 
-   bool showlinks = ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks;
-
    int view_class = m_meta_graph->getViewClass();
    if (view_class & MetaGraph::VIEWAXIAL) {
-      if (showlinks) { 
-         mode = 5;
-         suffix = tr("unlinks");
-      }
-      else {
-         mode = 0;
-         suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
-      }
+       mode = 0;
+       suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
    }
    else if (view_class & MetaGraph::VIEWDATA) {
-      if (showlinks) { 
-         mode = 6;
-         suffix = tr("links");
-      }
-      else {
-         mode = 1;
-         suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
-      }
+       mode = 1;
+       suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
    }
    else if (view_class & MetaGraph::VIEWVGA) {
       if (m_meta_graph->getDisplayedPointMap().isProcessed()) {
-         if (showlinks) { 
-            mode = 4;
-            suffix = tr("merge_lines");
-         }
-         else {
-            mode = 2;
-            suffix = tr("vga");
-         }
+          mode = 2;
+          suffix = tr("vga");
       }
       else {
          mode = 3;
@@ -635,13 +616,6 @@ void QGraphDoc::OnFileExport()
        case 3:
           m_meta_graph->getDisplayedPointMap().outputPoints( stream, delimiter );
           break;
-       case 4:
-          m_meta_graph->getDisplayedPointMap().outputMergeLines( stream, delimiter );
-          break;
-       case 5:
-          // note: specific to line graphs
-          m_meta_graph->getDisplayedShapeGraph().outputUnlinkPoints( stream, delimiter );
-          break;
        default:
           break;
        }
@@ -706,6 +680,104 @@ void QGraphDoc::OnFileExport()
             m_meta_graph->getDisplayedPointMap().outputMif(miffile,midfile);
         }
     }
+}
+
+void QGraphDoc::OnFileExportLinks()
+{
+    if (m_communicator) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
+        return;  // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"), QMessageBox::Ok, QMessageBox::Ok);
+        return;  // No graph to export
+    }
+
+    QString suffix;
+    int mode = -1;
+
+    int view_class = m_meta_graph->getViewClass();
+    if (view_class & MetaGraph::VIEWAXIAL) {
+        mode = 5;
+        suffix = tr("unlinks");
+    }
+    else if (view_class & MetaGraph::VIEWDATA) {
+        mode = 6;
+        suffix = tr("links");
+    }
+    else if (view_class & MetaGraph::VIEWVGA) {
+        if (m_meta_graph->getDisplayedPointMap().isProcessed()) {
+            mode = 4;
+            suffix = tr("merge_lines");
+        }
+    }
+
+    if (mode == -1) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, depthmapX does not support saving the currently displayed layer"), QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+    suffix.replace(' ','_');
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("Tab-delimited text file (*.txt)\n");
+    template_string += tr("Comma separated values file (*.csv)\n");
+    template_string += tr("All files (*.*)");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile = QFileDialog::getSaveFileName(
+                0, tr("Save Output As"),
+                defaultname,
+                template_string,
+                &selectedFilter,
+                options);
+    if(outfile.isEmpty())
+    {
+        return;
+    }
+
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    QFilePath filepath(outfile);
+    QString ext = filepath.m_ext;
+
+    ofstream stream(outfile.toLatin1());
+    char delimiter = '\t';
+    if (ext == "CSV") {
+      delimiter = ',';
+    }
+    if (stream.fail() || stream.bad()) {
+      QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
+      mode = -1;
+    }
+
+    switch (mode) {
+    case 0:
+      m_meta_graph->getDisplayedShapeGraph().output(stream, delimiter);
+      break;
+    case 1:
+      m_meta_graph->getDisplayedDataMap().output(stream, delimiter);
+      break;
+    case 2:
+      m_meta_graph->getDisplayedPointMap().outputSummary( stream, delimiter );
+      break;
+    case 3:
+      m_meta_graph->getDisplayedPointMap().outputPoints( stream, delimiter );
+      break;
+    case 4:
+      m_meta_graph->getDisplayedPointMap().outputMergeLines( stream, delimiter );
+      break;
+    case 5:
+      // note: specific to line graphs
+      m_meta_graph->getDisplayedShapeGraph().outputUnlinkPoints( stream, delimiter );
+      break;
+    default:
+      break;
+    }
+    stream.close();
 }
 
 void QGraphDoc::OnAxialConnectionsExportAsDot()
