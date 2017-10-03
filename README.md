@@ -1,10 +1,17 @@
-## depthmapX - multi-platform spatial network analyses software ##
+## depthmapX - multi-platform spatial network analyses software
 
-## Get the latest MacOSX/Windows version and learn more about depthmapX: 
-## ## http://github.com/SpaceGroupUCL/depthmapX
-##
 
-This is the temporary home for the development of depthmapX. Please check the [wiki](https://github.com/blackseamonster/depthmapX/wiki)
+This is the home for the development of depthmapX.
+
+
+Latest releases can be found at the [releases page](https://github.com/SpaceGroupUCL/depthmapX/releases)
+
+
+For any issues/bugs/crashes please create [a new issue](https://github.com/SpaceGroupUCL/depthmapX/wiki)
+
+
+For more information please check the [wiki](https://github.com/SpaceGroupUCL/depthmapX/wiki)
+
 
 depthmapX is a multi-platform  software platform to perform a set of spatial network analyses designed to understand social processes within the built environment. It works at a variety of scales from building through small urban to whole cities or states. At each scale, the aim of the software is to produce a map of open space elements, connect them via some relationship (for example, intervisibility or overlap) and then perform graph analysis of the resulting network. The objective of the analysis is to derive variables which may have social or experiential significance.
 
@@ -20,7 +27,9 @@ depthmapX can display information as coloured maps, tables and scattergrams that
 
 ##
 
-depthmapX is using GPLv3 licence. Please read http://www.gnu.org/licenses/gpl-3.0.html and also join www.jiscmail.ac.uk/lists/DEPTHMAP.html .
+depthmapX is using the GPLv3 licence. 
+
+Please read http://www.gnu.org/licenses/gpl-3.0.html and also join www.jiscmail.ac.uk/lists/DEPTHMAP.html .
 
 Thanks,
 Tasos Varoudis
