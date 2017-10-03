@@ -2880,7 +2880,7 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
 bool ShapeMap::importTxt(istream& stream, bool csv)
 {
    std::string inputline;
-   stream >> inputline;
+   std::getline(stream, inputline);
    
    // if not known to be csv or tab delimited, try both:
    if (!csv) {
@@ -2965,7 +2965,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
    prefvec<pvecfloat> table;
 
    while (!stream.eof()) {
-      stream >> inputline;
+      std::getline(stream, inputline);
       if (!inputline.empty()) {
          auto strings = dXstring::split(inputline, csv ? ',' : '\t');
          if (!strings.size()) {
