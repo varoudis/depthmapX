@@ -126,6 +126,7 @@ private slots:
     void OnLayerConvertDrawing();
     void OnConvertMapShapes();
     void OnFileExport();
+    void OnFileExportLinks();
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
@@ -352,6 +353,7 @@ private:
     QAction *convertMapShapesAct;
     QAction *importAct;
     QAction *exportAct;
+    QAction *exportLinksAct;
     QAction *exportAxialConnectionsDotAct;
     QAction *exportAxialConnectionsPairAct;
     QAction *exportSegmentConnectionsPairAct;

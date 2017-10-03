@@ -372,6 +372,14 @@ void MainWindow::OnFileExport()
         m_p->OnFileExport();
     }
 }
+void MainWindow::OnFileExportLinks()
+{
+    QGraphDoc* m_p = activeMapDoc();
+    if(m_p)
+    {
+        m_p->OnFileExportLinks();
+    }
+}
 
 void MainWindow::OnAxialConnectionsExportAsDot()
 {
@@ -2569,6 +2577,7 @@ void MainWindow::updateMapMenu()
         convertMapShapesAct->setEnabled(0);
         importAct->setEnabled(0);
         exportAct->setEnabled(0);
+        exportLinksAct->setEnabled(0);
         exportAxialConnectionsDotAct->setEnabled(0);
         exportAxialConnectionsPairAct->setEnabled(0);
         exportSegmentConnectionsPairAct->setEnabled(0);
@@ -2595,6 +2604,7 @@ void MainWindow::updateMapMenu()
     if (!m_p->m_meta_graph->viewingNone() && !m_p->m_communicator)
     {
         exportAct->setEnabled(true);
+        exportLinksAct->setEnabled(true);
         exportAxialConnectionsDotAct->setEnabled(true);
         exportAxialConnectionsPairAct->setEnabled(true);
         exportSegmentConnectionsPairAct->setEnabled(true);
@@ -2602,6 +2612,7 @@ void MainWindow::updateMapMenu()
     else
     {
         exportAct->setEnabled(0);
+        exportLinksAct->setEnabled(0);
         exportAxialConnectionsDotAct->setEnabled(0);
         exportAxialConnectionsPairAct->setEnabled(0);
         exportSegmentConnectionsPairAct->setEnabled(0);
@@ -3027,10 +3038,14 @@ void MainWindow::createActions()
     importAct->setStatusTip(tr("Import a DXF or points file\nImport Map"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(OnFileImport()));
 
-    exportAct = new QAction(tr("&Export..."), this);
+    exportAct = new QAction(tr("&Export map..."), this);
     exportAct->setShortcut(tr("Ctrl+E"));
-    exportAct->setStatusTip(tr("Export the active map\nExport Map"));
+    exportAct->setStatusTip(tr("Export the active map"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(OnFileExport()));
+
+    exportLinksAct = new QAction(tr("&Export links..."), this);
+    exportLinksAct->setStatusTip(tr("Export the links of the active map"));
+    connect(exportLinksAct, SIGNAL(triggered()), this, SLOT(OnFileExportLinks()));
 
     exportAxialConnectionsPairAct = new QAction(tr("&Axial Connections as CSV..."), this);
     exportAxialConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections"));
@@ -3551,6 +3566,7 @@ void MainWindow::createMenus()
     mapMenu->addAction(importAct);
     exportSubMenu = mapMenu->addMenu(tr("&Export"));
     exportSubMenu->addAction(exportAct);
+    exportSubMenu->addAction(exportLinksAct);
     exportSubMenu->addAction(exportAxialConnectionsDotAct);
     exportSubMenu->addAction(exportAxialConnectionsPairAct);
     exportSubMenu->addAction(exportSegmentConnectionsPairAct);
