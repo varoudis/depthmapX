@@ -1144,16 +1144,6 @@ void MainWindow::updateGLWindows(bool datasetChanged, bool recentreView) {
     }
 }
 
-GLView* MainWindow::getFirstGLView() {
-    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-    for (int i = 0; i < windows.size(); ++i) {
-        GLView *child = qobject_cast<GLView*>(windows.at(i)->widget());
-        if(!child) continue;
-        return child;
-    }
-    return 0;
-}
-
 void MainWindow::switchLayoutDirection()
 {
     if (layoutDirection() == Qt::LeftToRight)
@@ -1838,39 +1828,29 @@ void MainWindow::SelectButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_SELECT;
     activeMapView()->OnEditSelect();
-    GLView* glView = getFirstGLView();
-    if(glView) glView->OnEditSelect();
 }
 
 void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeMapView()->OnViewPan();
-    GLView* glView = getFirstGLView();
-    if(glView) glView->OnViewPan();
 }
 
 void MainWindow::SelectPenTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_PENCIL;
     activeMapView()->OnEditPencil();
-    GLView* glView = getFirstGLView();
-    if(glView) glView->OnEditPencil();
 }
 
 void MainWindow::AxialMapTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_AL2;
     activeMapView()->OnModeSeedAxial();
-    GLView* glView = getFirstGLView();
-    if(glView) glView->OnModeSeedAxial();
 }
 
 void MainWindow::StepDepthTriggered()
 {
     activeMapDoc()->OnToolsPD();
-    GLView* glView = getFirstGLView();
-    if(glView) glView->OnModeStepDepth();
 }
 
 void MainWindow::zoomButtonTriggered()
@@ -1880,15 +1860,11 @@ void MainWindow::zoomButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_IN;
         activeMapView()->OnViewZoomIn();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnViewZoomIn();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_OUT;
         activeMapView()->OnViewZoomOut();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnViewZoomOut();
     }
 }
 
@@ -1907,22 +1883,16 @@ void MainWindow::FillButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_FILL;
         activeMapView()->OnEditFill();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnEditFill();
     }
     else if (id == ID_MAPBAR_ITEM_SEMIFILL)         // AV TV
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_SEMIFILL;
         activeMapView()->OnEditSemiFill();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnEditSemiFill();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_AUGMENT_FILL;
         activeMapView()->OnEditAugmentFill(); // AV TV
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnEditAugmentFill();
     }
 }
 
@@ -1933,15 +1903,11 @@ void MainWindow::LineButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_LINETOOL;
         activeMapView()->OnEditLineTool();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnEditLineTool();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_POLYGON;
         activeMapView()->OnEditPolygonTool();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnEditPolygonTool();
     }
 }
 
@@ -1952,15 +1918,11 @@ void MainWindow::isoButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ISOVIST;
         activeMapView()->OnModeIsovist();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnModeIsovist();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_HALFISOVIST;
         activeMapView()->OnModeTargetedIsovist();
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnModeTargetedIsovist();
     }
 }
 
@@ -1970,15 +1932,11 @@ void MainWindow::joinButtonTriggered()
     if(id == ID_MAPBAR_ITEM_JOIN)
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_JOIN;
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnModeJoin();
         activeMapView()->OnModeJoin();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_UNJOIN;
-        GLView* glView = getFirstGLView();
-        if(glView) glView->OnModeUnjoin();
         activeMapView()->OnModeUnjoin();
     }
 }
