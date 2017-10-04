@@ -237,7 +237,7 @@ public:
 protected:
    int m_attributes;
    int m_vertex_count;
-   prefvec<DxfVertex> m_vertices;
+   std::vector<DxfVertex> m_vertices;
 public:
    DxfPolyLine( int tag = -1 );
    void clear();  // for reuse when parsing
@@ -381,8 +381,8 @@ protected:
    int m_attributes;
    int m_ctrl_pt_count;
    int m_knot_count;
-   prefvec<DxfVertex> m_ctrl_pts;
-   pvecdouble m_knots;
+   std::vector<DxfVertex> m_ctrl_pts;
+   std::vector<double> m_knots;
 public:
    DxfSpline( int tag = -1 );
    void clear();  // for reuse when parsing
@@ -451,12 +451,12 @@ class DxfLayer : public DxfTableRow, public DxfRegion
    friend class DxfParser;
 protected:
    // Originally was going to be clever, but it's far easier to have a list for each type:
-   prefvec<DxfVertex>   m_points;
-   prefvec<DxfLine>     m_lines;
-   prefvec<DxfPolyLine> m_poly_lines;
-   prefvec<DxfArc>      m_arcs;
-   prefvec<DxfCircle>   m_circles;
-   prefvec<DxfSpline>   m_splines;
+   std::vector<DxfVertex>   m_points;
+   std::vector<DxfLine>     m_lines;
+   std::vector<DxfPolyLine> m_poly_lines;
+   std::vector<DxfArc>      m_arcs;
+   std::vector<DxfCircle>   m_circles;
+   std::vector<DxfSpline>   m_splines;
    int                  m_total_point_count;
    int                  m_total_line_count;
 public:
