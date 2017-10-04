@@ -83,22 +83,18 @@ DxfLayer *DxfParser::getLayer( const std::string& layer_name ) // const <- remov
    return &(layerIter->second);
 }
 
-const DxfLineType& DxfParser::getLineType( const int i ) const
-{
-   return m_line_types[i];
-}
-
 DxfLineType *DxfParser::getLineType( const std::string& line_type_name )  // const <- removed as m_layers may be changed if DXF is poor
 {
    static DxfLineType line_type;
 
    line_type.m_name = line_type_name;
 
-   size_t n = m_line_types.searchindex( line_type );
-   if (n == paftl::npos) {
-      n = m_line_types.add( line_type, paftl::ADD_HERE );
+   std::map<std::string, DxfLineType>::iterator lineTypeIter = m_line_types.find(line_type_name);
+   if (lineTypeIter == m_line_types.end()) {
+      m_line_types.insert( std::pair<std::string, DxfLineType> (line_type_name, line_type));
+      return &(m_line_types.find(line_type_name)->second);
    }
-   return &m_line_types[n];
+   return &(lineTypeIter->second);
 }
 
 int DxfParser::numLayers() const
@@ -333,7 +329,7 @@ void DxfParser::openTables( istream& stream )
             stream >> token;
             m_size += token.size;
             if ( line_type.parse( token, this ) ) {
-               m_line_types.add( line_type );
+               m_line_types.insert( std::pair<std::string, DxfLineType>(line_type.m_name, line_type) );
                if (token.data == "ENDTAB") {
                   subsection = ZEROTOKEN;
                }
@@ -398,13 +394,13 @@ void DxfParser::openBlocks( istream& stream )
             stream >> token;
             m_size += token.size;
             if ( block.parse( token, this ) ) {
-               int pos = m_blocks.add( block );
+               m_blocks.insert( std::pair<std::string, DxfBlock> (block.m_name, block) );
                if (token.data == "ENDBLK") {
                   subsection = ZEROTOKEN;
                }
                else {
                   // this drills down to the data for the block:
-                  openEntities(stream, token, &m_blocks[pos] );
+                  openEntities(stream, token, &m_blocks[block.m_name] );
                   // only if the block ends should we move up:
                   if (token.data == "ENDBLK") {
                      subsection = ZEROTOKEN;
@@ -1235,9 +1231,8 @@ bool DxfInsert::parse( const DxfToken& token, DxfParser *parser )
       case 2:
          // lookup in blocks table
          {
-            size_t index = parser->m_blocks.searchindex(token.data);
-            if (index != paftl::npos) {
-               m_block = &(parser->m_blocks[index]);
+            if (parser->m_blocks.count(token.data)) {
+               m_block = &(parser->m_blocks[token.data]);
             }
          }
          break;

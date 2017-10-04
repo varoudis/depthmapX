@@ -521,8 +521,8 @@ protected:
 protected:
    DxfRegion              m_region;
    std::map<std::string, DxfLayer>     m_layers;
-   pqvector<DxfBlock>     m_blocks;
-   pqvector<DxfLineType>  m_line_types;
+   std::map<std::string, DxfBlock>     m_blocks;
+   std::map<std::string, DxfLineType>  m_line_types;
    //
    long m_size;
    Communicator *m_communicator;
@@ -539,7 +539,6 @@ public:
    const DxfVertex& getExtMin() const;
    const DxfVertex& getExtMax() const;
    DxfLayer *getLayer( const std::string& layer_name ); // const; <- removed as will have to add layer when DXF hasn't declared one
-   const DxfLineType& getLineType( const int i ) const;
    DxfLineType *getLineType( const std::string& line_type_name ); // const;
    //
    int numLayers() const;
