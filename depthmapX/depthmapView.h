@@ -90,7 +90,6 @@ protected:
     virtual void closeEvent(QCloseEvent *event) override;
     virtual void mouseDoubleClickEvent(QMouseEvent *e) override;
     virtual void wheelEvent(QWheelEvent *e) override;
-    virtual void keyPressEvent(QKeyEvent *event) override;
     virtual bool eventFilter(QObject *object, QEvent *e) override;
 
 public slots:

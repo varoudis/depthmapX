@@ -2997,6 +2997,7 @@ void MainWindow::createActions()
 
     clearAct = new QAction(tr("&Clear"), this);
     clearAct->setShortcut(tr("Del"));
+    clearAct->setShortcutContext(Qt::ApplicationShortcut);
     clearAct->setStatusTip(tr("Erase the selection\nErase"));
     connect(clearAct, SIGNAL(triggered()), this, SLOT(OnEditClear()));
 
