@@ -1722,7 +1722,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
    return 1;
 }
 
-int MetaGraph::loadRT1(const pqvector<string>& fileset, Communicator *communicator)
+int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communicator)
 {
    TigerMap map;
 
