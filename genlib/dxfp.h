@@ -26,6 +26,8 @@
 // The parser reads in vertices, lines and polylines, and stores them in the
 // defined layers.  It also reads in any line types defined.
 
+#import <map>
+
 class DxfToken;
 
 class DxfTableRow;
@@ -518,7 +520,7 @@ protected:
    time_t            m_time;
 protected:
    DxfRegion              m_region;
-   pqvector<DxfLayer>     m_layers;
+   std::map<std::string, DxfLayer>     m_layers;
    pqvector<DxfBlock>     m_blocks;
    pqvector<DxfLineType>  m_line_types;
    //
@@ -536,7 +538,6 @@ public:
    //
    const DxfVertex& getExtMin() const;
    const DxfVertex& getExtMax() const;
-   const DxfLayer& getLayerNum( const int i ) const;
    DxfLayer *getLayer( const std::string& layer_name ); // const; <- removed as will have to add layer when DXF hasn't declared one
    const DxfLineType& getLineType( const int i ) const;
    DxfLineType *getLineType( const std::string& line_type_name ); // const;
@@ -545,6 +546,9 @@ public:
    int numLineTypes() const;
    //
    friend istream& operator >> (istream& stream, DxfParser& dxfp);
+
+   std::map<std::string, DxfLayer>::iterator layersBegin() { return m_layers.begin(); }
+   std::map<std::string, DxfLayer>::iterator layersEnd() { return m_layers.end(); }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

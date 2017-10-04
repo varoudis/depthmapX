@@ -1507,9 +1507,10 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
 
    int i = 0;
 
-   for (int layerref = 0; layerref < dp.numLayers(); layerref++) {
-
-      const DxfLayer& dxf_layer = dp.getLayerNum( layerref );
+   std::map<std::string, DxfLayer>::iterator iter = dp.layersBegin();
+   for ( ; iter != dp.layersEnd(); ++iter )
+   {
+      const DxfLayer& dxf_layer = iter->second;
 
       if (dxf_layer.empty()) {
          continue;

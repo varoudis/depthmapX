@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <algorithm>
 #include <string>
 #include "genlib/stringutils.h"
 
@@ -68,22 +69,18 @@ const DxfVertex& DxfParser::getExtMax() const
    return m_region.getExtMax();
 }
 
-const DxfLayer& DxfParser::getLayerNum( const int i ) const
-{
-   return m_layers[i];
-}
-
 DxfLayer *DxfParser::getLayer( const std::string& layer_name ) // const <- removed as m_layers may be changed if DXF is poor
 {
    static DxfLayer layer;
 
    layer.m_name = layer_name;
 
-   size_t n = m_layers.searchindex( layer );
-   if (n == paftl::npos) {
-      n = m_layers.add( layer, paftl::ADD_HERE );
+   std::map<std::string, DxfLayer>::iterator layerIter = m_layers.find(layer_name);
+   if (layerIter == m_layers.end()) {
+      m_layers.insert( std::pair<std::string, DxfLayer> (layer_name, layer));
+      return &(m_layers.find(layer_name)->second);
    }
-   return &m_layers[n];
+   return &(layerIter->second);
 }
 
 const DxfLineType& DxfParser::getLineType( const int i ) const
@@ -207,9 +204,13 @@ istream& DxfParser::open( istream& stream )
    }
    // Get overall bounding box from layers:
    bool first = true;
-   for (size_t i = 0; i < m_layers.size(); i++) {
-      if (!m_layers[i].empty()) {
-         m_region.merge( m_layers[i] );
+
+   std::map<std::string, DxfLayer>::iterator iter = m_layers.begin(), end =
+   m_layers.end();
+   for ( ; iter != end; ++iter )
+   {
+      if (!iter->second.empty()) {
+         m_region.merge( iter->second );
       }
    }
    return stream;
