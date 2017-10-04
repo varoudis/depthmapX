@@ -1639,6 +1639,17 @@ bool PointMap::read(ifstream& stream, int version )
       if (version >= VERSION_LAYERS_INTROD) {
          for (int k = 0; k < m_rows; k++) {
             m_points[j][k].read(stream,version,attr_count);
+
+            // check if occdistance of any pixel's bin is set, meaning that
+            // the isovist analysis was done
+            if(!m_hasIsovistAnalysis) {
+                for(int b = 0; b < 32; b++) {
+                   if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
+                       m_hasIsovistAnalysis = true;
+                       break;
+                   }
+                }
+            }
          }
       }
       else if (version >= VERSION_EXTRA_POINT_DATA_INTROD) {
@@ -2620,6 +2631,7 @@ bool PointMap::binDisplay(Communicator *comm)
 
 bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple_version)
 {
+    m_hasIsovistAnalysis = false;
    // note, BSP tree plays with comm counting...
    comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
    comm->CommPostMessage( Communicator::CURRENT_STEP, 1 );
@@ -2682,7 +2694,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
          }
       }
    }
-
+    m_hasIsovistAnalysis = true;
    return true;
 }
 
