@@ -1173,16 +1173,6 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 	pressed_nFlags &= ~MK_RBUTTON;
 }
 
-void QDepthmapView::keyPressEvent(QKeyEvent *e)
-{
-    switch(e->key()) {
-    case Qt::Key_Delete:
-        m_pDoc.OnEditClear();
-        e->accept();
-    }
-}
-
-
 void QDepthmapView::wheelEvent(QWheelEvent *e)
 {
    short zDelta = e->delta();
