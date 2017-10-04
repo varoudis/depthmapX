@@ -1217,9 +1217,9 @@ void MainWindow::OnSelchangingList()
 {
     if(in_FocusGraph) return;
 
-    int row = 0;
+    int row = -1;
     row = m_attrWindow->currentRow();
-    if(row && m_treeDoc){
+    if(row > -1 && m_treeDoc){
       MetaGraph *graph = m_treeDoc->m_meta_graph;
       if (graph->viewingProcessed()) {
          graph->setDisplayedAttribute(row - 1);
