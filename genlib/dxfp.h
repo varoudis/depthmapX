@@ -419,7 +419,7 @@ class DxfInsert : public DxfEntity, public DxfRegion
    friend class DxfParser;
    friend class DxfLayer;
 protected:
-   DxfBlock *m_block;
+   std::string m_blockName;
    DxfVertex m_translation;
    DxfVertex m_scale;
    double m_rotation;
@@ -459,6 +459,7 @@ protected:
    std::vector<DxfArc>      m_arcs;
    std::vector<DxfCircle>   m_circles;
    std::vector<DxfSpline>   m_splines;
+   std::vector<DxfInsert>   m_inserts;
    int                  m_total_point_count;
    int                  m_total_line_count;
 public:
@@ -484,7 +485,7 @@ public:
       { return m_total_line_count; }
    //
    // this merges an insert (so the insert remains flattened)
-   void insert( DxfInsert& insert, DxfParser *parser );
+   void insert(DxfInsert& insert, DxfParser *parser);
 protected:
    bool parse( const DxfToken& token, DxfParser *parser );
 };
