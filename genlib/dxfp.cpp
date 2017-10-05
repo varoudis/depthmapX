@@ -399,7 +399,7 @@ void DxfParser::openBlocks( istream& stream )
                }
                else {
                   // this drills down to the data for the block:
-                  openEntities(stream, token, &m_blocks[block.m_name] );
+                  openEntities(stream, token, &(m_blocks[block.m_name]) );
                   // only if the block ends should we move up:
                   if (token.data == "ENDBLK") {
                      subsection = ZEROTOKEN;
@@ -606,12 +606,17 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
             stream >> token;
             m_size += token.size;
             if ( insert.parse( token, this ) ) {
-               if ( insert.m_block ) {
+               if ( insert.m_blockName.length() ) {
                   DxfLayer *layer = block;
                   if (layer == NULL) {
                      layer = insert.m_p_layer;
+                     // we are in the entities section, unwind all the blocks
+                     layer->insert( insert, this );
+                  } else {
+                     // we are within a block, hold on until we load all the
+                     // before we can unwind them into the entities section
+                     layer->m_inserts.push_back( insert );
                   }
-                  layer->insert( insert, this );
                }
                insert.clear();
                subsection = ZEROTOKEN;
@@ -1204,7 +1209,7 @@ DxfInsert::DxfInsert(int tag) : DxfEntity( tag )
 
 void DxfInsert::clear()
 {
-   m_block = NULL;
+   m_blockName = "";
    m_translation.clear();
    m_scale.clear();
 
@@ -1228,12 +1233,7 @@ bool DxfInsert::parse( const DxfToken& token, DxfParser *parser )
          parsed = true;
          break;
       case 2:
-         // lookup in blocks table
-         {
-            if (parser->m_blocks.count(token.data)) {
-               m_block = &(parser->m_blocks[token.data]);
-            }
-         }
+         m_blockName = token.data;
          break;
       case 10:
          m_translation.x = std::stod(token.data);
@@ -1386,59 +1386,73 @@ void DxfLayer::insert(DxfInsert& insert, DxfParser *parser)
      insert.m_rotation += 360;
    }
 
-   for (i = 0; i < insert.m_block->m_lines.size(); i++) {
-      m_lines.push_back(insert.m_block->m_lines[i]);
+   // lookup in blocks table
+   if (!parser->m_blocks.count(insert.m_blockName)) {
+       // throw exception
+   }
+   DxfBlock &block = parser->m_blocks[insert.m_blockName];
+
+   // unwind deeper inserts
+   for(i = 0; i < block.m_inserts.size(); i++) {
+       block.insert( block.m_inserts[i], parser);
+   }
+   // delete inserts at this level to avoid re-inserting them
+   // if the block is re-inserted
+   block.m_inserts.clear();
+
+   for (i = 0; i < block.m_lines.size(); i++) {
+      m_lines.push_back(block.m_lines[i]);
       // rotate, translate, scale each line as specified in the insert
       if (scale)
-         m_lines.back().scale(insert.m_block->m_base_point,insert.m_scale);
+         m_lines.back().scale(block.m_base_point,insert.m_scale);
       if (rotate)
-         m_lines.back().rotate(insert.m_block->m_base_point,insert.m_rotation);
+         m_lines.back().rotate(block.m_base_point,insert.m_rotation);
       m_lines.back().translate(insert.m_translation);
       merge(m_lines.back()); // <- merge bounding box
    }
-   for (i = 0; i < insert.m_block->m_poly_lines.size(); i++) {
-      m_poly_lines.push_back(insert.m_block->m_poly_lines[i]);
+   for (i = 0; i < block.m_poly_lines.size(); i++) {
+      m_poly_lines.push_back(block.m_poly_lines[i]);
       // rotate, translate, scale each line as specified in the insert
       if (scale)
-         m_poly_lines.back().scale(insert.m_block->m_base_point,insert.m_scale);
+         m_poly_lines.back().scale(block.m_base_point,insert.m_scale);
       if (rotate)
-         m_poly_lines.back().rotate(insert.m_block->m_base_point,insert.m_rotation);
+         m_poly_lines.back().rotate(block.m_base_point,insert.m_rotation);
       m_poly_lines.back().translate(insert.m_translation);
       merge(m_poly_lines.back()); // <- merge bounding box
    }
-   for (i = 0; i < insert.m_block->m_arcs.size(); i++) {
-      m_arcs.push_back(insert.m_block->m_arcs[i]);
+   for (i = 0; i < block.m_arcs.size(); i++) {
+      m_arcs.push_back(block.m_arcs[i]);
       // rotate, translate, scale each line as specified in the insert
       if (scale)
-         m_arcs.back().scale(insert.m_block->m_base_point,insert.m_scale);
+         m_arcs.back().scale(block.m_base_point,insert.m_scale);
       if (rotate)
-         m_arcs.back().rotate(insert.m_block->m_base_point,insert.m_rotation);
+         m_arcs.back().rotate(block.m_base_point,insert.m_rotation);
       m_arcs.back().translate(insert.m_translation);
       merge(m_arcs.back()); // <- merge bounding box
    }
-   for (i = 0; i < insert.m_block->m_circles.size(); i++) {
-      m_circles.push_back(insert.m_block->m_circles[i]);
+   for (i = 0; i < block.m_circles.size(); i++) {
+      m_circles.push_back(block.m_circles[i]);
       // rotate, translate, scale each line as specified in the insert
       if (scale)
-         m_circles.back().scale(insert.m_block->m_base_point,insert.m_scale);
+         m_circles.back().scale(block.m_base_point,insert.m_scale);
       // n.b., rotate does nothing with circles
       if (rotate)
-         m_circles.back().rotate(insert.m_block->m_base_point,insert.m_rotation);
+         m_circles.back().rotate(block.m_base_point,insert.m_rotation);
       m_circles.back().translate(insert.m_translation);
       merge(m_circles.back()); // <- merge bounding box
    }
-   for (i = 0; i < insert.m_block->m_splines.size(); i++) {
-      m_splines.push_back(insert.m_block->m_splines[i]);
+   for (i = 0; i < block.m_splines.size(); i++) {
+      m_splines.push_back(block.m_splines[i]);
       // rotate, translate, scale each line as specified in the insert
       if (scale)
-         m_splines.back().scale(insert.m_block->m_base_point,insert.m_scale);
+         m_splines.back().scale(block.m_base_point,insert.m_scale);
       if (rotate)
-         m_splines.back().rotate(insert.m_block->m_base_point,insert.m_rotation);
+         m_splines.back().rotate(block.m_base_point,insert.m_rotation);
       m_splines.back().translate(insert.m_translation);
       merge(m_splines.back()); // <- merge bounding box
    }
 
-   m_total_line_count += insert.m_block->m_total_line_count;
+   m_total_line_count += block.m_total_line_count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
