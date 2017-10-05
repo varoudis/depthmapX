@@ -28,7 +28,6 @@
 using namespace std;
 
 #include <genlib/comm.h>  // for communicator
-#include <genlib/paftl.h>
 #include <genlib/dxfp.h>
 
 static int counter = 0;
