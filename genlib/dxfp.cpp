@@ -1381,7 +1381,7 @@ void DxfLayer::insert(DxfInsert& insert, DxfParser *parser)
 
    // munge in insert...
    bool scale = (insert.m_scale.x != 1.0 || insert.m_scale.y != 1.0 || insert.m_scale.z != 1.0);
-   bool rotate = (insert.m_rotation != 0.0);
+   bool rotate = (insert.m_rotation != 0.0 && insert.m_rotation < 359.9999999);
    if (insert.m_rotation < 0) {
      insert.m_rotation += 360;
    }
