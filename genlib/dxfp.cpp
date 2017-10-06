@@ -613,7 +613,7 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
                      // we are in the entities section, unwind all the blocks
                      layer->insert( insert, this );
                   } else {
-                     // we are within a block, hold on until we load all the
+                     // we are within a block, hold on until we load all of them
                      // before we can unwind them into the entities section
                      layer->m_inserts.push_back( insert );
                   }
