@@ -29,6 +29,7 @@
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
 
+#include <stdexcept>
 // for mapinfo interface
 #include "MapInfoData.h"
 
