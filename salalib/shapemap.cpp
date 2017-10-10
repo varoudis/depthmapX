@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 // This is my code to make a set of axial lines from a set of boundary lines
 
 #include <math.h>
