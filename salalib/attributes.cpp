@@ -23,6 +23,8 @@
 #include <salalib/attributes.h>
 
 #include "genlib/stringutils.h"
+
+#include <stdexcept>
 ////////////////////////////////////////////////////////////////////////////////////
 
 // helpers: local sorting routines
