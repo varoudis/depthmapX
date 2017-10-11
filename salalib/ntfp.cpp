@@ -97,7 +97,7 @@ Line NtfMap::makeLine(const NtfPoint& a, const NtfPoint& b)
    );
 }
 
-void NtfMap::open(const pqvector<string>& fileset, Communicator *comm)
+void NtfMap::open(const std::vector<string>& fileset, Communicator *comm)
 {
    time_t time = 0;
    qtimer( time, 0 );

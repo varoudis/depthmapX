@@ -46,7 +46,7 @@ protected:
 public:
    TigerMap() { m_init = false;}
 
-   void parse(const pqvector<string>& fileset, Communicator *communicator);
+   void parse(const std::vector<std::string> &fileset, Communicator *communicator);
 
    Point2f getBottomLeft()
    { return m_region.bottom_left; }
