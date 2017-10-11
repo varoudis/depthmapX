@@ -4284,8 +4284,9 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
 std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
     std::map<std::vector<Point2f>, PafColor> colouredPolygons;
     const AttributeTable &attributeTable = getAttributeTable();
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes()[k];
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         if (shape.isPolygon()) {
             std::vector<Point2f> vertices;
             for (size_t n = 0; n < shape.size(); n++) {
