@@ -460,8 +460,8 @@ protected:
    std::vector<DxfCircle>   m_circles;
    std::vector<DxfSpline>   m_splines;
    std::vector<DxfInsert>   m_inserts;
-   int                  m_total_point_count;
-   int                  m_total_line_count;
+   int                  m_total_point_count = 0;
+   int                  m_total_line_count = 0;
 public:
    DxfLayer( const std::string& name = "" );
    //

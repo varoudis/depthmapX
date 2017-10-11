@@ -70,13 +70,9 @@ const DxfVertex& DxfParser::getExtMax() const
 
 DxfLayer *DxfParser::getLayer( const std::string& layer_name ) // const <- removed as m_layers may be changed if DXF is poor
 {
-   static DxfLayer layer;
-
-   layer.m_name = layer_name;
-
    std::map<std::string, DxfLayer>::iterator layerIter = m_layers.find(layer_name);
    if (layerIter == m_layers.end()) {
-      m_layers.insert( std::pair<std::string, DxfLayer> (layer_name, layer));
+      m_layers.insert( std::pair<std::string, DxfLayer> (layer_name, DxfLayer(layer_name)));
       return &(m_layers.find(layer_name)->second);
    }
    return &(layerIter->second);
