@@ -41,5 +41,5 @@ public:
     void cleanup();
 
 private:
-    std::vector<std::unique_ptr<GLTrianglesUniform>> polygons;
+    std::vector<std::unique_ptr<GLTrianglesUniform>> m_polygons;
 };
