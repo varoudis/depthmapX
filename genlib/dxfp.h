@@ -26,7 +26,7 @@
 // The parser reads in vertices, lines and polylines, and stores them in the
 // defined layers.  It also reads in any line types defined.
 
-#import <map>
+#include <map>
 
 class DxfToken;
 
