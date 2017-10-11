@@ -547,8 +547,7 @@ public:
    //
    friend istream& operator >> (istream& stream, DxfParser& dxfp);
 
-   std::map<std::string, DxfLayer>::iterator layersBegin() { return m_layers.begin(); }
-   std::map<std::string, DxfLayer>::iterator layersEnd() { return m_layers.end(); }
+   std::map<std::string, DxfLayer> getLayers() { return m_layers; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
