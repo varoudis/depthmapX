@@ -218,11 +218,8 @@ void GLView::loadAxialGLObjects() {
 
     const std::vector<SimpleLine> &linkLines = currentShapeGraph.getAllLinkLines();
     std::vector<Point2f> linkPointLocations;
-    std::vector<SimpleLine>::const_iterator iter = linkLines.begin(), end =
-    linkLines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& linkLine: linkLines)
     {
-        SimpleLine linkLine = *iter;
         linkPointLocations.push_back(linkLine.start());
         linkPointLocations.push_back(linkLine.end());
     }
@@ -271,11 +268,8 @@ void GLView::loadVGAGLObjects() {
 
         const std::vector<SimpleLine> &mergedPixelLines = depthmapX::getMergedPixelsAsLines(currentPointMap);
         std::vector<Point2f> mergedPixelLocations;
-        std::vector<SimpleLine>::const_iterator iter = mergedPixelLines.begin(), end =
-        mergedPixelLines.end();
-        for ( ; iter != end; ++iter )
+        for (auto& mergeLine: mergedPixelLines)
         {
-            SimpleLine mergeLine = *iter;
             mergedPixelLocations.push_back(mergeLine.start());
             mergedPixelLocations.push_back(mergeLine.end());
         }
