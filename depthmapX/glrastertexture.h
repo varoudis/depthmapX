@@ -40,7 +40,6 @@ private:
     int DATA_DIMENSIONS = 5;
 
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v, const QVector2D &tc);
 
