@@ -33,6 +33,7 @@
 #include <salalib/mgraph.h>
 #include <salalib/ngraph.h>
 
+#include "genlib/stringutils.h"
 /////////////////////////////////////////////////////////////////////////////////
 
 Point::~Point()
@@ -123,9 +124,9 @@ ofstream& Point::write(ofstream& stream, int version)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-int PointMaps::addNewMap(const pstring& name)
+int PointMaps::addNewMap(const std::string& name)
 {
-   pstring myname = name;
+   std::string myname = name;
    int counter = 1;
    bool duplicate = true;
    while (duplicate) {
@@ -133,7 +134,7 @@ int PointMaps::addNewMap(const pstring& name)
       for (size_t i = 0; i < size(); i++) {
          if (at(i).getName() == myname) {
             duplicate = true;
-            myname = pstringify(counter++,name+pstring(" %d"));
+            myname = dXstring::formatString(counter++,name + " %d");
             break;
          }  
       }
@@ -183,7 +184,7 @@ bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-PointMap::PointMap(const pstring& name)
+PointMap::PointMap(const std::string& name)
 {
    m_name = name;
 
@@ -1081,6 +1082,35 @@ void PointMap::outputConnections(ostream& myout)
    }
 }
 
+void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
+{
+    myout << "RefFrom" << delim << "RefTo";
+    std::vector<PixelRef> seenPix;
+    for (int i = 0; i < m_cols; i++)
+    {
+        for (int j = 0; j < m_rows; j++)
+        {
+            if (m_points[i][j].filled() && m_points[i][j].m_node)
+            {
+                PixelRef pix(i,j);
+                seenPix.push_back(pix);
+                for (int b = 0; b < 32; b++)
+                {
+                    PixelRefList hood;
+                    m_points[i][j].m_node->bin(b).contents(hood);
+                    for(size_t p = 0; p < hood.size(); p++)
+                    {
+                        if(!(std::find(seenPix.begin(), seenPix.end(), hood[p]) != seenPix.end()))
+                        {
+                            myout << std::endl << pix << delim << hood[p];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void PointMap::outputBinSummaries(ostream& myout)
 {
    myout << "cols " << m_cols << " rows " << m_rows << endl;
@@ -1549,10 +1579,10 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 bool PointMap::read(ifstream& stream, int version )
 {
    if (version >= VERSION_POINT_MAP_NAMES) {
-      m_name.read(stream);
+      m_name = dXstring::readString(stream);
    }
    else {
-      m_name = pstring("VGA Map");
+      m_name = "VGA Map";
    }
 
    // NOTE: You MUST set m_spacepix manually!
@@ -1700,7 +1730,7 @@ bool PointMap::read(ifstream& stream, int version )
 
 bool PointMap::write( ofstream& stream, int version )
 {
-   m_name.write(stream);
+   dXstring::writeString(stream, m_name);
 
    stream.write( (char *) &m_spacing, sizeof(m_spacing) );
 
@@ -2692,34 +2722,34 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
 
    int entropy_col, rel_entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, depth_col, count_col;
    if (options.global) {
-      pstring radius_text;
+      std::string radius_text;
       if (options.radius != -1) {
-         radius_text = pstring(" R") + pstringify(int(options.radius),"%d");
+         radius_text = std::string(" R") + dXstring::formatString(int(options.radius),"%d");
       }
 
       // n.b. these must be entered in alphabetical order to preserve col indexing:
       // dX simple version test // TV
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring entropy_col_text = pstring("Visual Entropy") + radius_text;
+          std::string entropy_col_text = std::string("Visual Entropy") + radius_text;
           entropy_col = m_attributes.insertColumn(entropy_col_text.c_str());
       }
 #endif
 
-      pstring integ_dv_col_text = pstring("Visual Integration [HH]") + radius_text;
+      std::string integ_dv_col_text = std::string("Visual Integration [HH]") + radius_text;
       integ_dv_col = m_attributes.insertColumn(integ_dv_col_text.c_str());
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring integ_pv_col_text = pstring("Visual Integration [P-value]") + radius_text;
+          std::string integ_pv_col_text = std::string("Visual Integration [P-value]") + radius_text;
           integ_pv_col = m_attributes.insertColumn(integ_pv_col_text.c_str());
-          pstring integ_tk_col_text = pstring("Visual Integration [Tekl]") + radius_text;
+          std::string integ_tk_col_text = std::string("Visual Integration [Tekl]") + radius_text;
           integ_tk_col = m_attributes.insertColumn(integ_tk_col_text.c_str());
-          pstring depth_col_text = pstring("Visual Mean Depth") + radius_text;
+          std::string depth_col_text = std::string("Visual Mean Depth") + radius_text;
           depth_col = m_attributes.insertColumn(depth_col_text.c_str());
-          pstring count_col_text = pstring("Visual Node Count") + radius_text;
+          std::string count_col_text = std::string("Visual Node Count") + radius_text;
           count_col = m_attributes.insertColumn(count_col_text.c_str());
-          pstring rel_entropy_col_text = pstring("Visual Relativised Entropy") + radius_text;
+          std::string rel_entropy_col_text = std::string("Visual Relativised Entropy") + radius_text;
           rel_entropy_col = m_attributes.insertColumn(rel_entropy_col_text.c_str());
       }
 #endif
@@ -2996,26 +3026,26 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
    }
 
-   pstring radius_text;
+   std::string radius_text;
    if (options.radius != -1.0) {
       if (options.radius > 100.0) {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.f");
       }
       else if (m_region.width() < 1.0) {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.4f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.4f");
       }
       else {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.2f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.2f");
       }
    }
    // n.b. these must be entered in alphabetical order to preserve col indexing:
-   pstring mspa_col_text = pstring("Metric Mean Shortest-Path Angle") + radius_text;
+   std::string mspa_col_text = std::string("Metric Mean Shortest-Path Angle") + radius_text;
    int mspa_col = m_attributes.insertColumn(mspa_col_text.c_str());
-   pstring mspl_col_text = pstring("Metric Mean Shortest-Path Distance") + radius_text;
+   std::string mspl_col_text = std::string("Metric Mean Shortest-Path Distance") + radius_text;
    int mspl_col = m_attributes.insertColumn(mspl_col_text.c_str());
-   pstring dist_col_text = pstring("Metric Mean Straight-Line Distance") + radius_text;
+   std::string dist_col_text = std::string("Metric Mean Straight-Line Distance") + radius_text;
    int dist_col = m_attributes.insertColumn(dist_col_text.c_str());
-   pstring count_col_text = pstring("Metric Node Count") + radius_text;
+   std::string count_col_text = std::string("Metric Node Count") + radius_text;
    int count_col = m_attributes.insertColumn(count_col_text.c_str());
 
    int count = 0;
@@ -3189,24 +3219,24 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
    }
 
-   pstring radius_text;
+   std::string radius_text;
    if (options.radius != -1.0) {
       if (m_region.width() > 100.0) {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.f");
       }
       else if (m_region.width() < 1.0) {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.4f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.4f");
       }
       else {
-         radius_text = pstring(" R") + pstringify(options.radius,"%.2f");
+         radius_text = std::string(" R") + dXstring::formatString(options.radius,"%.2f");
       }
    }
    // n.b. these must be entered in alphabetical order to preserve col indexing:
-   pstring mean_depth_col_text = pstring("Angular Mean Depth") + radius_text;
+   std::string mean_depth_col_text = std::string("Angular Mean Depth") + radius_text;
    int mean_depth_col = m_attributes.insertColumn(mean_depth_col_text.c_str());
-   pstring total_detph_col_text = pstring("Angular Total Depth") + radius_text;
+   std::string total_detph_col_text = std::string("Angular Total Depth") + radius_text;
    int total_depth_col = m_attributes.insertColumn(total_detph_col_text.c_str());
-   pstring count_col_text = pstring("Angular Node Count") + radius_text;
+   std::string count_col_text = std::string("Angular Node Count") + radius_text;
    int count_col = m_attributes.insertColumn(count_col_text.c_str());
 
    int count = 0;

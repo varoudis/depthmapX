@@ -31,6 +31,8 @@
 #include <salalib/ngraph.h>      // ditto ngraph
 #include "MapInfoData.h"
 
+#include "genlib/stringutils.h"
+
 #ifndef _WIN32
 #define _finite finite
 #endif
@@ -50,17 +52,17 @@ static int compareValueTriplet(const void *p1, const void *p2)
           (vp1->value2 > vp2->value2 ? 1 : vp1->value2 < vp2->value2 ? -1 : 0));
 }
 
-static pstring makeFloatRadiusText(double radius)
+static std::string makeFloatRadiusText(double radius)
 {
-   pstring radius_text;
+   std::string radius_text;
    if (radius > 100.0) {
-      radius_text = pstringify(radius,"%.f");
+      radius_text = dXstring::formatString(radius,"%.f");
    }
    else if (radius < 0.1) {
-      radius_text = pstringify(radius,"%.4f");
+      radius_text = dXstring::formatString(radius,"%.4f");
    }
    else {
-      radius_text = pstringify(radius,"%.2f");
+      radius_text = dXstring::formatString(radius,"%.2f");
    }
    return radius_text;
 }
@@ -1229,7 +1231,7 @@ bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, pqmap<Radial
 
 // convert line layers to an axial map
 
-int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix)
+int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1350,7 +1352,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const pstring& name, 
 // create axial map directly from data maps 
 // note that actually should be able to merge this code with the line layers, now both use similar code
 
-int ShapeGraphs::convertDataToAxial(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata)
+int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1418,9 +1420,9 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const pstring& name, Sha
       AttributeTable& input = shapemap.getAttributeTable();
       AttributeTable& output = usermap.getAttributeTable();
       for (int i = 0; i < input.getColumnCount(); i++) {
-         pstring colname = input.getColumnName(i);
+         std::string colname = input.getColumnName(i);
          for (size_t k = 1; output.getColumnIndex(colname) != -1; k++) 
-            colname = pstringify((int)k,input.getColumnName(i) + " %d");
+            colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          for (size_t j = 0; j < lines.size(); j++) {
             int inrow = input.getRowid(keys.search(lines.key(j)));
@@ -1449,7 +1451,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const pstring& name, Sha
 
 // yet more conversions, this time polygons to shape elements
 
-int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix)
+int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix)
 {
    QtRegion region;
    pvecint polygon_refs;
@@ -1494,7 +1496,7 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const pstring& name,
    return mapref;
 }
 
-int ShapeGraphs::convertDataToConvex(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata)
+int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata)
 {
    pvecint polygon_refs;
 
@@ -1522,9 +1524,9 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const pstring& name, Sh
       AttributeTable& input = shapemap.getAttributeTable();
       AttributeTable& output = usermap.getAttributeTable();
       for (int i = 0; i < input.getColumnCount(); i++) {
-         pstring colname = input.getColumnName(i);
+         std::string colname = input.getColumnName(i);
          for (int k = 1; output.getColumnIndex(colname) != -1; k++) 
-            colname = pstringify(k,input.getColumnName(i) + " %d");
+            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          for (size_t j = 0; j < lookup.size(); j++) {
             output.setValue(j,outcol,input.getValue(lookup[j],i));
@@ -1544,7 +1546,7 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const pstring& name, Sh
 
 // create segment map directly from line layers
 
-int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const pstring& name, SuperSpacePixel& superspacepix)
+int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& name, SuperSpacePixel& superspacepix)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1654,7 +1656,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const pstring& name
 
 // create segment map directly from data maps (ultimately, this will replace the line layers version)
 
-int ShapeGraphs::convertDataToSegment(Communicator *comm, const pstring& name, ShapeMap& shapemap, bool copydata)
+int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1737,9 +1739,9 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const pstring& name, S
       AttributeTable& output = usermap.getAttributeTable();
       //
       for (int i = 0; i < input.getColumnCount(); i++) {
-         pstring colname = input.getColumnName(i);
+         std::string colname = input.getColumnName(i);
          for (int k = 1; output.getColumnIndex(colname) != -1; k++) 
-            colname = pstringify(k,input.getColumnName(i) + " %d");
+            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          for (size_t j = 0; j < lines.size(); j++) {
             int inrow = input.getRowid(keys.search(lines.key(j)));
@@ -1762,7 +1764,7 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const pstring& name, S
 #endif
 
 // stubremoval is fraction of overhanging line length before axial "stub" is removed
-int ShapeGraphs::convertAxialToSegment(Communicator *comm, const pstring& name, bool keeporiginal, bool copydata, double stubremoval)
+int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& name, bool keeporiginal, bool copydata, double stubremoval)
 {
    if (m_displayed_map == -1) {
       return -1;
@@ -1863,8 +1865,7 @@ bool ShapeGraphs::read( ifstream& stream, int version )
 bool ShapeGraphs::readold( ifstream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
-   pstring dummyname;
-   dummyname.read(stream);
+   dXstring::readString(stream);
    QtRegion dummyregion;
    stream.read( (char *) &dummyregion, sizeof(dummyregion) );
    int count;
@@ -1893,18 +1894,18 @@ bool ShapeGraphs::write( ofstream& stream, int version, bool displayedmaponly )
 
 // Axial map helper: convert a radius for angular analysis
 
-static pstring makeRadiusText(int radius_type, double radius)
+static std::string makeRadiusText(int radius_type, double radius)
 {
-   pstring radius_text;
+   std::string radius_text;
    if (radius != -1) {
       if (radius_type == Options::RADIUS_STEPS) {
-         radius_text = pstring(" R") + pstringify(int(radius),"%d") + pstring(" step");
+         radius_text = std::string(" R") + dXstring::formatString(int(radius),"%d") + " step";
       }
       else if (radius_type == Options::RADIUS_METRIC) {
-         radius_text = pstring(" R") + makeFloatRadiusText(radius) + pstring(" metric");
+         radius_text = std::string(" R") + makeFloatRadiusText(radius) + " metric";
       }
       else { // radius angular
-         radius_text = pstring(" R") + makeFloatRadiusText(radius);
+         radius_text = std::string(" R") + makeFloatRadiusText(radius);
       }
    }
    return radius_text;
@@ -1912,7 +1913,7 @@ static pstring makeRadiusText(int radius_type, double radius)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-ShapeGraph::ShapeGraph(const pstring& name, int type) : ShapeMap(name,type)
+ShapeGraph::ShapeGraph(const std::string& name, int type) : ShapeMap(name,type)
 {
    m_keyvertexcount = 0; 
    m_hasgraph = true;
@@ -2201,7 +2202,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 
    // retrieve weighted col data, as this may well be overwritten in the new analysis:
    pvecdouble weights;
-   pstring weighting_col_text;
+   std::string weighting_col_text;
    if (weighting_col != -1) {
       weighting_col_text = m_attributes.getColumnName(weighting_col);
       for (size_t i = 0; i < m_connectors.size(); i++) {
@@ -2212,19 +2213,19 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // first enter the required attribute columns:
    size_t r;
    for (r = 0; r < radius.size(); r++) {
-      pstring radius_text;
+      std::string radius_text;
       if (radius[r] != -1) {
-         radius_text = pstring(" R") + pstringify(int(radius[r]),"%d");
+         radius_text = std::string(" R") + dXstring::formatString(int(radius[r]),"%d");
       }
       if (choice) {
-         pstring choice_col_text = pstring("Choice") + radius_text;
+         std::string choice_col_text = std::string("Choice") + radius_text;
          m_attributes.insertColumn(choice_col_text.c_str());
-         pstring n_choice_col_text = pstring("Choice [Norm]") + radius_text;
+         std::string n_choice_col_text = std::string("Choice [Norm]") + radius_text;
          m_attributes.insertColumn(n_choice_col_text.c_str());
          if (weighting_col != -1) {
-            pstring w_choice_col_text = pstring("Choice [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+            std::string w_choice_col_text = std::string("Choice [") + weighting_col_text + " Wgt]" + radius_text;
             m_attributes.insertColumn(w_choice_col_text.c_str());
-            pstring nw_choice_col_text = pstring("Choice [") + weighting_col_text + pstring(" Wgt][Norm]") + radius_text;
+            std::string nw_choice_col_text = std::string("Choice [") + weighting_col_text + " Wgt][Norm]" + radius_text;
             m_attributes.insertColumn(nw_choice_col_text.c_str());
          }
       }
@@ -2233,64 +2234,64 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 //#define _COMPILE_dX_SIMPLE_VERSION
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring entropy_col_text = pstring("Entropy") + radius_text;
+          std::string entropy_col_text = std::string("Entropy") + radius_text;
           m_attributes.insertColumn(entropy_col_text.c_str());
       }
 #endif
 
-      pstring integ_dv_col_text = pstring("Integration [HH]") + radius_text;
+      std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       m_attributes.insertColumn(integ_dv_col_text.c_str());
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring integ_pv_col_text = pstring("Integration [P-value]") + radius_text;
+          std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           m_attributes.insertColumn(integ_pv_col_text.c_str());
-          pstring integ_tk_col_text = pstring("Integration [Tekl]") + radius_text;
+          std::string integ_tk_col_text = std::string("Integration [Tekl]") + radius_text;
           m_attributes.insertColumn(integ_tk_col_text.c_str());
-          pstring intensity_col_text = pstring("Intensity") + radius_text;
+          std::string intensity_col_text = std::string("Intensity") + radius_text;
           m_attributes.insertColumn(intensity_col_text.c_str());
-          pstring harmonic_col_text = pstring("Harmonic Mean Depth") + radius_text;
+          std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           m_attributes.insertColumn(harmonic_col_text.c_str());
       }
 #endif
 
-      pstring depth_col_text = pstring("Mean Depth") + radius_text;
+      std::string depth_col_text = std::string("Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
-      pstring count_col_text = pstring("Node Count") + radius_text;
+      std::string count_col_text = std::string("Node Count") + radius_text;
       m_attributes.insertColumn(count_col_text.c_str());
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring rel_entropy_col_text = pstring("Relativised Entropy") + radius_text;
+          std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           m_attributes.insertColumn(rel_entropy_col_text);
       }
 #endif
 
       if (weighting_col != -1) {
-         pstring w_md_col_text = pstring("Mean Depth [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+         std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
          m_attributes.insertColumn(w_md_col_text.c_str());
-         pstring total_weight_text = pstring("Total ") + weighting_col_text + radius_text;
+         std::string total_weight_text = std::string("Total ") + weighting_col_text + radius_text;
          m_attributes.insertColumn(total_weight_text.c_str());
       }
       if (fulloutput) {
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
-             pstring penn_norm_text = pstring("RA [Penn]") + radius_text;
+             std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              m_attributes.insertColumn(penn_norm_text);
          }
 #endif
-         pstring ra_col_text = pstring("RA") + radius_text;
+         std::string ra_col_text = std::string("RA") + radius_text;
          m_attributes.insertColumn(ra_col_text.c_str());
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
-             pstring rra_col_text = pstring("RRA") + radius_text;
+             std::string rra_col_text = std::string("RRA") + radius_text;
              m_attributes.insertColumn(rra_col_text.c_str());
          }
 #endif
 
-         pstring td_col_text = pstring("Total Depth") + radius_text;
+         std::string td_col_text = std::string("Total Depth") + radius_text;
          m_attributes.insertColumn(td_col_text.c_str());
       }
       //
@@ -2307,77 +2308,77 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    pvecint choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
            depth_col, count_col, rel_entropy_col, penn_norm_col, w_depth_col, total_weight_col, ra_col, rra_col, td_col, harmonic_col;
    for (r = 0; r < radius.size(); r++) {
-      pstring radius_text;
+      std::string radius_text;
       if (radius[r] != -1) {
-         radius_text = pstring(" R") + pstringify(int(radius[r]),"%d");
+         radius_text = std::string(" R") + dXstring::formatString(int(radius[r]),"%d");
       }
       if (choice) {
-         pstring choice_col_text = pstring("Choice") + radius_text;
+         std::string choice_col_text = std::string("Choice") + radius_text;
          choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
-         pstring n_choice_col_text = pstring("Choice [Norm]") + radius_text;
+         std::string n_choice_col_text = std::string("Choice [Norm]") + radius_text;
          n_choice_col.push_back(m_attributes.getColumnIndex(n_choice_col_text.c_str()));
          if (weighting_col != -1) {
-            pstring w_choice_col_text = pstring("Choice [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+            std::string w_choice_col_text = std::string("Choice [") + weighting_col_text + " Wgt]" + radius_text;
             w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
-            pstring nw_choice_col_text = pstring("Choice [") + weighting_col_text + pstring(" Wgt][Norm]") + radius_text;
+            std::string nw_choice_col_text = std::string("Choice [") + weighting_col_text + " Wgt][Norm]" + radius_text;
             nw_choice_col.push_back(m_attributes.getColumnIndex(nw_choice_col_text.c_str()));
          }
       }
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring entropy_col_text = pstring("Entropy") + radius_text;
+          std::string entropy_col_text = std::string("Entropy") + radius_text;
           entropy_col.push_back(m_attributes.getColumnIndex(entropy_col_text.c_str()));
       }
 #endif
 
-      pstring integ_dv_col_text = pstring("Integration [HH]") + radius_text;
+      std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       integ_dv_col.push_back(m_attributes.getColumnIndex(integ_dv_col_text.c_str()));
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring integ_pv_col_text = pstring("Integration [P-value]") + radius_text;
+          std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           integ_pv_col.push_back(m_attributes.getColumnIndex(integ_pv_col_text.c_str()));
-          pstring integ_tk_col_text = pstring("Integration [Tekl]") + radius_text;
+          std::string integ_tk_col_text = std::string("Integration [Tekl]") + radius_text;
           integ_tk_col.push_back(m_attributes.getColumnIndex(integ_tk_col_text.c_str()));
-          pstring intensity_col_text = pstring("Intensity") + radius_text;
+          std::string intensity_col_text = std::string("Intensity") + radius_text;
           intensity_col.push_back(m_attributes.getColumnIndex(intensity_col_text.c_str()));
-          pstring harmonic_col_text = pstring("Harmonic Mean Depth") + radius_text;
+          std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           harmonic_col.push_back(m_attributes.getColumnIndex(harmonic_col_text.c_str()));
       }
 #endif
 
-      pstring depth_col_text = pstring("Mean Depth") + radius_text;
+      std::string depth_col_text = std::string("Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
-      pstring count_col_text = pstring("Node Count") + radius_text;
+      std::string count_col_text = std::string("Node Count") + radius_text;
       count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
-          pstring rel_entropy_col_text = pstring("Relativised Entropy") + radius_text;
+          std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           rel_entropy_col.push_back(m_attributes.getColumnIndex(rel_entropy_col_text.c_str()));
       }
 #endif
 
       if (weighting_col != -1) {
-         pstring w_md_col_text = pstring("Mean Depth [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+         std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
          w_depth_col.push_back(m_attributes.getColumnIndex(w_md_col_text.c_str()));
-         pstring total_weight_col_text = pstring("Total ") + weighting_col_text + radius_text;
+         std::string total_weight_col_text = std::string("Total ") + weighting_col_text + radius_text;
          total_weight_col.push_back(m_attributes.getColumnIndex(total_weight_col_text.c_str()));
       }
       if (fulloutput) {
-         pstring ra_col_text = pstring("RA") + radius_text;
+         std::string ra_col_text = std::string("RA") + radius_text;
          ra_col.push_back(m_attributes.getColumnIndex(ra_col_text.c_str()));
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
-             pstring penn_norm_text = pstring("RA [Penn]") + radius_text;
+             std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              penn_norm_col.push_back(m_attributes.getColumnIndex(penn_norm_text));
-             pstring rra_col_text = pstring("RRA") + radius_text;
+             std::string rra_col_text = std::string("RRA") + radius_text;
              rra_col.push_back(m_attributes.getColumnIndex(rra_col_text.c_str()));
          }
 #endif
 
-         pstring td_col_text = pstring("Total Depth") + radius_text;
+         std::string td_col_text = std::string("Total Depth") + radius_text;
          td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
       }
    }
@@ -2714,7 +2715,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 
 bool ShapeGraph::stepdepth(Communicator *comm)
 {
-   pstring stepdepth_col_text = pstring("Step Depth");
+   std::string stepdepth_col_text = std::string("Step Depth");
    int stepdepth_col = m_attributes.insertColumn(stepdepth_col_text.c_str());
 
    bool *covered = new bool [m_connectors.size()];
@@ -3310,7 +3311,7 @@ void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
 
    pvecint colindices;
    for (int i = 0; i < axialmap.m_attributes.getColumnCount(); i++) {
-      pstring colname = pstring("Axial ") + axialmap.m_attributes.getColumnName(i);
+      std::string colname = std::string("Axial ") + axialmap.m_attributes.getColumnName(i);
       colindices.push_back(m_attributes.insertColumn(colname));
    }
    for (int j = 0; j < m_attributes.getRowCount(); j++) {
@@ -3360,22 +3361,22 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
    // first enter table values
    size_t r;
    for (r = 0; r < radius.size(); r++) {
-      pstring radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
-      pstring depth_col_text = pstring("Angular Mean Depth") + radius_text;
+      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
+      std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
-      pstring count_col_text = pstring("Angular Node Count") + radius_text;
+      std::string count_col_text = std::string("Angular Node Count") + radius_text;
       m_attributes.insertColumn(count_col_text.c_str());
-      pstring total_col_text = pstring("Angular Total Depth") + radius_text;
+      std::string total_col_text = std::string("Angular Total Depth") + radius_text;
       m_attributes.insertColumn(total_col_text.c_str());
    }
    
    for (r = 0; r < radius.size(); r++) {
-      pstring radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
-      pstring depth_col_text = pstring("Angular Mean Depth") + radius_text;
+      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
+      std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
-      pstring count_col_text = pstring("Angular Node Count") + radius_text;
+      std::string count_col_text = std::string("Angular Node Count") + radius_text;
       count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
-      pstring total_col_text = pstring("Angular Total Depth") + radius_text;
+      std::string total_col_text = std::string("Angular Total Depth") + radius_text;
       total_col.push_back(m_attributes.getColumnIndex(total_col_text.c_str()));
    }
 
@@ -3515,7 +3516,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    // retrieve weighted col data, as this may well be overwritten in the new analysis:
    pvecfloat weights;
    pvecfloat routeweights;  //EF
-   pstring weighting_col_text;
+   std::string weighting_col_text;
 
    if (weighting_col != -1) {
       weighting_col_text = m_attributes.getColumnName(weighting_col);
@@ -3529,7 +3530,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       }
    }
    //EF routeweight*
-   pstring routeweight_col_text;  
+   std::string routeweight_col_text;
    if (routeweight_col != -1) {
 	   //we normalise the column values between 0 and 1 and reverse it so that high values can be treated as a 'low cost' - similar to the angular cost
 	  double max_value = m_attributes.getMaxValue(routeweight_col);
@@ -3548,7 +3549,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    //EFEF*
    //for origin-destination weighting
    pvecfloat weights2;
-   pstring weighting_col_text2;
+   std::string weighting_col_text2;
    if (weighting_col2 != -1) {
       weighting_col_text2 = m_attributes.getColumnName(weighting_col2);
       for (size_t i = 0; i < m_connectors.size(); i++) {
@@ -3562,26 +3563,26 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    }
    //*EFEF
 
-   pstring tulip_text = pstring("T") + pstringify(tulip_bins,"%d");
+   std::string tulip_text = std::string("T") + dXstring::formatString(tulip_bins,"%d");
 
    // first enter the required attribute columns:
    size_t r;
    for (r = 0; r < radius_unconverted.size(); r++) {
-      pstring radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
+      std::string radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
       int choice_col = -1, n_choice_col = -1, w_choice_col = -1, nw_choice_col = -1;
       if (choice) {	
 			//EF routeweight *
 			if (routeweight_col != -1) {
-				pstring choice_col_text = tulip_text + pstring(" Choice [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text;
+                std::string choice_col_text = tulip_text + " Choice [Route weight by " + routeweight_col_text + "]"+ radius_text;
 				m_attributes.insertColumn(choice_col_text.c_str());
 				if (weighting_col != -1) {					
-					pstring w_choice_col_text = tulip_text + pstring(" Choice [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
+                    std::string w_choice_col_text = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 					
 					m_attributes.insertColumn(w_choice_col_text.c_str());
 				}
 				//EFEF*
 				if (weighting_col2 != -1) {
-					pstring w_choice_col_text2 = tulip_text + pstring(" Choice [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + "-" + weighting_col_text2 + pstring(" Wgt]]") + radius_text;
+                    std::string w_choice_col_text2 = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]]" + radius_text;
 					
 					m_attributes.insertColumn(w_choice_col_text2.c_str());
 				}
@@ -3589,15 +3590,15 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 			}
 			//*EF routeweight
             else { // Normal run // TV
-                pstring choice_col_text = tulip_text + pstring(" Choice") + radius_text;
+                std::string choice_col_text = tulip_text + " Choice" + radius_text;
 				m_attributes.insertColumn(choice_col_text.c_str());
 				if (weighting_col != -1) {
-					pstring w_choice_col_text = tulip_text + pstring(" Choice [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+                    std::string w_choice_col_text = tulip_text + " Choice [" + weighting_col_text + " Wgt]" + radius_text;
 					m_attributes.insertColumn(w_choice_col_text.c_str());
 				}
 				//EFEF*
 				if (weighting_col2 != -1) {
-					pstring w_choice_col_text2 = tulip_text + pstring(" Choice [") + weighting_col_text + "-" + weighting_col_text2 + pstring(" Wgt]") + radius_text;
+                    std::string w_choice_col_text2 = tulip_text + " Choice [" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]" + radius_text;
 					m_attributes.insertColumn(w_choice_col_text2.c_str());
 				}
 				//*EFEF
@@ -3606,14 +3607,14 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 
 		//EF routeweight *
 		if (routeweight_col != -1) {
-         pstring integ_col_text = tulip_text + pstring(" Integration [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_integ_col_text = tulip_text + pstring(" Integration [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
+         std::string integ_col_text = tulip_text + " Integration [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_integ_col_text = tulip_text + " Integration [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 
-         pstring count_col_text = tulip_text + pstring(" Node Count [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring td_col_text = tulip_text + pstring(" Total Depth [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
+         std::string count_col_text = tulip_text + " Node Count [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string td_col_text = tulip_text + " Total Depth [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
 			// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
-			pstring w_td_text = tulip_text + pstring(" Total Depth [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
-			pstring total_weight_text = tulip_text + pstring(" Total " + weighting_col_text + " [Route weight by ") + routeweight_col_text + pstring("]") +radius_text;
+            std::string w_td_text = tulip_text + " Total Depth [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
+            std::string total_weight_text = tulip_text + " Total " + weighting_col_text + " [Route weight by " + routeweight_col_text + "]" +radius_text;
 
          m_attributes.insertColumn(integ_col_text.c_str());
 			m_attributes.insertColumn(count_col_text.c_str());
@@ -3626,14 +3627,14 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 		}
 		//*EF routeweight
         else { // Normal run // TV
-			pstring integ_col_text = tulip_text + pstring(" Integration") + radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_integ_col_text = tulip_text + pstring(" Integration [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+            std::string integ_col_text = tulip_text + " Integration" + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_integ_col_text = tulip_text + " Integration [" + weighting_col_text + " Wgt]" + radius_text;
 
-			pstring count_col_text = tulip_text + pstring(" Node Count") + radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring td_col_text = tulip_text + pstring(" Total Depth") + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string count_col_text = tulip_text + " Node Count" + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string td_col_text = tulip_text + " Total Depth" + radius_text; // <- note, the fact this is a tulip is unnecessary
 			// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
-			pstring w_td_text = tulip_text + pstring(" Total Depth [") + weighting_col_text + pstring(" Wgt]") + radius_text;
-			pstring total_weight_text = tulip_text + pstring(" Total ") + weighting_col_text + radius_text;
+            std::string w_td_text = tulip_text + " Total Depth [" + weighting_col_text + " Wgt]" + radius_text;
+            std::string total_weight_text = tulip_text + " Total " + weighting_col_text + radius_text;
 
          m_attributes.insertColumn(integ_col_text.c_str());
 			m_attributes.insertColumn(count_col_text.c_str());
@@ -3648,34 +3649,34 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    pvecint choice_col, w_choice_col, w_choice_col2, count_col, integ_col, w_integ_col, td_col, w_td_col, total_weight_col;
    // then look them up! eek....
    for (r = 0; r < radius_unconverted.size(); r++) {
-      pstring radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
+      std::string radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
       if (choice) {
 			//EF routeweight *
 			if (routeweight_col != -1) {
-				pstring choice_col_text = tulip_text + pstring(" Choice [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text;
+                std::string choice_col_text = tulip_text + " Choice [Route weight by " + routeweight_col_text + "]"+ radius_text;
 				choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
 				if (weighting_col != -1) {
-					pstring w_choice_col_text = tulip_text + pstring(" Choice [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
+                    std::string w_choice_col_text = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 					w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
 				}
 				//EFEF*
 				if (weighting_col2 != -1) {
-					pstring w_choice_col_text2 = tulip_text + pstring(" Choice [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + "-" + weighting_col_text2 + pstring(" Wgt]]") + radius_text;
+                    std::string w_choice_col_text2 = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]]" + radius_text;
 					w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
 				}
 				//*EFEF
 			}
 			//* EF routeweight
             else { // Normal run // TV
-				pstring choice_col_text = tulip_text + pstring(" Choice") + radius_text;
+                std::string choice_col_text = tulip_text + " Choice" + radius_text;
 				choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
 				if (weighting_col != -1) {
-					pstring w_choice_col_text = tulip_text + pstring(" Choice [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+                    std::string w_choice_col_text = tulip_text + " Choice [" + weighting_col_text + " Wgt]" + radius_text;
 					w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
 				}
 				//EFEF*
 				if (weighting_col2 != -1) {
-					pstring w_choice_col_text2 = tulip_text + pstring(" Choice [") + weighting_col_text + "-" + weighting_col_text2 + pstring(" Wgt]") + radius_text;
+                    std::string w_choice_col_text2 = tulip_text + " Choice [" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]" + radius_text;
 					w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
 				}
 				//*EFEF
@@ -3684,13 +3685,13 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       }
 		//EF routeweight *
 		if (routeweight_col != -1) {
-         pstring integ_col_text = tulip_text + pstring(" Integration [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_integ_col_text = tulip_text + pstring(" Integration [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
+         std::string integ_col_text = tulip_text + " Integration [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_integ_col_text = tulip_text + " Integration [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 
-         pstring count_col_text = tulip_text + pstring(" Node Count [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring td_col_text = tulip_text + pstring(" Total Depth [Route weight by ") + routeweight_col_text + pstring("]")+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_td_text = tulip_text + pstring(" Total Depth [[Route weight by ") + routeweight_col_text + pstring("][") + weighting_col_text + pstring(" Wgt]]") + radius_text;
-			pstring total_weight_col_text = tulip_text + pstring(" Total " + weighting_col_text + " [Route weight by ") + routeweight_col_text + pstring("]") +radius_text;
+         std::string count_col_text = tulip_text + " Node Count [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string td_col_text = tulip_text + " Total Depth [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_td_text = tulip_text + " Total Depth [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
+            std::string total_weight_col_text = tulip_text + " Total " + weighting_col_text + " [Route weight by " + routeweight_col_text + "]" +radius_text;
 
          integ_col.push_back(m_attributes.getColumnIndex(integ_col_text.c_str()));
 			count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
@@ -3704,13 +3705,13 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 		}
 		//* EF routeweight
         else { // Normal run // TV
-			pstring integ_col_text = tulip_text + pstring(" Integration") + radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_integ_col_text = tulip_text + pstring(" Integration [") + weighting_col_text + pstring(" Wgt]") + radius_text;
+            std::string integ_col_text = tulip_text + " Integration" + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_integ_col_text = tulip_text + " Integration [" + weighting_col_text + " Wgt]" + radius_text;
 
-         pstring count_col_text = tulip_text + pstring(" Node Count") + radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring td_col_text = tulip_text + pstring(" Total Depth") + radius_text; // <- note, the fact this is a tulip is unnecessary
-			pstring w_td_text = tulip_text + pstring(" Total Depth [") + weighting_col_text + pstring(" Wgt]") + radius_text;
-			pstring total_weight_col_text = tulip_text + pstring(" Total ") + weighting_col_text + radius_text;
+         std::string count_col_text = tulip_text + " Node Count" + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string td_col_text = tulip_text + " Total Depth" + radius_text; // <- note, the fact this is a tulip is unnecessary
+            std::string w_td_text = tulip_text + " Total Depth [" + weighting_col_text + " Wgt]" + radius_text;
+            std::string total_weight_col_text = tulip_text + " Total " + weighting_col_text + radius_text;
       
          integ_col.push_back(m_attributes.getColumnIndex(integ_col_text.c_str()));
 			count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
@@ -4132,7 +4133,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 
 bool ShapeGraph::angularstepdepth(Communicator *comm)
 {
-   pstring stepdepth_col_text = pstring("Angular Step Depth");
+   std::string stepdepth_col_text = "Angular Step Depth";
    int stepdepth_col = m_attributes.insertColumn(stepdepth_col_text.c_str());
 
    int tulip_bins = 1024;

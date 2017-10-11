@@ -33,8 +33,8 @@
 #include "3DView.h"
 #include "PlotView.h"
 #include "tableView.h"
-#include "DepthmapOptionsDlg.h"
 #include "AboutDlg.h"
+#include "settingsdialog/settingsdialog.h"
 
 
 static int current_view_type = 0;
@@ -390,6 +390,15 @@ void MainWindow::OnSegmentConnectionsExportAsPairCSV()
     }
 }
 
+void MainWindow::OnPointmapExportConnectionsAsCSV()
+{
+    QGraphDoc* m_p = activeQDepthmapDoc();
+    if(m_p)
+    {
+        m_p->OnPointmapExportConnectionsAsCSV();
+    }
+}
+
 void MainWindow::OnAddColumn()
 {
     QGraphDoc* m_p = activeQDepthmapDoc();
@@ -609,29 +618,10 @@ void MainWindow::OnToolsAPD()
 
 void MainWindow::OnToolsOptions()
 {
-    CDepthmapOptionsDlg dlg(this, m_simpleVersion);
-
-    if (QDialog::Accepted == dlg.exec()) {
-
-        m_simpleVersion = dlg.c_show_simple_version->checkState();
-        mSettings.writeSetting(SettingTag::simpleVersion, m_simpleVersion);
-        if(m_simpleVersion)
-            qWarning("SV = True");
-        else
-            qWarning("SV = False");
+    SettingsDialog dialog(mSettings);
+    if(QDialog::Accepted == dialog.exec()) {
+        readSettings();
     }
-}
-
-void MainWindow::OnWindowBackground()
-{
-    m_background = QColorDialog::getColor(m_background).rgb();
-    mSettings.writeSetting(SettingTag::backgroundColour, m_background);
-}
-
-void MainWindow::OnWindowForeground()
-{
-    m_foreground = QColorDialog::getColor(m_foreground).rgb();
-    mSettings.writeSetting(SettingTag::foregroundColour, m_foreground);
 }
 
 void MainWindow::OnShowResearchtoolbar()
@@ -773,7 +763,7 @@ QDepthmapView *MainWindow::activeQDepthmapView()
         if(!p)
         {
             p = qobject_cast<GLView *>(activeSubWindow->widget());
-            if(p) return (QDepthmapView *)(((GLView*)p)->pDoc->m_view[1]);
+            if(p) return (QDepthmapView *)(((GLView*)p)->m_pDoc->m_view[1]);
         }
     }
     current_view_type = 0;
@@ -2292,8 +2282,6 @@ void MainWindow::OnSelchangeViewSelector_Y(const QString &string)
 
 void MainWindow::updateViewMenu()
 {
-    BackgroundAct->setEnabled(true);
-    foregroundAct->setEnabled(true);
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(!m_p)
     {
@@ -3011,6 +2999,10 @@ void MainWindow::createActions()
     exportSegmentConnectionsPairAct->setStatusTip(tr("Export a list of line-line intersections and weights"));
     connect(exportSegmentConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnSegmentConnectionsExportAsPairCSV()));
 
+    exportPointmapConnectionsPairAct = new QAction(tr("Visibility Graph Connections as CSV..."), this);
+    exportPointmapConnectionsPairAct->setStatusTip(tr("Export connections between cells in a visibility graph as an adjacency list"));
+    connect(exportPointmapConnectionsPairAct, SIGNAL(triggered()), this, SLOT(OnPointmapExportConnectionsAsCSV()));
+
     //Attributes Menu Actions
     renameColumnAct = new QAction(tr("&Rename Column..."), this);
     renameColumnAct->setStatusTip(tr("Rename the currently displayed attribute"));
@@ -3095,14 +3087,6 @@ void MainWindow::createActions()
     connect(optionsAct, SIGNAL(triggered()), this, SLOT(OnToolsOptions()));
 
     //View Menu Actions
-    BackgroundAct = new QAction(tr("&Background..."), this);
-    BackgroundAct->setStatusTip(tr("Turns the current selection into a layer object [Ctrl+G]\nAdd Layer Object"));
-    connect(BackgroundAct, SIGNAL(triggered()), this, SLOT(OnWindowBackground()));
-
-    foregroundAct = new QAction(tr("&Foreground..."), this);
-    foregroundAct->setStatusTip(tr("Clear agent trails"));
-    connect(foregroundAct, SIGNAL(triggered()), this, SLOT(OnWindowForeground()));
-
     showGridAct = new QAction(tr("Show &Grid"), this);
     showGridAct->setStatusTip(tr("Display grid"));
     showGridAct->setCheckable(true);
@@ -3525,6 +3509,7 @@ void MainWindow::createMenus()
     exportSubMenu->addAction(exportAxialConnectionsDotAct);
     exportSubMenu->addAction(exportAxialConnectionsPairAct);
     exportSubMenu->addAction(exportSegmentConnectionsPairAct);
+    exportSubMenu->addAction(exportPointmapConnectionsPairAct);
 
     attributesMenu = menuBar()->addMenu(tr("&Attributes"));
     attributesMenu->addAction(addColumAct);
@@ -3575,9 +3560,6 @@ void MainWindow::createMenus()
     toolsMenu->addAction(optionsAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
-    viewMenu->addAction(BackgroundAct);
-    viewMenu->addAction(foregroundAct);
-    viewMenu->addSeparator();
     viewMenu->addAction(RecentAct);
     viewMenu->addAction(showGridAct);
     viewMenu->addAction(attributeSummaryAct);
