@@ -4244,8 +4244,9 @@ void ShapeMap::ozlemSpecial7(ShapeMap& linemap)
 
 std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
     std::vector<SimpleLine> lines;
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes().at(k);
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         if (shape.isLine()) {
             lines.push_back(SimpleLine(shape.getLine()));
         }
@@ -4264,8 +4265,9 @@ std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
 std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
     std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
     const AttributeTable &attributeTable = getAttributeTable();
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes()[k];
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         PafColor color(attributeTable.getDisplayColor(k));
         if (shape.isLine()) {
             colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
