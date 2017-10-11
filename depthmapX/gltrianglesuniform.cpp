@@ -67,11 +67,8 @@ void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, co
     m_count = 0;
     m_data.resize(points.size() * DATA_DIMENSIONS);
 
-    std::vector<Point2f>::const_iterator iter = points.begin(), end =
-    points.end();
-    for ( ; iter != end; ++iter )
+    for (auto& point: points)
     {
-        const Point2f & point = *iter;
         add(QVector3D(point.x, point.y, 0.0f));
     }
     m_colour.setX(polyColour.redf());
