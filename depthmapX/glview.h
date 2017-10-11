@@ -43,7 +43,7 @@ public:
     void notifyDatasetChanged() { m_datasetChanged = true; update(); }
     void matchViewToCurrentMetaGraph();
 
-    QGraphDoc* pDoc;
+    QGraphDoc* m_pDoc;
 
     void OnModeJoin();
     void OnModeUnjoin();
@@ -63,8 +63,6 @@ private:
     QMatrix4x4 m_mProj;
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
-
-    QGraphDoc* m_pDoc;
 
     const QRgb &m_foreground;
     const QRgb &m_background;
