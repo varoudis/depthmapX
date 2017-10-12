@@ -23,6 +23,7 @@
 #include "depthmapX/gllines.h"
 #include "depthmapX/gllinesuniform.h"
 #include "depthmapX/glrastertexture.h"
+#include "depthmapX/glpolygons.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -42,31 +43,48 @@ public:
     void notifyDatasetChanged() { m_datasetChanged = true; update(); }
     void matchViewToCurrentMetaGraph();
 
+    QGraphDoc* m_pDoc;
+
+    void OnModeJoin();
+    void OnModeUnjoin();
+
 protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int width, int height) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
 private:
     bool m_perspectiveView = false;
-    bool m_coreProfile;
+    bool m_core;
     QMatrix4x4 m_mProj;
     QMatrix4x4 m_mView;
     QMatrix4x4 m_mModel;
 
-    QGraphDoc* m_pDoc;
     const QRgb &m_foreground;
     const QRgb &m_background;
 
     GLLines m_axes;
     GLLinesUniform m_grid;
-    GLLines m_visibleAxial;
+
+    GLLines m_visibleShapeGraph;
+    GLPolygons m_visibleShapeGraphPolygons;
+    GLLinesUniform m_visibleShapeGraphLinksLines;
+    GLTrianglesUniform m_visibleShapeGraphLinksFills;
+    GLLinesUniform m_visibleShapeGraphUnlinksLines;
+    GLTrianglesUniform m_visibleShapeGraphUnlinksFills;
+
     GLLinesUniform m_visibleDrawingLines;
+
     GLRasterTexture m_visiblePointMap;
-    GLLines m_visibleDataMap;
+    GLLinesUniform m_visiblePointMapLinksLines;
+    GLTrianglesUniform m_visiblePointMapLinksFills;
+
+    GLLines m_visibleDataMapLines;
+    GLPolygons m_visibleDataMapPolygons;
 
     QPoint m_mouseLastPos;
     float m_eyePosX;
@@ -77,6 +95,8 @@ private:
     GLfloat m_screenRatio;
     int m_screenWidth;
     int m_screenHeight;
+
+    Point2f getWorldPoint(const QPoint &screenPoint);
 
     bool m_datasetChanged = false;
 
@@ -91,5 +111,17 @@ private:
     void loadAxialGLObjects();
     void loadVGAGLObjects();
     void loadVGAGLObjectsRequiringGLContext();
+
+    bool m_showLinks = false;
+
+    enum {
+        MOUSE_MODE_NONE = 0x0000,
+        MOUSE_MODE_SELECT = 0x10000,
+        MOUSE_MODE_JOIN = 0x20001,
+        MOUSE_MODE_UNJOIN = 0x20002,
+        MOUSE_MODE_SECOND_POINT = 0x00400,
+    };
+
+    int m_mouseMode = MOUSE_MODE_NONE;
 };
 

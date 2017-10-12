@@ -31,7 +31,6 @@
 #include "mainwindow.h"
 #include "depthmapView.h"
 #include "3DView.h"
-#include "glview.h"
 #include "PlotView.h"
 #include "tableView.h"
 #include "AboutDlg.h"
@@ -761,6 +760,11 @@ QDepthmapView *MainWindow::activeQDepthmapView()
             p = qobject_cast<Q3DView *>(activeSubWindow->widget());
             if(p) return (QDepthmapView *)(((Q3DView*)p)->pDoc->m_view[1]);
         }
+        if(!p)
+        {
+            p = qobject_cast<GLView *>(activeSubWindow->widget());
+            if(p) return (QDepthmapView *)(((GLView*)p)->m_pDoc->m_view[1]);
+        }
     }
     current_view_type = 0;
     return 0;
@@ -1002,7 +1006,7 @@ void MainWindow::updateActiveWindows()
         thirdViewToolBar->hide();
         plotToolBar->hide();
         current_view_type = VIEW_MAP;
-        switch(((QDepthmapView*)p)->m_curr_seleted)
+        switch(m_selected_mapbar_item)
         {
         case ID_MAPBAR_ITEM_SELECT:
             SelectButton->setChecked(true);
@@ -1084,6 +1088,16 @@ void MainWindow::updateGLWindows(bool datasetChanged, bool recentreView) {
         if(datasetChanged) child->notifyDatasetChanged();
         if(recentreView) child->matchViewToCurrentMetaGraph();
     }
+}
+
+GLView* MainWindow::getFirstGLView() {
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    for (int i = 0; i < windows.size(); ++i) {
+        GLView *child = qobject_cast<GLView*>(windows.at(i)->widget());
+        if(!child) continue;
+        return child;
+    }
+    return 0;
 }
 
 void MainWindow::switchLayoutDirection()
@@ -1768,21 +1782,25 @@ void MainWindow::OnzoomTo()
 
 void MainWindow::SelectButtonTriggered()
 {
+    m_selected_mapbar_item = ID_MAPBAR_ITEM_SELECT;
     activeQDepthmapView()->OnEditSelect();
 }
 
 void MainWindow::DragButtonTriggered()
 {
+    m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeQDepthmapView()->OnViewMove();
 }
 
 void MainWindow::SelectPenTriggered()
 {
+    m_selected_mapbar_item = ID_MAPBAR_ITEM_PENCIL;
     activeQDepthmapView()->OnEditPencil();
 }
 
 void MainWindow::AxialMapTriggered()
 {
+    m_selected_mapbar_item = ID_MAPBAR_ITEM_AL2;
     activeQDepthmapView()->OnToolsAxialMap();
 }
 
@@ -1795,9 +1813,15 @@ void MainWindow::zoomButtonTriggered()
 {
     int id = zoomInAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ZOOM_IN)
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_IN;
         activeQDepthmapView()->OnViewZoomIn();
+    }
     else
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_OUT;
         activeQDepthmapView()->OnViewZoomOut();
+    }
 }
 
 void MainWindow::FillButtonTriggered()
@@ -1812,38 +1836,69 @@ void MainWindow::FillButtonTriggered()
     }
 
     if(id == ID_MAPBAR_ITEM_FILL)
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_FILL;
         activeQDepthmapView()->OnEditFill();
+    }
     else if (id == ID_MAPBAR_ITEM_SEMIFILL)         // AV TV
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_SEMIFILL;
         activeQDepthmapView()->OnEditSemiFill();
+    }
     else
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_AUGMENT_FILL;
         activeQDepthmapView()->OnEditAugmentFill(); // AV TV
+    }
 }
 
 void MainWindow::LineButtonTriggered()
 {
     int id = SelectLineAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_LINETOOL)
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_LINETOOL;
         activeQDepthmapView()->OnEditLineTool();
+    }
     else
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_POLYGON;
         activeQDepthmapView()->OnEditPolygon();
+    }
 }
 
 void MainWindow::isoButtonTriggered()
 {
     int id = MakeIosAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_ISOVIST)
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_ISOVIST;
         activeQDepthmapView()->OnModeIsovist();
+    }
     else
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_HALFISOVIST;
         activeQDepthmapView()->OnModeHalfovist();
+    }
 }
 
 void MainWindow::joinButtonTriggered()
 {
     int id = JoinAct->data().value<int>();
     if(id == ID_MAPBAR_ITEM_JOIN)
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_JOIN;
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeJoin();
         activeQDepthmapView()->OnModeJoin();
+    }
     else
+    {
+        m_selected_mapbar_item = ID_MAPBAR_ITEM_UNJOIN;
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeUnjoin();
         activeQDepthmapView()->OnModeUnjoin();
+    }
 }
 
 void MainWindow::zoomModeTriggered()
@@ -2717,7 +2772,9 @@ void MainWindow::updateToolbar()
         {
             if (tmpView)
             {
-                if (tmpView->m_curr_seleted == ID_MAPBAR_ITEM_FILL || tmpView->m_curr_seleted == ID_MAPBAR_ITEM_SEMIFILL ||  tmpView->m_curr_seleted == ID_MAPBAR_ITEM_PENCIL)
+                if (m_selected_mapbar_item == ID_MAPBAR_ITEM_FILL
+                        || m_selected_mapbar_item == ID_MAPBAR_ITEM_SEMIFILL
+                        || m_selected_mapbar_item == ID_MAPBAR_ITEM_PENCIL)
                 {
                     tmpView->OnEditSelect();
                     SelectButton->setChecked(true);
@@ -2734,7 +2791,8 @@ void MainWindow::updateToolbar()
         {
             if (tmpView)
             {
-                if (tmpView->m_curr_seleted == ID_MAPBAR_ITEM_LINETOOL || tmpView->m_curr_seleted == ID_MAPBAR_ITEM_POLYGON)
+                if (m_selected_mapbar_item == ID_MAPBAR_ITEM_LINETOOL
+                        || m_selected_mapbar_item == ID_MAPBAR_ITEM_POLYGON)
                 {
                     tmpView->OnEditSelect();
                     SelectButton->setChecked(true);
@@ -2749,7 +2807,7 @@ void MainWindow::updateToolbar()
         {
             if (tmpView)
             {
-                if (tmpView->m_curr_seleted == ID_MAPBAR_ITEM_ISOVIST || tmpView->m_curr_seleted == ID_MAPBAR_ITEM_HALFISOVIST)
+                if (m_selected_mapbar_item == ID_MAPBAR_ITEM_ISOVIST || m_selected_mapbar_item == ID_MAPBAR_ITEM_HALFISOVIST)
                 {
                     tmpView->OnEditSelect();
                     SelectButton->setChecked(true);
@@ -2767,7 +2825,7 @@ void MainWindow::updateToolbar()
         {
             if (tmpView)
             {
-                if (tmpView->m_curr_seleted == ID_MAPBAR_ITEM_JOIN || tmpView->m_curr_seleted == ID_MAPBAR_ITEM_UNJOIN)
+                if (m_selected_mapbar_item == ID_MAPBAR_ITEM_JOIN || m_selected_mapbar_item == ID_MAPBAR_ITEM_UNJOIN)
                 {
                     tmpView->OnEditSelect();
                     SelectButton->setChecked(true);
@@ -2781,7 +2839,7 @@ void MainWindow::updateToolbar()
         {
             if (tmpView)
             {
-                if (tmpView->m_curr_seleted == ID_MAPBAR_ITEM_AL2)
+                if (m_selected_mapbar_item == ID_MAPBAR_ITEM_AL2)
                 {
                     tmpView->OnEditSelect();
                     SelectButton->setChecked(true);

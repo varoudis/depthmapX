@@ -74,12 +74,10 @@ void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, PafColor>> &c
     m_count = 0;
     m_data.resize(colouredLines.size() * 2 * DATA_DIMENSIONS);
 
-    std::vector<std::pair<SimpleLine, PafColor>>::const_iterator iter = colouredLines.begin(), end =
-    colouredLines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& colouredLine: colouredLines)
     {
-        const SimpleLine &line = iter->first;
-        const PafColor &colour = iter->second;
+        const SimpleLine &line = colouredLine.first;
+        const PafColor &colour = colouredLine.second;
 
         QVector3D colourVector(colour.redf(), colour.greenf(), colour.bluef());
         add(QVector3D(line.start().x, line.start().y, 0.0f), colourVector);

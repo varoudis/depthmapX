@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
+#include "depthmapX/gltrianglesuniform.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
@@ -24,37 +25,21 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
-#include <QRgb>
+#include <memory>
 
-class GLLinesUniform
+/**
+ * @brief The GLPolygons class is a plain wrapper class for multiple GLPolygon
+ * that acts as if it's a single globject
+ */
+class GLPolygons
 {
 public:
-    GLLinesUniform();
-    void loadLineData(const std::vector<SimpleLine>& lines, const QRgb& lineColour);
+    void loadPolygonData(const std::map<std::vector<Point2f>, PafColor>& colouredPolygons);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool coreProfile);
-    void updateGL(bool coreProfile);
+    void initializeGL(bool m_core);
+    void updateGL(bool m_core);
     void cleanup();
-    void updateColour(const QRgb& lineColour);
-    int vertexCount() const { return m_count / DATA_DIMENSIONS; }
-    GLLinesUniform( const GLLinesUniform& ) = delete;
-    GLLinesUniform& operator=(const GLLinesUniform& ) = delete;
 
 private:
-    const int DATA_DIMENSIONS = 3;
-    void setupVertexAttribs();
-    const GLfloat *constData() const { return m_data.constData(); }
-    void add(const QVector3D &v);
-
-    QVector<GLfloat> m_data;
-    int m_count;
-    bool m_built = false;
-    QVector4D m_colour = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
-
-    QOpenGLVertexArrayObject m_vao;
-    QOpenGLBuffer m_vbo;
-    QOpenGLShaderProgram *m_program;
-    int m_projMatrixLoc;
-    int m_mvMatrixLoc;
-    int m_colourVectorLoc;
+    std::vector<std::unique_ptr<GLTrianglesUniform>> m_polygons;
 };
