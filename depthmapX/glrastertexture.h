@@ -35,6 +35,8 @@ public:
     void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLRasterTexture( const GLRasterTexture& ) = delete;
+    GLRasterTexture& operator=(const GLRasterTexture& ) = delete;
 
 private:
     int DATA_DIMENSIONS = 5;
