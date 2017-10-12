@@ -49,7 +49,10 @@ HEADERS       = depthmapView.h \
     gllinesuniform.h \
     glview.h \
     gllines.h \
-    glrastertexture.h
+    glrastertexture.h \
+    glpolygons.h \
+    glutriangulator.h \
+    gltrianglesuniform.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -94,7 +97,10 @@ SOURCES       = depthmapView.cpp \
     gllinesuniform.cpp \
     glview.cpp \
     gllines.cpp \
-    glrastertexture.cpp
+    glrastertexture.cpp \
+    glpolygons.cpp \
+    glutriangulator.cpp \
+    gltrianglesuniform.cpp
 
 RESOURCES     = resource.qrc
 

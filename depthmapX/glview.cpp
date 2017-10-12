@@ -16,6 +16,8 @@
 
 
 #include "depthmapX/glview.h"
+#include "salalib/linkutils.h"
+#include "salalib/geometrygenerators.h"
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <math.h>
@@ -32,7 +34,7 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
       m_background(backgroundColour),
       m_foreground(foregroundColour)
 {
-    m_coreProfile = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
+    m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
     m_pDoc = doc;
 
 
@@ -62,8 +64,14 @@ GLView::~GLView()
     m_grid.cleanup();
     m_visibleDrawingLines.cleanup();
     m_visiblePointMap.cleanup();
-    m_visibleAxial.cleanup();
-    m_visibleDataMap.cleanup();
+    m_visibleShapeGraph.cleanup();
+    m_visibleShapeGraphPolygons.cleanup();
+    m_visibleShapeGraphLinksFills.cleanup();
+    m_visibleShapeGraphLinksLines.cleanup();
+    m_visibleShapeGraphUnlinksFills.cleanup();
+    m_visibleShapeGraphUnlinksLines.cleanup();
+    m_visibleDataMapLines.cleanup();
+    m_visibleDataMapPolygons.cleanup();
     doneCurrent();
 }
 
@@ -82,12 +90,20 @@ void GLView::initializeGL()
     initializeOpenGLFunctions();
     glClearColor(qRed(m_background)/255.0f, qGreen(m_background)/255.0f, qBlue(m_background)/255.0f, 1);
 
-    m_axes.initializeGL(m_coreProfile);
-    m_visibleDrawingLines.initializeGL(m_coreProfile);
-    m_visiblePointMap.initializeGL(m_coreProfile);
-    m_grid.initializeGL(m_coreProfile);
-    m_visibleAxial.initializeGL(m_coreProfile);
-    m_visibleDataMap.initializeGL(m_coreProfile);
+    m_axes.initializeGL(m_core);
+    m_visibleDrawingLines.initializeGL(m_core);
+    m_visiblePointMap.initializeGL(m_core);
+    m_grid.initializeGL(m_core);
+    m_visibleShapeGraph.initializeGL(m_core);
+    m_visibleShapeGraphPolygons.initializeGL(m_core);
+    m_visibleShapeGraphLinksFills.initializeGL(m_core);
+    m_visibleShapeGraphLinksLines.initializeGL(m_core);
+    m_visibleShapeGraphUnlinksFills.initializeGL(m_core);
+    m_visibleShapeGraphUnlinksLines.initializeGL(m_core);
+    m_visibleDataMapLines.initializeGL(m_core);
+    m_visibleDataMapPolygons.initializeGL(m_core);
+    m_visiblePointMapLinksLines.initializeGL(m_core);
+    m_visiblePointMapLinksFills.initializeGL(m_core);
 
     if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
         loadVGAGLObjectsRequiringGLContext();
@@ -110,28 +126,50 @@ void GLView::paintGL()
     if(m_datasetChanged) {
 
         loadDrawingGLObjects();
-        m_visibleDrawingLines.updateGL(m_coreProfile);
+        m_visibleDrawingLines.updateGL(m_core);
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
             loadAxialGLObjects();
-            m_visibleAxial.updateGL(m_coreProfile);
+            m_visibleShapeGraph.updateGL(m_core);
+            m_visibleShapeGraphPolygons.updateGL(m_core);
+            m_visibleShapeGraphLinksFills.updateGL(m_core);
+            m_visibleShapeGraphLinksLines.updateGL(m_core);
+            m_visibleShapeGraphUnlinksFills.updateGL(m_core);
+            m_visibleShapeGraphUnlinksLines.updateGL(m_core);
         }
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
             loadDataMapGLObjects();
-            m_visibleDataMap.updateGL(m_coreProfile);
+            m_visibleDataMapLines.updateGL(m_core);
+            m_visibleDataMapPolygons.updateGL(m_core);
         }
 
         if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
             loadVGAGLObjects();
-            m_visiblePointMap.updateGL(m_coreProfile);
-            m_grid.updateGL(m_coreProfile);
+            m_visiblePointMap.updateGL(m_core);
+            m_grid.updateGL(m_core);
+            m_visiblePointMapLinksLines.updateGL(m_core);
+            m_visiblePointMapLinksFills.updateGL(m_core);
             loadVGAGLObjectsRequiringGLContext();
         }
 
         m_datasetChanged = false;
     }
 
+    if(m_showLinks) {
+        glLineWidth(4);
+        if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
+            m_visiblePointMapLinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visiblePointMapLinksLines.paintGL(m_mProj, m_mView, m_mModel);
+        }
+        if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
+            m_visibleShapeGraphLinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphLinksLines.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphUnlinksFills.paintGL(m_mProj, m_mView, m_mModel);
+            m_visibleShapeGraphUnlinksLines.paintGL(m_mProj, m_mView, m_mModel);
+        }
+        glLineWidth(1);
+    }
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
 
     if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWVGA) {
@@ -142,11 +180,13 @@ void GLView::paintGL()
     }
 
     if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWAXIAL) {
-        m_visibleAxial.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleShapeGraph.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleShapeGraphPolygons.paintGL(m_mProj, m_mView, m_mModel);
     }
 
     if(m_pDoc->m_meta_graph->getViewClass() & m_pDoc->m_meta_graph->VIEWDATA) {
-        m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleDataMapLines.paintGL(m_mProj, m_mView, m_mModel);
+        m_visibleDataMapPolygons.paintGL(m_mProj, m_mView, m_mModel);
     }
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
@@ -167,12 +207,42 @@ void GLView::loadDrawingGLObjects() {
 
 void GLView::loadDataMapGLObjects() {
     ShapeMap & currentDataMap = m_pDoc->m_meta_graph->getDisplayedDataMap();
-    m_visibleDataMap.loadLineData(currentDataMap.getAllShapesAsLineColourPairs());
+    m_visibleDataMapLines.loadLineData(currentDataMap.getAllLinesWithColour());
+    m_visibleDataMapPolygons.loadPolygonData(currentDataMap.getAllPolygonsWithColour());
 }
 
 void GLView::loadAxialGLObjects() {
     ShapeGraph &currentShapeGraph = m_pDoc->m_meta_graph->getDisplayedShapeGraph();
-    m_visibleAxial.loadLineData(currentShapeGraph.getAllShapesAsLineColourPairs());
+    m_visibleShapeGraph.loadLineData(currentShapeGraph.getAllLinesWithColour());
+    m_visibleShapeGraphPolygons.loadPolygonData(currentShapeGraph.getAllPolygonsWithColour());
+
+    const std::vector<SimpleLine> &linkLines = currentShapeGraph.getAllLinkLines();
+    std::vector<Point2f> linkPointLocations;
+    for (auto& linkLine: linkLines)
+    {
+        linkPointLocations.push_back(linkLine.start());
+        linkPointLocations.push_back(linkLine.end());
+    }
+
+    const std::vector<Point2f> &linkFillTriangles =
+            GeometryGenerators::generateMultipleDiskTriangles(32, currentShapeGraph.getSpacing()*0.1, linkPointLocations);
+    m_visibleShapeGraphLinksFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+
+    std::vector<SimpleLine> linkFillPerimeters =
+            GeometryGenerators::generateMultipleCircleLines(32, currentShapeGraph.getSpacing()*0.1, linkPointLocations);
+    linkFillPerimeters.insert( linkFillPerimeters.end(), linkLines.begin(), linkLines.end() );
+    m_visibleShapeGraphLinksLines.loadLineData(linkFillPerimeters, qRgb(0,255,0));
+
+
+    const std::vector<Point2f> &unlinkPoints = currentShapeGraph.getAllUnlinkPoints();
+
+    const std::vector<Point2f> &unlinkFillTriangles =
+            GeometryGenerators::generateMultipleDiskTriangles(32, currentShapeGraph.getSpacing()*0.1, unlinkPoints);
+    m_visibleShapeGraphUnlinksFills.loadTriangleData(unlinkFillTriangles, PafColor(1, 1, 1));
+
+    const std::vector<SimpleLine> &unlinkFillPerimeters =
+            GeometryGenerators::generateMultipleCircleLines(32, currentShapeGraph.getSpacing()*0.1, unlinkPoints);
+    m_visibleShapeGraphUnlinksLines.loadLineData(unlinkFillPerimeters, qRgb(255,0,0));
 }
 
 void GLView::loadVGAGLObjects() {
@@ -193,6 +263,25 @@ void GLView::loadVGAGLObjects() {
             gridData.push_back(SimpleLine(region.bottom_left.x, offsetY + y*spacing, region.top_right.x, offsetY + y*spacing));
         }
         m_grid.loadLineData(gridData, gridColour);
+    }
+    if(m_showLinks) {
+
+        const std::vector<SimpleLine> &mergedPixelLines = depthmapX::getMergedPixelsAsLines(currentPointMap);
+        std::vector<Point2f> mergedPixelLocations;
+        for (auto& mergeLine: mergedPixelLines)
+        {
+            mergedPixelLocations.push_back(mergeLine.start());
+            mergedPixelLocations.push_back(mergeLine.end());
+        }
+
+        const std::vector<Point2f> &linkFillTriangles =
+                GeometryGenerators::generateMultipleDiskTriangles(32, currentPointMap.getSpacing()*0.25, mergedPixelLocations);
+        m_visiblePointMapLinksFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+
+        std::vector<SimpleLine> linkFillPerimeters =
+                GeometryGenerators::generateMultipleCircleLines(32, currentPointMap.getSpacing()*0.25, mergedPixelLocations);
+        linkFillPerimeters.insert( linkFillPerimeters.end(), mergedPixelLines.begin(), mergedPixelLines.end() );
+        m_visiblePointMapLinksLines.loadLineData(linkFillPerimeters, qRgb(0,255,0));
     }
 }
 void GLView::loadVGAGLObjectsRequiringGLContext() {
@@ -219,6 +308,95 @@ void GLView::resizeGL(int w, int h)
     m_screenHeight = h;
     m_screenRatio = GLfloat(w) / h;
     recalcView();
+}
+
+void GLView::mouseReleaseEvent(QMouseEvent *event)
+{
+    Point2f worldPoint = getWorldPoint(event->pos());
+    if (!m_pDoc->m_communicator) {
+        QtRegion r( worldPoint, worldPoint );
+        bool selected = false;
+        switch(m_mouseMode)
+        {
+        case MOUSE_MODE_NONE:
+        {
+            // nothing, deselect
+            m_pDoc->m_meta_graph->clearSel();
+            break;
+        }
+        case MOUSE_MODE_SELECT:
+        {
+            // typical selection
+            m_pDoc->m_meta_graph->setCurSel( r, false );
+            break;
+        }
+        case MOUSE_MODE_JOIN:
+        {
+            selected = m_pDoc->m_meta_graph->setCurSel( r, false );
+            if(selected) {
+                m_mouseMode = MOUSE_MODE_JOIN | MOUSE_MODE_SECOND_POINT;
+            }
+            break;
+        }
+        case MOUSE_MODE_JOIN | MOUSE_MODE_SECOND_POINT:
+        {
+            int selectedCount = m_pDoc->m_meta_graph->getSelCount();
+            if (selectedCount > 0) {
+                if (m_pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                    m_pDoc->m_meta_graph->getDisplayedPointMap().mergePoints( worldPoint );
+                } else if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                    m_pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
+                    const pvecint& selectedSet = m_pDoc->m_meta_graph->getSelSet();
+                    if (selectedSet.size() == 2) {
+                        // axial is only joined one-by-one
+                        m_pDoc->modifiedFlag = true;
+                        m_pDoc->m_meta_graph->getDisplayedShapeGraph().linkShapes(selectedSet[0], selectedSet[1], true);
+                        m_pDoc->m_meta_graph->clearSel();
+                    }
+                }
+                m_pDoc->m_meta_graph->clearSel();
+                m_mouseMode = MOUSE_MODE_JOIN;
+            }
+            break;
+        }
+        case MOUSE_MODE_UNJOIN:
+        {
+            selected = m_pDoc->m_meta_graph->setCurSel( r, false );
+            if(selected) {
+                if (m_pDoc->m_meta_graph->getState() & MetaGraph::POINTMAPS) {
+                    if (m_pDoc->m_meta_graph->getDisplayedPointMap().unmergePoints()) {
+                        m_pDoc->modifiedFlag = true;
+                        m_pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
+                    }
+                } else {
+                    m_mouseMode = MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT;
+                }
+            }
+            break;
+        }
+        case MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT:
+        {
+            int selectedCount = m_pDoc->m_meta_graph->getSelCount();
+            if (selectedCount > 0) {
+                if (m_pDoc->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS && selectedCount == 1) {
+                    m_pDoc->m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
+                    const pvecint& selectedSet = m_pDoc->m_meta_graph->getSelSet();
+                    if (selectedSet.size() == 2) {
+                        // axial is only joined one-by-one
+                        m_pDoc->modifiedFlag = true;
+                        m_pDoc->m_meta_graph->getDisplayedShapeGraph().unlinkShapes(selectedSet[0], selectedSet[1], true);
+                        m_pDoc->m_meta_graph->clearSel();
+                    }
+                }
+                m_pDoc->m_meta_graph->clearSel();
+                m_mouseMode = MOUSE_MODE_UNJOIN;
+            }
+            break;
+        }
+        }
+
+        m_pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION);
+    }
 }
 
 void GLView::mousePressEvent(QMouseEvent *event)
@@ -261,8 +439,8 @@ void GLView::zoomBy(float dzf, int mouseX, int mouseY)
 }
 void GLView::panBy(int dx, int dy)
 {
-    m_eyePosX += m_zoomFactor * m_screenRatio * GLfloat(dx) / m_screenWidth;
-    m_eyePosY -= m_zoomFactor * GLfloat(dy) / m_screenWidth;
+    m_eyePosX += m_zoomFactor * GLfloat(dx) / m_screenHeight;
+    m_eyePosY -= m_zoomFactor * GLfloat(dy) / m_screenHeight;
 
     recalcView();
 }
@@ -281,6 +459,12 @@ void GLView::recalcView()
     }
     m_mProj.translate(m_eyePosX, m_eyePosY, 0.0f);
     update();
+}
+
+Point2f GLView::getWorldPoint(const QPoint &screenPoint) {
+    return Point2f(+ m_zoomFactor * float(screenPoint.x() - m_screenWidth*0.5)  / m_screenHeight - m_eyePosX,
+                   - m_zoomFactor * float(screenPoint.y() - m_screenHeight*0.5) / m_screenHeight - m_eyePosY);
+
 }
 
 void GLView::matchViewToCurrentMetaGraph() {
@@ -306,4 +490,24 @@ void GLView::matchViewToRegion(QtRegion region) {
     }
     m_minZoomFactor = m_zoomFactor * 0.001;
     m_maxZoomFactor = m_zoomFactor * 10;
+}
+
+void GLView::OnModeJoin()
+{
+    if (m_pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        m_mouseMode = MOUSE_MODE_JOIN;
+        m_showLinks = true;
+        m_pDoc->m_meta_graph->clearSel();
+        notifyDatasetChanged();
+    }
+}
+
+void GLView::OnModeUnjoin()
+{
+    if (m_pDoc->m_meta_graph->getState() & (MetaGraph::POINTMAPS | MetaGraph::SHAPEGRAPHS)) {
+        m_mouseMode = MOUSE_MODE_UNJOIN;
+        m_showLinks = true;
+        m_pDoc->m_meta_graph->clearSel();
+        notifyDatasetChanged();
+    }
 }

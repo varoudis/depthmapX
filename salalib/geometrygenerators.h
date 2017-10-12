@@ -15,19 +15,15 @@
 
 #pragma once
 
-#include "mgraph.h"
-#include "genlib/exceptions.h"
+#include "genlib/p2dpoly.h"
 #include <vector>
 
-namespace depthmapX {
+class GeometryGenerators
+{
+public:
+    static std::vector<Point2f> generateDiskTriangles(int sides, float radius, Point2f position = Point2f(0,0));
+    static std::vector<Point2f> generateMultipleDiskTriangles(int sides, float radius, std::vector<Point2f> positions);
 
-    class InvalidLinkException : public depthmapX::BaseException
-    {
-    public:
-        InvalidLinkException(std::string message) : depthmapX::BaseException(message)
-        {}
-    };
-    std::vector<PixelRefPair> pixelateMergeLines(const std::vector<Line>& mergeLines, PointMap& currentMap);
-    void mergePixelPairs(const std::vector<PixelRefPair> &links, PointMap& currentMap);
-    std::vector<SimpleLine> getMergedPixelsAsLines(PointMap& currentMap);
-}
+    static std::vector<SimpleLine> generateCircleLines(int sides, float radius, Point2f position = Point2f(0,0));
+    static std::vector<SimpleLine> generateMultipleCircleLines(int sides, float radius, std::vector<Point2f> positions);
+};

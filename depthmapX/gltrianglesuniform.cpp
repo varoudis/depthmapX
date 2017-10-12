@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "gllinesuniform.h"
+#include "gltrianglesuniform.h"
 #include <qmath.h>
 
 static const char *vertexShaderSourceCore =
@@ -49,35 +49,34 @@ static const char *fragmentShaderSource =
     "}\n";
 
 /**
- * @brief GLLinesUniform::GLLinesUniform
- * This class is an OpenGL representation of  multiple lines of uniform colour
+ * @brief GLPolygon::GLPolygon
+ * This class is an OpenGL representation of a set of triangles of uniform colour
  */
 
-GLLinesUniform::GLLinesUniform()
+GLTrianglesUniform::GLTrianglesUniform()
     : m_count(0),
       m_program(0)
 {
 
 }
 
-void GLLinesUniform::loadLineData(const std::vector<SimpleLine>& lines, const QRgb &lineColour)
+void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour)
 {
-    m_built = false;
+    built = false;
 
     m_count = 0;
-    m_data.resize(lines.size() * 2 * DATA_DIMENSIONS);
+    m_data.resize(points.size() * DATA_DIMENSIONS);
 
-    for (auto& line: lines)
+    for (auto& point: points)
     {
-        add(QVector3D(line.start().x, line.start().y, 0.0f));
-        add(QVector3D(line.end().x, line.end().y, 0.0f));
+        add(QVector3D(point.x, point.y, 0.0f));
     }
-    m_colour.setX(qRed(lineColour)/255.0f);
-    m_colour.setY(qGreen(lineColour)/255.0f);
-    m_colour.setZ(qBlue(lineColour)/255.0f);
+    m_colour.setX(polyColour.redf());
+    m_colour.setY(polyColour.greenf());
+    m_colour.setZ(polyColour.bluef());
 }
 
-void GLLinesUniform::setupVertexAttribs()
+void GLTrianglesUniform::setupVertexAttribs()
 {
     m_vbo.bind();
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -86,12 +85,12 @@ void GLLinesUniform::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLLinesUniform::initializeGL(bool coreProfile)
+void GLTrianglesUniform::initializeGL(bool m_core)
 {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->link();
 
@@ -100,69 +99,63 @@ void GLLinesUniform::initializeGL(bool coreProfile)
     m_mvMatrixLoc = m_program->uniformLocation("mvMatrix");
     m_colourVectorLoc = m_program->uniformLocation("colourVector");
 
-    // Create a vertex array object. In OpenGL ES 2.0 and OpenGL 2.x
-    // implementations this is optional and support may not be present
-    // at all. Nonetheless the below code works in all cases and makes
-    // sure there is a VAO when one is needed.
     m_vao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
 
-    // Setup our vertex buffer object.
     m_vbo.create();
     m_vbo.bind();
     m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
 
-    // Store the vertex attribute bindings for the program.
     setupVertexAttribs();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
-    m_built = true;
+    built = true;
 }
 
-void GLLinesUniform::updateGL(bool coreProfile) {
+void GLTrianglesUniform::updateGL(bool m_core) {
     if(m_program == 0) {
         // has not been initialised yet, do that instead
-        initializeGL(coreProfile);
+        initializeGL(m_core);
     } else {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
         m_vbo.release();
-        m_built = true;
+        built = true;
     }
 }
 
-void GLLinesUniform::updateColour(const QRgb &lineColour)
+void GLTrianglesUniform::updateColour(const PafColor &polyColour)
 {
-    m_colour.setX(qRed(lineColour)/255.0f);
-    m_colour.setY(qGreen(lineColour)/255.0f);
-    m_colour.setZ(qBlue(lineColour)/255.0f);
+    m_colour.setX(polyColour.redf());
+    m_colour.setY(polyColour.greenf());
+    m_colour.setZ(polyColour.bluef());
     m_program->bind();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
 }
 
-void GLLinesUniform::cleanup()
+void GLTrianglesUniform::cleanup()
 {
-    if(!m_built) return;
+    if(!built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
 }
 
-void GLLinesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
+void GLTrianglesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!m_built) return;
+    if(!built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
 
-    glDrawArrays(GL_LINES, 0, vertexCount());
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount());
 
     m_program->release();
 }
 
-void GLLinesUniform::add(const QVector3D &v)
+void GLTrianglesUniform::add(const QVector3D &v)
 {
     GLfloat *p = m_data.data() + m_count;
     *p++ = v.x();

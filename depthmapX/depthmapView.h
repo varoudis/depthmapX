@@ -49,7 +49,6 @@ public:
 
     Settings &mSettings;
 
-	int m_curr_seleted;
 	bool m_showgrid;
 	bool m_showtext;
 	bool m_showlinks;

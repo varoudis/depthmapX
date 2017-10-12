@@ -34,11 +34,18 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
     shapeMap->makeLineShape(Line(line0Start, line0End));
     shapeMap->makeLineShape(Line(line1Start, line1End));
 
+    pvecpoint polyVertices;
+    polyVertices.push_back(Point2f(-1,-1));
+    polyVertices.push_back(Point2f( 2,-1));
+    polyVertices.push_back(Point2f( 0, 0));
+
+    shapeMap->makePolyShape(polyVertices, false, false);
+
     SECTION("ShapeMap::getAllShapesAsLines")
     {
         std::vector<SimpleLine> lines = shapeMap->getAllShapesAsLines();
 
-        REQUIRE(lines.size() == 2);
+        REQUIRE(lines.size() == 5);
 
         REQUIRE(lines[0].start().x == Approx(min(line0Start.x, line0End.x)).epsilon(EPSILON));
         REQUIRE(lines[0].start().y == Approx(min(line0Start.y, line0End.y)).epsilon(EPSILON));
@@ -49,11 +56,26 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         REQUIRE(lines[1].start().y == Approx(min(line1Start.y, line1End.y)).epsilon(EPSILON));
         REQUIRE(lines[1].end().x == Approx(max(line1Start.x, line1End.x)).epsilon(EPSILON));
         REQUIRE(lines[1].end().y == Approx(max(line1Start.y, line1End.y)).epsilon(EPSILON));
+
+        REQUIRE(lines[2].start().x == Approx(polyVertices[0].x).epsilon(EPSILON));
+        REQUIRE(lines[2].start().y == Approx(polyVertices[0].y).epsilon(EPSILON));
+        REQUIRE(lines[2].end().x == Approx(polyVertices[1].x).epsilon(EPSILON));
+        REQUIRE(lines[2].end().y == Approx(polyVertices[1].y).epsilon(EPSILON));
+
+        REQUIRE(lines[3].start().x == Approx(polyVertices[1].x).epsilon(EPSILON));
+        REQUIRE(lines[3].start().y == Approx(polyVertices[1].y).epsilon(EPSILON));
+        REQUIRE(lines[3].end().x == Approx(polyVertices[2].x).epsilon(EPSILON));
+        REQUIRE(lines[3].end().y == Approx(polyVertices[2].y).epsilon(EPSILON));
+
+        REQUIRE(lines[4].start().x == Approx(polyVertices[2].x).epsilon(EPSILON));
+        REQUIRE(lines[4].start().y == Approx(polyVertices[2].y).epsilon(EPSILON));
+        REQUIRE(lines[4].end().x == Approx(polyVertices[0].x).epsilon(EPSILON));
+        REQUIRE(lines[4].end().y == Approx(polyVertices[0].y).epsilon(EPSILON));
     }
-    SECTION("ShapeMap::getAllShapesAsLineColourPairs")
+    SECTION("ShapeMap::getAllLinesWithColour")
     {
         // displayed attribute is shape_ref
-        std::vector<std::pair<SimpleLine, PafColor>> colouredLines = shapeMap->getAllShapesAsLineColourPairs();
+        std::vector<std::pair<SimpleLine, PafColor>> colouredLines = shapeMap->getAllLinesWithColour();
 
         REQUIRE(colouredLines.size() == 2);
 
@@ -72,5 +94,26 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         REQUIRE(colouredLines[1].second.redf() == Approx(0.49804f).epsilon(EPSILON));
         REQUIRE(colouredLines[1].second.greenf() == Approx(0.49804f).epsilon(EPSILON));
         REQUIRE(colouredLines[1].second.bluef() == Approx(0.49804f).epsilon(EPSILON));
+    }
+    SECTION("ShapeMap::getAllPolygonsWithColour")
+    {
+        // displayed attribute is shape_ref
+        std::map<std::vector<Point2f>, PafColor> colouredPolygons = shapeMap->getAllPolygonsWithColour();
+
+        REQUIRE(colouredPolygons.size() == 1);
+
+        std::map<std::vector<Point2f>, PafColor>::const_iterator iter = colouredPolygons.begin();
+        const std::vector<Point2f> vertices = iter->first;
+        const PafColor colour = iter->second;
+
+        REQUIRE(vertices[0].x == Approx(polyVertices[0].x).epsilon(EPSILON));
+        REQUIRE(vertices[0].y == Approx(polyVertices[0].y).epsilon(EPSILON));
+        REQUIRE(vertices[1].x == Approx(polyVertices[1].x).epsilon(EPSILON));
+        REQUIRE(vertices[1].y == Approx(polyVertices[1].y).epsilon(EPSILON));
+        REQUIRE(vertices[2].x == Approx(polyVertices[2].x).epsilon(EPSILON));
+        REQUIRE(vertices[2].y == Approx(polyVertices[2].y).epsilon(EPSILON));
+        REQUIRE(colour.redf() == Approx(0.49804f).epsilon(EPSILON));
+        REQUIRE(colour.greenf() == Approx(0.49804f).epsilon(EPSILON));
+        REQUIRE(colour.bluef() == Approx(0.49804f).epsilon(EPSILON));
     }
 }

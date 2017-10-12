@@ -16,45 +16,47 @@
 
 #pragma once
 
+#include "genlib/p2dpoly.h"
+#include "salalib/vertex.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
+#include <QOpenGLFunctions>
+#include <QRgb>
 
-class GLRasterTexture
+class GLTrianglesUniform
 {
 public:
-    GLRasterTexture();
-    void loadRegionData(float minX, float minY, float maxX, float maxY);
-    void loadPixelData(QImage &data);
-    void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool coreProfile);
-    void updateGL(bool coreProfile);
+    GLTrianglesUniform();
+    void loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour);
+    void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
+    void initializeGL(bool m_core);
+    void updateGL(bool m_core);
     void cleanup();
+    void updateColour(const PafColor &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
-    GLRasterTexture( const GLRasterTexture& ) = delete;
-    GLRasterTexture& operator=(const GLRasterTexture& ) = delete;
+    GLTrianglesUniform( const GLTrianglesUniform& ) = delete;
+    GLTrianglesUniform& operator=(const GLTrianglesUniform& ) = delete;
 
 private:
-    int DATA_DIMENSIONS = 5;
-
+    bool dataLoaded = false;
+    const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
     const GLfloat *constData() const { return m_data.constData(); }
-    void add(const QVector3D &v, const QVector2D &tc);
+    void add(const QVector3D &v);
 
     QVector<GLfloat> m_data;
     int m_count;
-    bool m_built = false;
+    bool built = false;
+    QVector4D m_colour = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo;
     QOpenGLShaderProgram *m_program;
     int m_projMatrixLoc;
     int m_mvMatrixLoc;
-    int m_textureSamplerLoc;
-
-    QOpenGLTexture m_texture;
+    int m_colourVectorLoc;
 };
