@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 // This is my code to make a set of axial lines from a set of boundary lines
 
 #include <math.h>
@@ -29,6 +28,7 @@
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
 
+#include <stdexcept>
 // for mapinfo interface
 #include "MapInfoData.h"
 
@@ -2880,7 +2880,7 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
 bool ShapeMap::importTxt(istream& stream, bool csv)
 {
    std::string inputline;
-   stream >> inputline;
+   std::getline(stream, inputline);
    
    // if not known to be csv or tab delimited, try both:
    if (!csv) {
@@ -2965,7 +2965,7 @@ bool ShapeMap::importTxt(istream& stream, bool csv)
    prefvec<pvecfloat> table;
 
    while (!stream.eof()) {
-      stream >> inputline;
+      std::getline(stream, inputline);
       if (!inputline.empty()) {
          auto strings = dXstring::split(inputline, csv ? ',' : '\t');
          if (!strings.size()) {

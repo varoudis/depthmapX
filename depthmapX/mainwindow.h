@@ -95,6 +95,7 @@ protected:
 
 private slots:
     void updateActiveWindows();
+    void updateSubWindowTitles(QString newTitle);
     void updateWindowMenu();
     void setActiveSubWindow(QWidget *window);
     void OnSelchangingTree(QTreeWidgetItem* item, int col);
