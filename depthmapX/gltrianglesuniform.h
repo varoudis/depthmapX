@@ -38,6 +38,8 @@ public:
     void cleanup();
     void updateColour(const PafColor &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLTrianglesUniform( const GLTrianglesUniform& ) = delete;
+    GLTrianglesUniform& operator=(const GLTrianglesUniform& ) = delete;
 
 private:
     bool dataLoaded = false;

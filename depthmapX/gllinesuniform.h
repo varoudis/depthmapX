@@ -37,6 +37,8 @@ public:
     void cleanup();
     void updateColour(const QRgb& lineColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLLinesUniform( const GLLinesUniform& ) = delete;
+    GLLinesUniform& operator=(const GLLinesUniform& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 3;

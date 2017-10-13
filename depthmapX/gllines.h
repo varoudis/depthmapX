@@ -39,6 +39,8 @@ public:
     void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLLines( const GLLines& ) = delete;
+    GLLines& operator=(const GLLines& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 6;
