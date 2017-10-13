@@ -432,9 +432,13 @@ void RenderThread::run()
 
       case CMSCommunicator::AGENTANALYSIS:
          {
-            pDoc->m_meta_graph->runAgentEngine( comm );
-            pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
-            pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_DATA );
+            try {
+              pDoc->m_meta_graph->runAgentEngine( comm );
+              pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
+              pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_DATA );
+            } catch (depthmapX::PointMapException const & e) {
+              emit runtimeExceptionThrown(e.getErrorType(), e.what());
+          }
          }
          break;
 

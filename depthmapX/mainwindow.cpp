@@ -703,9 +703,14 @@ void MainWindow::OnFileSave()
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnFileSave();
-        statusBar()->showMessage(tr("File saved"), 2000);
-        setCurrentFile(m_p->m_opened_name);
+        bool saved = m_p->OnFileSave();
+        if(saved) {
+            statusBar()->showMessage(tr("File saved"), 2000);
+            setCurrentFile(m_p->m_opened_name);
+            updateSubWindowTitles(m_p->m_base_title);
+        } else {
+            statusBar()->showMessage(tr("File not saved"), 2000);
+        }
     }
 }
 
@@ -714,10 +719,36 @@ void MainWindow::OnFileSaveAs()
     QGraphDoc* m_p = activeQDepthmapDoc();
     if(m_p)
     {
-        m_p->OnFileSaveAs();
-        statusBar()->showMessage(tr("File saved"), 2000);
-        setCurrentFile(m_p->m_opened_name);
+        bool saved = m_p->OnFileSaveAs();
+        if(saved) {
+            statusBar()->showMessage(tr("File saved"), 2000);
+            setCurrentFile(m_p->m_opened_name);
+            updateSubWindowTitles(m_p->m_base_title);
+        } else {
+            statusBar()->showMessage(tr("File not saved"), 2000);
+        }
     }
+}
+void MainWindow::updateSubWindowTitles(QString newTitle) {
+    QList<QMdiSubWindow *> windowList = mdiArea->subWindowList();
+    QList<QMdiSubWindow *>::iterator iter = windowList.begin(), end =
+    windowList.end();
+    for ( ; iter != end; ++iter )
+    {
+        QWidget *p = 0;
+        if (QMdiSubWindow *subWindow = *iter)
+        {
+            p = qobject_cast<QDepthmapView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Map View");
+            p = qobject_cast<QPlotView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Scatter Plot");
+            p = qobject_cast<tableView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":Table View");
+            p = qobject_cast<Q3DView *>(subWindow->widget());
+            if(p) subWindow->setWindowTitle(newTitle +":3D View");
+        }
+    }
+
 }
 
 void MainWindow::OnAppAbout()
@@ -1225,9 +1256,9 @@ void MainWindow::OnSelchangingList()
 {
     if(in_FocusGraph) return;
 
-    int row = 0;
+    int row = -1;
     row = m_attrWindow->currentRow();
-    if(row && m_treeDoc){
+    if(row > -1 && m_treeDoc){
       MetaGraph *graph = m_treeDoc->m_meta_graph;
       if (graph->viewingProcessed()) {
          graph->setDisplayedAttribute(row - 1);
