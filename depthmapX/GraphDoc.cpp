@@ -50,6 +50,7 @@
 #include "AttributeSummary.h"
 #include "depthmapView.h"
 #include "viewhelpers.h"
+#include <QMetaType>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -57,6 +58,7 @@
 #include "compatibilitydefines.h"
 
 QT_BEGIN_NAMESPACE
+Q_DECLARE_METATYPE(std::string)
 
 QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 {
@@ -88,6 +90,19 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 
    m_meta_graph->setProperties(author.toStdString(),organisation.toStdString(),date,version.toStdString());
 
+    qRegisterMetaType< std::string >();
+    connect(&m_thread, &RenderThread::runtimeExceptionThrown, this, &QGraphDoc::exceptionThrownInRenderThread);
+}
+void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
+    if(type == depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS) {
+        std::stringstream message;
+        message << "This operation requires isovist analysis. To run it go to: ";
+        message << "Tools -> Visibility -> Run Visibility Graph Analysis... ";
+        message << "and select \"Calculate isovist properties\"";
+        message << flush;
+        QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                             QMessageBox::Ok, QMessageBox::Ok);
+    }
 }
 
 bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *originator) // (almost) thread safe
@@ -1809,11 +1824,11 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
    return ret;
 }
 
-void QGraphDoc::OnFileSave()
+bool QGraphDoc::OnFileSave()
 {
 	QString newName = m_opened_name;
 	if (newName.isEmpty()) {
-		newName = windowTitle() + tr(".graph");
+        newName = m_base_title + tr(".graph");
 		QFileDialog::Options options = 0;
 		QString outfile = QFileDialog::getSaveFileName(
 								   0, tr("Save As"),
@@ -1821,21 +1836,25 @@ void QGraphDoc::OnFileSave()
 								   tr("Graph file (*.graph)\nAll files (*.*)"),
 								   0,
 								   options);
-		if (outfile.isEmpty()) return;
+        if (outfile.isEmpty()) return false;
 
 		m_opened_name = outfile;
 
         FILE* fp = fopen(m_opened_name.toLatin1(), "wb");
 		fclose(fp);
 
-		OnSaveDocument(outfile);
-		return;
+        OnSaveDocument(outfile);
+
+        QFilePath path(m_opened_name);
+        m_base_title = path.m_name;
+        return true;
 	}
 	
-	OnSaveDocument(newName);
+    OnSaveDocument(newName);
+    return true;
 }
 
-void QGraphDoc::OnFileSaveAs()
+bool QGraphDoc::OnFileSaveAs()
 {
    // This is based on Microsoft's "DoSave" function, but
    // it allows two options for saving: one as the current 
@@ -1843,7 +1862,7 @@ void QGraphDoc::OnFileSaveAs()
 
 	QString newName = m_opened_name;
  	if (newName.isEmpty()) {
-       newName = windowTitle() + tr(".graph");
+       newName = m_base_title + tr(".graph");
 	}
 
 	QFileDialog::Options options = 0;
@@ -1855,7 +1874,7 @@ void QGraphDoc::OnFileSaveAs()
                                options);
 
 	if (outfile.isEmpty())
-		return;
+        return false;
 
     FILE* fp = fopen(outfile.toLatin1(), "wb");
 	fclose(fp);
@@ -1863,7 +1882,10 @@ void QGraphDoc::OnFileSaveAs()
     OnSaveDocument(outfile.toLatin1());
 	
 	// reset the title and change the document name
-	m_opened_name = newName;
+    m_opened_name = outfile;
+    QFilePath path(m_opened_name);
+    m_base_title = path.m_name;
+    return true;
 }
 
 int QGraphDoc::OnSaveDocument(QString lpszPathName) 
