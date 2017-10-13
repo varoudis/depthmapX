@@ -38,11 +38,8 @@ void GLPointMap::loadGLObjects(PointMap& pointMap) {
     if(m_showLinks) {
         const std::vector<SimpleLine> &mergedPixelLines = depthmapX::getMergedPixelsAsLines(pointMap);
         std::vector<Point2f> mergedPixelLocations;
-        std::vector<SimpleLine>::const_iterator iter = mergedPixelLines.begin(), end =
-        mergedPixelLines.end();
-        for ( ; iter != end; ++iter )
+        for (auto& mergeLine: mergedPixelLines)
         {
-            SimpleLine mergeLine = *iter;
             mergedPixelLocations.push_back(mergeLine.start());
             mergedPixelLocations.push_back(mergeLine.end());
         }
