@@ -21,11 +21,8 @@ void GLShapeGraph::loadGLObjects(ShapeGraph &shapeGraph) {
     m_shapeMap.loadGLObjects(shapeGraph);
     const std::vector<SimpleLine> &linkLines = shapeGraph.getAllLinkLines();
     std::vector<Point2f> linkPointLocations;
-    std::vector<SimpleLine>::const_iterator iter = linkLines.begin(), end =
-    linkLines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& linkLine: linkLines)
     {
-        SimpleLine linkLine = *iter;
         linkPointLocations.push_back(linkLine.start());
         linkPointLocations.push_back(linkLine.end());
     }
