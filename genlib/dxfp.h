@@ -26,6 +26,8 @@
 // The parser reads in vertices, lines and polylines, and stores them in the
 // defined layers.  It also reads in any line types defined.
 
+#include <map>
+
 class DxfToken;
 
 class DxfTableRow;
@@ -237,7 +239,7 @@ public:
 protected:
    int m_attributes;
    int m_vertex_count;
-   prefvec<DxfVertex> m_vertices;
+   std::vector<DxfVertex> m_vertices;
 public:
    DxfPolyLine( int tag = -1 );
    void clear();  // for reuse when parsing
@@ -381,8 +383,8 @@ protected:
    int m_attributes;
    int m_ctrl_pt_count;
    int m_knot_count;
-   prefvec<DxfVertex> m_ctrl_pts;
-   pvecdouble m_knots;
+   std::vector<DxfVertex> m_ctrl_pts;
+   std::vector<double> m_knots;
 public:
    DxfSpline( int tag = -1 );
    void clear();  // for reuse when parsing
@@ -417,7 +419,7 @@ class DxfInsert : public DxfEntity, public DxfRegion
    friend class DxfParser;
    friend class DxfLayer;
 protected:
-   DxfBlock *m_block;
+   std::string m_blockName;
    DxfVertex m_translation;
    DxfVertex m_scale;
    double m_rotation;
@@ -451,14 +453,15 @@ class DxfLayer : public DxfTableRow, public DxfRegion
    friend class DxfParser;
 protected:
    // Originally was going to be clever, but it's far easier to have a list for each type:
-   prefvec<DxfVertex>   m_points;
-   prefvec<DxfLine>     m_lines;
-   prefvec<DxfPolyLine> m_poly_lines;
-   prefvec<DxfArc>      m_arcs;
-   prefvec<DxfCircle>   m_circles;
-   prefvec<DxfSpline>   m_splines;
-   int                  m_total_point_count;
-   int                  m_total_line_count;
+   std::vector<DxfVertex>   m_points;
+   std::vector<DxfLine>     m_lines;
+   std::vector<DxfPolyLine> m_poly_lines;
+   std::vector<DxfArc>      m_arcs;
+   std::vector<DxfCircle>   m_circles;
+   std::vector<DxfSpline>   m_splines;
+   std::vector<DxfInsert>   m_inserts;
+   int                  m_total_point_count = 0;
+   int                  m_total_line_count = 0;
 public:
    DxfLayer( const std::string& name = "" );
    //
@@ -482,7 +485,7 @@ public:
       { return m_total_line_count; }
    //
    // this merges an insert (so the insert remains flattened)
-   void insert( DxfInsert& insert, DxfParser *parser );
+   void insert(DxfInsert& insert, DxfParser *parser);
 protected:
    bool parse( const DxfToken& token, DxfParser *parser );
 };
@@ -518,9 +521,9 @@ protected:
    time_t            m_time;
 protected:
    DxfRegion              m_region;
-   pqvector<DxfLayer>     m_layers;
-   pqvector<DxfBlock>     m_blocks;
-   pqvector<DxfLineType>  m_line_types;
+   std::map<std::string, DxfLayer>     m_layers;
+   std::map<std::string, DxfBlock>     m_blocks;
+   std::map<std::string, DxfLineType>  m_line_types;
    //
    long m_size;
    Communicator *m_communicator;
@@ -536,15 +539,15 @@ public:
    //
    const DxfVertex& getExtMin() const;
    const DxfVertex& getExtMax() const;
-   const DxfLayer& getLayerNum( const int i ) const;
    DxfLayer *getLayer( const std::string& layer_name ); // const; <- removed as will have to add layer when DXF hasn't declared one
-   const DxfLineType& getLineType( const int i ) const;
    DxfLineType *getLineType( const std::string& line_type_name ); // const;
    //
    int numLayers() const;
    int numLineTypes() const;
    //
    friend istream& operator >> (istream& stream, DxfParser& dxfp);
+
+   std::map<std::string, DxfLayer> getLayers() { return m_layers; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

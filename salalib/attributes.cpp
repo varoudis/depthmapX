@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 #include <math.h>
 #include <float.h>
 
@@ -23,6 +22,8 @@
 #include <salalib/attributes.h>
 
 #include "genlib/stringutils.h"
+
+#include <stdexcept>
 ////////////////////////////////////////////////////////////////////////////////////
 
 // helpers: local sorting routines

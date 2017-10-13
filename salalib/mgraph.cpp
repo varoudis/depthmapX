@@ -1507,9 +1507,9 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
 
    int i = 0;
 
-   for (int layerref = 0; layerref < dp.numLayers(); layerref++) {
-
-      const DxfLayer& dxf_layer = dp.getLayerNum( layerref );
+   for (auto& layer: dp.getLayers())
+   {
+      const DxfLayer& dxf_layer = layer.second;
 
       if (dxf_layer.empty()) {
          continue;
@@ -1722,7 +1722,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
    return 1;
 }
 
-int MetaGraph::loadRT1(const pqvector<string>& fileset, Communicator *communicator)
+int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communicator)
 {
    TigerMap map;
 
