@@ -122,18 +122,18 @@ void GLDynamicRect::updateGL(bool m_core) {
     }
 }
 
-void GLDynamicRect::setFillColour(const PafColor &fillColour)
+void GLDynamicRect::setFillColour(const QRgb &fillColour)
 {
-    m_colour_fill.setX(fillColour.redf());
-    m_colour_fill.setY(fillColour.greenf());
-    m_colour_fill.setZ(fillColour.bluef());
+    m_colour_fill.setX(qRed(fillColour)/255.0);
+    m_colour_fill.setY(qGreen(fillColour)/255.0);
+    m_colour_fill.setZ(qBlue(fillColour)/255.0);
 }
 
-void GLDynamicRect::setStrokeColour(const PafColor &strokeColour)
+void GLDynamicRect::setStrokeColour(const QRgb &strokeColour)
 {
-    m_colour_stroke.setX(strokeColour.redf());
-    m_colour_stroke.setY(strokeColour.greenf());
-    m_colour_stroke.setZ(strokeColour.bluef());
+    m_colour_stroke.setX(qRed(strokeColour)/255.0);
+    m_colour_stroke.setY(qGreen(strokeColour)/255.0);
+    m_colour_stroke.setZ(qBlue(strokeColour)/255.0);
 }
 
 void GLDynamicRect::cleanup()
