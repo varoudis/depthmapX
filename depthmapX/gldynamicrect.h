@@ -37,6 +37,9 @@ public:
     void setStrokeColour(const PafColor &strokeColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
+    GLDynamicRect( const GLDynamicRect& ) = delete;
+    GLDynamicRect& operator=(const GLDynamicRect& ) = delete;
+
 protected:
     void add(const GLfloat v);
 
