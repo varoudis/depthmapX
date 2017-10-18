@@ -60,7 +60,7 @@ GLTrianglesUniform::GLTrianglesUniform()
 
 }
 
-void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour)
+void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const QRgb &polyColour)
 {
     m_built = false;
 
@@ -71,9 +71,9 @@ void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, co
     {
         add(QVector3D(point.x, point.y, 0.0f));
     }
-    m_colour.setX(polyColour.redf());
-    m_colour.setY(polyColour.greenf());
-    m_colour.setZ(polyColour.bluef());
+    m_colour.setX(qRed(polyColour)/255.0);
+    m_colour.setY(qGreen(polyColour)/255.0);
+    m_colour.setZ(qBlue(polyColour)/255.0);
 }
 
 void GLTrianglesUniform::setupVertexAttribs()
@@ -124,11 +124,11 @@ void GLTrianglesUniform::updateGL(bool m_core) {
     }
 }
 
-void GLTrianglesUniform::updateColour(const PafColor &polyColour)
+void GLTrianglesUniform::updateColour(const QRgb &polyColour)
 {
-    m_colour.setX(polyColour.redf());
-    m_colour.setY(polyColour.greenf());
-    m_colour.setZ(polyColour.bluef());
+    m_colour.setX(qRed(polyColour)/255.0);
+    m_colour.setY(qGreen(polyColour)/255.0);
+    m_colour.setZ(qBlue(polyColour)/255.0);
     m_program->bind();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();

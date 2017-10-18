@@ -57,12 +57,8 @@ GLView::GLView(QWidget *parent, QGraphDoc* doc, const QRgb &backgroundColour, co
     if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
         m_visibleDataMap.loadGLObjects(m_pDoc->m_meta_graph->getDisplayedDataMap());
     }
-    PafColor pafForegroundColour;
-    pafForegroundColour.setr(qRed(foregroundColour));
-    pafForegroundColour.setg(qGreen(foregroundColour));
-    pafForegroundColour.setb(qBlue(foregroundColour));
-    m_dragLine.setStrokeColour(pafForegroundColour);
-    m_selectionRect.setStrokeColour(pafForegroundColour);
+    m_dragLine.setStrokeColour(foregroundColour);
+    m_selectionRect.setStrokeColour(foregroundColour);
 
     matchViewToCurrentMetaGraph();
 

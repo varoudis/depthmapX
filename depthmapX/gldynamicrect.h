@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "salalib/vertex.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
@@ -24,6 +23,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
+#include <QRgb>
 
 class GLDynamicRect
 {
@@ -33,8 +33,8 @@ public:
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
     void cleanup();
-    void setFillColour(const PafColor &fillColour);
-    void setStrokeColour(const PafColor &strokeColour);
+    void setFillColour(const QRgb &fillColour);
+    void setStrokeColour(const QRgb &strokeColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
 
     GLDynamicRect( const GLDynamicRect& ) = delete;

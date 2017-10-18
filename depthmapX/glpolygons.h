@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
+#include "salalib/vertex.h"
 #include "depthmapX/gltrianglesuniform.h"
 #include <qopengl.h>
 #include <QVector>
