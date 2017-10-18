@@ -63,7 +63,7 @@ InterfacePage::InterfacePage(Settings &settings, QWidget *parent)
     samplesCombo->addItem(tr("4"), 4);
     samplesCombo->addItem(tr("8"), 8);
     samplesCombo->addItem(tr("16 (prettiest)"), 16);
-    samplesCombo->setToolTip(tr("This will make likes smoother if higher, "
+    samplesCombo->setToolTip(tr("This will make lines smoother if higher, "
                                 "but also the overall rendering slower. "
                                 "To see the change close and reopen the file"));
 
