@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 // This is my code to make a set of axial lines from a set of boundary lines
 
 #include <math.h>
@@ -29,6 +28,7 @@
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
 
+#include <stdexcept>
 // for mapinfo interface
 #include "MapInfoData.h"
 
@@ -4244,8 +4244,9 @@ void ShapeMap::ozlemSpecial7(ShapeMap& linemap)
 
 std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
     std::vector<SimpleLine> lines;
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes().at(k);
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         if (shape.isLine()) {
             lines.push_back(SimpleLine(shape.getLine()));
         }
@@ -4264,8 +4265,9 @@ std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
 std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
     std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
     const AttributeTable &attributeTable = getAttributeTable();
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes()[k];
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         PafColor color(attributeTable.getDisplayColor(k));
         if (shape.isLine()) {
             colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
@@ -4282,8 +4284,9 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
 std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
     std::map<std::vector<Point2f>, PafColor> colouredPolygons;
     const AttributeTable &attributeTable = getAttributeTable();
-    for (size_t k = 0; k < getAllShapes().size(); k++) {
-        SalaShape& shape = getAllShapes()[k];
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
         if (shape.isPolygon()) {
             std::vector<Point2f> vertices;
             for (size_t n = 0; n < shape.size(); n++) {

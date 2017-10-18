@@ -111,7 +111,7 @@ public:
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadDxf( istream& stream, Communicator *communicator );
-   int loadRT1(const pqvector<string>& fileset, Communicator *communicator);
+   int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
    int importTxt( istream& stream, const std::string& layername, bool csv );
    bool undoPoints();
    bool clearPoints();

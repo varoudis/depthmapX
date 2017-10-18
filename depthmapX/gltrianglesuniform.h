@@ -17,7 +17,6 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-#include "salalib/vertex.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>
@@ -31,18 +30,19 @@ class GLTrianglesUniform
 {
 public:
     GLTrianglesUniform();
-    void loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour);
+    void loadTriangleData(const std::vector<Point2f>& points, const QRgb &polyColour);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
     void cleanup();
-    void updateColour(const PafColor &polyColour);
+    void updateColour(const QRgb &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLTrianglesUniform( const GLTrianglesUniform& ) = delete;
+    GLTrianglesUniform& operator=(const GLTrianglesUniform& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v);
 

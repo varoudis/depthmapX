@@ -62,12 +62,9 @@ GLView::GLView(QGraphDoc &pDoc,
     if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
         m_visibleDataMap.loadGLObjects(m_pDoc.m_meta_graph->getDisplayedDataMap());
     }
-    PafColor pafForegroundColour;
-    pafForegroundColour.setr(qRed(m_foreground));
-    pafForegroundColour.setg(qGreen(m_foreground));
-    pafForegroundColour.setb(qBlue(m_foreground));
-    m_dragLine.setStrokeColour(pafForegroundColour);
-    m_selectionRect.setStrokeColour(pafForegroundColour);
+
+    m_dragLine.setStrokeColour(m_foreground);
+    m_selectionRect.setStrokeColour(m_background);
 
     matchViewToCurrentMetaGraph();
 
@@ -154,7 +151,6 @@ void GLView::paintGL()
 
         m_datasetChanged = false;
     }
-
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
@@ -574,7 +570,6 @@ void GLView::recalcView()
 Point2f GLView::getWorldPoint(const QPoint &screenPoint) {
     return Point2f(+ m_zoomFactor * float(screenPoint.x() - m_screenWidth*0.5)  / m_screenHeight - m_eyePosX,
                    - m_zoomFactor * float(screenPoint.y() - m_screenHeight*0.5) / m_screenHeight - m_eyePosY);
-
 }
 
 QPoint GLView::getScreenPoint(const Point2f &worldPoint) {

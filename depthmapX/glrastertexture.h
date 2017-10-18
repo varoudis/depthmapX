@@ -31,16 +31,17 @@ public:
     void loadRegionData(float minX, float minY, float maxX, float maxY);
     void loadPixelData(QImage &data);
     void paintGL(const QMatrix4x4 &m_proj, const QMatrix4x4 &m_camera, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool m_core);
-    void updateGL(bool m_core);
+    void initializeGL(bool coreProfile);
+    void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLRasterTexture( const GLRasterTexture& ) = delete;
+    GLRasterTexture& operator=(const GLRasterTexture& ) = delete;
 
 private:
     int DATA_DIMENSIONS = 5;
 
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v, const QVector2D &tc);
 
