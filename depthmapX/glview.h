@@ -26,6 +26,8 @@
 #include "depthmapX/glpolygons.h"
 #include "depthmapX/glpointmap.h"
 #include "depthmapX/glshapegraph.h"
+#include "depthmapX/gldynamicrect.h"
+#include "depthmapX/gldynamicline.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
@@ -49,6 +51,20 @@ public:
 
     void OnModeJoin();
     void OnModeUnjoin();
+    void OnViewPan();
+    void OnViewZoomIn();
+    void OnViewZoomOut();
+    void OnEditFill();
+    void OnEditSemiFill();
+    void OnEditAugmentFill();
+    void OnEditPencil();
+    void OnModeIsovist();
+    void OnModeTargetedIsovist();
+    void OnModeStepDepth();
+    void OnModeLineTool();
+    void OnModePolygonTool();
+    void OnModeSeedAxial();
+    void OnEditSelect();
 
 protected:
     void initializeGL() override;
@@ -58,6 +74,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    bool eventFilter(QObject *object, QEvent *e) override;
 
 private:
     bool m_perspectiveView = false;
@@ -69,6 +86,8 @@ private:
     const QRgb &m_foreground;
     const QRgb &m_background;
 
+    GLDynamicRect m_selectionRect;
+    GLDynamicLine m_dragLine;
     GLLines m_axes;
     GLShapeGraph m_visibleShapeGraph;
     GLLinesUniform m_visibleDrawingLines;
@@ -84,8 +103,12 @@ private:
     GLfloat m_screenRatio;
     int m_screenWidth;
     int m_screenHeight;
+    bool m_wasPanning = false;
+
+    int m_multiSampleSamples = 0; // set this to 0 if rendering is too slow
 
     Point2f getWorldPoint(const QPoint &screenPoint);
+    QPoint getScreenPoint(const Point2f &worldPoint);
 
     bool m_datasetChanged = false;
 
@@ -93,6 +116,7 @@ private:
     void recalcView();
     void zoomBy(float dzf, int mouseX, int mouseY);
     void matchViewToRegion(QtRegion region);
+    void resetView();
 
     void loadAxes();
     void loadDrawingGLObjects();
@@ -100,11 +124,37 @@ private:
     enum {
         MOUSE_MODE_NONE = 0x0000,
         MOUSE_MODE_SELECT = 0x10000,
+        MOUSE_MODE_PAN = 0x0101,
+        MOUSE_MODE_ZOOM_IN = 0x0202,
+        MOUSE_MODE_ZOOM_OUT = 0x0204,
+        MOUSE_MODE_FILL_FULL = 0x0001,
+        MOUSE_MODE_FILL_SEMI = 0x0002,
+        MOUSE_MODE_FILL_AUGMENT = 0x0003,
+        MOUSE_MODE_PENCIL = 0x0801,
+        MOUSE_MODE_SEED_ISOVIST = 0x4001,
+        MOUSE_MODE_SEED_TARGETED_ISOVIST = 0x4002,
+        MOUSE_MODE_SEED_AXIAL = 0x0004,
+        MOUSE_MODE_LINE_TOOL = 0x0008,
+        MOUSE_MODE_POLYGON_TOOL = 0x0010,
+        MOUSE_MODE_POINT_STEP_DEPTH = 0x5000,
         MOUSE_MODE_JOIN = 0x20001,
         MOUSE_MODE_UNJOIN = 0x20002,
         MOUSE_MODE_SECOND_POINT = 0x00400,
     };
 
-    int m_mouseMode = MOUSE_MODE_NONE;
+    int m_mouseMode = MOUSE_MODE_SELECT;
+
+    QRectF m_mouseDragRect = QRectF(0,0,0,0);
+
+    Point2f m_tempFirstPoint;
+    Point2f m_tempSecondPoint;
+
+    Point2f m_polyStart;
+    int m_polyPoints = 0;
+
+    inline int PixelDist(QPoint a, QPoint b)
+    {
+       return (int)sqrt(double((b.x()-a.x())*(b.x()-a.x())+(b.y()-a.y())*(b.y()-a.y())));
+    }
 };
 

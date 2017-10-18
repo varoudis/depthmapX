@@ -28,7 +28,9 @@ void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>&
     for (auto& colouredPolygon: colouredPolygons)
     {
         const std::vector<Point2f> & points = colouredPolygon.first;
-        const PafColor & colour = colouredPolygon.second;
+        QRgb colour = qRgb(colouredPolygon.second.redb(),
+                           colouredPolygon.second.greenb(),
+                           colouredPolygon.second.blueb());
 
         m_polygons.push_back(std::unique_ptr<GLTrianglesUniform>(new GLTrianglesUniform));
 

@@ -55,7 +55,9 @@ HEADERS       = depthmapView.h \
     gltrianglesuniform.h \
     glpointmap.h \
     glshapegraph.h \
-    glshapemap.h
+    glshapemap.h \
+    gldynamicrect.h \
+    gldynamicline.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -106,7 +108,9 @@ SOURCES       = depthmapView.cpp \
     gltrianglesuniform.cpp \
     glpointmap.cpp \
     glshapegraph.cpp \
-    glshapemap.cpp
+    glshapemap.cpp \
+    gldynamicrect.cpp \
+    gldynamicline.cpp
 
 RESOURCES     = resource.qrc
 
