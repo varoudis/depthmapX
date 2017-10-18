@@ -20,8 +20,10 @@
 #ifndef __SHAPEMAP_H__
 #define __SHAPEMAP_H__
 
-#include <string>
+#include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
+#include <vector>
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

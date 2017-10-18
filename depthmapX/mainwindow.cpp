@@ -814,6 +814,8 @@ QGraphDoc *MainWindow::activeQDepthmapDoc()
         if(p) return ((tableView *)p)->pDoc;
         p = qobject_cast<Q3DView *>(activeSubWindow->widget());
         if(p) return ((Q3DView *)p)->pDoc;
+        p = qobject_cast<GLView *>(activeSubWindow->widget());
+        if(p) return ((GLView *)p)->m_pDoc;
     }
     return 0;
 }
@@ -1031,7 +1033,8 @@ void MainWindow::updateActiveWindows()
         current_view_type = VIEW_3D;
         return;
     }
-    else if(p = qobject_cast<QDepthmapView *>(activeSubWindow->widget()))
+    else if((p = qobject_cast<QDepthmapView *>(activeSubWindow->widget()))
+            || (p = qobject_cast<GLView *>(activeSubWindow->widget())))
     {
         editToolBar->show();
         thirdViewToolBar->hide();
@@ -1815,29 +1818,39 @@ void MainWindow::SelectButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_SELECT;
     activeQDepthmapView()->OnEditSelect();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnEditSelect();
 }
 
 void MainWindow::DragButtonTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_MOVE;
     activeQDepthmapView()->OnViewMove();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnViewPan();
 }
 
 void MainWindow::SelectPenTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_PENCIL;
     activeQDepthmapView()->OnEditPencil();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnEditPencil();
 }
 
 void MainWindow::AxialMapTriggered()
 {
     m_selected_mapbar_item = ID_MAPBAR_ITEM_AL2;
     activeQDepthmapView()->OnToolsAxialMap();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnModeSeedAxial();
 }
 
 void MainWindow::StepDepthTriggered()
 {
     activeQDepthmapDoc()->OnToolsPD();
+    GLView* glView = getFirstGLView();
+    if(glView) glView->OnModeStepDepth();
 }
 
 void MainWindow::zoomButtonTriggered()
@@ -1847,11 +1860,15 @@ void MainWindow::zoomButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_IN;
         activeQDepthmapView()->OnViewZoomIn();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnViewZoomIn();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ZOOM_OUT;
         activeQDepthmapView()->OnViewZoomOut();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnViewZoomOut();
     }
 }
 
@@ -1870,16 +1887,22 @@ void MainWindow::FillButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_FILL;
         activeQDepthmapView()->OnEditFill();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditFill();
     }
     else if (id == ID_MAPBAR_ITEM_SEMIFILL)         // AV TV
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_SEMIFILL;
         activeQDepthmapView()->OnEditSemiFill();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditSemiFill();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_AUGMENT_FILL;
         activeQDepthmapView()->OnEditAugmentFill(); // AV TV
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnEditAugmentFill();
     }
 }
 
@@ -1890,11 +1913,15 @@ void MainWindow::LineButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_LINETOOL;
         activeQDepthmapView()->OnEditLineTool();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeLineTool();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_POLYGON;
         activeQDepthmapView()->OnEditPolygon();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModePolygonTool();
     }
 }
 
@@ -1905,11 +1932,15 @@ void MainWindow::isoButtonTriggered()
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_ISOVIST;
         activeQDepthmapView()->OnModeIsovist();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeIsovist();
     }
     else
     {
         m_selected_mapbar_item = ID_MAPBAR_ITEM_HALFISOVIST;
         activeQDepthmapView()->OnModeHalfovist();
+        GLView* glView = getFirstGLView();
+        if(glView) glView->OnModeTargetedIsovist();
     }
 }
 

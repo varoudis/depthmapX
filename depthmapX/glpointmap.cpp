@@ -46,7 +46,7 @@ void GLPointMap::loadGLObjects(PointMap& pointMap) {
 
         const std::vector<Point2f> &linkFillTriangles =
                 GeometryGenerators::generateMultipleDiskTriangles(32, pointMap.getSpacing()*0.25, mergedPixelLocations);
-        m_linkFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+        m_linkFills.loadTriangleData(linkFillTriangles, qRgb(0,0,0));
 
         std::vector<SimpleLine> linkFillPerimeters =
                 GeometryGenerators::generateMultipleCircleLines(32, pointMap.getSpacing()*0.25, mergedPixelLocations);

@@ -49,7 +49,7 @@ static const char *fragmentShaderSource =
     "}\n";
 
 /**
- * @brief GLPolygon::GLPolygon
+ * @brief GLTrianglesUniform::GLTrianglesUniform
  * This class is an OpenGL representation of a set of triangles of uniform colour
  */
 
@@ -60,9 +60,9 @@ GLTrianglesUniform::GLTrianglesUniform()
 
 }
 
-void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const PafColor &polyColour)
+void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, const QRgb &polyColour)
 {
-    built = false;
+    m_built = false;
 
     m_count = 0;
     m_data.resize(points.size() * DATA_DIMENSIONS);
@@ -71,9 +71,9 @@ void GLTrianglesUniform::loadTriangleData(const std::vector<Point2f>& points, co
     {
         add(QVector3D(point.x, point.y, 0.0f));
     }
-    m_colour.setX(polyColour.redf());
-    m_colour.setY(polyColour.greenf());
-    m_colour.setZ(polyColour.bluef());
+    m_colour.setX(qRed(polyColour)/255.0);
+    m_colour.setY(qGreen(polyColour)/255.0);
+    m_colour.setZ(qBlue(polyColour)/255.0);
 }
 
 void GLTrianglesUniform::setupVertexAttribs()
@@ -109,7 +109,7 @@ void GLTrianglesUniform::initializeGL(bool m_core)
     setupVertexAttribs();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
-    built = true;
+    m_built = true;
 }
 
 void GLTrianglesUniform::updateGL(bool m_core) {
@@ -120,15 +120,15 @@ void GLTrianglesUniform::updateGL(bool m_core) {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));
         m_vbo.release();
-        built = true;
+        m_built = true;
     }
 }
 
-void GLTrianglesUniform::updateColour(const PafColor &polyColour)
+void GLTrianglesUniform::updateColour(const QRgb &polyColour)
 {
-    m_colour.setX(polyColour.redf());
-    m_colour.setY(polyColour.greenf());
-    m_colour.setZ(polyColour.bluef());
+    m_colour.setX(qRed(polyColour)/255.0);
+    m_colour.setY(qGreen(polyColour)/255.0);
+    m_colour.setZ(qBlue(polyColour)/255.0);
     m_program->bind();
     m_program->setUniformValue(m_colourVectorLoc, m_colour);
     m_program->release();
@@ -136,7 +136,7 @@ void GLTrianglesUniform::updateColour(const PafColor &polyColour)
 
 void GLTrianglesUniform::cleanup()
 {
-    if(!built) return;
+    if(!m_built) return;
     m_vbo.destroy();
     delete m_program;
     m_program = 0;
@@ -144,7 +144,7 @@ void GLTrianglesUniform::cleanup()
 
 void GLTrianglesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel)
 {
-    if(!built) return;
+    if(!m_built) return;
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     m_program->bind();
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
