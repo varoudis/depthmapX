@@ -20,6 +20,7 @@
 //#include <io.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
+#include <vector>
 
 #ifdef _WIN32
 // Quick mod - TV
@@ -43,10 +44,10 @@ struct FilePath {
 #else
       size_t slash = pathname.find_last_of('/'); // Other
 #endif
-      if (slash != paftl::npos) {
+      if (slash != string::npos) {
          m_path = pathname.substr(0,slash+1);
       }
-      if (dot != paftl::npos) {
+      if (dot != string::npos) {
          m_name = pathname.substr(slash+1,dot-slash-1);
          m_ext = pathname.substr(dot+1);
       }
@@ -74,7 +75,7 @@ protected:
    ifstream *m_infile2; // <- MapInfo MIF files come in two parts
    ofstream *m_outfile;
    // nb. converted to Win32 UTF-16 Unicode path (AT 31.01.11) Linux, MacOS use UTF-8 (AT 29.04.11)
-   pqvector<string> m_fileset;   // <- sometimes you want to load a whole set of files
+   std::vector<string> m_fileset;   // <- sometimes you want to load a whole set of files
 public:
    Communicator()
    { m_infile = NULL; m_infile2 = NULL; m_outfile = NULL; m_cancelled = false; m_delete_flag = false; }
@@ -139,7 +140,7 @@ public:
    ifstream& GetInfile2()
    { return *m_infile2; }
    //
-   const pqvector<string>& GetFileSet() const
+   const std::vector<string>& GetFileSet() const
    { return m_fileset; }
    //
    virtual void CommPostMessage(int m, int x, int y = 0) const = 0; // Override for specific operating system

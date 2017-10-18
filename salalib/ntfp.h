@@ -60,7 +60,7 @@ public:
    NtfMap() {;}
    Line makeLine(const NtfPoint& a, const NtfPoint& b);
    
-   void open(const pqvector<string>& fileset, Communicator *comm);
+   void open(const std::vector<std::string> &fileset, Communicator *comm);
    const QtRegion& getRegion() const
    { return m_region; }
    int getLineCount() const

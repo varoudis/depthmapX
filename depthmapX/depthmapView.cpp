@@ -1697,7 +1697,7 @@ void QDepthmapView::DrawPointHandle(QPainter *pDC, QPoint pt)
    pDC->drawRect(rect);
 }
 
-void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc )
+void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc, bool includeScale )
 {
    // This output EPS is a copy of the standard output... obviously, if you change
    // standard output, remember to change this one too!
@@ -1911,35 +1911,37 @@ void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc )
    }
 */
 
-   // add the scale to the bottom lefthand corner
-   double logicalwidth = m_unit * rect.width();
-   if (logicalwidth > 10) {
-      int workingwidth = floor(log10(logicalwidth/2)*2.0);
-      int barwidth = (int) pow(10.0,(double)(workingwidth/2)) * ((workingwidth%2 == 0) ? 1 : 5);
-      double physicalbar = double(barwidth) / m_unit;
-      stream << "newpath" << endl;
-      stream << "0 0 M 0 18 R" << endl;
-      stream << physicalbar / 10.0 << " 0 R 0 -18 R closepath" << endl;
-      stream << bgr << " " << bgg << " " << bgb << " C" << endl;
-      stream << "fill newpath" << endl;
-      stream << fgr << " " << fgg << " " << fgb << " C" << endl;
-      stream << "0 12 M" << endl;
-      stream << physicalbar / 10.0 << " 0 R" << endl;
-      stream << "3 W stroke" << endl;
-      stream << "0 6 M 0 7.5 R" << endl;
-      stream << physicalbar / 10.0 << " 6 M 0 7.5 R" << endl;
-      stream << "1.5 W stroke" << endl;
-      stream << "/Arial findfont 12 scalefont setfont" << endl;
-      // assume metres!
-      if (barwidth > 1000) {
-         stream << "(" << (barwidth / 1000) << "km) stringwidth pop 2 div" << endl;
-      }
-      else {
-         stream << "(" << barwidth << "m) stringwidth pop 2 div" << endl;
-      }
-      stream << physicalbar / 20.0 << " exch sub" << endl;
-      stream << "0 M" << endl;
-      stream << "(" << barwidth << "m) show" << endl;
+   if(includeScale) {
+       // add the scale to the bottom lefthand corner
+       double logicalwidth = m_unit * rect.width();
+       if (logicalwidth > 10) {
+          int workingwidth = floor(log10(logicalwidth/2)*2.0);
+          int barwidth = (int) pow(10.0,(double)(workingwidth/2)) * ((workingwidth%2 == 0) ? 1 : 5);
+          double physicalbar = double(barwidth) / m_unit;
+          stream << "newpath" << endl;
+          stream << "0 0 M 0 18 R" << endl;
+          stream << physicalbar / 10.0 << " 0 R 0 -18 R closepath" << endl;
+          stream << bgr << " " << bgg << " " << bgb << " C" << endl;
+          stream << "fill newpath" << endl;
+          stream << fgr << " " << fgg << " " << fgb << " C" << endl;
+          stream << "0 12 M" << endl;
+          stream << physicalbar / 10.0 << " 0 R" << endl;
+          stream << "3 W stroke" << endl;
+          stream << "0 6 M 0 7.5 R" << endl;
+          stream << physicalbar / 10.0 << " 6 M 0 7.5 R" << endl;
+          stream << "1.5 W stroke" << endl;
+          stream << "/Arial findfont 12 scalefont setfont" << endl;
+          // assume metres!
+          if (barwidth > 1000) {
+             stream << "(" << (barwidth / 1000) << "km) stringwidth pop 2 div" << endl;
+          }
+          else {
+             stream << "(" << barwidth << "m) stringwidth pop 2 div" << endl;
+          }
+          stream << physicalbar / 20.0 << " exch sub" << endl;
+          stream << "0 M" << endl;
+          stream << "(" << barwidth << "m) show" << endl;
+       }
    }
 
    stream << "showpage" << endl;
@@ -2456,8 +2458,12 @@ void QDepthmapView::OnEditSave()
        OutputSVG( stream, pDoc );
 	}
 	else {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "", "Would you like to include a scale?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        bool includeScale = (reply == QMessageBox::Yes);
 	 // Set up complete... run the .eps outputter (copied from standard output!)
-	   OutputEPS( stream, pDoc );
+       OutputEPS( stream, pDoc, includeScale );
 	}
 	stream.close();
 }

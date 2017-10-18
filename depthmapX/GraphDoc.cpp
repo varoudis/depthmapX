@@ -50,6 +50,7 @@
 #include "AttributeSummary.h"
 #include "depthmapView.h"
 #include "viewhelpers.h"
+#include <QMetaType>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -57,6 +58,7 @@
 #include "compatibilitydefines.h"
 
 QT_BEGIN_NAMESPACE
+Q_DECLARE_METATYPE(std::string)
 
 QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 {
@@ -88,6 +90,19 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 
    m_meta_graph->setProperties(author.toStdString(),organisation.toStdString(),date,version.toStdString());
 
+    qRegisterMetaType< std::string >();
+    connect(&m_thread, &RenderThread::runtimeExceptionThrown, this, &QGraphDoc::exceptionThrownInRenderThread);
+}
+void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
+    if(type == depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS) {
+        std::stringstream message;
+        message << "This operation requires isovist analysis. To run it go to: ";
+        message << "Tools -> Visibility -> Run Visibility Graph Analysis... ";
+        message << "and select \"Calculate isovist properties\"";
+        message << flush;
+        QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                             QMessageBox::Ok, QMessageBox::Ok);
+    }
 }
 
 bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *originator) // (almost) thread safe
