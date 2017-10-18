@@ -67,11 +67,8 @@ void GLLinesUniform::loadLineData(const std::vector<SimpleLine>& lines, const QR
     m_count = 0;
     m_data.resize(lines.size() * 2 * DATA_DIMENSIONS);
 
-    std::vector<SimpleLine>::const_iterator iter = lines.begin(), end =
-    lines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& line: lines)
     {
-        const SimpleLine & line = *iter;
         add(QVector3D(line.start().x, line.start().y, 0.0f));
         add(QVector3D(line.end().x, line.end().y, 0.0f));
     }
@@ -89,12 +86,12 @@ void GLLinesUniform::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLLinesUniform::initializeGL(bool m_core)
+void GLLinesUniform::initializeGL(bool coreProfile)
 {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->link();
 
@@ -122,10 +119,10 @@ void GLLinesUniform::initializeGL(bool m_core)
     m_built = true;
 }
 
-void GLLinesUniform::updateGL(bool m_core) {
+void GLLinesUniform::updateGL(bool coreProfile) {
     if(m_program == 0) {
         // has not been initialised yet, do that instead
-        initializeGL(m_core);
+        initializeGL(coreProfile);
     } else {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));

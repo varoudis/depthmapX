@@ -21,18 +21,15 @@ void GLShapeGraph::loadGLObjects(ShapeGraph &shapeGraph) {
     m_shapeMap.loadGLObjects(shapeGraph);
     const std::vector<SimpleLine> &linkLines = shapeGraph.getAllLinkLines();
     std::vector<Point2f> linkPointLocations;
-    std::vector<SimpleLine>::const_iterator iter = linkLines.begin(), end =
-    linkLines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& linkLine: linkLines)
     {
-        SimpleLine linkLine = *iter;
         linkPointLocations.push_back(linkLine.start());
         linkPointLocations.push_back(linkLine.end());
     }
 
     const std::vector<Point2f> &linkFillTriangles =
             GeometryGenerators::generateMultipleDiskTriangles(32, shapeGraph.getSpacing()*0.1, linkPointLocations);
-    m_linkFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+    m_linkFills.loadTriangleData(linkFillTriangles, qRgb(0,0,0));
 
     std::vector<SimpleLine> linkFillPerimeters =
             GeometryGenerators::generateMultipleCircleLines(32, shapeGraph.getSpacing()*0.1, linkPointLocations);
@@ -44,7 +41,7 @@ void GLShapeGraph::loadGLObjects(ShapeGraph &shapeGraph) {
 
     const std::vector<Point2f> &unlinkFillTriangles =
             GeometryGenerators::generateMultipleDiskTriangles(32, shapeGraph.getSpacing()*0.1, unlinkPoints);
-    m_unlinkFills.loadTriangleData(unlinkFillTriangles, PafColor(1, 1, 1));
+    m_unlinkFills.loadTriangleData(unlinkFillTriangles, qRgb(255, 255, 255));
 
     const std::vector<SimpleLine> &unlinkFillPerimeters =
             GeometryGenerators::generateMultipleCircleLines(32, shapeGraph.getSpacing()*0.1, unlinkPoints);

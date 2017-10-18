@@ -35,15 +35,16 @@ public:
     GLLines();
     void loadLineData(const std::vector<std::pair<SimpleLine, PafColor> > &colouredLines);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool m_core);
-    void updateGL(bool m_core);
+    void initializeGL(bool coreProfile);
+    void updateGL(bool coreProfile);
     void cleanup();
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLLines( const GLLines& ) = delete;
+    GLLines& operator=(const GLLines& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 6;
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v, const QVector3D &c);
 

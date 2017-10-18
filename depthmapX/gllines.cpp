@@ -74,12 +74,10 @@ void GLLines::loadLineData(const std::vector<std::pair<SimpleLine, PafColor>> &c
     m_count = 0;
     m_data.resize(colouredLines.size() * 2 * DATA_DIMENSIONS);
 
-    std::vector<std::pair<SimpleLine, PafColor>>::const_iterator iter = colouredLines.begin(), end =
-    colouredLines.end();
-    for ( ; iter != end; ++iter )
+    for (auto& colouredLine: colouredLines)
     {
-        const SimpleLine &line = iter->first;
-        const PafColor &colour = iter->second;
+        const SimpleLine &line = colouredLine.first;
+        const PafColor &colour = colouredLine.second;
 
         QVector3D colourVector(colour.redf(), colour.greenf(), colour.bluef());
         add(QVector3D(line.start().x, line.start().y, 0.0f), colourVector);
@@ -100,12 +98,12 @@ void GLLines::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLLines::initializeGL(bool m_core)
+void GLLines::initializeGL(bool coreProfile)
 {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->bindAttributeLocation("colour", 1);
     m_program->link();
@@ -132,10 +130,10 @@ void GLLines::initializeGL(bool m_core)
     m_built = true;
 }
 
-void GLLines::updateGL(bool m_core) {
+void GLLines::updateGL(bool coreProfile) {
     if(m_program == 0) {
         // has not been initialised yet, do that instead
-        initializeGL(m_core);
+        initializeGL(coreProfile);
     } else {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));

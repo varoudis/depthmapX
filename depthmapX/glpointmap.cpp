@@ -38,18 +38,15 @@ void GLPointMap::loadGLObjects(PointMap& pointMap) {
     if(m_showLinks) {
         const std::vector<SimpleLine> &mergedPixelLines = depthmapX::getMergedPixelsAsLines(pointMap);
         std::vector<Point2f> mergedPixelLocations;
-        std::vector<SimpleLine>::const_iterator iter = mergedPixelLines.begin(), end =
-        mergedPixelLines.end();
-        for ( ; iter != end; ++iter )
+        for (auto& mergeLine: mergedPixelLines)
         {
-            SimpleLine mergeLine = *iter;
             mergedPixelLocations.push_back(mergeLine.start());
             mergedPixelLocations.push_back(mergeLine.end());
         }
 
         const std::vector<Point2f> &linkFillTriangles =
                 GeometryGenerators::generateMultipleDiskTriangles(32, pointMap.getSpacing()*0.25, mergedPixelLocations);
-        m_linkFills.loadTriangleData(linkFillTriangles, PafColor(0,0,0));
+        m_linkFills.loadTriangleData(linkFillTriangles, qRgb(0,0,0));
 
         std::vector<SimpleLine> linkFillPerimeters =
                 GeometryGenerators::generateMultipleCircleLines(32, pointMap.getSpacing()*0.25, mergedPixelLocations);
