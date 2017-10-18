@@ -38,11 +38,12 @@ public:
     void cleanup();
     void updateColour(const PafColor &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLTrianglesUniform( const GLTrianglesUniform& ) = delete;
+    GLTrianglesUniform& operator=(const GLTrianglesUniform& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v);
 

@@ -148,7 +148,6 @@ void GLView::paintGL()
         m_datasetChanged = false;
     }
 
-
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
     if(m_pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
@@ -567,7 +566,6 @@ void GLView::recalcView()
 Point2f GLView::getWorldPoint(const QPoint &screenPoint) {
     return Point2f(+ m_zoomFactor * float(screenPoint.x() - m_screenWidth*0.5)  / m_screenHeight - m_eyePosX,
                    - m_zoomFactor * float(screenPoint.y() - m_screenHeight*0.5) / m_screenHeight - m_eyePosY);
-
 }
 
 QPoint GLView::getScreenPoint(const Point2f &worldPoint) {

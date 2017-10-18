@@ -92,11 +92,11 @@ void GLRasterTexture::setupVertexAttribs()
     m_vbo.release();
 }
 
-void GLRasterTexture::initializeGL(bool m_core) {
+void GLRasterTexture::initializeGL(bool coreProfile) {
     if(m_data.size() == 0) return;
     m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, m_core ? vertexShaderSourceCore : vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, m_core ? fragmentShaderSourceCore : fragmentShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, coreProfile ? vertexShaderSourceCore : vertexShaderSource);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, coreProfile ? fragmentShaderSourceCore : fragmentShaderSource);
     m_program->bindAttributeLocation("vertex", 0);
     m_program->bindAttributeLocation("texCoord", 1);
     m_program->link();
@@ -123,10 +123,10 @@ void GLRasterTexture::initializeGL(bool m_core) {
     m_built = true;
 }
 
-void GLRasterTexture::updateGL(bool m_core) {
+void GLRasterTexture::updateGL(bool coreProfile) {
     if(m_program == 0) {
         // has not been initialised yet, do that instead
-        initializeGL(m_core);
+        initializeGL(coreProfile);
     } else {
         m_vbo.bind();
         m_vbo.allocate(constData(), m_count * sizeof(GLfloat));

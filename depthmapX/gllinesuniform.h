@@ -32,16 +32,17 @@ public:
     GLLinesUniform();
     void loadLineData(const std::vector<SimpleLine>& lines, const QRgb& lineColour);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
-    void initializeGL(bool m_core);
-    void updateGL(bool m_core);
+    void initializeGL(bool coreProfile);
+    void updateGL(bool coreProfile);
     void cleanup();
     void updateColour(const QRgb& lineColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
+    GLLinesUniform( const GLLinesUniform& ) = delete;
+    GLLinesUniform& operator=(const GLLinesUniform& ) = delete;
 
 private:
     const int DATA_DIMENSIONS = 3;
     void setupVertexAttribs();
-    int count() const { return m_count; }
     const GLfloat *constData() const { return m_data.constData(); }
     void add(const QVector3D &v);
 
