@@ -233,7 +233,7 @@ protected:
    bool m_processed;
    bool m_boundarygraph;
    int m_undocounter;
-   pqvector<PixelRefPair> m_merge_lines;
+   std::vector<PixelRefPair> m_merge_lines;
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
@@ -257,6 +257,7 @@ public:
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
    bool setSpacePixel(const SuperSpacePixel *spacepix);  // (so different threads can use it... dangermouse!)
    bool setGrid(double spacing, const Point2f& offset = Point2f());
+   std::vector<PixelRefPair> getMergedPixelPairs() { return m_merge_lines; }
    //
    bool isProcessed() const
    { return m_processed; }

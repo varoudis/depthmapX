@@ -431,7 +431,9 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(PixelRef(i,j),p)));
+                  auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(i,j),p));
+                  if(it != m_merge_lines.end())
+                      m_merge_lines.erase(it);
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
@@ -447,7 +449,9 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(PixelRef(i,j),p)));
+                  auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(i,j),p));
+                  if(it != m_merge_lines.end())
+                      m_merge_lines.erase(it);
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
@@ -1694,7 +1698,10 @@ bool PointMap::read(ifstream& stream, int version )
          }
          // Add merge line if merged:
          if (!m_points[j][k].m_merge.empty()) {
-            m_merge_lines.add(PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
+             auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
+             if(it == m_merge_lines.end()) {
+                 m_merge_lines.push_back(PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
+             }
          }
       }
    }
@@ -3601,7 +3608,9 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
    bool altered = false;
    if (a == b && !getPoint(a).m_merge.empty()) {
       PixelRef c = getPoint(a).m_merge;
-      m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(a,c)));
+      auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(a,c));
+      if(it != m_merge_lines.end())
+          m_merge_lines.erase(it);
       getPoint(c).m_merge = NoPixel;
       getPoint(c).m_state &= ~Point::MERGED;
       getPoint(a).m_merge = NoPixel;
@@ -3611,13 +3620,17 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
    if (a != b && getPoint(a).m_merge != b) {
       if (!getPoint(a).m_merge.empty()) {
          PixelRef c = getPoint(a).m_merge;
-         m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(a,c)));
+         auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(a,c));
+         if(it != m_merge_lines.end())
+             m_merge_lines.erase(it);
          getPoint(c).m_merge = NoPixel;
          getPoint(c).m_state &= ~Point::MERGED;
       }
       if (!getPoint(b).m_merge.empty()) {
          PixelRef c = getPoint(b).m_merge;
-         m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(b,c)));
+         auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(b,c));
+         if(it != m_merge_lines.end())
+             m_merge_lines.erase(it);
          getPoint(c).m_merge = NoPixel;
          getPoint(c).m_state &= ~Point::MERGED;
       }
@@ -3625,7 +3638,7 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
       getPoint(a).m_state |= Point::MERGED;
       getPoint(b).m_merge = a;
       getPoint(b).m_state |= Point::MERGED;
-      m_merge_lines.add(PixelRefPair(a,b));
+      m_merge_lines.push_back(PixelRefPair(a,b));
       altered = true;
    }
 
