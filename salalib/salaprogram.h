@@ -20,6 +20,7 @@
 #define __SALAPROGRAM_H__
 
 #include "genlib/stringutils.h"
+#include <vector>
 
 class AttributeTable;
 class PointMap;
@@ -310,8 +311,8 @@ public:
    ~SalaProgram();
    bool parse(istream& program);
    SalaObj evaluate();
-   bool runupdate(int col, const pvecint& selset = pvecint());
-   bool runselect(pvecint& selsetout, const pvecint& selsetin = pvecint());
+   bool runupdate(int col, const std::vector<int> &selset = std::vector<int>());
+   bool runselect(std::vector<int>& selsetout, const std::vector<int> &selsetin = std::vector<int>());
    std::string getLastErrorMessage() const;
 };
 

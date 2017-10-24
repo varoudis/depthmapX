@@ -354,7 +354,7 @@ protected:
    enum { NO_SELECTION = 0, SINGLE_SELECTION = 1, COMPOUND_SELECTION = 2, LAYER_SELECTION = 4, OVERRIDE_SELECTION = 8 };
    int m_selection;
    bool m_pinned_selection;
-   pvecint m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
+   std::vector<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
    mutable PixelRef s_bl; 
    mutable PixelRef s_tr;
 public:
@@ -364,14 +364,14 @@ public:
       { return m_pinned_selection; }
    bool clearSel(); // clear the current selection
    bool setCurSel( QtRegion& r, bool add = false ); // set current selection
-   bool setCurSel( const pvecint& selset, bool add = false );
+   bool setCurSel(const std::vector<int> &selset, bool add = false );
    bool overrideSelPixel(PixelRef pix);    // set a pixel to selected: careful!
    //bool togglePin();
    //bool convertSelToDataObject( MetaGraph& meta_graph );
    // Note: passed by ref, use with care in multi-threaded app
-   pvecint& getSelSet()
+   std::vector<int>& getSelSet()
       { return m_selection_set; }
-   const pvecint& getSelSet() const
+   const std::vector<int>& getSelSet() const
       { return m_selection_set; }
    //
    PixelRefList getLayerPixels(int layer);

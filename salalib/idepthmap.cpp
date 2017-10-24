@@ -729,7 +729,7 @@ void IVGAMap::clearSelection()
 
 void IVGAMap::selectPoint(int id, bool replace) // replace defaults to false
 {
-   pvecint selset;
+   std::vector<int> selset;
    selset.push_back(id);
    ((PointMap *)m_data)->setCurSel(selset,replace); // note: defaults to add to current selection
 }
@@ -1129,7 +1129,7 @@ void IShapeMap::clearSelection()
 
 void IShapeMap::selectShape(int id, bool replace) // replace defaults to false
 {
-   pvecint temp;
+   std::vector<int> temp;
    temp.push_back(id);
    ((ShapeMap *)m_data)->setCurSelDirect(temp, !replace ); // <- default: add to existing selection
 }
@@ -1137,7 +1137,7 @@ void IShapeMap::selectShape(int id, bool replace) // replace defaults to false
 int IShapeMap::selectShapesWithinRadius(DPoint& point, double dist)
 {
    ShapeMap& map = *((ShapeMap *)m_data);
-   pvecint shapes;
+   std::vector<int> shapes;
    int ret = map.withinRadius( Point2f(point.x,point.y), dist, shapes );
    map.setCurSelDirect(shapes,true);   // <- note, add to existing selection
    return ret;

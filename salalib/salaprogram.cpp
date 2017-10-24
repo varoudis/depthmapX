@@ -276,7 +276,7 @@ SalaObj SalaProgram::evaluate()
 // this function is called by depthmapX to run a script to update a column
 // the operation is on a single node / row of the database combination
 
-bool SalaProgram::runupdate(int col, const pvecint& selset)
+bool SalaProgram::runupdate(int col, const std::vector<int> &selset)
 {
    AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
@@ -336,7 +336,7 @@ bool SalaProgram::runupdate(int col, const pvecint& selset)
 // this function is called by depthmapX to run a script to select values
 // the operation is on a single node / row of the database combination
 
-bool SalaProgram::runselect(pvecint& selsetout, const pvecint& selsetin)
+bool SalaProgram::runselect(std::vector<int> &selsetout, const std::vector<int>& selsetin)
 {
    AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;

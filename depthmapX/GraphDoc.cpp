@@ -2483,7 +2483,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       else {
          // just check you really are viewing the layers:
          bool retvar;
-         pvecint selset;
+         std::vector<int> selset;
          if (dlg.m_selection_only) {
             retvar = proggy.runselect(selset,pointmap ? pointmap->getSelSet() : shapemap->getSelSet());
          }
@@ -2650,8 +2650,8 @@ void QGraphDoc::OnBinDistances()
 
 void QGraphDoc::OnShowBinDistances() 
 {
-   pvecint a = m_meta_graph->getDisplayedPointMap().getSelSet();
-   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(a.head());
+   std::vector<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
+   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(a.front());
    QString all;
    for (int i = 0; i < 32; i++) {
       QString blah = QString(tr("%2d: %f\n")).arg(i).arg(p.getBinDistance(i));

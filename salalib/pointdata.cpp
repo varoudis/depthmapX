@@ -1390,7 +1390,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
    return true;
 }
 
-bool PointMap::setCurSel(const pvecint& selset, bool add)
+bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
