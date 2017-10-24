@@ -291,7 +291,7 @@ public:
    bool sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist );
    bool dynamicSparkGraph2();
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
-   bool sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int depth, PixelRef curs);
+   bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
    bool binDisplay(Communicator *comm);

@@ -22,6 +22,7 @@
 #include <salalib/spacepix.h>
 #include <salalib/pointdata.h>
 #include <salalib/ngraph.h>
+#include "genlib/legacyconverters.h"
 
 void Node::make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, int q_octants)
 {
@@ -186,7 +187,7 @@ void Node::contents(PixelRefList& hood) const
 {
    first();
    while (!is_tail()) {
-      hood.add(cursor());
+      hood.push_back(cursor());
       next();
    }
 }
@@ -201,7 +202,9 @@ ifstream& Node::read(ifstream& stream, int version)
    }
    if (version >= VERSION_OCCLUSIONS) {
       for (i = 0; i < 32; i++) {
-         m_occlusion_bins[i].read(stream);
+         pvector<PixelRef> tempPvector;
+         tempPvector.read(stream);
+         m_occlusion_bins[i] = genshim::toSTLVector(tempPvector);
       }
    }
    return stream;
@@ -215,7 +218,8 @@ ofstream& Node::write(ofstream& stream, int version)
    }
    if (version >= VERSION_OCCLUSIONS) {
       for (i = 0; i < 32; i++) {
-         m_occlusion_bins[i].write(stream);
+         pvector<PixelRef> tempPvector = genshim::toPVector(m_occlusion_bins[i]);
+         tempPvector.write(stream);
       }
    }
    return stream;
@@ -253,11 +257,11 @@ void Bin::make(const PixelRefList& pixels, char dir)
          // Special, the diagonal should be pixels directly along the diagonal
          // Both posdiagonal and negdiagonal are positive in the x direction
          // Note that it is ordered anyway, so no need for anything too fancy:
-         if (pixels.tail().x < cur.start().x) {
-            cur.m_start = pixels.tail();
+         if (pixels.back().x < cur.start().x) {
+            cur.m_start = pixels.back();
          }
-         if (pixels.tail().x > cur.end().x) {
-            cur.m_end = pixels.tail();
+         if (pixels.back().x > cur.end().x) {
+            cur.m_end = pixels.back();
          }
 
          m_length = 1;
@@ -400,7 +404,7 @@ void Bin::contents(PixelRefList& hood)
 {
    first();
    while (!is_tail()) {
-      hood.add((int) m_curpix);
+      hood.push_back((int) m_curpix);
       next();
    }
 }
