@@ -2230,7 +2230,7 @@ void ShapeMap::cutLine(Line& li) //, short dir)
 
 // buffering type function, just for points for the time being
 
-int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
+int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& bufferset)
 {
    // first, get all the pixels within the radius (using square as simpler)
    PixelRef bl = pixelate( Point2f(pt.x - radius, pt.y - radius) );
@@ -2248,10 +2248,10 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                   size_t shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
                   SalaShape& poly = m_shapes[shapeindex];
                   if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) { 
-                     bufferset.add(int(shapeindex));
+                     bufferset.push_back(int(shapeindex));
                   }
                   else if (dist(pt,poly.getLine()) < radius) { // if poly is line
-                     bufferset.add(int(shapeindex));
+                     bufferset.push_back(int(shapeindex));
                   }
                   tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
                }
@@ -2264,7 +2264,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                      SalaShape& poly = m_shapes[shapeindex];
                      Line li( poly[q], poly[(q+1)%poly.size()] );
                      if (dist(pt,li) < radius) {
-                        bufferset.add(int(shapeindex));
+                        bufferset.push_back(int(shapeindex));
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,q),paftl::ADD_HERE);
                   }
@@ -2279,7 +2279,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
    for (size_t k = 0; k < m_pixel_shapes[centre.x][centre.y].size(); k++) {
       ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
-         bufferset.add( m_shapes.searchindex(shaperef.m_shape_ref) );
+         bufferset.push_back( m_shapes.searchindex(shaperef.m_shape_ref) );
       }
    }
    return bufferset.size();
@@ -2469,7 +2469,8 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       }
       if (index != -1) {
          // relies on indices of shapes and attributes being aligned
-         if (m_selection_set.add(index) != -1) {
+         m_selection_set.push_back(index);
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) != m_selection_set.end()) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes.value(index).m_selected = true;
@@ -2494,7 +2495,8 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       // actually probably often faster to set flag and later record list:
       for (size_t x = 0; x < m_shapes.size(); x++) {
          if (m_shapes.value(x).m_selected) {
-            if (m_selection_set.add(x) != -1) {
+             m_selection_set.push_back(x);
+             if (std::find(m_selection_set.begin(), m_selection_set.end(), x) != m_selection_set.end()) {
                m_attributes.selectRowByIndex(x);
             }
          }
@@ -2505,7 +2507,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
 }
 
 // this version is used by setSelSet in MetaGraph, ultimately called from CTableView and PlotView
-bool ShapeMap::setCurSel(const pvecint& selset, bool add)
+bool ShapeMap::setCurSel(const std::vector<int>& selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2514,7 +2516,8 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       size_t index = m_shapes.searchindex(selset[i]);  // relies on aligned indices for attributes and shapes
       if (index != paftl::npos) {
-         if (m_selection_set.add(int(index)) != -1) {
+         m_selection_set.push_back(int(index));
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), int(index)) != m_selection_set.end()) {
             m_attributes.selectRowByIndex(int(index));
          }
          m_shapes[index].m_selected = true;
@@ -2525,7 +2528,7 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
 }
 
 // this version is used when setting a selection set via the scripting language
-bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
+bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2534,7 +2537,8 @@ bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       int index = selset[i];  // relies on aligned indices for attributes and shapes
       if (index != -1) {
-         if (m_selection_set.add(index) != -1) {
+         m_selection_set.push_back(index);
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) != m_selection_set.end()) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes[index].m_selected = true;
