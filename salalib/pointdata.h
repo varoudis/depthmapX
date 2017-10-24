@@ -512,7 +512,7 @@ inline QtRegion PointMap::regionate( const PixelRef& p, double border ) const
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-class PointMaps : public prefvec<PointMap>
+class PointMaps : public std::vector<PointMap>
 {
 protected:
    int m_displayed_map;
@@ -531,7 +531,7 @@ public:
    { return m_displayed_map; }
    int addNewMap(const std::string& name = std::string("VGA Map"));
    void removeMap(int i) 
-   { if (m_displayed_map >= i) m_displayed_map--; remove_at(i); }
+   { if (m_displayed_map >= i) m_displayed_map--; erase(begin() + i); }
    //
    void setSpacePixel(SuperSpacePixel *spacepix)
    { m_spacepix = spacepix; for (size_t i = 0; i < size(); i++) at(i).setSpacePixel(spacepix); }

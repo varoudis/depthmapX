@@ -140,7 +140,7 @@ int PointMaps::addNewMap(const std::string& name)
       }
    }
    push_back(PointMap(myname)); 
-   tail().setSpacePixel(m_spacepix); 
+   back().setSpacePixel(m_spacepix); 
    m_displayed_map = size() - 1; 
    return size() - 1; 
 }
@@ -152,8 +152,8 @@ bool PointMaps::read(ifstream& stream, int version)
    stream.read((char *) &count, sizeof(count));
    for (int i = 0; i < count; i++) {
       push_back(PointMap());
-      tail().setSpacePixel( (SuperSpacePixel *) this );
-      tail().read( stream, version );
+      back().setSpacePixel( (SuperSpacePixel *) this );
+      back().read( stream, version );
    }
    return true;
 }

@@ -2831,14 +2831,14 @@ int MetaGraph::read( const std::string& filename )
       if (version < VERSION_POINT_MAPS) {
          PointMaps::push_back(PointMap());
          if (temp_state & 0x0001) { // 0x0001 was "GRAPH"
-            PointMaps::tail().m_processed = true;
+            PointMaps::back().m_processed = true;
             temp_state &= ~0x0001;
          }
          if (temp_state & 0x0080) { // 0x0080 was "BOUNDARYGRAPH"
-            PointMaps::tail().m_boundarygraph = true;
+            PointMaps::back().m_boundarygraph = true;
             temp_state &= ~0x0080;
          }
-         PointMaps::tail().read( stream, version );
+         PointMaps::back().read( stream, version );
          setDisplayedPointMapRef(0);
       }
       else {
@@ -2861,7 +2861,7 @@ int MetaGraph::read( const std::string& filename )
          }
       }
       // record on state of actual point map:
-      PointMaps::tail().m_processed = true;
+      PointMaps::back().m_processed = true;
 
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -3160,7 +3160,7 @@ int MetaGraph::convertVirtualMem( ifstream& stream, int version )
    int size;
    stream.read( (char *) &size, sizeof( size ) );
 
-   PointMap& map = PointMaps::tail();
+   PointMap& map = PointMaps::back();
    for (int i = 0; i < size; i++) {
       nodes.read(stream);
       bins.read(stream);
