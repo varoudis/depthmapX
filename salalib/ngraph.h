@@ -103,7 +103,7 @@ protected:
    Bin m_bins[32];
 public:
    // testing some agent stuff:
-   pvector<PixelRef> m_occlusion_bins[32];
+   std::vector<PixelRef> m_occlusion_bins[32];
 public:
    Node()
    { ; }

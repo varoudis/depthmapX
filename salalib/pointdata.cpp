@@ -655,7 +655,7 @@ bool PointMap::blockLines()
 
 void PointMap::blockLine(int key, const Line& li)
 {
-   pvector<PixelRef> pixels = pixelateLineTouching(li,1e-10); 
+   std::vector<PixelRef> pixels = pixelateLineTouching(li,1e-10);
    // touching is generally better for ensuring lines pixelated completely, 
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
@@ -909,7 +909,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    qtimer( atime, 0 );
 
    while (surface.a().size() > 0) {
-      PixelRef& currpix = surface.a().tail();
+      PixelRef& currpix = surface.a().back();
       int result = 0;
       result |= expand( currpix, currpix.up(), surface.b(), filltype );
       result |= expand( currpix, currpix.down(), surface.b(), filltype );
@@ -2408,7 +2408,7 @@ bool PointMap::dynamicSparkGraph2()
 
 bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
 {
-   static pvector<PixelRef> bins_b[32];
+   static std::vector<PixelRef> bins_b[32];
    static float far_bin_dists[32];
    for (int i = 0; i < 32; i++) {
       far_bin_dists[i] = 0.0f;
@@ -2480,7 +2480,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
       sieve.block(lines0, q);
       sieve.collectgarbage();
 
-      pvector<PixelRef> addlist;
+      std::vector<PixelRef> addlist;
 
       for (depth = 1; sieve.hasGaps(); depth++) {
 
@@ -2542,7 +2542,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
    return true;
 }
 
-bool PointMap::sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int depth, PixelRef curs)
+bool PointMap::sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs)
 {
    bool hasgaps = false;
    int firstind = 0;
@@ -2671,7 +2671,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
 
             isovist.setData(m_attributes,row, simple_version);
             Node& node = getPoint(curs).getNode();
-            pvector<PixelRef> *occ = node.m_occlusion_bins;
+            std::vector<PixelRef> *occ = node.m_occlusion_bins;
             size_t k;
             for (k = 0; k < 32; k++) {
                occ[k].clear();
@@ -2917,10 +2917,10 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                      retpt.m_node->first();
                      while (!retpt.m_node->is_tail()) {
                         retro_size++;
-                        if (neighbourhood.searchindex(retpt.m_node->cursor()) != paftl::npos) {
+                        if (std::find(neighbourhood.begin(), neighbourhood.end(), retpt.m_node->cursor()) != neighbourhood.end()) {
                            intersect_size++;
                         }
-                        totalneighbourhood.add(retpt.m_node->cursor()); // <- note add does nothing if member already exists
+                        totalneighbourhood.push_back(retpt.m_node->cursor()); // <- note add does nothing if member already exists
                         retpt.m_node->next();
                      }
                      control += 1.0f / float(retro_size);

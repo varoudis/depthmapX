@@ -141,7 +141,7 @@ inline double angle(const PixelRef a, const PixelRef b, const PixelRef c)
 }
 
 // Now sizeof(PixelRef) == sizeof(int) better stored directly:
-typedef pvector<PixelRef> PixelRefList;
+typedef std::vector<PixelRef> PixelRefList;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
