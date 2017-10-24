@@ -19,7 +19,6 @@
 // Point data
 
 #include <math.h>
-#include <genlib/paftl.h>
 #include <genlib/comm.h>  // for communicator
 
 #include <salalib/mgraph.h>
