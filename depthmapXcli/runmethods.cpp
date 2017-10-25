@@ -52,6 +52,35 @@ namespace dm_runmethods
         return mgraph;
     }
 
+    void importFiles(const CommandLineParser &cmdP, const std::vector<string> &filesToImport, IPerformanceSink &perfWriter)
+    {
+        std::ifstream mainFileStream(cmdP.getFileName().c_str());
+        if(!mainFileStream.good()) {
+            std::stringstream message;
+            message << "File not found: " << cmdP.getFileName() << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+
+        std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
+        DO_TIMED( "Load graph file", auto result = mgraph->read(cmdP.getFileName());)
+        if ( result != MetaGraph::OK && result != MetaGraph::NOT_A_GRAPH)
+        {
+            std::stringstream message;
+            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+        std::cout << " ok\n" << std::flush;
+
+        if ( result == MetaGraph::NOT_A_GRAPH)
+        {
+            // not a graph, try to import the file
+            std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 5, cmdP.getFileName().length() - 1);
+            ifstream file(cmdP.getFileName());
+            mgraph->importTxt( file, cmdP.getFileName(), (dXstring::toLower(ext) == ".csv") );
+        }
+        DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
+    }
+
     void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter)
     {
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
