@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     testisovistparser.cpp \
     ../depthmapXcli/isovistparser.cpp \
     testexportparser.cpp \
-    ../depthmapXcli/exportparser.cpp
+    ../depthmapXcli/exportparser.cpp \
+    ../depthmapXcli/importparser.cpp
 
 
 HEADERS += \
