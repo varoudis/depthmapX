@@ -44,7 +44,13 @@ namespace depthmapX {
             table.erase(table.find(columns[xcol]));
             table.erase(table.find(columns[ycol]));
 
-            mgraph.importPointsAsShapeMap(points, name, table);
+            QtRegion region;
+
+            for(auto& point: points) {
+                region = runion(region, point);
+            }
+
+            mgraph.importPointsAsShapeMap(points, region, name, table);
 
         } else if (x1col != -1 && y1col != -1 && x2col != -1 && y2col != -1) {
             std::vector<Line> lines = extractLines(table[columns[x1col]], table[columns[y1col]], table[columns[x2col]], table[columns[y2col]]);
@@ -53,8 +59,14 @@ namespace depthmapX {
             table.erase(table.find(columns[x2col]));
             table.erase(table.find(columns[y2col]));
 
-            //mgraph.importLinesAsShapeMap(lines, name, table);
-            mgraph.importLinesAsDrawingLayer(lines, name, table);
+            QtRegion region;
+
+            for(auto& line: lines) {
+                region = runion(region, line);
+            }
+
+            //mgraph.importLinesAsShapeMap(lines, region, name, table);
+            mgraph.importLinesAsDrawingLayer(lines, region, name, table);
         }
         return true;
     }

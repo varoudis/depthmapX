@@ -2874,15 +2874,11 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
    return true;
 }
 
-bool ShapeMap::importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data)
+bool ShapeMap::importPoints(const std::vector<Point2f> &points,
+                            QtRegion region,
+                            const depthmapX::Table &data)
 {
     //assumes that points and data come in the same order
-
-    QtRegion region;
-
-    for(auto& point: points) {
-        region = runion(region, QtRegion(point, point));
-    }
 
     init(points.size(),region);
 
@@ -2898,15 +2894,11 @@ bool ShapeMap::importPoints(const std::vector<Point2f> &points, const depthmapX:
     return dataImported;
 }
 
-bool ShapeMap::importLines(const std::vector<Line> &lines, const depthmapX::Table &data)
+bool ShapeMap::importLines(const std::vector<Line> &lines,
+                           QtRegion region,
+                           const depthmapX::Table &data)
 {
     //assumes that lines and data come in the same order
-
-    QtRegion region;
-
-    for(auto& line: lines) {
-        region = runion(region, line);
-    }
 
     init(lines.size(),region);
 
