@@ -53,7 +53,8 @@ namespace depthmapX {
             table.erase(table.find(columns[x2col]));
             table.erase(table.find(columns[y2col]));
 
-            mgraph.importLinesAsShapeMap(lines, name, table);
+            //mgraph.importLinesAsShapeMap(lines, name, table);
+            mgraph.importLinesAsDrawingLayer(lines, name, table);
         }
         return true;
     }
