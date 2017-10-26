@@ -1911,45 +1911,33 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
-int MetaGraph::importLinesAsDrawingLayer(const std::vector<Line> &lines, std::string name, depthmapX::Table &data ) {
+int MetaGraph::importLinesAsDrawingLayer(const std::vector<Line> &lines,
+                                         QtRegion region,
+                                         std::string name,
+                                         depthmapX::Table &data ) {
 
     if (SuperSpacePixel::size() == 0) {
         // any name for the file will do...
         SuperSpacePixel::push_back(SpacePixelFile("salad"));
     }
 
-    QtRegion region;
-
-    for(auto& line: lines) {
-        region = runion(region, line);
-    }
-
     SuperSpacePixel::tail().push_back(ShapeMap(name));
-    SuperSpacePixel::tail().tail().init(lines.size(), region);
 
-    for(auto& line: lines) {
-       SuperSpacePixel::tail().tail().makeLineShape( line );
-    }
+    SuperSpacePixel::tail().tail().importLines( lines, region, data );
 
     SuperSpacePixel::tail().m_region = SuperSpacePixel::tail().tail().getRegion();
 
-    if (SuperSpacePixel::size() == 1) {
-       SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-    }
-    else {
-       SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-    }
-
-
-    SuperSpacePixel::tail().tail().setDisplayedAttribute(-2);
-    SuperSpacePixel::tail().tail().setDisplayedAttribute(-1);
+    SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
 
     m_state |= LINEDATA;
 
     return SuperSpacePixel::tail().size() - 1;
 }
 
-int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines, std::string name, depthmapX::Table &data )
+int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
+                                     QtRegion region,
+                                     std::string name,
+                                     depthmapX::Table &data )
 {
    int oldstate = m_state;
 
@@ -1957,7 +1945,7 @@ int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines, std::string
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importLines( lines, data )) {
+   if (!m_data_maps.getDisplayedMap().importLines( lines, region, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;
@@ -1969,7 +1957,10 @@ int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines, std::string
    return x;
 }
 
-int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points, std::string name, depthmapX::Table &data )
+int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
+                                      QtRegion region,
+                                      std::string name,
+                                      depthmapX::Table &data )
 {
    int oldstate = m_state;
 
@@ -1977,7 +1968,7 @@ int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points, std::s
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importPoints( points, data )) {
+   if (!m_data_maps.getDisplayedMap().importPoints( points, region, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;
