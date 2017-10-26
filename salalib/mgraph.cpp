@@ -1911,7 +1911,7 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
-int MetaGraph::importTxt( istream& stream, const std::string& name, bool csv )
+int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines, std::string name, depthmapX::Table &data )
 {
    int oldstate = m_state;
 
@@ -1919,7 +1919,27 @@ int MetaGraph::importTxt( istream& stream, const std::string& name, bool csv )
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importTxt( stream, csv )) {
+   if (!m_data_maps.getDisplayedMap().importLines( lines, data )) {
+      m_data_maps.removeMap(x);
+      m_state = oldstate;
+      return -1;
+   }
+
+   m_state |= DATAMAPS;
+   setViewClass(SHOWSHAPETOP);
+
+   return x;
+}
+
+int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points, std::string name, depthmapX::Table &data )
+{
+   int oldstate = m_state;
+
+   m_state &= ~DATAMAPS;
+
+   int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
+
+   if (!m_data_maps.getDisplayedMap().importPoints( points, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;

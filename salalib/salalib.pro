@@ -39,7 +39,8 @@ SOURCES += \
     vertex.cpp \
     entityparsing.cpp \
     linkutils.cpp \
-    gridproperties.cpp
+    gridproperties.cpp \
+    importutils.cpp
 
 HEADERS += \
     attributes.h \
@@ -67,7 +68,9 @@ HEADERS += \
     linkutils.h \
     gridproperties.h \
     isovistdef.h \
-    mgraph_consts.h
+    mgraph_consts.h \
+    importutils.h \
+    importtypedefs.h
 
 DISTFILES += \
     salascript-tests.txt

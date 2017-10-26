@@ -29,6 +29,7 @@
 
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
+#include <salalib/importutils.h>
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -431,7 +432,7 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
 		   return NULL;
       }
       else {
-         int mapref = graph->importTxt( file, newmapname, (type_str.compare("CSV")==0) );
+         int mapref = depthmapX::importTxt(*graph, file, newmapname, (type_str.compare("CSV")==0) ? '\t' : ',');
          
          if (mapref != -1) {
             // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together

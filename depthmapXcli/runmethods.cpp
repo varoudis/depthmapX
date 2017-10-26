@@ -25,6 +25,7 @@
 #include <vector>
 #include <salalib/gridproperties.h>
 #include <genlib/legacyconverters.h>
+#include <salalib/importutils.h>
 
 namespace dm_runmethods
 {
@@ -76,7 +77,7 @@ namespace dm_runmethods
             // not a graph, try to import the file
             std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 5, cmdP.getFileName().length() - 1);
             ifstream file(cmdP.getFileName());
-            mgraph->importTxt( file, cmdP.getFileName(), (dXstring::toLower(ext) == ".csv") );
+            depthmapX::importTxt(*mgraph, file, cmdP.getFileName(), (dXstring::toLower(ext) == ".csv") ? ',' : '\t');
         }
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
