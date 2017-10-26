@@ -533,7 +533,7 @@ public:
    bool importLines(const std::vector<Line> &lines, QtRegion region, const depthmapX::Table &data);
    bool importPoints(const std::vector<Point2f> &points, QtRegion region, const depthmapX::Table &data);
 private:
-   bool importData(const depthmapX::Table &data);
+   bool importData(const depthmapX::Table &data, std::vector<int> indices);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

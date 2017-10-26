@@ -2882,11 +2882,13 @@ bool ShapeMap::importPoints(const std::vector<Point2f> &points,
 
     init(points.size(),region);
 
+    std::vector<int> indices;
+
     for(auto& point: points) {
-        makePointShape(point);
+        indices.push_back(makePointShape(point));
     }
 
-    bool dataImported = importData(data);
+    bool dataImported = importData(data, indices);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2902,11 +2904,13 @@ bool ShapeMap::importLines(const std::vector<Line> &lines,
 
     init(lines.size(),region);
 
+    std::vector<int> indices;
+
     for(auto& line: lines) {
-        makeLineShape(line);
+        indices.push_back(makeLineShape(line));
     }
 
-    bool dataImported = importData(data);
+    bool dataImported = importData(data, indices);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2915,7 +2919,7 @@ bool ShapeMap::importLines(const std::vector<Line> &lines,
 }
 
 
-bool ShapeMap::importData(const depthmapX::Table &data)
+bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices)
 {
     for (auto& column: data) {
         std::string colName = column.first;
@@ -2955,7 +2959,7 @@ bool ShapeMap::importData(const depthmapX::Table &data)
 
                     if(colcodes.size() >= 32) {
                         for (size_t j = 0; j < column.second.size(); j++) {
-                            m_attributes.setValue(j, colIndex, -1.0f);
+                            m_attributes.setValue(indices[j], colIndex, -1.0f);
                         }
                         continue;
                     } else {
@@ -2966,7 +2970,7 @@ bool ShapeMap::importData(const depthmapX::Table &data)
                     value = cellAt->second;
                 }
             }
-            m_attributes.setValue(i, colIndex, value);
+            m_attributes.setValue(indices[i], colIndex, value);
         }
     }
     return true;
