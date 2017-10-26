@@ -1911,6 +1911,44 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
+int MetaGraph::importLinesAsDrawingLayer(const std::vector<Line> &lines, std::string name, depthmapX::Table &data ) {
+
+    if (SuperSpacePixel::size() == 0) {
+        // any name for the file will do...
+        SuperSpacePixel::push_back(SpacePixelFile("salad"));
+    }
+
+    QtRegion region;
+
+    for(auto& line: lines) {
+        region = runion(region, line);
+    }
+
+    SuperSpacePixel::tail().push_back(ShapeMap(name));
+    SuperSpacePixel::tail().tail().init(lines.size(), region);
+
+    for(auto& line: lines) {
+       SuperSpacePixel::tail().tail().makeLineShape( line );
+    }
+
+    SuperSpacePixel::tail().m_region = SuperSpacePixel::tail().tail().getRegion();
+
+    if (SuperSpacePixel::size() == 1) {
+       SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
+    }
+    else {
+       SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+    }
+
+
+    SuperSpacePixel::tail().tail().setDisplayedAttribute(-2);
+    SuperSpacePixel::tail().tail().setDisplayedAttribute(-1);
+
+    m_state |= LINEDATA;
+
+    return SuperSpacePixel::tail().size() - 1;
+}
+
 int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines, std::string name, depthmapX::Table &data )
 {
    int oldstate = m_state;

@@ -113,6 +113,7 @@ public:
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
    int importLinesAsShapeMap(const std::vector<Line> &lines, std::string name, depthmapX::Table &data );
    int importPointsAsShapeMap(const std::vector<Point2f> &points, std::string name, depthmapX::Table &data);
+   int importLinesAsDrawingLayer(const std::vector<Line> &lines, std::string name, depthmapX::Table &data);
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
