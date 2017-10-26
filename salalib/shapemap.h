@@ -22,6 +22,7 @@
 
 #include <string>
 #include "genlib/stringutils.h"
+#include "salalib/importtypedefs.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -498,7 +499,6 @@ public:
    bool write( ofstream& stream, int version );
    //
    bool output( ofstream& stream, char delimiter = '\t', bool updated_only = false );
-   bool importTxt(istream& stream, bool csv);
    //
    // links and unlinks
 protected:
@@ -530,6 +530,10 @@ public:
    void ozlemSpecial5(ShapeMap& buildings);
    void ozlemSpecial6();
    void ozlemSpecial7(ShapeMap& linemap);
+   bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+private:
+   bool importData(const depthmapX::Table &data);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
