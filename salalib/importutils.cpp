@@ -66,7 +66,9 @@ namespace depthmapX {
             }
 
             //mgraph.importLinesAsShapeMap(lines, region, name, table);
-            mgraph.importLinesAsDrawingLayer(lines, region, name, table);
+            int shapeMapIndex = mgraph.createNewDrawingLayer(name);
+            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, region, table);
+            mgraph.initDrawingLayer(shapeMapIndex);
         }
         return true;
     }

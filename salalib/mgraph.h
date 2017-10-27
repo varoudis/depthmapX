@@ -111,9 +111,11 @@ public:
    int loadCat( istream& stream, Communicator *communicator );
    int loadDxf( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
+   size_t createNewDrawingLayer(std::string name);
+   ShapeMap &getDrawingLayer(size_t shapeMapIndex);
+   void initDrawingLayer(size_t shapeMapIndex);
    int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
    int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
-   int importLinesAsDrawingLayer(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data);
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
