@@ -34,6 +34,7 @@
 
 // shouldn't really include this -- required for node in PushValuesToLayer
 #include <salalib/ngraph.h>
+#include <salalib/importutils.h>
 
 // Quick mod - TV
 #pragma warning (disable: 4800)
@@ -1374,8 +1375,6 @@ bool MetaGraph::makeAxialLines( Communicator *communicator, bool analyse_in_memo
    return retvar;
 }
 
-const int DXFCIRCLERES = 36;
-
 int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 {
    m_state &= ~LINEDATA;      // Clear line data flag (stops accidental redraw during reload) 
@@ -1402,7 +1401,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    if (load_type & DXF) {
 
       // separate the stream and the communicator, allowing non-file streams read
-      int error = loadDxf(*communicator, communicator);
+      int error = depthmapX::importDxf(*this, *communicator, communicator);
 
       if (error != 1) {
          return error;
@@ -1471,117 +1470,6 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    }
 
    m_state |= LINEDATA;
-
-   return 1;
-}
-
-int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
-{
-   DxfParser dp;
-
-   if (communicator) {
-      dp = DxfParser( communicator );
-
-      try {
-         *communicator >> dp;
-      }
-      catch (Communicator::CancelledException) {
-         SuperSpacePixel::pop_back();
-         return 0;
-      }
-      catch (pexception) {
-         SuperSpacePixel::pop_back();
-         return -1;
-      }
-
-      if (communicator->IsCancelled()) {
-         SuperSpacePixel::pop_back();
-         return 0;
-      }
-   }
-   else {
-      dp.open(stream);
-   }
-
-   SuperSpacePixel::tail().m_region = QtRegion(dp.getExtMin(), dp.getExtMax());
-
-   int i = 0;
-
-   for (auto& layer: dp.getLayers())
-   {
-      const DxfLayer& dxf_layer = layer.second;
-
-      if (dxf_layer.empty()) {
-         continue;
-      }
-      
-      SuperSpacePixel::tail().push_back(ShapeMap(dxf_layer.getName().c_str()));
-      // note the circle lines are not counted in the total number of lines, as we have to specify number of segments
-      SuperSpacePixel::tail().at(i).init(dxf_layer.numTotalPoints() + dxf_layer.numTotalLines() + dxf_layer.numArcs() * DXFCIRCLERES + dxf_layer.numCircles() * DXFCIRCLERES, QtRegion(Point2f(dxf_layer.getExtMin()),Point2f(dxf_layer.getExtMax())) );
-
-      for (int jp = 0; jp < dxf_layer.numPoints(); jp++) {
-
-         const DxfVertex& dxf_point = dxf_layer.getPoint( jp );
-         Point2f point = Point2f(dxf_point);
-         SuperSpacePixel::tail().at(i).makePointShape( point );
-
-      }
-
-      for (int j = 0; j < dxf_layer.numLines(); j++) {
-
-         const DxfLine& dxf_line = dxf_layer.getLine( j );
-         Line line = Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) );
-         SuperSpacePixel::tail().at(i).makeLineShape( line );   
-
-      }
-      for (int k = 0; k < dxf_layer.numPolyLines(); k++) {
-
-         const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
-         pvecpoint points;
-         for (int m = 0; m < poly.numVertices(); m++) {
-            points.push_back(poly.getVertex(m));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
-      }
-      for (int l = 0; l < dxf_layer.numSplines(); l++) {
-
-         const DxfSpline& poly = dxf_layer.getSpline( l );
-
-         pvecpoint points;
-         for (int m = 0; m < poly.numVertices(); m++) {
-            points.push_back(poly.getVertex(m));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
-
-      }
-      // needs fixing to use appropriate poly type:
-      for (int n = 0; n < dxf_layer.numArcs(); n++) {
-         
-         const DxfArc& circ = dxf_layer.getArc( n );
-         int segments = circ.numSegments(DXFCIRCLERES);
-         if (segments > 1) {
-            for (int m = 0; m < segments; m++) {
-               // note, loops on DXFCIRCLERES (e.g. 36) to 0
-               Line line = Line( Point2f(circ.getVertex(m,DXFCIRCLERES)), Point2f(circ.getVertex(m+1,DXFCIRCLERES)) );
-               SuperSpacePixel::tail().at(i).makeLineShape( line );
-            }
-         }
-      }
-      for (int nc = 0; nc < dxf_layer.numCircles(); nc++) {
-         
-         const DxfCircle& circ = dxf_layer.getCircle( nc );
-         pvecpoint points;
-         for (int m = 0; m < DXFCIRCLERES; m++) {
-            points.push_back(circ.getVertex(m,DXFCIRCLERES));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, false );
-      }
-
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
-
-      i++;
-   }
 
    return 1;
 }
@@ -1866,28 +1754,6 @@ bool MetaGraph::importCat(istream& filecontents)
    return true;
 }
 
-bool MetaGraph::importDxf(istream& filecontents)
-{
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-
-   // load the data from the file
-   if (!loadDxf( filecontents, NULL )) {
-      return false;
-   }
-
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   return true;
-}
-
 // a second does the lot, especially for evolutionary graphs
 // essentially, hand the ecoevograph a new meta graph each time...
 // it'll do everything for you
@@ -1947,7 +1813,8 @@ int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importLines( lines, region, data )) {
+   m_data_maps.getDisplayedMap().init(lines.size(), region);
+   if (!m_data_maps.getDisplayedMap().importLines( lines, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;
@@ -1970,7 +1837,8 @@ int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importPoints( points, region, data )) {
+   m_data_maps.getDisplayedMap().init(points.size(), region);
+   if (!m_data_maps.getDisplayedMap().importPoints( points, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;

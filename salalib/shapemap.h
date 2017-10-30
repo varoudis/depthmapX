@@ -530,8 +530,9 @@ public:
    void ozlemSpecial5(ShapeMap& buildings);
    void ozlemSpecial6();
    void ozlemSpecial7(ShapeMap& linemap);
-   bool importLines(const std::vector<Line> &lines, QtRegion region, const depthmapX::Table &data);
-   bool importPoints(const std::vector<Point2f> &points, QtRegion region, const depthmapX::Table &data);
+   bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+   bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
 private:
    bool importData(const depthmapX::Table &data, std::vector<int> indices);
 };
