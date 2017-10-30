@@ -21,7 +21,132 @@ namespace depthmapX {
 
     const int DXFCIRCLERES = 36;
 
-    bool importTxt(MetaGraph &mgraph, std::istream &stream, std::string name, char delimiter = '\t') {
+    bool importFile(MetaGraph &mgraph, std::istream &stream, Communicator *communicator, std::string name, ImportType mapType, ImportFileType fileType) {
+
+        // This function is still too fiddly but at least it shows the common interface for
+        // drawing and data maps and how different file types may be parsed to be imported
+        // into them
+
+        int state = MetaGraph::NONE;
+        int viewClass = MetaGraph::NONE;
+
+        switch(mapType) {
+            case DRAWINGMAP: {
+                state = MetaGraph::LINEDATA;
+                viewClass = MetaGraph::SHOWSHAPETOP;
+                break;
+            }
+            case DATAMAP: {
+                state = MetaGraph::DATAMAPS;
+                viewClass = MetaGraph::SHOWSHAPETOP;
+                break;
+            }
+        }
+
+        int oldstate = mgraph.getState();
+        mgraph.setState(oldstate & ~state);
+
+        // Currently the drawing shapemaps are understood as two-level trees (file -> layers)
+        // while the data shapemaps are flat. Therefore, for the moment, when we load dxfs as
+        // drawing shapemaps then we let the filename be the parent and the layers the children.
+        // For text files (csv, tsv) we create an artificial parent with the relevant name
+        // Drawing shapemaps also carry region data that needs to be initialised and their parents
+        // updated when they are created.
+        // Ideally datamaps and drawingmaps should be more similar.
+
+        if(mapType == DRAWINGMAP) {
+            mgraph.SuperSpacePixel::push_back(SpacePixelFile(name));
+        }
+
+        bool parsed = false;
+
+        switch (fileType) {
+            case CSV: {
+                ShapeMap &shapeMap = mgraph.createNewShapeMap(mapType, name);
+                parsed = importTxt(shapeMap, stream, ',');
+
+                if(!parsed) {
+                    mgraph.deleteShapeMap(mapType, shapeMap);
+                    break;
+                }
+                if(mapType == DRAWINGMAP) {
+                    mgraph.updateParentRegions(shapeMap);
+                }
+                break;
+            }
+            case TSV: {
+                ShapeMap &shapeMap = mgraph.createNewShapeMap(mapType, name);
+                parsed = importTxt(shapeMap, stream, '\t');
+
+                if(!parsed) {
+                    mgraph.deleteShapeMap(mapType, shapeMap);
+                    break;
+                }
+                if(mapType == DRAWINGMAP) {
+                    mgraph.updateParentRegions(shapeMap);
+                }
+                break;
+            }
+            case DXF: {
+
+                DxfParser dp;
+
+                if (communicator) {
+                    dp = DxfParser( communicator );
+
+                    try {
+                        *communicator >> dp;
+                    }
+                    catch (Communicator::CancelledException) {
+                        return 0;
+                    }
+                    catch (pexception) {
+                        return -1;
+                    }
+
+                    if (communicator->IsCancelled()) {
+                        return 0;
+                    }
+                }
+                else {
+                    dp.open(stream);
+                }
+
+                for (auto& layer: dp.getLayers())
+                {
+
+                    const DxfLayer& dxfLayer = layer.second;
+
+                    if (dxfLayer.empty()) {
+                        continue;
+                    }
+
+                    ShapeMap &shapeMap = mgraph.createNewShapeMap(mapType, layer.first);
+                    parsed = importDxfLayer(dxfLayer, shapeMap);
+
+                    if(!parsed) {
+                        mgraph.deleteShapeMap(mapType, shapeMap);
+                        break;
+                    }
+                    if(mapType == DRAWINGMAP) {
+                        mgraph.updateParentRegions(shapeMap);
+                    }
+                }
+                break;
+            }
+        }
+
+        if(parsed) {
+            mgraph.setState(mgraph.getState() | state);
+            mgraph.setViewClass(viewClass);
+            return true;
+        } else {
+            mgraph.setState(oldstate);
+            return false;
+        }
+    }
+
+    bool importTxt(ShapeMap &shapeMap, std::istream &stream, char delimiter = '\t') {
         Table table = csvToTable(stream, delimiter);
         std::vector<std::string> columns;
         int xcol = -1, ycol = -1, x1col = -1, y1col = -1, x2col = -1, y2col = -1;
@@ -52,7 +177,8 @@ namespace depthmapX {
                 region = runion(region, point);
             }
 
-            mgraph.importPointsAsShapeMap(points, region, name, table);
+            shapeMap.init(points.size(),region);
+            shapeMap.importPoints(points, table);
 
         } else if (x1col != -1 && y1col != -1 && x2col != -1 && y2col != -1) {
             std::vector<Line> lines = extractLines(table[columns[x1col]], table[columns[y1col]], table[columns[x2col]], table[columns[y2col]]);
@@ -67,11 +193,8 @@ namespace depthmapX {
                 region = runion(region, line);
             }
 
-            //mgraph.importLinesAsShapeMap(lines, region, name, table);
-            int shapeMapIndex = mgraph.createNewDrawingLayer(name);
-            mgraph.getDrawingLayer(shapeMapIndex).init(lines.size(),region);
-            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, table);
-            mgraph.initDrawingLayer(shapeMapIndex);
+            shapeMap.init(lines.size(),region);
+            shapeMap.importLines(lines, table);
         }
         return true;
     }
@@ -139,113 +262,72 @@ namespace depthmapX {
         return points;
     }
 
-    int importDxf(MetaGraph &mgraph, std::istream &stream, Communicator *communicator)
+    bool importDxfLayer(const DxfLayer& dxfLayer, ShapeMap &shapeMap)
     {
-        DxfParser dp;
+        std::vector<Point2f> points;
+        std::vector<Line> lines;
+        std::vector<Polyline> polylines;
 
-        if (communicator) {
-            dp = DxfParser( communicator );
+        for (int jp = 0; jp < dxfLayer.numPoints(); jp++) {
+            const DxfVertex& dxf_point = dxfLayer.getPoint( jp );
+            points.push_back(Point2f(dxf_point));
 
-            try {
-                *communicator >> dp;
-            }
-            catch (Communicator::CancelledException) {
-                return 0;
-            }
-            catch (pexception) {
-                return -1;
-            }
-
-            if (communicator->IsCancelled()) {
-                return 0;
-            }
-        }
-        else {
-            dp.open(stream);
         }
 
-        int i = 0;
+        for (int j = 0; j < dxfLayer.numLines(); j++) {
+            const DxfLine& dxf_line = dxfLayer.getLine( j );
+            lines.push_back(Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) ));
+        }
 
-        mgraph.SuperSpacePixel::tail().m_region = QtRegion(dp.getExtMin(), dp.getExtMax());
+        for (int k = 0; k < dxfLayer.numPolyLines(); k++) {
 
-        for (auto& layer: dp.getLayers())
-        {
-            const DxfLayer& dxf_layer = layer.second;
-
-            if (dxf_layer.empty()) {
-                continue;
+            const DxfPolyLine& poly = dxfLayer.getPolyLine( k );
+            std::vector<Point2f> points;
+            for (int m = 0; m < poly.numVertices(); m++) {
+                points.push_back(poly.getVertex(m));
             }
+            polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
+        }
+
+        for (int l = 0; l < dxfLayer.numSplines(); l++) {
+
+            const DxfSpline& poly = dxfLayer.getSpline( l );
 
             std::vector<Point2f> points;
-            std::vector<Line> lines;
-            std::vector<Polyline> polylines;
-
-            for (int jp = 0; jp < dxf_layer.numPoints(); jp++) {
-                const DxfVertex& dxf_point = dxf_layer.getPoint( jp );
-                points.push_back(Point2f(dxf_point));
-
+            for (int m = 0; m < poly.numVertices(); m++) {
+                points.push_back(poly.getVertex(m));
             }
+            polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
 
-            for (int j = 0; j < dxf_layer.numLines(); j++) {
-                const DxfLine& dxf_line = dxf_layer.getLine( j );
-                lines.push_back(Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) ));
-            }
-
-            for (int k = 0; k < dxf_layer.numPolyLines(); k++) {
-
-                const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
-                std::vector<Point2f> points;
-                for (int m = 0; m < poly.numVertices(); m++) {
-                    points.push_back(poly.getVertex(m));
-                }
-                polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
-            }
-
-            for (int l = 0; l < dxf_layer.numSplines(); l++) {
-
-                const DxfSpline& poly = dxf_layer.getSpline( l );
-
-                std::vector<Point2f> points;
-                for (int m = 0; m < poly.numVertices(); m++) {
-                    points.push_back(poly.getVertex(m));
-                }
-                polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
-
-            }
-
-            for (int n = 0; n < dxf_layer.numArcs(); n++) {
-                const DxfArc& circ = dxf_layer.getArc( n );
-                int segments = circ.numSegments(DXFCIRCLERES);
-                if (segments > 1) {
-                    for (int m = 0; m <= segments; m++) {
-                        points.push_back(circ.getVertex(m, segments));
-                    }
-                }
-                polylines.push_back(depthmapX::Polyline(points, false));
-            }
-
-            for (int nc = 0; nc < dxf_layer.numCircles(); nc++) {
-                const DxfCircle& circ = dxf_layer.getCircle( nc );
-                std::vector<Point2f> points;
-                for (int m = 0; m < DXFCIRCLERES; m++) {
-                    points.push_back(circ.getVertex(m,DXFCIRCLERES));
-                }
-                polylines.push_back(depthmapX::Polyline(points, true));
-            }
-
-            QtRegion region = QtRegion(Point2f(dxf_layer.getExtMin()),Point2f(dxf_layer.getExtMax()));
-
-            int shapeMapIndex = mgraph.createNewDrawingLayer(dxf_layer.getName());
-            mgraph.getDrawingLayer(shapeMapIndex).init(points.size() + lines.size() + polylines.size(),region);
-            // parameters could be passed in the Table here such as the layer/block/colour/linetype etc.
-            mgraph.getDrawingLayer(shapeMapIndex).importPoints(points, Table());
-            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, Table());
-            mgraph.getDrawingLayer(shapeMapIndex).importPolylines(polylines, Table());
-            // mgraph.initDrawingLayer(shapeMapIndex);
-
-            i++;
         }
 
-       return 1;
+        for (int n = 0; n < dxfLayer.numArcs(); n++) {
+            const DxfArc& circ = dxfLayer.getArc( n );
+            int segments = circ.numSegments(DXFCIRCLERES);
+            if (segments > 1) {
+                for (int m = 0; m <= segments; m++) {
+                    points.push_back(circ.getVertex(m, segments));
+                }
+            }
+            polylines.push_back(depthmapX::Polyline(points, false));
+        }
+
+        for (int nc = 0; nc < dxfLayer.numCircles(); nc++) {
+            const DxfCircle& circ = dxfLayer.getCircle( nc );
+            std::vector<Point2f> points;
+            for (int m = 0; m < DXFCIRCLERES; m++) {
+                points.push_back(circ.getVertex(m,DXFCIRCLERES));
+            }
+            polylines.push_back(depthmapX::Polyline(points, true));
+        }
+
+        QtRegion region = QtRegion(Point2f(dxfLayer.getExtMin()),Point2f(dxfLayer.getExtMax()));
+
+        shapeMap.init(points.size() + lines.size() + polylines.size(),region);
+        // parameters could be passed in the Table here such as the layer/block/colour/linetype etc.
+        shapeMap.importPoints(points, Table());
+        shapeMap.importLines(lines, Table());
+        shapeMap.importPolylines(polylines, Table());
+        return true;
     }
 }

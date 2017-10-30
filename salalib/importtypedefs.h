@@ -30,4 +30,12 @@ namespace depthmapX {
         Polyline(std::vector<Point2f> vertices, bool closed) : m_vertices(vertices), m_closed(closed) {
         }
     };
+
+    enum ImportType {
+        DRAWINGMAP, DATAMAP
+    };
+
+    enum ImportFileType {
+        CSV, TSV, DXF
+    };
 }

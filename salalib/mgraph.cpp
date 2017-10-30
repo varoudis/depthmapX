@@ -1377,6 +1377,11 @@ bool MetaGraph::makeAxialLines( Communicator *communicator, bool analyse_in_memo
 
 int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 {
+    if (load_type & DXF) {
+       // separate the stream and the communicator, allowing non-file streams read
+       return depthmapX::importFile(*this, *communicator, communicator, communicator->GetMBInfileName(), depthmapX::ImportType::DRAWINGMAP, depthmapX::ImportFileType::DXF);
+    }
+
    m_state &= ~LINEDATA;      // Clear line data flag (stops accidental redraw during reload) 
 /*
    if (m_state & POINTS) {
@@ -1398,16 +1403,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 
    SuperSpacePixel::push_back(communicator->GetMBInfileName());
 
-   if (load_type & DXF) {
-
-      // separate the stream and the communicator, allowing non-file streams read
-      int error = depthmapX::importDxf(*this, *communicator, communicator);
-
-      if (error != 1) {
-         return error;
-      }
-   }
-   else if (load_type & CAT) {
+   if (load_type & CAT) {
       // separate the stream and the communicator, allowing non-file streams read
       int error = loadCat(*communicator, communicator);
       if (error != 1) {
@@ -1777,29 +1773,59 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
-size_t MetaGraph::createNewDrawingLayer(std::string name) {
-    if (SuperSpacePixel::size() == 0) {
-        // any name for the file will do...
-        SuperSpacePixel::push_back(SpacePixelFile("salad"));
+ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::string name) {
+
+    switch(mapType) {
+        case depthmapX::ImportType::DRAWINGMAP: {
+            SuperSpacePixel::tail().push_back(ShapeMap(name));
+            return SuperSpacePixel::tail().tail();
+        }
+        case depthmapX::ImportType::DATAMAP: {
+            m_data_maps.addMap(name,ShapeMap::DATAMAP);
+            return m_data_maps.tail();
+        }
     }
-
-    SuperSpacePixel::tail().push_back(ShapeMap(name));
-
-    return SuperSpacePixel::tail().size() - 1;
 }
 
-ShapeMap & MetaGraph::getDrawingLayer(size_t shapeMapIndex) {
-    return SuperSpacePixel::tail()[shapeMapIndex];
+void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap) {
+
+    switch(mapType) {
+        case depthmapX::ImportType::DRAWINGMAP: {
+            // go through the files to find if the layer is in one of them
+            // if it is, remove it and if the remaining file is empty then
+            // remove that too
+            for(size_t j = 0; j < SuperSpacePixel::size(); j++) {
+                int mapToRemove = -1;
+                for(size_t i = 0; i < SuperSpacePixel::at(j).size(); i++) {
+                    if(&SuperSpacePixel::at(j).at(i) == &shapeMap) {
+                        mapToRemove = i;
+                        break;
+                    }
+                }
+                if(mapToRemove != -1) {
+                    SuperSpacePixel::at(j).remove_at(mapToRemove);
+                    if(SuperSpacePixel::at(j).size() == 0) {
+                        SuperSpacePixel::remove_at(j);
+                    }
+                    break;
+                }
+            }
+        }
+        case depthmapX::ImportType::DATAMAP: {
+            for(size_t i = 0; i < m_data_maps.size(); i++) {
+                if(&m_data_maps[i] == &shapeMap) {
+                    m_data_maps.remove_at(i);
+                    break;
+                }
+            }
+        }
+    }
 }
 
-void MetaGraph::initDrawingLayer(size_t shapeMapIndex) {
+void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
 
-    SuperSpacePixel::tail().m_region = SuperSpacePixel::tail()[shapeMapIndex].getRegion();
-
+    SuperSpacePixel::tail().m_region = shapeMap.getRegion();
     SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-
-    m_state |= LINEDATA;
-
 }
 
 int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,

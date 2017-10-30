@@ -109,9 +109,9 @@ public:
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
-   size_t createNewDrawingLayer(std::string name);
-   ShapeMap &getDrawingLayer(size_t shapeMapIndex);
-   void initDrawingLayer(size_t shapeMapIndex);
+   ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
+   void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
+   void updateParentRegions(ShapeMap &shapeMap);
    int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
    int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
    bool undoPoints();

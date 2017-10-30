@@ -21,10 +21,10 @@
 #include <map>
 
 namespace depthmapX {
-
-    bool importTxt(MetaGraph &mgraph, istream &stream, string name, char delimiter);
+    bool importFile(MetaGraph &mgraph, std::istream &stream, Communicator *communicator, std::string name, ImportType mapType, ImportFileType fileType);
+    bool importTxt(ShapeMap &shapeMap, istream &stream, char delimiter);
     depthmapX::Table csvToTable(istream &stream, char delimiter);
     std::vector<Line> extractLines(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col);
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y);
-    int importDxf(MetaGraph &mgraph, std::istream &stream, Communicator *communicator);
+    bool importDxfLayer(const DxfLayer &dxfLayer, ShapeMap &shapeMap);
 }
