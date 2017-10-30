@@ -26,4 +26,5 @@ namespace depthmapX {
     depthmapX::Table csvToTable(istream &stream, char delimiter);
     std::vector<Line> extractLines(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col);
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y);
+    int importDxf(MetaGraph &mgraph, std::istream &stream, Communicator *communicator);
 }

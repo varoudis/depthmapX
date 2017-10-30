@@ -21,4 +21,13 @@
 namespace depthmapX {
     typedef std::vector<std::string> ColumnData;
     typedef std::map<std::string, ColumnData> Table;
+
+    class Polyline : public QtRegion
+    {
+    public:
+        std::vector<Point2f> m_vertices;
+        bool m_closed = false;
+        Polyline(std::vector<Point2f> vertices, bool closed) : m_vertices(vertices), m_closed(closed) {
+        }
+    };
 }

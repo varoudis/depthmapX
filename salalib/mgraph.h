@@ -103,13 +103,11 @@ public:
    //
    // quick loaders from input streams rather than files:
    bool importCat( istream& stream );
-   bool importDxf( istream& stream );
    // make a graph using the supplied seed and graph spacing:
    void fastGraph( const Point2f& seed, double spacing );
    //
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
-   int loadDxf( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
    size_t createNewDrawingLayer(std::string name);
    ShapeMap &getDrawingLayer(size_t shapeMapIndex);

@@ -24,6 +24,7 @@
 #include <genlib/comm.h> // for communicator
 #include <genlib/stringutils.h>
 #include <genlib/exceptions.h>
+#include <genlib/legacyconverters.h>
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
@@ -2875,12 +2876,9 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
 }
 
 bool ShapeMap::importPoints(const std::vector<Point2f> &points,
-                            QtRegion region,
                             const depthmapX::Table &data)
 {
     //assumes that points and data come in the same order
-
-    init(points.size(),region);
 
     std::vector<int> indices;
 
@@ -2897,17 +2895,33 @@ bool ShapeMap::importPoints(const std::vector<Point2f> &points,
 }
 
 bool ShapeMap::importLines(const std::vector<Line> &lines,
-                           QtRegion region,
                            const depthmapX::Table &data)
 {
     //assumes that lines and data come in the same order
-
-    init(lines.size(),region);
 
     std::vector<int> indices;
 
     for(auto& line: lines) {
         indices.push_back(makeLineShape(line));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
+
+bool ShapeMap::importPolylines(const std::vector<depthmapX::Polyline> &polylines,
+                           const depthmapX::Table &data)
+{
+    //assumes that lines and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& polyline: polylines) {
+        indices.push_back(makePolyShape(genshim::toPQVector(polyline.m_vertices), !polyline.m_closed));
     }
 
     bool dataImported = importData(data, indices);

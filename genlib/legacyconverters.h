@@ -29,4 +29,15 @@ namespace genshim
         std::for_each(vec.begin(), vec.end(), [&pvec](const T& val)->void{pvec.push_back(val);});
         return pvec;
     }
+
+    /**
+     * Converte a std::vector to a pqvector (preserving the order of elements)
+     * This is expensive as it copies every single element
+     */
+    template<class T> pqvector<T> toPQVector(const std::vector<T> &vec)
+    {
+        pqvector<T> pvec;
+        std::for_each(vec.begin(), vec.end(), [&pvec](const T& val)->void{pvec.push_back(val);});
+        return pvec;
+    }
 }

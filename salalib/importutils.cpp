@@ -19,6 +19,8 @@
 
 namespace depthmapX {
 
+    const int DXFCIRCLERES = 36;
+
     bool importTxt(MetaGraph &mgraph, std::istream &stream, std::string name, char delimiter = '\t') {
         Table table = csvToTable(stream, delimiter);
         std::vector<std::string> columns;
@@ -67,7 +69,8 @@ namespace depthmapX {
 
             //mgraph.importLinesAsShapeMap(lines, region, name, table);
             int shapeMapIndex = mgraph.createNewDrawingLayer(name);
-            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, region, table);
+            mgraph.getDrawingLayer(shapeMapIndex).init(lines.size(),region);
+            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, table);
             mgraph.initDrawingLayer(shapeMapIndex);
         }
         return true;
@@ -134,5 +137,115 @@ namespace depthmapX {
             points.push_back(Point2f(stod(x[i]), stod(y[i])));
         }
         return points;
+    }
+
+    int importDxf(MetaGraph &mgraph, std::istream &stream, Communicator *communicator)
+    {
+        DxfParser dp;
+
+        if (communicator) {
+            dp = DxfParser( communicator );
+
+            try {
+                *communicator >> dp;
+            }
+            catch (Communicator::CancelledException) {
+                return 0;
+            }
+            catch (pexception) {
+                return -1;
+            }
+
+            if (communicator->IsCancelled()) {
+                return 0;
+            }
+        }
+        else {
+            dp.open(stream);
+        }
+
+        int i = 0;
+
+        mgraph.SuperSpacePixel::tail().m_region = QtRegion(dp.getExtMin(), dp.getExtMax());
+
+        for (auto& layer: dp.getLayers())
+        {
+            const DxfLayer& dxf_layer = layer.second;
+
+            if (dxf_layer.empty()) {
+                continue;
+            }
+
+            std::vector<Point2f> points;
+            std::vector<Line> lines;
+            std::vector<Polyline> polylines;
+
+            for (int jp = 0; jp < dxf_layer.numPoints(); jp++) {
+                const DxfVertex& dxf_point = dxf_layer.getPoint( jp );
+                points.push_back(Point2f(dxf_point));
+
+            }
+
+            for (int j = 0; j < dxf_layer.numLines(); j++) {
+                const DxfLine& dxf_line = dxf_layer.getLine( j );
+                lines.push_back(Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) ));
+            }
+
+            for (int k = 0; k < dxf_layer.numPolyLines(); k++) {
+
+                const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
+                std::vector<Point2f> points;
+                for (int m = 0; m < poly.numVertices(); m++) {
+                    points.push_back(poly.getVertex(m));
+                }
+                polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
+            }
+
+            for (int l = 0; l < dxf_layer.numSplines(); l++) {
+
+                const DxfSpline& poly = dxf_layer.getSpline( l );
+
+                std::vector<Point2f> points;
+                for (int m = 0; m < poly.numVertices(); m++) {
+                    points.push_back(poly.getVertex(m));
+                }
+                polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
+
+            }
+
+            for (int n = 0; n < dxf_layer.numArcs(); n++) {
+                const DxfArc& circ = dxf_layer.getArc( n );
+                int segments = circ.numSegments(DXFCIRCLERES);
+                if (segments > 1) {
+                    for (int m = 0; m <= segments; m++) {
+                        points.push_back(circ.getVertex(m, segments));
+                    }
+                }
+                polylines.push_back(depthmapX::Polyline(points, false));
+            }
+
+            for (int nc = 0; nc < dxf_layer.numCircles(); nc++) {
+                const DxfCircle& circ = dxf_layer.getCircle( nc );
+                std::vector<Point2f> points;
+                for (int m = 0; m < DXFCIRCLERES; m++) {
+                    points.push_back(circ.getVertex(m,DXFCIRCLERES));
+                }
+                polylines.push_back(depthmapX::Polyline(points, true));
+            }
+
+            QtRegion region = QtRegion(Point2f(dxf_layer.getExtMin()),Point2f(dxf_layer.getExtMax()));
+
+            int shapeMapIndex = mgraph.createNewDrawingLayer(dxf_layer.getName());
+            mgraph.getDrawingLayer(shapeMapIndex).init(points.size() + lines.size() + polylines.size(),region);
+            // parameters could be passed in the Table here such as the layer/block/colour/linetype etc.
+            mgraph.getDrawingLayer(shapeMapIndex).importPoints(points, Table());
+            mgraph.getDrawingLayer(shapeMapIndex).importLines(lines, Table());
+            mgraph.getDrawingLayer(shapeMapIndex).importPolylines(polylines, Table());
+            // mgraph.initDrawingLayer(shapeMapIndex);
+
+            i++;
+        }
+
+       return 1;
     }
 }
