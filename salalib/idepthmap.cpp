@@ -432,7 +432,13 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
 		   return NULL;
       }
       else {
-         int mapref = depthmapX::importTxt(*graph, file, newmapname, (type_str.compare("CSV")==0) ? '\t' : ',');
+         std::unique_ptr<Communicator> comm(new ICommunicator());
+         int mapref = depthmapX::importFile(*graph,
+                                            file,
+                                            comm.get(),
+                                            newmapname,
+                                            depthmapX::ImportType::DRAWINGMAP,
+                                            (type_str.compare("CSV")==0) ? depthmapX::ImportFileType::TSV : depthmapX::ImportFileType::CSV);
          
          if (mapref != -1) {
             // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together
