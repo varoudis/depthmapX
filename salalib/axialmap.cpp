@@ -2079,7 +2079,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
    }
 
    for (size_t i = 0; i < polyconnections.size(); i++) {
-      PixelRefList pixels = pixelateLine(polyconnections[i].line);
+      PixelRefVector pixels = pixelateLine(polyconnections[i].line);
       pvecint testedshapes;
       size_t connindex = radialdivisions.searchindex(polyconnections[i].key);
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
@@ -2142,7 +2142,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
 void ShapeGraph::cutLines(const prefvec<Line>& lines, pqmap<int,pvecint>& axcuts)
 {
    for (size_t i = 0; i < lines.size(); i ++) {
-      PixelRefList pixels = pixelateLine(lines[i]);
+      PixelRefVector pixels = pixelateLine(lines[i]);
       pvecint testedshapes;
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
@@ -4251,7 +4251,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
       // we will use this later!
       m_test++;
       m_lines[i].test = m_test;
-      PixelRefList list = pixelateLine( m_lines[i].line );
+      PixelRefVector list = pixelateLine( m_lines[i].line );
       for (size_t a = 0; a < list.size(); a++) {
          for (size_t b = 0; b < m_pixel_lines[ list[a].x ][ list[a].y ].size(); b++) {
             int j = m_pixel_lines[ list[a].x ][ list[a].y ][b];
