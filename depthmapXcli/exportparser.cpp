@@ -37,7 +37,10 @@ void ExportParser::parse(int argc, char *argv[])
                 throw CommandLineException("-em can only be used once, modes are mutually exclusive");
             }
             ENFORCE_ARGUMENT("-em", i)
-            if ( strcmp(argv[i], "pointmap-connections-csv") == 0 )
+            if ( strcmp(argv[i], "pointmap-data-csv") == 0 )
+            {
+                _exportMode = ExportMode::POINTMAP_DATA_CSV;
+            } else if ( strcmp(argv[i], "pointmap-connections-csv") == 0 )
             {
                 _exportMode = ExportMode::POINTMAP_CONNECTIONS_CSV;
             }
