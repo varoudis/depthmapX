@@ -75,7 +75,7 @@ namespace dm_runmethods
         if ( result == MetaGraph::NOT_A_GRAPH)
         {
             // not a graph, try to import the file
-            std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 5, cmdP.getFileName().length() - 1);
+            std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 4, cmdP.getFileName().length() - 1);
             ifstream file(cmdP.getFileName());
 
             std::unique_ptr<Communicator> comm(new ICommunicator());
