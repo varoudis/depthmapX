@@ -489,13 +489,13 @@ void QGraphDoc::OnFileImport()
       }
       else {
          std::unique_ptr<Communicator> comm(new ICommunicator());
-         int mapref = depthmapX::importFile(*m_meta_graph,
-                                            file,
-                                            comm.get(),
-                                            filepath.m_name.toStdString(),
-                                            depthmapX::ImportType::DATAMAP,
-                                            (ext == tr("CSV")) ? depthmapX::ImportFileType::CSV : depthmapX::ImportFileType::TSV);
-         if(mapref  != -1) {
+         bool mapParsed = depthmapX::importFile(*m_meta_graph,
+                                                file,
+                                                comm.get(),
+                                                filepath.m_name.toStdString(),
+                                                depthmapX::ImportType::DATAMAP,
+                                                (ext == tr("CSV")) ? depthmapX::ImportFileType::CSV : depthmapX::ImportFileType::TSV);
+         if(mapParsed) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
             SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_TABLE);
