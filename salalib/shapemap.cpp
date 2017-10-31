@@ -546,7 +546,7 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
 int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
 {
    bool bounds_good = true;
-   PixelRefList selset;
+   PixelRefVector selset;
    Point2f offset = Point2f(pointmap.getSpacing()/2,pointmap.getSpacing()/2);
    for (size_t i = 0; i < pointmap.getSelSet().size(); i++) {
       selset.push_back(pointmap.getSelSet().at(i));
@@ -1226,7 +1226,7 @@ void ShapeMap::makePolyPixels(int polyref)
          else {
             poly.m_region = runion(poly.m_region,li);
          }
-         PixelRefList pixels = pixelateLine(li);
+         PixelRefVector pixels = pixelateLine(li);
          // debug
          // int duplicate_shaperefs = 0;
          // end debug
@@ -1313,7 +1313,7 @@ void ShapeMap::makePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList pixels = pixelateLine(poly.m_region);
+            PixelRefVector pixels = pixelateLine(poly.m_region);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1333,7 +1333,7 @@ void ShapeMap::makePolyPixels(int polyref)
             else {
                poly.m_region = runion(poly.m_region,li);
             }
-            PixelRefList pixels = pixelateLine(li);
+            PixelRefVector pixels = pixelateLine(li);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1440,7 +1440,7 @@ void ShapeMap::removePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList list = pixelateLine(poly.m_region);
+            PixelRefVector list = pixelateLine(poly.m_region);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1453,7 +1453,7 @@ void ShapeMap::removePolyPixels(int polyref)
          for (size_t k = 0; k < poly.size() - 1; k++) {
             size_t nextk = (k + 1);
             Line li(poly[k],poly[nextk]);
-            PixelRefList list = pixelateLine(li);
+            PixelRefVector list = pixelateLine(li);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1619,7 +1619,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
    pointInPolyList(li.end(),shapeindexlist);
 
    // only now pixelate and test for any other shapes:
-   PixelRefList list = pixelateLine(li);
+   PixelRefVector list = pixelateLine(li);
    for (size_t i = 0; i < list.size(); i++) {
       PixelRef pix = list[i];
       if (includes(pix)) {
@@ -2118,7 +2118,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
    if (li.width() > li.height()) {
       axis = XAXIS;
    }
-   PixelRefList pixels = pixelateLine(li);
+   PixelRefVector pixels = pixelateLine(li);
    pvector<IntPair> tested;
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
@@ -2353,7 +2353,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
 
    int num_intersections = 0;
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       pqvector<ShapeRef>& shapes = m_pixel_shapes[ list[i].x ][ list[i].y ];

@@ -520,9 +520,9 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    return ref;
 }
 
-PixelRefList PointMap::getLayerPixels(int layer) 
+PixelRefVector PointMap::getLayerPixels(int layer) 
 {
-   PixelRefList pixels;
+   PixelRefVector pixels;
 
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
@@ -536,9 +536,9 @@ PixelRefList PointMap::getLayerPixels(int layer)
    return pixels;
 }
 
-PixelRefList PointMap::getDataObjectPixels(int layer, int object) 
+PixelRefVector PointMap::getDataObjectPixels(int layer, int object) 
 {
-   PixelRefList pixels;
+   PixelRefVector pixels;
 
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
@@ -585,7 +585,7 @@ bool PointMap::fillLines()
 
 void PointMap::fillLine(const Line& li)
 {
-   PixelRefList pixels = pixelateLine( li, 1 );
+   PixelRefVector pixels = pixelateLine( li, 1 );
    for (size_t j = 0; j < pixels.size(); j++) {
       if (getPoint(pixels[j]).empty()) {
          getPoint(pixels[j]).set( Point::FILLED, m_undocounter );
@@ -693,7 +693,7 @@ void PointMap::unblockLines(bool clearblockedflag)
             for (int i = 0; i < lineset.size(); i++) {
                Line line = lineset[i];
                // line.denormalScale( m_spacepix->m_region ); <- no longer required since standardised PointMap and SpacePixel
-               PixelRefList pixels = pixelateLine( line, 4 ); // pixelate at quadruple precision
+               PixelRefVector pixels = pixelateLine( line, 4 ); // pixelate at quadruple precision
                for (int j = 0; j < pixels.size(); j++) {
                   PixelRef actual = pixels[j] / 4;
                   // now which bits a filled:
@@ -894,7 +894,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    m_point_count++;
 
    // Now... start making lines:
-   pflipper<PixelRefList> surface;
+   pflipper<PixelRefVector> surface;
 
    surface.a().push_back( seedref );
 
@@ -935,7 +935,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    return true;
 }
 
-int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefList& list, int filltype)
+int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype)
 {
    if (p2.x < 0 || p2.x >= m_cols || p2.y < 0 || p2.y >= m_rows) {
       // 1 = off edge
@@ -1034,12 +1034,12 @@ void PointMap::outputNet(ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
-   pmap<PixelRef,PixelRefList> graph;
+   pmap<PixelRef,PixelRefVector> graph;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
          if (m_points[i][j].filled() && m_points[i][j].m_node) {
             PixelRef pix(i,j);
-            PixelRefList connections;
+            PixelRefVector connections;
             m_points[i][j].m_node->contents(connections);
             graph.add(pix,connections);
          }
@@ -1056,7 +1056,7 @@ void PointMap::outputNet(ostream& netfile)
    }
    netfile << "*Edges" << endl;
    for (size_t k = 0; k < graph.size(); k++) {
-      PixelRefList& list = graph.value(k);
+      PixelRefVector& list = graph.value(k);
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = graph.searchindex(list[m]);
          if (n != paftl::npos && k < n) {
@@ -1099,7 +1099,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
                 seenPix.push_back(pix);
                 for (int b = 0; b < 32; b++)
                 {
-                    PixelRefList hood;
+                    PixelRefVector hood;
                     m_points[i][j].m_node->bin(b).contents(hood);
                     for(size_t p = 0; p < hood.size(); p++)
                     {
@@ -2797,13 +2797,13 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                int total_nodes = 0;
 
                pvecint distribution;
-               prefvec<PixelRefList> search_tree;
-               search_tree.push_back(PixelRefList());
+               prefvec<PixelRefVector> search_tree;
+               search_tree.push_back(PixelRefVector());
                search_tree.tail().push_back(curs);
 
                int level = 0;
                while (search_tree[level].size()) {
-                  search_tree.push_back(PixelRefList());
+                  search_tree.push_back(PixelRefVector());
                   distribution.push_back(0);
                   for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
                      Point& p = getPoint(search_tree[level][n]);
@@ -2903,8 +2903,8 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                int row = m_attributes.getRowid(curs);
 
                // This is much easier to do with a straight forward list:
-               PixelRefList neighbourhood;
-               PixelRefList totalneighbourhood;
+               PixelRefVector neighbourhood;
+               PixelRefVector totalneighbourhood;
                getPoint(curs).m_node->contents(neighbourhood);
 
                // only required to match previous non-stl output. Without this
@@ -2986,8 +2986,8 @@ bool PointMap::analyseVisualPointDepth(Communicator *comm)
       getPoint(pix).m_extent = pix;
    }
 
-   prefvec<PixelRefList> search_tree;
-   search_tree.push_back(PixelRefList());
+   prefvec<PixelRefVector> search_tree;
+   search_tree.push_back(PixelRefVector());
    for (size_t j = 0; j < m_selection_set.size(); j++) {
       // need to convert from ints (m_selection_set) to pixelrefs for this op:
       search_tree.tail().push_back(m_selection_set[j]);
@@ -2995,7 +2995,7 @@ bool PointMap::analyseVisualPointDepth(Communicator *comm)
 
    int level = 0;
    while (search_tree[level].size()) {
-      search_tree.push_back(PixelRefList());
+      search_tree.push_back(PixelRefVector());
       for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
          Point& p = getPoint(search_tree[level][n]);
          if (p.filled() && p.m_misc != ~0) {
@@ -3425,7 +3425,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += 1;
                }
@@ -3466,7 +3466,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line li = Line(depixelate(x),depixelate(curs));
-               PixelRefList pixels = quickPixelateLine(x,curs);
+               PixelRefVector pixels = quickPixelateLine(x,curs);
                for (size_t k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += 1;
                   int index = m_attributes.getRowid(pixels[k]);
@@ -3513,7 +3513,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col) * 0.001;
                }
@@ -3541,7 +3541,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col2) * 0.001;
                }
@@ -3710,15 +3710,15 @@ bool PointMap::analyseGraph(Communicator *comm, Graph *graph)
             int total_depth = 0;
             int total_nodes = 0;
 
-            prefvec<PixelRefList> search_tree;
+            prefvec<PixelRefVector> search_tree;
 
-            search_tree.push_back(PixelRefList());
+            search_tree.push_back(PixelRefVector());
 
 //            global.extractUnseen(search_tree[0], *getPoint( curs ).m_spark_tree);
 
             int level = 0;
             while (search_tree[level].size()) {
-               search_tree.push_back(PixelRefList());
+               search_tree.push_back(PixelRefVector());
                for (int n = search_tree[level].size() - 1; n != paftl::npos; n--) {
                   Point& p = getPoint(search_tree[level][n]);
                   if (!p.emptyorblocked()) {
@@ -3766,7 +3766,7 @@ bool PointMap::analysePointDepth(Communicator *comm, Graph *graph)
    }
    analyser_tree.invert();
 
-   PixelRefList selset;
+   PixelRefVector selset;
 
    for (int i = 0; i < m_cols; i++) {
 
@@ -3786,12 +3786,12 @@ bool PointMap::analysePointDepth(Communicator *comm, Graph *graph)
       }
    }
 
-   prefvec<PixelRefList> search_tree;
+   prefvec<PixelRefVector> search_tree;
    search_tree.push_back(selset);
    
    int level = 0;
    while (search_tree[level].size()) {
-      search_tree.push_back(PixelRefList());
+      search_tree.push_back(PixelRefVector());
       for (int n = search_tree[level].size() - 1; n != paftl::npos; n--) {
          Point& p = getPoint(search_tree[level][n]);
          if (!p.emptyorblocked()) {

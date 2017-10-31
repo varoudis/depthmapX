@@ -247,7 +247,7 @@ protected:
    int m_trail_num;
    //
    // for occlusion memory
-   pflipper<PixelRefList> m_occ_memory;
+   pflipper<PixelRefVector> m_occ_memory;
    //
    // extra memory of last observed values for Gibsonian agents:
    float m_last_los[9];

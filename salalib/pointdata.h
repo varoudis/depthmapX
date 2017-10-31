@@ -344,7 +344,7 @@ public:
        }
    }
 protected:
-   int expand( const PixelRef p1, const PixelRef p2, PixelRefList& list, int filltype );
+   int expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype );
    //
    //void walk( PixelRef& start, int steps, Graph& graph, 
    //           int parity, int dominant_axis, const int grad_pair[] );
@@ -374,8 +374,8 @@ public:
    const std::vector<int>& getSelSet() const
       { return m_selection_set; }
    //
-   PixelRefList getLayerPixels(int layer);
-   PixelRefList getDataObjectPixels(int layer, int object);
+   PixelRefVector getLayerPixels(int layer);
+   PixelRefVector getDataObjectPixels(int layer, int object);
    //
    // Attribute functionality
 protected:

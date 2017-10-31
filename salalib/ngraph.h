@@ -61,8 +61,8 @@ public:
    ~Bin()
    { if (m_pixel_vecs) delete [] m_pixel_vecs; m_pixel_vecs = NULL; }
    //
-   void make(const PixelRefList& pixels, char m_dir);
-   void extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark);
+   void make(const PixelRefVector& pixels, char m_dir);
+   void extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark);
    void extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs);
    void extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs);
    //
@@ -84,7 +84,7 @@ protected:
    mutable int m_curvec;
    mutable PixelRef m_curpix;
 public:
-   void contents(PixelRefList& hood);
+   void contents(PixelRefVector& hood);
    void first() const;
    void next() const;
    bool is_tail() const;
@@ -114,8 +114,8 @@ public:
    ~Node()
    { ; }
    // Note: this function clears the bins as it goes
-   void make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, int q_octants);
-   void extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark);
+   void make(const PixelRef pix, PixelRefVector *bins, float *bin_far_dists, int q_octants);
+   void extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark);
    void extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs);
    void extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs);
    bool concaveConnected();
@@ -148,7 +148,7 @@ protected:
    // Conversion back to old fashioned schema:
    mutable int m_curbin;
 public:
-   void contents(PixelRefList& hood) const;
+   void contents(PixelRefVector& hood) const;
    void first() const;
    void next() const;
    bool is_tail() const;

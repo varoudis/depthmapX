@@ -3145,7 +3145,7 @@ int MetaGraph::convertVirtualMem( ifstream& stream, int version )
    pvecint nodes;
    pvecint bins;
 
-   PixelRefList bins_b[32];
+   PixelRefVector bins_b[32];
    static float far_bin_dists[32];
    for (int ii = 0; ii < 32; ii++) {
       far_bin_dists[ii] = 0.0f;

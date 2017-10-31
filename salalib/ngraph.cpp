@@ -24,7 +24,7 @@
 #include <salalib/ngraph.h>
 #include "genlib/legacyconverters.h"
 
-void Node::make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, int q_octants)
+void Node::make(const PixelRef pix, PixelRefVector *bins, float *bin_far_dists, int q_octants)
 {
    m_pixel = pix;
 
@@ -57,7 +57,7 @@ void Node::make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, in
    }
 }
 
-void Node::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
+void Node::extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark)
 {
    for (int i = 0; i < 32; i++) {
 //      if (~binmark & (1 << i)) {  // <- DON'T USE THIS, IT CAUSES TOO MANY ERRORS!
@@ -183,7 +183,7 @@ PixelRef Node::cursor() const
    return m_bins[m_curbin].cursor();
 }
 
-void Node::contents(PixelRefList& hood) const
+void Node::contents(PixelRefVector& hood) const
 {
    first();
    while (!is_tail()) {
@@ -239,7 +239,7 @@ ostream& operator << (ostream& stream, const Node& node)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::make(const PixelRefList& pixels, char dir)
+void Bin::make(const PixelRefVector& pixels, char dir)
 {
    if (m_pixel_vecs) {
       delete [] m_pixel_vecs;
@@ -318,7 +318,7 @@ void Bin::make(const PixelRefList& pixels, char dir)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
+void Bin::extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark)
 {
    for (int i = 0; i < m_length; i++) {
       for (PixelRef pix = m_pixel_vecs[i].start(); pix.col(m_dir) <= m_pixel_vecs[i].end().col(m_dir); ) {
@@ -402,7 +402,7 @@ bool Bin::containsPoint(const PixelRef p) const
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::contents(PixelRefList& hood) 
+void Bin::contents(PixelRefVector& hood)
 {
    first();
    while (!is_tail()) {
