@@ -2247,11 +2247,15 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
                if (tested.searchindex(IntPair(shaperef.m_shape_ref,-1)) == paftl::npos) {
                   size_t shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
                   SalaShape& poly = m_shapes[shapeindex];
-                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) { 
-                     bufferset.push_back(int(shapeindex));
+                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) {
+                     if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
+                        bufferset.push_back(int(shapeindex));
+                     }
                   }
                   else if (dist(pt,poly.getLine()) < radius) { // if poly is line
-                     bufferset.push_back(int(shapeindex));
+                      if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
+                         bufferset.push_back(int(shapeindex));
+                      }
                   }
                   tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
                }
@@ -2264,7 +2268,9 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
                      SalaShape& poly = m_shapes[shapeindex];
                      Line li( poly[q], poly[(q+1)%poly.size()] );
                      if (dist(pt,li) < radius) {
-                        bufferset.push_back(int(shapeindex));
+                         if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
+                            bufferset.push_back(int(shapeindex));
+                         }
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,q),paftl::ADD_HERE);
                   }
@@ -2279,7 +2285,10 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
    for (size_t k = 0; k < m_pixel_shapes[centre.x][centre.y].size(); k++) {
       ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
-         bufferset.push_back( m_shapes.searchindex(shaperef.m_shape_ref) );
+          int shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
+          if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
+             bufferset.push_back(shapeindex);
+          }
       }
    }
    return bufferset.size();
@@ -2469,8 +2478,8 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       }
       if (index != -1) {
          // relies on indices of shapes and attributes being aligned
-         m_selection_set.push_back(index);
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) != m_selection_set.end()) {
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) == m_selection_set.end()) {
+            m_selection_set.push_back(index);
             m_attributes.selectRowByIndex(index);
          }
          m_shapes.value(index).m_selected = true;
@@ -2495,8 +2504,8 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       // actually probably often faster to set flag and later record list:
       for (size_t x = 0; x < m_shapes.size(); x++) {
          if (m_shapes.value(x).m_selected) {
-             m_selection_set.push_back(x);
-             if (std::find(m_selection_set.begin(), m_selection_set.end(), x) != m_selection_set.end()) {
+             if (std::find(m_selection_set.begin(), m_selection_set.end(), x) == m_selection_set.end()) {
+               m_selection_set.push_back(x);
                m_attributes.selectRowByIndex(x);
             }
          }
@@ -2516,8 +2525,8 @@ bool ShapeMap::setCurSel(const std::vector<int>& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       size_t index = m_shapes.searchindex(selset[i]);  // relies on aligned indices for attributes and shapes
       if (index != paftl::npos) {
-         m_selection_set.push_back(int(index));
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), int(index)) != m_selection_set.end()) {
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), int(index)) == m_selection_set.end()) {
+            m_selection_set.push_back(int(index));
             m_attributes.selectRowByIndex(int(index));
          }
          m_shapes[index].m_selected = true;
@@ -2537,8 +2546,8 @@ bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       int index = selset[i];  // relies on aligned indices for attributes and shapes
       if (index != -1) {
-         m_selection_set.push_back(index);
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) != m_selection_set.end()) {
+         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) == m_selection_set.end()) {
+            m_selection_set.push_back(index);
             m_attributes.selectRowByIndex(index);
          }
          m_shapes[index].m_selected = true;

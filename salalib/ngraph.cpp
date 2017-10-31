@@ -187,7 +187,9 @@ void Node::contents(PixelRefList& hood) const
 {
    first();
    while (!is_tail()) {
-      hood.push_back(cursor());
+      if(std::find(hood.begin(), hood.end(), cursor()) == hood.end()) {
+          hood.push_back(cursor());
+      }
       next();
    }
 }
@@ -404,7 +406,9 @@ void Bin::contents(PixelRefList& hood)
 {
    first();
    while (!is_tail()) {
-      hood.push_back((int) m_curpix);
+      if(std::find(hood.begin(), hood.end(), m_curpix) == hood.end()) {
+          hood.push_back(m_curpix);
+      }
       next();
    }
 }

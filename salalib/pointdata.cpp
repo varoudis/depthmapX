@@ -2907,6 +2907,10 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                PixelRefList totalneighbourhood;
                getPoint(curs).m_node->contents(neighbourhood);
 
+               // only required to match previous non-stl output. Without this
+               // the output differs by the last digit of the float
+               std::sort(neighbourhood.begin(), neighbourhood.end());
+
                int cluster = 0;
                float control = 0.0f;
 
@@ -2920,7 +2924,9 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                         if (std::find(neighbourhood.begin(), neighbourhood.end(), retpt.m_node->cursor()) != neighbourhood.end()) {
                            intersect_size++;
                         }
-                        totalneighbourhood.push_back(retpt.m_node->cursor()); // <- note add does nothing if member already exists
+                        if (std::find(totalneighbourhood.begin(), totalneighbourhood.end(), retpt.m_node->cursor()) == totalneighbourhood.end()) {
+                           totalneighbourhood.push_back(retpt.m_node->cursor()); // <- note add does nothing if member already exists
+                        }
                         retpt.m_node->next();
                      }
                      control += 1.0f / float(retro_size);
