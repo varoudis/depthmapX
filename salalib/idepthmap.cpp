@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include <memory>
 
 #include <genlib/paftl.h>
 #include <salalib/mgraph.h>
