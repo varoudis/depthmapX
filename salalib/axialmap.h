@@ -32,7 +32,7 @@ class AxialPolygons : public SpacePixel
 {
    friend class ShapeGraphs;
 protected:
-   pqmap<Point2f,pvecpoint> m_vertex_possibles;
+   pqmap<Point2f,pqvector<Point2f>> m_vertex_possibles;
    pvecint m_vertex_polys;
    pvecint **m_pixel_polys;
    pqvector<AxialVertex> m_handled_list;
@@ -51,7 +51,7 @@ public:
    // make axial lines from corner vertices, visible from openspace
    void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, prefvec<pvecint>& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
-   void makePolygons(prefvec<pvecpoint>& polygons);
+   void makePolygons(prefvec<pqvector<Point2f>>& polygons);
 };
 
 struct AxialVertexKey

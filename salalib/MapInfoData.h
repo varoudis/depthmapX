@@ -50,7 +50,7 @@ public:
    //bool exportFile(ostream& miffile, ostream& midfile, const ShapeGraph& map);   // n.b., deprecated: use shapemap instead
    bool exportFile(ostream& miffile, ostream& midfile, const PointMap& points);
    bool exportFile(ostream& miffile, ostream& midfile, const ShapeMap& map);
-   bool exportPolygons(ostream& miffile, ostream& midfile, const prefvec<pvecpoint>& polygons, const QtRegion& region);
+   bool exportPolygons(ostream& miffile, ostream& midfile, const prefvec<pqvector<Point2f>>& polygons, const QtRegion& region);
    //
    bool readheader(istream& miffile);
    bool readcolumnheaders(istream& miffile, istream& midfile, std::vector<std::string>& columnheads);
