@@ -270,58 +270,64 @@ namespace depthmapX {
 
         for (int jp = 0; jp < dxfLayer.numPoints(); jp++) {
             const DxfVertex& dxf_point = dxfLayer.getPoint( jp );
-            points.push_back(Point2f(dxf_point));
+            points.push_back(Point2f(dxf_point.x, dxf_point.y));
 
         }
 
         for (int j = 0; j < dxfLayer.numLines(); j++) {
             const DxfLine& dxf_line = dxfLayer.getLine( j );
-            lines.push_back(Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) ));
+            Line line = Line( Point2f(dxf_line.getStart().x, dxf_line.getStart().y),
+                              Point2f(dxf_line.getEnd().x  , dxf_line.getEnd().y) );
+            lines.push_back( line );
         }
 
         for (int k = 0; k < dxfLayer.numPolyLines(); k++) {
-
             const DxfPolyLine& poly = dxfLayer.getPolyLine( k );
-            std::vector<Point2f> points;
+            std::vector<Point2f> vertices;
             for (int m = 0; m < poly.numVertices(); m++) {
-                points.push_back(poly.getVertex(m));
+                DxfVertex v = poly.getVertex(m);
+                vertices.push_back(Point2f(v.x, v.y));
             }
-            polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
+            polylines.push_back(depthmapX::Polyline(vertices, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
         }
 
         for (int l = 0; l < dxfLayer.numSplines(); l++) {
-
             const DxfSpline& poly = dxfLayer.getSpline( l );
-
-            std::vector<Point2f> points;
+            std::vector<Point2f> vertices;
             for (int m = 0; m < poly.numVertices(); m++) {
-                points.push_back(poly.getVertex(m));
+                DxfVertex v = poly.getVertex(m);
+                vertices.push_back(Point2f(v.x, v.y));
             }
-            polylines.push_back(depthmapX::Polyline(points, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
+            polylines.push_back(depthmapX::Polyline(vertices, (poly.getAttributes() & DxfPolyLine::CLOSED) == DxfPolyLine::CLOSED));
 
         }
 
         for (int n = 0; n < dxfLayer.numArcs(); n++) {
             const DxfArc& circ = dxfLayer.getArc( n );
+            std::vector<Point2f> vertices;
             int segments = circ.numSegments(DXFCIRCLERES);
             if (segments > 1) {
                 for (int m = 0; m <= segments; m++) {
-                    points.push_back(circ.getVertex(m, segments));
+                    DxfVertex v = circ.getVertex(m,DXFCIRCLERES);
+                    vertices.push_back(Point2f(v.x, v.y));
                 }
             }
-            polylines.push_back(depthmapX::Polyline(points, false));
+            polylines.push_back(depthmapX::Polyline(vertices, false));
         }
 
         for (int nc = 0; nc < dxfLayer.numCircles(); nc++) {
             const DxfCircle& circ = dxfLayer.getCircle( nc );
-            std::vector<Point2f> points;
+            std::vector<Point2f> vertices;
             for (int m = 0; m < DXFCIRCLERES; m++) {
-                points.push_back(circ.getVertex(m,DXFCIRCLERES));
+                DxfVertex v = circ.getVertex(m,DXFCIRCLERES);
+                vertices.push_back(Point2f(v.x, v.y));
             }
-            polylines.push_back(depthmapX::Polyline(points, true));
+            polylines.push_back(depthmapX::Polyline(vertices, true));
         }
-
-        QtRegion region = QtRegion(Point2f(dxfLayer.getExtMin()),Point2f(dxfLayer.getExtMax()));
+        DxfVertex layerMin = dxf_layer.getExtMin();
+        DxfVertex layerMax = dxf_layer.getExtMax();
+        
+        QtRegion region = QtRegion(Point2f(layerMin.x, layerMin.y),Point2f(layerMax.x, layerMax.y));
 
         shapeMap.init(points.size() + lines.size() + polylines.size(),region);
         // parameters could be passed in the Table here such as the layer/block/colour/linetype etc.
