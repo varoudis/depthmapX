@@ -55,7 +55,7 @@ int progcompare(const void *a, const void *b )
 
 //
 
-pvecpoint g_trails[MAX_TRAILS];
+pqvector<Point2f> g_trails[MAX_TRAILS];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

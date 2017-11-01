@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <genlib/pafmath.h>
 #include <genlib/comm.h> // communicator used in BSP tree construction
-#include <genlib/dxfp.h> // has to be compatible with DXF file parser types
 
 // Note: code depends on XAXIS being 0 and YAXIS being 1 --- do not change
 enum {
@@ -66,8 +65,6 @@ public:
       { x = 0.0; y = 0.0; }
    Point2f(double a, double b)
       { x = a; y = b; }
-   Point2f(const DxfVertex& p)
-      { x = p.x; y = p.y; }
    bool isNull() const
 //      { return x == P2DNULL || y == P2DNULL; }
       { return x == 0.0 && y == 0.0; }
@@ -124,8 +121,6 @@ public:
    double angle() const
       { return (y < 0) ? (2.0 * M_PI - acos(x)) : acos(x); }
 };
-
-typedef pqvector<Point2f> pvecpoint;
 
 inline Point2f operator - (Point2f& p)
 {
@@ -487,8 +482,6 @@ inline Point2f intersection_point(const Line& a, const Line& b, double tolerance
    return a.point_on_line(a.intersection_point(b,axis,tolerance),axis);
 }
 
-typedef prefvec<Line> pvecline;
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 struct TaggedLine
@@ -496,34 +489,6 @@ struct TaggedLine
    Line line;
    int tag;
    TaggedLine(const Line& l = Line(),int t = -1) { line = l; tag = t; }
-};
-
-// Binary Space Partition
-
-struct BSPNode
-{
-public:
-   enum { BSPLEFT, BSPRIGHT };
-   BSPNode *left;
-   BSPNode *right;
-   BSPNode *parent;
-   Line line;
-   int m_tag;
-   int m_count;
-   //
-public:
-   BSPNode()
-   { left = NULL; right = NULL; parent = NULL; m_count = 0; m_tag = -1; }
-   virtual ~BSPNode()
-   { if (left) delete left; left = NULL; if (right) delete right; right = NULL; }
-   //
-   bool isLeaf() {
-      return left == NULL && right == NULL;
-   }
-   void make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par);
-   int classify(const Point2f& p);
-   const Line& getLine() const { return line; }
-   const int getTag() const { return m_tag; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////

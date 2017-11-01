@@ -90,7 +90,7 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    AxialVertex av(vertexkey, m_vertex_possibles.key(vertexkey.m_ref_key), openspace);
 
    // n.b., at this point, vertex key m_a and m_b are unfixed
-   pvecpoint& pointlist = m_vertex_possibles.value(vertexkey.m_ref_key);
+   pqvector<Point2f>& pointlist = m_vertex_possibles.value(vertexkey.m_ref_key);
    if (pointlist.size() < 2) {
       return av;
    }
@@ -234,12 +234,12 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
       found[0][i] = -1;
       found[1][i] = -1;
    }
-   pvecpoint pointlookup;
+   pqvector<Point2f> pointlookup;
    // three pass operation: (1) stack the lines
    for (i = 0; i < lines.size(); i++) {
       if (found[0][i] == -1) {
          pointlookup.push_back(lines[i].start());
-         m_vertex_possibles.add(pointlookup.tail(),pvecpoint());
+         m_vertex_possibles.add(pointlookup.tail(),pqvector<Point2f>());
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
          for (size_t j = 0; j < connectionset[i].m_back_segconns.size(); j++) {
@@ -250,7 +250,7 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
       }
       if (found[1][i] == -1) {
          pointlookup.push_back(lines[i].end());
-         m_vertex_possibles.add(pointlookup.tail(),pvecpoint());
+         m_vertex_possibles.add(pointlookup.tail(),pqvector<Point2f>());
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
          for (size_t j = 0; j < connectionset[i].m_forward_segconns.size(); j++) {
@@ -284,7 +284,7 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
          addlist.push_back(i);
          while (addlist.size()) {
             m_vertex_polys[addlist.tail()] = current_poly;
-            pvecpoint& connections = m_vertex_possibles.value(addlist.tail());
+            pqvector<Point2f>& connections = m_vertex_possibles.value(addlist.tail());
             addlist.pop_back();
             for (size_t j = 0; j < connections.size(); j++) {
                size_t index = m_vertex_possibles.searchindex(connections[j]);
@@ -495,7 +495,7 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
 // not really used as yet, a feature to make all the polygons from the vertex
 // possibles list
 
-void AxialPolygons::makePolygons(prefvec<pvecpoint>& polygons)
+void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
 {
    prefvec<pvecint> handled_list;
    for (size_t j = 0; j < m_vertex_possibles.size(); j++) {
@@ -512,7 +512,7 @@ void AxialPolygons::makePolygons(prefvec<pvecpoint>& polygons)
          }
          handled_list[i].push_back(j);
          Point2f& key = m_vertex_possibles.key(i);
-         pvecpoint polygon;
+         pqvector<Point2f> polygon;
          polygon.push_back(key);
          Point2f curr = m_vertex_possibles.value(i).at(j);
          Point2f last = key;
@@ -1991,7 +1991,7 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    AxialPolygons polygons;
    polygons.init(lines, m_region);
    
-   prefvec<pvecpoint> newpolygons;
+   prefvec<pqvector<Point2f>> newpolygons;
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;
@@ -2974,7 +2974,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
    for (size_t i = 0; i < polygons.size(); i++) {
       // just use the points:
       if (polygons[i].isPoint()) {
-         pvecpoint closepoints;
+         pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygons[i].getPoint());
          pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
