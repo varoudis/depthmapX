@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <genlib/pafmath.h>
 #include <genlib/comm.h> // communicator used in BSP tree construction
-#include <genlib/dxfp.h> // has to be compatible with DXF file parser types
 
 // Note: code depends on XAXIS being 0 and YAXIS being 1 --- do not change
 enum {
@@ -66,8 +65,6 @@ public:
       { x = 0.0; y = 0.0; }
    Point2f(double a, double b)
       { x = a; y = b; }
-   Point2f(const DxfVertex& p)
-      { x = p.x; y = p.y; }
    bool isNull() const
 //      { return x == P2DNULL || y == P2DNULL; }
       { return x == 0.0 && y == 0.0; }
