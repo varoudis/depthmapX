@@ -324,8 +324,8 @@ namespace depthmapX {
             }
             polylines.push_back(depthmapX::Polyline(vertices, true));
         }
-        DxfVertex layerMin = dxf_layer.getExtMin();
-        DxfVertex layerMax = dxf_layer.getExtMax();
+        DxfVertex layerMin = dxfLayer.getExtMin();
+        DxfVertex layerMax = dxfLayer.getExtMax();
         
         QtRegion region = QtRegion(Point2f(layerMin.x, layerMin.y),Point2f(layerMax.x, layerMax.y));
 
