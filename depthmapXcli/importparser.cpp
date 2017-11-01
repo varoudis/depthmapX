@@ -29,9 +29,9 @@ void ImportParser::parse(int argc, char *argv[])
     {
         if ( strcmp ("-if", argv[i]) == 0)
         {
+            ENFORCE_ARGUMENT("-if", i)
             m_filesToImport.push_back(argv[i]);
         }
-        ++i;
     }
 }
 
