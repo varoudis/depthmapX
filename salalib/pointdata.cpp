@@ -33,6 +33,8 @@
 #include <salalib/ngraph.h>
 
 #include "genlib/stringutils.h"
+#include "genlib/containerutils.h"
+
 /////////////////////////////////////////////////////////////////////////////////
 
 Point::~Point()
@@ -430,9 +432,7 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(i,j),p));
-                  if(it != m_merge_lines.end())
-                      m_merge_lines.erase(it);
+                  depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
@@ -448,9 +448,7 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(i,j),p));
-                  if(it != m_merge_lines.end())
-                      m_merge_lines.erase(it);
+                  depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }

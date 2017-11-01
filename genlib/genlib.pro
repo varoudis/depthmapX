@@ -42,4 +42,5 @@ HEADERS += \
     xmlparse.h \
     exceptions.h \
     legacyconverters.h \
-    stringutils.h
+    stringutils.h \
+    containerutils.h
