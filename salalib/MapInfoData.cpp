@@ -104,7 +104,7 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
    }
 
    std::string textline;
-   prefvec<pvecpoint> pointsets;
+   prefvec<pqvector<Point2f>> pointsets;
    pvecint duplicates;
    pvecint types;
 
@@ -119,13 +119,13 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
       }
       if (dXstring::beginsWith<std::string>(textline,"point")) {
          auto tokens = dXstring::split(textline,' ',true);
-         pointsets.push_back(pvecpoint());
+         pointsets.push_back(pqvector<Point2f>());
          types.push_back(SalaShape::SHAPE_POINT);
          pointsets.tail().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
       }
       if (dXstring::beginsWith<std::string>(textline,"line")) {
          auto tokens = dXstring::split(textline,' ',true);
-         pointsets.push_back(pvecpoint());
+         pointsets.push_back(pqvector<Point2f>());
          types.push_back(SalaShape::SHAPE_LINE);
          pointsets.tail().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
          pointsets.tail().push_back(Point2f(stod(tokens[3]),stod(tokens[4])));
@@ -158,7 +158,7 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
                dXstring::ltrim(textline);
                count = stoi(textline);
             }
-            pointsets.push_back(pvecpoint());
+            pointsets.push_back(pqvector<Point2f>());
             types.push_back(type);
             for (int j = 0; j < count; j++) {
                miffile >> textline;
@@ -371,7 +371,7 @@ bool MapInfoData::exportFile(ostream& miffile, ostream& midfile, const ShapeMap&
    return true;
 }
 
-bool MapInfoData::exportPolygons(ostream& miffile, ostream& midfile, const prefvec<pvecpoint>& polygons, const QtRegion& region)
+bool MapInfoData::exportPolygons(ostream& miffile, ostream& midfile, const prefvec<pqvector<Point2f>>& polygons, const QtRegion& region)
 {
    // if bounds has not been filled in, fill it in
    if (m_bounds.empty()) {
