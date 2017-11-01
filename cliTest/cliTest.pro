@@ -33,7 +33,8 @@ SOURCES += main.cpp \
     ../depthmapXcli/isovistparser.cpp \
     testexportparser.cpp \
     ../depthmapXcli/exportparser.cpp \
-    ../depthmapXcli/importparser.cpp
+    ../depthmapXcli/importparser.cpp \
+    testimportparser.cpp
 
 
 HEADERS += \
