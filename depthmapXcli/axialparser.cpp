@@ -19,6 +19,7 @@
 #include "exceptions.h"
 #include "salalib/entityparsing.h"
 #include "runmethods.h"
+#include <cstring>
 
 using namespace depthmapX;
 
