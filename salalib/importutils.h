@@ -17,6 +17,7 @@
 
 #include "salalib/mgraph.h"
 #include "salalib/importtypedefs.h"
+#include "genlib/dxfp.h"
 #include <vector>
 #include <map>
 
