@@ -29,6 +29,7 @@
 
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -251,7 +252,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IShapeMap *dest, const char 
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -262,7 +263,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IShapeMap *dest, const char 
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -311,7 +312,7 @@ bool IGraphFile::pushValuesToMap(IVGAMap *source, IShapeMap *dest, const char *s
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -322,7 +323,7 @@ bool IGraphFile::pushValuesToMap(IVGAMap *source, IShapeMap *dest, const char *s
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -371,7 +372,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IVGAMap *dest, const char *s
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -382,7 +383,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IVGAMap *dest, const char *s
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -936,7 +937,7 @@ const char *IVGAMap::getDisplayedAttributeColumn()
 
 void IVGAMap::setDisplayedAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") == 0) {
+   if (std::strcmp(attribute,"Ref Number") == 0) {
       ((PointMap *)m_data)->setDisplayedAttribute(-1);
    }
    else {
@@ -1322,7 +1323,7 @@ const char *IShapeMap::getDisplayedAttributeColumn()
 // Display the attribute column 
 void IShapeMap::setDisplayedAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") == 0) {
+   if (std::strcmp(attribute,"Ref Number") == 0) {
       // invalidate it, as it's almost certain the user wants to redraw the output:
       ((ShapeMap *)m_data)->invalidateDisplayedAttribute();
       ((ShapeMap *)m_data)->setDisplayedAttribute(-1);
@@ -1656,7 +1657,7 @@ int IAttributes::getNextAttributeRow()
 
 bool IAttributes::insertAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") != 0) {
+   if (std::strcmp(attribute,"Ref Number") != 0) {
       AttributeTable *table = (AttributeTable *)m_data;
       int n = table->getColumnIndex(attribute);
       if (n == -1 || !table->isColumnLocked(n)) {

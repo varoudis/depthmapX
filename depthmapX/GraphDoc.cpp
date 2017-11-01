@@ -2108,7 +2108,7 @@ void QGraphDoc::OnTestButton()
                                                                    // <<
    m_evolved_paths.clear();
    for (int i = 0; i < 19; i++) {
-      m_evolved_paths.push_back(pvecpoint());
+      m_evolved_paths.push_back(pqvector<Point2f>());
       for (int j = 0; j < 1200; j++) {
          Point2f p;
          file >> p.x >> p.y;
