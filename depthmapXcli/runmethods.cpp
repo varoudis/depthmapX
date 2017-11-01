@@ -70,7 +70,6 @@ namespace dm_runmethods
             message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        std::cout << " ok\n" << std::flush;
 
         if ( result == MetaGraph::NOT_A_GRAPH)
         {
