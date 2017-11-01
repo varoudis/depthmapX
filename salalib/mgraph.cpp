@@ -1537,7 +1537,7 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
       for (int k = 0; k < dxf_layer.numPolyLines(); k++) {
 
          const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
-         pvecpoint points;
+         pqvector<Point2f> points;
          for (int m = 0; m < poly.numVertices(); m++) {
             points.push_back(poly.getVertex(m));
          }
@@ -1547,7 +1547,7 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
 
          const DxfSpline& poly = dxf_layer.getSpline( l );
 
-         pvecpoint points;
+         pqvector<Point2f> points;
          for (int m = 0; m < poly.numVertices(); m++) {
             points.push_back(poly.getVertex(m));
          }
@@ -1570,7 +1570,7 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
       for (int nc = 0; nc < dxf_layer.numCircles(); nc++) {
          
          const DxfCircle& circ = dxf_layer.getCircle( nc );
-         pvecpoint points;
+         pqvector<Point2f> points;
          for (int m = 0; m < DXFCIRCLERES; m++) {
             points.push_back(circ.getVertex(m,DXFCIRCLERES));
          }
@@ -1663,7 +1663,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    parsing = 0;
    first = true;
-   pvecpoint points;
+   pqvector<Point2f> points;
 
    while (!stream.eof()) {
 

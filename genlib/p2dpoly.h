@@ -125,8 +125,6 @@ public:
       { return (y < 0) ? (2.0 * M_PI - acos(x)) : acos(x); }
 };
 
-typedef pqvector<Point2f> pvecpoint;
-
 inline Point2f operator - (Point2f& p)
 {
    return Point2f(-p.x, -p.y);
@@ -487,8 +485,6 @@ inline Point2f intersection_point(const Line& a, const Line& b, double tolerance
    return a.point_on_line(a.intersection_point(b,axis,tolerance),axis);
 }
 
-typedef prefvec<Line> pvecline;
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 struct TaggedLine
@@ -496,34 +492,6 @@ struct TaggedLine
    Line line;
    int tag;
    TaggedLine(const Line& l = Line(),int t = -1) { line = l; tag = t; }
-};
-
-// Binary Space Partition
-
-struct BSPNode
-{
-public:
-   enum { BSPLEFT, BSPRIGHT };
-   BSPNode *left;
-   BSPNode *right;
-   BSPNode *parent;
-   Line line;
-   int m_tag;
-   int m_count;
-   //
-public:
-   BSPNode()
-   { left = NULL; right = NULL; parent = NULL; m_count = 0; m_tag = -1; }
-   virtual ~BSPNode()
-   { if (left) delete left; left = NULL; if (right) delete right; right = NULL; }
-   //
-   bool isLeaf() {
-      return left == NULL && right == NULL;
-   }
-   void make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par);
-   int classify(const Point2f& p);
-   const Line& getLine() const { return line; }
-   const int getTag() const { return m_tag; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
