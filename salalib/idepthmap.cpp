@@ -434,19 +434,12 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
       }
       else {
          std::unique_ptr<Communicator> comm(new ICommunicator());
-         bool mapParsed = depthmapX::importFile(*graph,
-                                                file,
-                                                comm.get(),
-                                                newmapname,
-                                                depthmapX::ImportType::DATAMAP,
-                                                (type_str.compare("CSV")==0) ? depthmapX::ImportFileType::TSV : depthmapX::ImportFileType::CSV);
-         
-         // if (mapParsed) {
-            // PK: This was removed to not force importFile above to return the map
-            // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together
-            // ShapeMap& basemap = graph->m_data_maps.getMap(mapref);
-            // shapemap = ((IGraphOrganizer *)m_data)->getIShapeMap(&basemap);
-         // }
+         depthmapX::importFile(*graph,
+			       file,
+			       comm.get(),
+			       newmapname,
+			       depthmapX::ImportType::DATAMAP,
+			       (type_str.compare("CSV")==0) ? depthmapX::ImportFileType::TSV : depthmapX::ImportFileType::CSV);
       }
    }
    else if (type_str.compare("MIF") == 0) {
