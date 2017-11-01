@@ -29,7 +29,7 @@
 
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
-#include <string>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////////////
 
