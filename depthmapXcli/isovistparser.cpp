@@ -77,7 +77,7 @@ void IsovistParser::parse(int argc, char **argv)
 
     if (!isovistFile.empty())
     {
-        ifstream file(isovistFile);
+        std::ifstream file(isovistFile);
         if ( !file.good())
         {
             std::stringstream message;

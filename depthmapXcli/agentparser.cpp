@@ -217,7 +217,7 @@ void AgentParser::parse(int argc, char *argv[])
                 message << "Invalid starting location seed provided ("
                         << argv[i]
                         << "). Should only contain digits"
-                        << flush;
+                        << std::flush;
                 throw CommandLineException(message.str().c_str());
             }
             _randomReleaseLocationSeed = std::atof(argv[i]);
@@ -256,7 +256,7 @@ void AgentParser::parse(int argc, char *argv[])
                 message << "Invalid starting point provided ("
                         << argv[i]
                         << "). Should only contain digits dots and commas"
-                        << flush;
+                        << std::flush;
                 throw CommandLineException(message.str().c_str());
             }
             points.push_back(argv[i]);
@@ -330,10 +330,10 @@ void AgentParser::parse(int argc, char *argv[])
         if (!pointsStream)
         {
             std::stringstream message;
-            message << "Failed to load file " << pointFile << ", error " << strerror(errno) << flush;
+            message << "Failed to load file " << pointFile << ", error " << strerror(errno) << std::flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
-        vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, '\t');
+        std::vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, '\t');
         _releasePoints.insert(std::end(_releasePoints), std::begin(parsed), std::end(parsed));
     }
     else if(!points.empty())
@@ -346,7 +346,7 @@ void AgentParser::parse(int argc, char *argv[])
         {
             pointsStream << "\n" << *iter;
         }
-        vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, ',');
+        std::vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, ',');
         _releasePoints.insert(std::end(_releasePoints), std::begin(parsed), std::end(parsed));
 
     }
