@@ -19,6 +19,7 @@
 #include "salalib/entityparsing.h"
 #include "runmethods.h"
 #include <sstream>
+#include <cstring>
 
 using namespace depthmapX;
 
