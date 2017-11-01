@@ -1547,7 +1547,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    parsing = 0;
    first = true;
-   pvecpoint points;
+   pqvector<Point2f> points;
 
    while (!stream.eof()) {
 

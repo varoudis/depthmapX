@@ -23,6 +23,7 @@
 #include <string>
 #include "genlib/stringutils.h"
 #include "salalib/importtypedefs.h"
+#include "genlib/bspnode.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -261,7 +262,7 @@ public:
    // or a single line into a shape
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
-   int makePolyShape(const pvecpoint& points, bool open, bool tempshape = false);
+   int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
    int makeShape(const SalaShape& shape, int override_shape_ref = -1);
@@ -286,7 +287,7 @@ public:
    bool polyCancel();
    // some shape creation tools for the scripting language or DLL interface
 protected:
-   pvecpoint m_temppoints;
+   pqvector<Point2f> m_temppoints;
 public:
    // add a shape (does not commit to poly pixels)
    void shapeBegin();

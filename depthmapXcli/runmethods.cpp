@@ -424,6 +424,12 @@ namespace dm_runmethods
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
         switch(exportP.getExportMode()) {
+            case ExportParser::POINTMAP_DATA_CSV:
+            {
+                ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
+                break;
+            }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
                 ofstream stream(cmdP.getOuputFile().c_str());

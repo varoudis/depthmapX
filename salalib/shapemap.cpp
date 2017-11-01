@@ -420,7 +420,7 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
    return m_shape_ref;
 }
 
-int ShapeMap::makePolyShape(const pvecpoint& points, bool open, bool tempshape)
+int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape)
 {
    bool bounds_good = true;
 
