@@ -1502,8 +1502,9 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
    else {
       dp.open(stream);
    }
-
-   SuperSpacePixel::tail().m_region = QtRegion(dp.getExtMin(), dp.getExtMax());
+   DxfVertex drawingMin = dp.getExtMin();
+   DxfVertex drawingMax = dp.getExtMax();
+   SuperSpacePixel::tail().m_region = QtRegion(Point2f(drawingMin.x, drawingMin.y), Point2f(drawingMax.x, drawingMax.y));
 
    int i = 0;
 
@@ -1516,13 +1517,16 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
       }
       
       SuperSpacePixel::tail().push_back(ShapeMap(dxf_layer.getName().c_str()));
+      DxfVertex layerMin = dxf_layer.getExtMin();
+      DxfVertex layerMax = dxf_layer.getExtMax();
       // note the circle lines are not counted in the total number of lines, as we have to specify number of segments
-      SuperSpacePixel::tail().at(i).init(dxf_layer.numTotalPoints() + dxf_layer.numTotalLines() + dxf_layer.numArcs() * DXFCIRCLERES + dxf_layer.numCircles() * DXFCIRCLERES, QtRegion(Point2f(dxf_layer.getExtMin()),Point2f(dxf_layer.getExtMax())) );
+      SuperSpacePixel::tail().at(i).init(dxf_layer.numTotalPoints() + dxf_layer.numTotalLines() + dxf_layer.numArcs() * DXFCIRCLERES + dxf_layer.numCircles() * DXFCIRCLERES,
+                                         QtRegion(Point2f(layerMin.x, layerMin.y),Point2f(layerMax.x, layerMax.y)) );
 
       for (int jp = 0; jp < dxf_layer.numPoints(); jp++) {
 
          const DxfVertex& dxf_point = dxf_layer.getPoint( jp );
-         Point2f point = Point2f(dxf_point);
+         Point2f point = Point2f(dxf_point.x, dxf_point.y);
          SuperSpacePixel::tail().at(i).makePointShape( point );
 
       }
@@ -1530,7 +1534,8 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
       for (int j = 0; j < dxf_layer.numLines(); j++) {
 
          const DxfLine& dxf_line = dxf_layer.getLine( j );
-         Line line = Line( Point2f(dxf_line.getStart()), Point2f(dxf_line.getEnd()) );
+         Line line = Line( Point2f(dxf_line.getStart().x, dxf_line.getStart().y),
+                           Point2f(dxf_line.getEnd().x  , dxf_line.getEnd().y) );
          SuperSpacePixel::tail().at(i).makeLineShape( line );   
 
       }
@@ -1539,7 +1544,8 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
          const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
          pqvector<Point2f> points;
          for (int m = 0; m < poly.numVertices(); m++) {
-            points.push_back(poly.getVertex(m));
+            DxfVertex v = poly.getVertex(m);
+            points.push_back(Point2f(v.x, v.y));
          }
          SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
       }
@@ -1549,7 +1555,8 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
 
          pqvector<Point2f> points;
          for (int m = 0; m < poly.numVertices(); m++) {
-            points.push_back(poly.getVertex(m));
+             DxfVertex v = poly.getVertex(m);
+             points.push_back(Point2f(v.x, v.y));
          }
          SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
 
@@ -1562,7 +1569,9 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
          if (segments > 1) {
             for (int m = 0; m < segments; m++) {
                // note, loops on DXFCIRCLERES (e.g. 36) to 0
-               Line line = Line( Point2f(circ.getVertex(m,DXFCIRCLERES)), Point2f(circ.getVertex(m+1,DXFCIRCLERES)) );
+               DxfVertex v1 = circ.getVertex(m,DXFCIRCLERES);
+               DxfVertex v2 = circ.getVertex(m + 1,DXFCIRCLERES);
+               Line line = Line( Point2f(v1.x, v1.y), Point2f(v2.x, v2.y) );
                SuperSpacePixel::tail().at(i).makeLineShape( line );
             }
          }
@@ -1572,7 +1581,8 @@ int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
          const DxfCircle& circ = dxf_layer.getCircle( nc );
          pqvector<Point2f> points;
          for (int m = 0; m < DXFCIRCLERES; m++) {
-            points.push_back(circ.getVertex(m,DXFCIRCLERES));
+            DxfVertex v = circ.getVertex(m,DXFCIRCLERES);
+            points.push_back(Point2f(v.x, v.y));
          }
          SuperSpacePixel::tail().at(i).makePolyShape( points, false );
       }
