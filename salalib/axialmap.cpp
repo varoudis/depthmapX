@@ -2723,8 +2723,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
       covered[i] = false;
    }
    pflipper<pvecint> foundlist;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int lineindex = m_selection_set[j];
+   for(auto& lineindex: m_selection_set) {
       foundlist.a().push_back(lineindex);
       covered[lineindex] = true;
       m_attributes.setValue(lineindex,stepdepth_col,0.0f);
@@ -4148,8 +4147,8 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
 
    int opencount = 0;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int row = m_attributes.getRowid(m_selection_set[j]);
+   for (auto& sel: m_selection_set) {
+      int row = m_attributes.getRowid(sel);
       if (row != -1) {
          bins[0].push_back(SegmentData(0,row,SegmentRef(),0,0.0,0));
          opencount++;

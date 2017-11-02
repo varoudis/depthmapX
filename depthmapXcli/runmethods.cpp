@@ -320,7 +320,7 @@ namespace dm_runmethods
             eng.tail().m_release_locations.clear();
             for_each(agentP.getReleasePoints().begin(), agentP.getReleasePoints().end(),
                      [&eng, &currentMap](const Point2f &point)
-                     ->void{eng.tail().m_release_locations.push_back(currentMap.pixelate(point, false));});
+                     ->void{eng.tail().m_release_locations.insert(currentMap.pixelate(point, false));});
         }
 
         // the ui and code suggest that the results can be put on a separate

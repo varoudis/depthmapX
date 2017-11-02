@@ -636,7 +636,6 @@ IVGAMap::IVGAMap()
    m_data = NULL;
 
    m_cursor_point = -1;
-   m_cursor_selected_point = -1;
 }
 
 IVGAMap::~IVGAMap()
@@ -699,21 +698,21 @@ int IVGAMap::getSelectedPointCount()
 int IVGAMap::getFirstSelectedPoint()
 {
    if (((PointMap *)m_data)->getSelSet().size()) {
-      m_cursor_selected_point = 0;
-      return ((PointMap *)m_data)->getSelSet()[m_cursor_selected_point];
+      m_cursor_selected_point = ((PointMap *)m_data)->getSelSet().begin();
+      return *m_cursor_selected_point;
    }
-   m_cursor_selected_point = -1;
-   return m_cursor_selected_point;
+   return -1;
 }
 
 int IVGAMap::getNextSelectedPoint()
 {
-   m_cursor_selected_point++;
-   if (m_cursor_selected_point < (int)((PointMap *)m_data)->getSelSet().size()) {
-      return ((PointMap *)m_data)->getSelSet()[m_cursor_selected_point];
+   if (((PointMap *)m_data)->getSelSet().size()) {
+       m_cursor_selected_point++;
+       if (m_cursor_selected_point != ((PointMap *)m_data)->getSelSet().end()) {
+          return *m_cursor_selected_point;
+       }
    }
-   m_cursor_selected_point = -1;
-   return m_cursor_selected_point;
+   return -1;
 }
 
 DPoint IVGAMap::getLocation(int id)
@@ -991,7 +990,6 @@ IShapeMap::IShapeMap()
    m_data = NULL;
 
    m_cursor_shape = -1;
-   m_cursor_selected_shape = -1;
 }
 
 IShapeMap::~IShapeMap()
@@ -1100,26 +1098,22 @@ int IShapeMap::getFirstSelectedShape()
 {
    ShapeMap& axmap = *((ShapeMap *)m_data);
    if (axmap.getSelCount() > 0) {
-      m_cursor_selected_shape = 0;
-      return axmap.getSelSet().at(0);
+      m_cursor_selected_shape = axmap.getSelSet().begin();
+      return *m_cursor_selected_shape;
    }
-   else {
-      m_cursor_selected_shape = -1;
-      return -1;
-   }
+   return -1;
 }
 
 int IShapeMap::getNextSelectedShape()
 {
    ShapeMap& axmap = *((ShapeMap *)m_data);
-   if (axmap.isSelected() && m_cursor_selected_shape < (int)axmap.getSelCount() - 1) {
-      m_cursor_selected_shape++;
-      return axmap.getSelSet().at(m_cursor_selected_shape);
+   if (axmap.getSelCount() > 0) {
+       if (axmap.isSelected() && m_cursor_selected_shape != axmap.getSelSet().end()) {
+          m_cursor_selected_shape++;
+          return *m_cursor_selected_shape;
+       }
    }
-   else {
-      m_cursor_selected_shape = -1;
-      return -1;
-   }
+   return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1355,7 +1349,7 @@ void IShapeMap::beginShape()
    // first, this will interrupt cursors for selections and line retrieval
    // note, do *not* clear the selection here as repeated calls to beginShape will slow to a crawl
    m_cursor_shape = -1;
-   m_cursor_selected_shape = -1;
+   m_cursor_selected_shape = (*((ShapeMap *)m_data)).getSelSet().end();
 
    ((ShapeMap *)m_data)->shapeBegin();
 }
@@ -1383,7 +1377,7 @@ bool IShapeMap::removeShape(int id)
    // first, this will interrupt cursors for selections and shape retrieval:
    axmap.clearSel();
    m_cursor_shape = -1;
-   m_cursor_selected_shape = -1;
+   m_cursor_selected_shape = axmap.getSelSet().end();
 
    // note: uses rowid so convert to key.
    // Also note that "undoing" set to true means that it won't try to set up and undo buffer
