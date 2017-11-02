@@ -1002,7 +1002,9 @@ int DxfArc::numSegments(int segments) const
 DxfVertex DxfArc::getVertex(int i, int segments) const
 {
    DxfVertex v = m_centre;
-   double ang = 2.0 * DXF_PI * double(i)/double(segments);
+   double range = 2.0 * DXF_PI;
+   if(m_start != m_end) range = (m_end - m_start) * DXF_PI / 180.0;
+   double ang = range * double(i)/double(segments);
    if (m_start != m_end) {
       ang += 2.0 * DXF_PI * (m_start / 360.0);
    }

@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include <memory>
 
 #include <genlib/paftl.h>
 #include <salalib/mgraph.h>
@@ -29,6 +30,7 @@
 
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
+#include <salalib/importutils.h>
 #include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -432,13 +434,13 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
 		   return NULL;
       }
       else {
-         int mapref = graph->importTxt( file, newmapname, (type_str.compare("CSV")==0) );
-         
-         if (mapref != -1) {
-            // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together
-            ShapeMap& basemap = graph->m_data_maps.getMap(mapref);
-			   shapemap = ((IGraphOrganizer *)m_data)->getIShapeMap(&basemap);
-         }
+         std::unique_ptr<Communicator> comm(new ICommunicator());
+         depthmapX::importFile(*graph,
+			       file,
+			       comm.get(),
+			       newmapname,
+			       depthmapX::ImportType::DATAMAP,
+			       (type_str.compare("CSV")==0) ? depthmapX::ImportFileType::TSV : depthmapX::ImportFileType::CSV);
       }
    }
    else if (type_str.compare("MIF") == 0) {
