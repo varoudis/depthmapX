@@ -56,6 +56,7 @@
 #include <windows.h>
 #endif
 #include "compatibilitydefines.h"
+#include "salalib/importutils.h"
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_METATYPE(std::string)
@@ -487,7 +488,14 @@ void QGraphDoc::OnFileImport()
              QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         if (m_meta_graph->importTxt( file, filepath.m_name.toStdString(), (ext == tr("CSV")) ) != -1) {
+         std::unique_ptr<Communicator> comm(new ICommunicator());
+         bool mapParsed = depthmapX::importFile(*m_meta_graph,
+                                                file,
+                                                comm.get(),
+                                                filepath.m_name.toStdString(),
+                                                depthmapX::ImportType::DATAMAP,
+                                                (ext == tr("CSV")) ? depthmapX::ImportFileType::CSV : depthmapX::ImportFileType::TSV);
+         if(mapParsed) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
             SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_TABLE);

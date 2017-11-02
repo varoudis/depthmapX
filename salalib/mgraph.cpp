@@ -34,6 +34,7 @@
 
 // shouldn't really include this -- required for node in PushValuesToLayer
 #include <salalib/ngraph.h>
+#include <salalib/importutils.h>
 
 // Quick mod - TV
 #pragma warning (disable: 4800)
@@ -1374,10 +1375,13 @@ bool MetaGraph::makeAxialLines( Communicator *communicator, bool analyse_in_memo
    return retvar;
 }
 
-const int DXFCIRCLERES = 36;
-
 int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 {
+    if (load_type & DXF) {
+       // separate the stream and the communicator, allowing non-file streams read
+       return depthmapX::importFile(*this, *communicator, communicator, communicator->GetMBInfileName(), depthmapX::ImportType::DRAWINGMAP, depthmapX::ImportFileType::DXF);
+    }
+
    m_state &= ~LINEDATA;      // Clear line data flag (stops accidental redraw during reload) 
 /*
    if (m_state & POINTS) {
@@ -1399,16 +1403,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 
    SuperSpacePixel::push_back(communicator->GetMBInfileName());
 
-   if (load_type & DXF) {
-
-      // separate the stream and the communicator, allowing non-file streams read
-      int error = loadDxf(*communicator, communicator);
-
-      if (error != 1) {
-         return error;
-      }
-   }
-   else if (load_type & CAT) {
+   if (load_type & CAT) {
       // separate the stream and the communicator, allowing non-file streams read
       int error = loadCat(*communicator, communicator);
       if (error != 1) {
@@ -1471,127 +1466,6 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    }
 
    m_state |= LINEDATA;
-
-   return 1;
-}
-
-int MetaGraph::loadDxf( istream& stream, Communicator *communicator)
-{
-   DxfParser dp;
-
-   if (communicator) {
-      dp = DxfParser( communicator );
-
-      try {
-         *communicator >> dp;
-      }
-      catch (Communicator::CancelledException) {
-         SuperSpacePixel::pop_back();
-         return 0;
-      }
-      catch (pexception) {
-         SuperSpacePixel::pop_back();
-         return -1;
-      }
-
-      if (communicator->IsCancelled()) {
-         SuperSpacePixel::pop_back();
-         return 0;
-      }
-   }
-   else {
-      dp.open(stream);
-   }
-   DxfVertex drawingMin = dp.getExtMin();
-   DxfVertex drawingMax = dp.getExtMax();
-   SuperSpacePixel::tail().m_region = QtRegion(Point2f(drawingMin.x, drawingMin.y), Point2f(drawingMax.x, drawingMax.y));
-
-   int i = 0;
-
-   for (auto& layer: dp.getLayers())
-   {
-      const DxfLayer& dxf_layer = layer.second;
-
-      if (dxf_layer.empty()) {
-         continue;
-      }
-      
-      SuperSpacePixel::tail().push_back(ShapeMap(dxf_layer.getName().c_str()));
-      DxfVertex layerMin = dxf_layer.getExtMin();
-      DxfVertex layerMax = dxf_layer.getExtMax();
-      // note the circle lines are not counted in the total number of lines, as we have to specify number of segments
-      SuperSpacePixel::tail().at(i).init(dxf_layer.numTotalPoints() + dxf_layer.numTotalLines() + dxf_layer.numArcs() * DXFCIRCLERES + dxf_layer.numCircles() * DXFCIRCLERES,
-                                         QtRegion(Point2f(layerMin.x, layerMin.y),Point2f(layerMax.x, layerMax.y)) );
-
-      for (int jp = 0; jp < dxf_layer.numPoints(); jp++) {
-
-         const DxfVertex& dxf_point = dxf_layer.getPoint( jp );
-         Point2f point = Point2f(dxf_point.x, dxf_point.y);
-         SuperSpacePixel::tail().at(i).makePointShape( point );
-
-      }
-
-      for (int j = 0; j < dxf_layer.numLines(); j++) {
-
-         const DxfLine& dxf_line = dxf_layer.getLine( j );
-         Line line = Line( Point2f(dxf_line.getStart().x, dxf_line.getStart().y),
-                           Point2f(dxf_line.getEnd().x  , dxf_line.getEnd().y) );
-         SuperSpacePixel::tail().at(i).makeLineShape( line );   
-
-      }
-      for (int k = 0; k < dxf_layer.numPolyLines(); k++) {
-
-         const DxfPolyLine& poly = dxf_layer.getPolyLine( k );
-         pqvector<Point2f> points;
-         for (int m = 0; m < poly.numVertices(); m++) {
-            DxfVertex v = poly.getVertex(m);
-            points.push_back(Point2f(v.x, v.y));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
-      }
-      for (int l = 0; l < dxf_layer.numSplines(); l++) {
-
-         const DxfSpline& poly = dxf_layer.getSpline( l );
-
-         pqvector<Point2f> points;
-         for (int m = 0; m < poly.numVertices(); m++) {
-             DxfVertex v = poly.getVertex(m);
-             points.push_back(Point2f(v.x, v.y));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, (poly.getAttributes() & DxfPolyLine::CLOSED) != DxfPolyLine::CLOSED );
-
-      }
-      // needs fixing to use appropriate poly type:
-      for (int n = 0; n < dxf_layer.numArcs(); n++) {
-         
-         const DxfArc& circ = dxf_layer.getArc( n );
-         int segments = circ.numSegments(DXFCIRCLERES);
-         if (segments > 1) {
-            for (int m = 0; m < segments; m++) {
-               // note, loops on DXFCIRCLERES (e.g. 36) to 0
-               DxfVertex v1 = circ.getVertex(m,DXFCIRCLERES);
-               DxfVertex v2 = circ.getVertex(m + 1,DXFCIRCLERES);
-               Line line = Line( Point2f(v1.x, v1.y), Point2f(v2.x, v2.y) );
-               SuperSpacePixel::tail().at(i).makeLineShape( line );
-            }
-         }
-      }
-      for (int nc = 0; nc < dxf_layer.numCircles(); nc++) {
-         
-         const DxfCircle& circ = dxf_layer.getCircle( nc );
-         pqvector<Point2f> points;
-         for (int m = 0; m < DXFCIRCLERES; m++) {
-            DxfVertex v = circ.getVertex(m,DXFCIRCLERES);
-            points.push_back(Point2f(v.x, v.y));
-         }
-         SuperSpacePixel::tail().at(i).makePolyShape( points, false );
-      }
-
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
-
-      i++;
-   }
 
    return 1;
 }
@@ -1876,28 +1750,6 @@ bool MetaGraph::importCat(istream& filecontents)
    return true;
 }
 
-bool MetaGraph::importDxf(istream& filecontents)
-{
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-
-   // load the data from the file
-   if (!loadDxf( filecontents, NULL )) {
-      return false;
-   }
-
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   return true;
-}
-
 // a second does the lot, especially for evolutionary graphs
 // essentially, hand the ecoevograph a new meta graph each time...
 // it'll do everything for you
@@ -1921,7 +1773,65 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
    // write("dummy.graph");
 }
 
-int MetaGraph::importTxt( istream& stream, const std::string& name, bool csv )
+ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::string name) {
+
+    switch(mapType) {
+        case depthmapX::ImportType::DRAWINGMAP: {
+            SuperSpacePixel::tail().push_back(ShapeMap(name));
+            return SuperSpacePixel::tail().tail();
+        }
+        case depthmapX::ImportType::DATAMAP: {
+            m_data_maps.addMap(name,ShapeMap::DATAMAP);
+            return m_data_maps.tail();
+        }
+    }
+}
+
+void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap) {
+
+    switch(mapType) {
+        case depthmapX::ImportType::DRAWINGMAP: {
+            // go through the files to find if the layer is in one of them
+            // if it is, remove it and if the remaining file is empty then
+            // remove that too
+            for(size_t j = 0; j < SuperSpacePixel::size(); j++) {
+                int mapToRemove = -1;
+                for(size_t i = 0; i < SuperSpacePixel::at(j).size(); i++) {
+                    if(&SuperSpacePixel::at(j).at(i) == &shapeMap) {
+                        mapToRemove = i;
+                        break;
+                    }
+                }
+                if(mapToRemove != -1) {
+                    SuperSpacePixel::at(j).remove_at(mapToRemove);
+                    if(SuperSpacePixel::at(j).size() == 0) {
+                        SuperSpacePixel::remove_at(j);
+                    }
+                    break;
+                }
+            }
+        }
+        case depthmapX::ImportType::DATAMAP: {
+            for(size_t i = 0; i < m_data_maps.size(); i++) {
+                if(&m_data_maps[i] == &shapeMap) {
+                    m_data_maps.remove_at(i);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
+
+    SuperSpacePixel::tail().m_region = shapeMap.getRegion();
+    SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+}
+
+int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
+                                     QtRegion region,
+                                     std::string name,
+                                     depthmapX::Table &data )
 {
    int oldstate = m_state;
 
@@ -1929,7 +1839,32 @@ int MetaGraph::importTxt( istream& stream, const std::string& name, bool csv )
 
    int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
 
-   if (!m_data_maps.getDisplayedMap().importTxt( stream, csv )) {
+   m_data_maps.getDisplayedMap().init(lines.size(), region);
+   if (!m_data_maps.getDisplayedMap().importLines( lines, data )) {
+      m_data_maps.removeMap(x);
+      m_state = oldstate;
+      return -1;
+   }
+
+   m_state |= DATAMAPS;
+   setViewClass(SHOWSHAPETOP);
+
+   return x;
+}
+
+int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
+                                      QtRegion region,
+                                      std::string name,
+                                      depthmapX::Table &data )
+{
+   int oldstate = m_state;
+
+   m_state &= ~DATAMAPS;
+
+   int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
+
+   m_data_maps.getDisplayedMap().init(points.size(), region);
+   if (!m_data_maps.getDisplayedMap().importPoints( points, data )) {
       m_data_maps.removeMap(x);
       m_state = oldstate;
       return -1;

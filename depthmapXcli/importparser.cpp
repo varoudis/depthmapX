@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Christian Sailer
+// Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,27 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "modeparserregistry.h"
 #include "importparser.h"
-#include "linkparser.h"
-#include "vgaparser.h"
-#include "visprepparser.h"
-#include "axialparser.h"
-#include "agentparser.h"
-#include "isovistparser.h"
-#include "exportparser.h"
+#include "exceptions.h"
+#include "runmethods.h"
+#include "parsingutils.h"
+#include <cstring>
+#include <memory>
+#include <sstream>
 
+using namespace depthmapX;
 
-void ModeParserRegistry::populateParsers()
+void ImportParser::parse(int argc, char *argv[])
 {
-    // Register any mode parsers here
-    REGISTER_PARSER(VgaParser);
-    REGISTER_PARSER(LinkParser);
-    REGISTER_PARSER(VisPrepParser);
-    REGISTER_PARSER(AxialParser);
-    REGISTER_PARSER(AgentParser);
-    REGISTER_PARSER(IsovistParser);
-    REGISTER_PARSER(ExportParser);
-    REGISTER_PARSER(ImportParser);
-    // *********
+    for ( int i = 1; i < argc; ++i)
+    {
+        if ( strcmp ("-if", argv[i]) == 0)
+        {
+            ENFORCE_ARGUMENT("-if", i)
+            m_filesToImport.push_back(argv[i]);
+        }
+    }
+}
+
+void ImportParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
+{
+    dm_runmethods::importFiles(clp, m_filesToImport, perfWriter);
 }
