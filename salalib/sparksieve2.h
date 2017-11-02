@@ -23,6 +23,7 @@
 
 #include <float.h>
 #include "genlib/p2dpoly.h"
+#include "genlib/paftl.h"
 #include <list>
 
 class sparkSieve2

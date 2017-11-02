@@ -15,5 +15,5 @@
 class GLUTriangulator
 {
 public:
-    static vector< Point2f > triangulate(const vector< Point2f >& polygon);
+    static std::vector< Point2f > triangulate(const std::vector< Point2f >& polygon);
 };

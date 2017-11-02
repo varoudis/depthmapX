@@ -51,7 +51,7 @@ void tess_combine
 
 std::vector< Point2f > GLUTriangulator::triangulate
     (
-    const vector< Point2f >& polygon
+    const std::vector< Point2f >& polygon
     )
 {
     std::vector< GLdouble > coords;

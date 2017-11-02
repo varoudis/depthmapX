@@ -40,7 +40,8 @@ SOURCES += \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
-    geometrygenerators.cpp
+    geometrygenerators.cpp \
+    importutils.cpp
 
 HEADERS += \
     attributes.h \
@@ -69,7 +70,9 @@ HEADERS += \
     gridproperties.h \
     isovistdef.h \
     mgraph_consts.h \
-    geometrygenerators.h
+    geometrygenerators.h \
+    importutils.h \
+    importtypedefs.h
 
 DISTFILES += \
     salascript-tests.txt

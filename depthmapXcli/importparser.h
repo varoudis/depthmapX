@@ -15,39 +15,33 @@
 
 #pragma once
 
-#include <string>
 #include "imodeparser.h"
 #include "commandlineparser.h"
+#include <string>
+#include <vector>
 
-class ExportParser : public IModeParser
+class ImportParser : public IModeParser
 {
 public:
     virtual std::string getModeName() const
     {
-        return "EXPORT";
+        return "IMPORT";
     }
 
     virtual std::string getHelp() const
     {
-        return    "Mode options for EXPORT:\n"\
-                  "-em <export mode> one of:\n"\
-                  "    pointmap-data-csv\n"\
-                  "    pointmap-connections-csv\n";
+        return  "Mode options for IMPORT:\n"\
+                "   The file provided by -f here will be used as the base. If that file"\
+                "is not a graph, a new graph will be created and the file will be imported\n"\
+                "   -if <file(s) to import> one or more files to import\n";
     }
 
 public:
-    ExportParser();
     virtual void parse(int argc, char *argv[]);
-    virtual void run(const CommandLineParser &clp, IPerformanceSink& perfWriter) const;
+    virtual void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const;
 
-    enum ExportMode{
-        NONE,
-        POINTMAP_DATA_CSV,
-        POINTMAP_CONNECTIONS_CSV
-    };
-    ExportMode getExportMode() const { return _exportMode; }
+    const std::vector<std::string> & getFilesToImport() const { return m_filesToImport; }
 
 private:
-    ExportMode _exportMode;
+    std::vector<std::string> m_filesToImport;
 };
-

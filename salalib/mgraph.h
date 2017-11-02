@@ -38,6 +38,7 @@
 
 // for agent engine interface
 #include <salalib/nagent.h>
+#include <salalib/importtypedefs.h>
 
 #include <vector>
 
@@ -104,15 +105,17 @@ public:
    //
    // quick loaders from input streams rather than files:
    bool importCat( istream& stream );
-   bool importDxf( istream& stream );
    // make a graph using the supplied seed and graph spacing:
    void fastGraph( const Point2f& seed, double spacing );
    //
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
-   int loadDxf( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
-   int importTxt( istream& stream, const std::string& layername, bool csv );
+   ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
+   void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
+   void updateParentRegions(ShapeMap &shapeMap);
+   int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
+   int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
