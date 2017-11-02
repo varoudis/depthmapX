@@ -15,12 +15,13 @@
 
 #pragma once
 #include <vector>
+#include <algorithm>
 #include "paftl.h"
 
 namespace genshim
 {
     /**
-     * Converte a std::vector to a pvec (preserving the order of elements)
+     * Convert a std::vector to a pvec (preserving the order of elements)
      * This is expensive as it copies every single element
      */
     template<class T> pvector<T> toPVector(const std::vector<T> &vec)
@@ -29,6 +30,7 @@ namespace genshim
         std::for_each(vec.begin(), vec.end(), [&pvec](const T& val)->void{pvec.push_back(val);});
         return pvec;
     }
+  
     /**
      * Convert a pvec to a std::vector (preserving the order of elements)
      * This is expensive as it copies every single element
@@ -41,5 +43,16 @@ namespace genshim
             vec.push_back(pvec[i]);
         }
         return vec;
+    }
+
+    /**
+     * Convert a std::vector to a pqvector (preserving the order of elements)
+     * This is expensive as it copies every single element
+     */
+    template<class T> pqvector<T> toPQVector(const std::vector<T> &vec)
+    {
+        pqvector<T> pvec;
+        std::for_each(vec.begin(), vec.end(), [&pvec](const T& val)->void{pvec.push_back(val);});
+        return pvec;
     }
 }
