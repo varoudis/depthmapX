@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include <memory>
 
 #include <genlib/paftl.h>
 #include <salalib/mgraph.h>
@@ -29,6 +30,8 @@
 
 #include <salalib/idepthmap.h>
 #include <salalib/idepthmapx.h>
+#include <salalib/importutils.h>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -251,7 +254,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IShapeMap *dest, const char 
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -262,7 +265,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IShapeMap *dest, const char 
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -311,7 +314,7 @@ bool IGraphFile::pushValuesToMap(IVGAMap *source, IShapeMap *dest, const char *s
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -322,7 +325,7 @@ bool IGraphFile::pushValuesToMap(IVGAMap *source, IShapeMap *dest, const char *s
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -371,7 +374,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IVGAMap *dest, const char *s
       return false;
    }
    int source_col;
-   if (strcmp(source_attribute,"Ref Number") == 0) {
+   if (std::strcmp(source_attribute,"Ref Number") == 0) {
       source_col = -1;
    }
    else {
@@ -382,7 +385,7 @@ bool IGraphFile::pushValuesToMap(IShapeMap *source, IVGAMap *dest, const char *s
    }
    int dest_col = -2;
    if (dest_attribute != NULL) {
-      if (strcmp(dest_attribute,"Ref Number") == 0) {
+      if (std::strcmp(dest_attribute,"Ref Number") == 0) {
          // cannot overwrite
          return false;
       }
@@ -431,13 +434,13 @@ IShapeMap *IGraphFile::importMap(const char *filename, const char *type, const c
 		   return NULL;
       }
       else {
-         int mapref = graph->importTxt( file, newmapname, (type_str.compare("CSV")==0) );
-         
-         if (mapref != -1) {
-            // note, at this stage in development, you CANNOT go from the mapref directly here as the getIShapeMap has both shape graphs and data maps mixed together
-            ShapeMap& basemap = graph->m_data_maps.getMap(mapref);
-			   shapemap = ((IGraphOrganizer *)m_data)->getIShapeMap(&basemap);
-         }
+         std::unique_ptr<Communicator> comm(new ICommunicator());
+         depthmapX::importFile(*graph,
+			       file,
+			       comm.get(),
+			       newmapname,
+			       depthmapX::ImportType::DATAMAP,
+			       (type_str.compare("CSV")==0) ? depthmapX::ImportFileType::TSV : depthmapX::ImportFileType::CSV);
       }
    }
    else if (type_str.compare("MIF") == 0) {
@@ -936,7 +939,7 @@ const char *IVGAMap::getDisplayedAttributeColumn()
 
 void IVGAMap::setDisplayedAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") == 0) {
+   if (std::strcmp(attribute,"Ref Number") == 0) {
       ((PointMap *)m_data)->setDisplayedAttribute(-1);
    }
    else {
@@ -1322,7 +1325,7 @@ const char *IShapeMap::getDisplayedAttributeColumn()
 // Display the attribute column 
 void IShapeMap::setDisplayedAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") == 0) {
+   if (std::strcmp(attribute,"Ref Number") == 0) {
       // invalidate it, as it's almost certain the user wants to redraw the output:
       ((ShapeMap *)m_data)->invalidateDisplayedAttribute();
       ((ShapeMap *)m_data)->setDisplayedAttribute(-1);
@@ -1656,7 +1659,7 @@ int IAttributes::getNextAttributeRow()
 
 bool IAttributes::insertAttributeColumn(const char *attribute)
 {
-   if (strcmp(attribute,"Ref Number") != 0) {
+   if (std::strcmp(attribute,"Ref Number") != 0) {
       AttributeTable *table = (AttributeTable *)m_data;
       int n = table->getColumnIndex(attribute);
       if (n == -1 || !table->isColumnLocked(n)) {

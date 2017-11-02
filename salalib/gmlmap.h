@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-typedef prefvec<pvecpoint> polyset;
+typedef prefvec<pqvector<Point2f>> polyset;
 
 class GMLMap
 {

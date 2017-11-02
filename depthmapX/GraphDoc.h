@@ -240,7 +240,7 @@ public:
    Point2f m_position;  // Last known mouse position, in DXF units
    // Paths for the March 05 evolved agents
    // (loaded from file using the test button)
-   prefvec<pvecpoint> m_evolved_paths;
+   prefvec<pqvector<Point2f>> m_evolved_paths;
    RenderThread m_thread;
 
    QProgressDialog* m_waitdlg;

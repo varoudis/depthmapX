@@ -1,4 +1,4 @@
-// Copyright (C) 2017 Christian Sailer
+// Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,17 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "catch.hpp"
-#include "argumentholder.h"
-#include <cstring>
+#pragma once
 
+#include <vector>
+#include <map>
 
+namespace depthmapX {
+    typedef std::vector<std::string> ColumnData;
+    typedef std::map<std::string, ColumnData> Table;
 
-TEST_CASE("Test ArgumentHolder", "Constructor")
-{
-    ArgumentHolder ah{"foo", "bar"};
-    REQUIRE(ah.argc() == 2);
-    REQUIRE(std::strcmp(ah.argv()[0], "foo") == 0 );
-    REQUIRE(std::strcmp(ah.argv()[1], "bar") == 0 );
+    class Polyline : public QtRegion
+    {
+    public:
+        std::vector<Point2f> m_vertices;
+        bool m_closed = false;
+        Polyline(std::vector<Point2f> vertices, bool closed) : m_vertices(vertices), m_closed(closed) {
+        }
+    };
+
+    enum ImportType {
+        DRAWINGMAP, DATAMAP
+    };
+
+    enum ImportFileType {
+        CSV, TSV, DXF
+    };
 }
-

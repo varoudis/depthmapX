@@ -30,7 +30,8 @@ SOURCES += \
     p2dpoly.cpp \
     pafmath.cpp \
     xmlparse.cpp \
-    stringutils.cpp
+    stringutils.cpp \
+    bspnode.cpp
 
 HEADERS += \
     comm.h \
@@ -42,4 +43,6 @@ HEADERS += \
     xmlparse.h \
     exceptions.h \
     legacyconverters.h \
-    stringutils.h
+    stringutils.h \
+    linreg.h \
+    bspnode.h
