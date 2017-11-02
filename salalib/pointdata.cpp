@@ -1329,8 +1329,8 @@ bool PointMap::clearSel()
    if (m_selection == NO_SELECTION) {
       return false;
    }
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      getPoint(m_selection_set[i]).m_state &= ~Point::SELECTED;
+   for (auto& sel: m_selection_set) {
+      getPoint(sel).m_state &= ~Point::SELECTED;
    }
    m_selection_set.clear();
    m_selection = NO_SELECTION;
@@ -1366,7 +1366,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
       for (int j = s_bl.y; j <= s_tr.y; j++) {
          if ((m_points[i][j].m_state & mask) && (~m_points[i][j].m_state & Point::SELECTED)) {
             m_points[i][j].m_state |= Point::SELECTED;
-            m_selection_set.push_back( PixelRef(i,j) );
+            m_selection_set.insert( PixelRef(i,j) );
             if (add) {
                m_selection &= ~SINGLE_SELECTION;
                m_selection |= COMPOUND_SELECTION;
@@ -1402,7 +1402,7 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
          if (row != -1) {
             m_points[pix.x][pix.y].m_state |= Point::SELECTED;
             if (m_attributes.selectRowByKey(pix)) {
-               m_selection_set.push_back(pix);
+               m_selection_set.insert(pix);
             }
          }
       }
@@ -1416,7 +1416,7 @@ bool PointMap::overrideSelPixel(PixelRef pix)
    m_selection = OVERRIDE_SELECTION;
    if (!(m_points[pix.x][pix.y].m_state & Point::SELECTED)) {
       m_points[pix.x][pix.y].m_state |= Point::SELECTED;
-      m_selection_set.push_back(pix);
+      m_selection_set.insert(pix);
    }
    return true;
 }
@@ -2605,8 +2605,8 @@ bool PointMap::binDisplay(Communicator *comm)
       m_attributes.setValue( i, bindisplay_col, -1 );
    }
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      Point& p = getPoint(m_selection_set[k]);
+   for (auto& sel: m_selection_set) {
+      Point& p = getPoint(sel);
       // Code for colouring pretty bins:
       int count = 1;
       int dir = 0;
@@ -2986,9 +2986,9 @@ bool PointMap::analyseVisualPointDepth(Communicator *comm)
 
    prefvec<PixelRefVector> search_tree;
    search_tree.push_back(PixelRefVector());
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
+   for (auto& sel: m_selection_set) {
       // need to convert from ints (m_selection_set) to pixelrefs for this op:
-      search_tree.tail().push_back(m_selection_set[j]);
+      search_tree.tail().push_back(sel);
    }
 
    int level = 0;
@@ -3171,8 +3171,8 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
    // in order to calculate Penn angle, the MetricPair becomes a metric triple...
    pqvector<MetricTriple> search_list; // contains root point
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      search_list.add(MetricTriple(0.0f,m_selection_set[k],NoPixel));
+   for (auto& sel: m_selection_set) {
+      search_list.add(MetricTriple(0.0f, sel, NoPixel));
    }
 
    // note that m_misc is used in a different manner to analyseGraph / PointDepth
@@ -3192,7 +3192,7 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
          m_attributes.setValue(row, path_angle_col, float(p.m_cumangle) );
          if (m_selection_set.size() == 1) {
             // Note: Euclidean distance is currently only calculated from a single point
-            m_attributes.setValue(row, dist_col, float(m_spacing * dist(here.pixel,m_selection_set[0])) );
+            m_attributes.setValue(row, dist_col, float(m_spacing * dist(here.pixel,*m_selection_set.begin())) );
          }
          if (!p.m_merge.empty()) {
             Point& p2 = getPoint(p.m_merge);
@@ -3203,7 +3203,7 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
                m_attributes.setValue(row, path_angle_col, float(p2.m_cumangle) );
                if (m_selection_set.size() == 1) {
                   // Note: Euclidean distance is currently only calculated from a single point
-                  m_attributes.setValue(row, dist_col, float(m_spacing * dist(p.m_merge,m_selection_set[0])) );
+                  m_attributes.setValue(row, dist_col, float(m_spacing * dist(p.m_merge,*m_selection_set.begin())) );
                }
                p2.m_node->extractMetric(search_list,this,MetricTriple(here.dist,p.m_merge,NoPixel));
                p2.m_misc = ~0;
@@ -3353,9 +3353,9 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
 
    pqvector<AngularTriple> search_list; // contains root point
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      search_list.add(AngularTriple(0.0f,m_selection_set[k],NoPixel));
-      getPoint(m_selection_set[k]).m_cumangle = 0.0f;
+   for (auto& sel: m_selection_set) {
+      search_list.add(AngularTriple(0.0f, sel, NoPixel));
+      getPoint(sel).m_cumangle = 0.0f;
    }
 
    // note that m_misc is used in a different manner to analyseGraph / PointDepth
@@ -3580,9 +3580,9 @@ bool PointMap::mergePoints(const Point2f& p)
    //
    PixelRef offset = pixelate(p) - PixelRef(tr.x,bl.y);
    //
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      PixelRef a = m_selection_set[i];
-      PixelRef b = ((PixelRef)m_selection_set[i]) + offset;
+   for (auto& sel: m_selection_set) {
+      PixelRef a = sel;
+      PixelRef b = ((PixelRef)sel) + offset;
       // check in limits:
       if (includes(b) && getPoint(b).filled()) {
          mergePixels(a,b);
@@ -3598,8 +3598,8 @@ bool PointMap::unmergePoints()
    if (!m_selection_set.size()) {
       return false;
    }
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      PixelRef a = m_selection_set[i];
+   for (auto& sel: m_selection_set) {
+      PixelRef a = sel;
       mergePixels(a,a);
    }
    clearSel();

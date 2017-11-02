@@ -24,6 +24,7 @@
 #include "genlib/stringutils.h"
 #include "salalib/importtypedefs.h"
 #include "genlib/bspnode.h"
+#include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -432,7 +433,7 @@ protected:
    bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
-   std::vector<int> m_selection_set;   // note: uses rowids not keys
+   std::set<int> m_selection_set;   // note: uses rowids not keys
 public:
    // Selection
    bool isSelected() const
@@ -441,9 +442,9 @@ public:
    bool setCurSel(const std::vector<int> &selset, bool add = false );
    bool setCurSelDirect( const std::vector<int>& selset, bool add = false );
    bool clearSel();
-   std::vector<int>& getSelSet()
+   std::set<int>& getSelSet()
    { return m_selection_set; }
-   const std::vector<int>& getSelSet() const
+   const std::set<int>& getSelSet() const
    { return m_selection_set; }
    size_t getSelCount()
    { return m_selection_set.size(); }

@@ -2658,8 +2658,8 @@ void QGraphDoc::OnBinDistances()
 
 void QGraphDoc::OnShowBinDistances() 
 {
-   std::vector<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
-   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(a.front());
+   std::set<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
+   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(*a.begin());
    QString all;
    for (int i = 0; i < 32; i++) {
       QString blah = QString(tr("%2d: %f\n")).arg(i).arg(p.getBinDistance(i));

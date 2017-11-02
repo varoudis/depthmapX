@@ -551,9 +551,9 @@ int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
    bool bounds_good = true;
    PixelRefVector selset;
    Point2f offset = Point2f(pointmap.getSpacing()/2,pointmap.getSpacing()/2);
-   for (size_t i = 0; i < pointmap.getSelSet().size(); i++) {
-      selset.push_back(pointmap.getSelSet().at(i));
-      if (!m_region.contains_touch(pointmap.depixelate(selset[i])-offset) || !m_region.contains_touch(pointmap.depixelate(selset[i])+offset)) {
+   for (auto &sel: pointmap.getSelSet()) {
+      selset.push_back(sel);
+      if (!m_region.contains_touch(pointmap.depixelate(sel)-offset) || !m_region.contains_touch(pointmap.depixelate(sel)+offset)) {
          bounds_good = false;
       }
    }
@@ -1036,8 +1036,8 @@ bool ShapeMap::removeSelected()
 
    // pray that the selection set is in order! 
    // (it should be: code currently uses add() throughout)
-   for (size_t i = m_selection_set.size() - 1; i != paftl::npos; i--) {
-      removeShape(m_shapes.key(m_selection_set[i]));
+   for (auto &sel: m_selection_set) {
+      removeShape(m_shapes.key(sel));
    }
    m_selection_set.clear();
    m_selection = false;
@@ -2481,8 +2481,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       }
       if (index != -1) {
          // relies on indices of shapes and attributes being aligned
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) == m_selection_set.end()) {
-            m_selection_set.push_back(index);
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes.value(index).m_selected = true;
@@ -2507,8 +2506,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       // actually probably often faster to set flag and later record list:
       for (size_t x = 0; x < m_shapes.size(); x++) {
          if (m_shapes.value(x).m_selected) {
-             if (std::find(m_selection_set.begin(), m_selection_set.end(), x) == m_selection_set.end()) {
-               m_selection_set.push_back(x);
+             if(m_selection_set.insert(x).second) {
                m_attributes.selectRowByIndex(x);
             }
          }
@@ -2528,8 +2526,7 @@ bool ShapeMap::setCurSel(const std::vector<int>& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       size_t index = m_shapes.searchindex(selset[i]);  // relies on aligned indices for attributes and shapes
       if (index != paftl::npos) {
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), int(index)) == m_selection_set.end()) {
-            m_selection_set.push_back(int(index));
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(int(index));
          }
          m_shapes[index].m_selected = true;
@@ -2549,8 +2546,7 @@ bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       int index = selset[i];  // relies on aligned indices for attributes and shapes
       if (index != -1) {
-         if (std::find(m_selection_set.begin(), m_selection_set.end(), index) == m_selection_set.end()) {
-            m_selection_set.push_back(index);
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes[index].m_selected = true;
@@ -2567,8 +2563,8 @@ bool ShapeMap::clearSel()
    if (m_selection_set.size()) {
       m_attributes.deselectAll();
       m_selection = false;
-      for (size_t i = 0; i < m_selection_set.size(); i++) {
-         m_shapes.value(m_selection_set[i]).m_selected = false;
+      for (auto& sel: m_selection_set) {
+         m_shapes.value(sel).m_selected = false;
       }
       m_selection_set.clear();
    }
@@ -2579,9 +2575,8 @@ QtRegion ShapeMap::getSelBounds()
 {
    QtRegion r;
    if (m_selection_set.size()) {
-      r = m_shapes.value(m_selection_set[0]).getBoundingBox();
-      for (size_t i = 1; i < m_selection_set.size(); i++) {
-         r = runion(r, m_shapes.value(m_selection_set[i]).getBoundingBox());
+       for (auto& sel: m_selection_set) {
+         r = runion(r, m_shapes.value(sel).getBoundingBox());
       }
    }
    return r;
@@ -3194,7 +3189,7 @@ bool ShapeMap::linkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    // note: uses rowid not key
    int index2 = pointInPoly(p);
    if (index2 == -1) {
@@ -3279,7 +3274,7 @@ bool ShapeMap::unlinkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    int index2 = pointInPoly(p);
    if (index2 == -1) {
       // try looking for a polyline instead

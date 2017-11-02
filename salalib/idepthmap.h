@@ -78,6 +78,7 @@
 #define DLL_DEPTHMAP_VERSION 10.04
 
 #include <math.h>
+#include <set>
 // Windows math.h does not define M_PI
 #define DLL_PI 3.1415926535897932384626433832795
 
@@ -180,7 +181,7 @@ protected:
    // this is the main iterator, it is used for all getPoint... functions
    int m_cursor_point;
    // secondary iterator for selected points
-   int m_cursor_selected_point;
+   std::set<int>::iterator m_cursor_selected_point;
 public:
    // if you know the id, you can move the cursor to this point:
    void setCursorPoint(int id)
@@ -272,7 +273,7 @@ protected:
    // this is the main iterator, it is used for all getShape... functions
    int m_cursor_shape;
    // secondary iterator for selected shape
-   int m_cursor_selected_shape;
+   std::set<int>::iterator m_cursor_selected_shape;
 public:
    // IDrawingMap is for drawing without attributes
    // IDataMap is for map with attributes

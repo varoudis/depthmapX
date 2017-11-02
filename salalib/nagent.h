@@ -189,7 +189,7 @@ struct AgentProgram
 
 struct AgentSet : public AgentProgram, public prefvec<Agent>
 {
-   std::vector<int> m_release_locations;
+   std::set<int> m_release_locations;
    int m_release_locations_seed = 0;
    double m_release_rate;
    int m_lifetime;

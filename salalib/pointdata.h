@@ -21,6 +21,7 @@
 #include "genlib/exceptions.h"
 #include "vertex.h"
 #include <vector>
+#include <set>
 
 class MetaGraph;
 class PointMap;
@@ -354,7 +355,7 @@ protected:
    enum { NO_SELECTION = 0, SINGLE_SELECTION = 1, COMPOUND_SELECTION = 2, LAYER_SELECTION = 4, OVERRIDE_SELECTION = 8 };
    int m_selection;
    bool m_pinned_selection;
-   std::vector<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
+   std::set<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
    mutable PixelRef s_bl; 
    mutable PixelRef s_tr;
 public:
@@ -369,9 +370,9 @@ public:
    //bool togglePin();
    //bool convertSelToDataObject( MetaGraph& meta_graph );
    // Note: passed by ref, use with care in multi-threaded app
-   std::vector<int>& getSelSet()
+   std::set<int>& getSelSet()
       { return m_selection_set; }
-   const std::vector<int>& getSelSet() const
+   const std::set<int>& getSelSet() const
       { return m_selection_set; }
    //
    PixelRefVector getLayerPixels(int layer);

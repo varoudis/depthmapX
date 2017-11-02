@@ -346,14 +346,14 @@ public:
          m_shape_graphs.getDisplayedMap().setCurSel(selset,add);
       else // if (m_view_class & VIEWDATA) 
          m_data_maps.getDisplayedMap().setCurSel(selset,add); }
-   std::vector<int>& getSelSet()
+   std::set<int>& getSelSet()
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
          return m_data_maps.getDisplayedMap().getSelSet(); }
-   const std::vector<int>& getSelSet() const
+   const std::set<int>& getSelSet() const
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
