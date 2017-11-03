@@ -17,11 +17,21 @@ struct TessContext
     std::vector< GLdouble* > combined;
 };
 
+#ifdef _WIN32
 void __stdcall tess_begin( GLenum ) {}
 void __stdcall tess_edgeFlag( GLboolean ) {}
 void __stdcall tess_end() {}
+#else
+void tess_begin( GLenum ) {}
+void tess_edgeFlag( GLboolean ) {}
+void tess_end() {}
+#endif
 
+#ifdef _WIN32
 void __stdcall tess_vertex
+#else
+void tess_vertex
+#endif
     (
     void*           data,
     TessContext*    ctx
@@ -31,7 +41,11 @@ void __stdcall tess_vertex
     ctx->pts.push_back( TessContext::Point( coord[0], coord[1] ) );
 }
 
+#ifdef _WIN32
 void __stdcall tess_combine
+#else
+void tess_combine
+#endif
     (
     GLdouble        coords[3],
     void*           vertex_data[4],
