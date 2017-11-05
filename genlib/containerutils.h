@@ -18,11 +18,18 @@
 
 namespace depthmapX {
 
-template<class T>
-void findAndErase(std::vector<T> vec, T element) {
+template<typename T>
+void findAndErase(std::vector<T> &vec, T element) {
     auto it = std::find(vec.begin(), vec.end(), element);
     if(it != vec.end())
         vec.erase(it);
+}
+
+template<typename T>
+void addIfNotExists(std::vector<T> &vec, T element) {
+    auto it = std::find(vec.begin(), vec.end(), element);
+    if(it == vec.end())
+        vec.push_back(element);
 }
 
 }
