@@ -236,7 +236,7 @@ void ShapeMap::init(int size, const QtRegion &r)
    }
    m_rows = __min(__max(20,(int)sqrt((double)size)),32768);
    m_cols = __min(__max(20,(int)sqrt((double)size)),32768);
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = r;
    }
    else {
@@ -643,7 +643,7 @@ bool ShapeMap::convertPointsToPolys(double poly_radius, bool selected_only)
          // construct a poly from the point:
          Point2f p = m_shapes[i].getCentroid();
          //
-         if (region.isNull()) {
+         if (region.atZero()) {
             region = QtRegion(p,p);
          }
          // replace with a polygon:
@@ -962,7 +962,7 @@ int ShapeMap::shapeEnd(bool open)
       return -1;
    }
 
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = QtRegion(m_temppoints[0],m_temppoints[0]);
    }
    for (int i = 0; i < len; i++) {

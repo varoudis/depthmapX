@@ -174,7 +174,7 @@ namespace depthmapX {
             QtRegion region;
 
             for(auto& point: points) {
-                if(region.isNull()) {
+                if(region.atZero()) {
                     region = point;
                 } else {
                     region = runion(region, point);
@@ -194,7 +194,7 @@ namespace depthmapX {
             QtRegion region;
 
             for(auto& line: lines) {
-                if(region.isNull()) {
+                if(region.atZero()) {
                     region = line;
                 } else {
                     region = runion(region, line);

@@ -65,7 +65,7 @@ public:
       { x = 0.0; y = 0.0; }
    Point2f(double a, double b)
       { x = a; y = b; }
-   bool isNull() const
+   bool atZero() const
 //      { return x == P2DNULL || y == P2DNULL; }
       { return x == 0.0 && y == 0.0; }
    void normalScale( const QtRegion& );  // inline function: below region
@@ -346,8 +346,8 @@ public:
    { if (p.x < bottom_left.x) bottom_left.x = p.x; if (p.x > top_right.x) top_right.x = p.x;
      if (p.y < bottom_left.y) bottom_left.y = p.y; if (p.y > top_right.y) top_right.y = p.y; }
    //
-   bool isNull() const
-   { return bottom_left.isNull() || top_right.isNull(); }
+   bool atZero() const
+   { return bottom_left.atZero() || top_right.atZero(); }
    //
    Point2f getEdgeUPoint(const EdgeU& eu);
    EdgeU getCutEdgeU(const Point2f& inside, const Point2f& outside);

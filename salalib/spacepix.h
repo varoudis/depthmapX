@@ -451,7 +451,7 @@ void SpacePixelGroup<T>::makeViewportShapes( const QtRegion& viewport ) const
    for (size_t i = prefvec<T>::size() - 1; i != paftl::npos; i--) {
       if (prefvec<T>::at(i).isShown()) {
          m_current_layer = (int) i;
-         prefvec<T>::at(i).makeViewportShapes( (viewport.isNull() ? m_region : viewport) );
+         prefvec<T>::at(i).makeViewportShapes( (viewport.atZero() ? m_region : viewport) );
       }
    }
 }

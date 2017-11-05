@@ -216,7 +216,7 @@ void QGraphDoc::OnLayerNew()
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();
-      if (r.isNull()) {
+      if (r.atZero()) {
          r = QtRegion(Point2f(-50.0,-50.0),Point2f(50.0,50.0));
       }
       map->init(0,r);
