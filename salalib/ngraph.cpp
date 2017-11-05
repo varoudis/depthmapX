@@ -23,6 +23,7 @@
 #include <salalib/pointdata.h>
 #include <salalib/ngraph.h>
 #include "genlib/legacyconverters.h"
+#include "genlib/containerutils.h"
 
 void Node::make(const PixelRef pix, PixelRefVector *bins, float *bin_far_dists, int q_octants)
 {
@@ -187,9 +188,7 @@ void Node::contents(PixelRefVector& hood) const
 {
    first();
    while (!is_tail()) {
-      if(std::find(hood.begin(), hood.end(), cursor()) == hood.end()) {
-          hood.push_back(cursor());
-      }
+      depthmapX::addIfNotExists(hood, cursor());
       next();
    }
 }
@@ -406,9 +405,7 @@ void Bin::contents(PixelRefVector& hood)
 {
    first();
    while (!is_tail()) {
-      if(std::find(hood.begin(), hood.end(), m_curpix) == hood.end()) {
-          hood.push_back(m_curpix);
-      }
+      depthmapX::addIfNotExists(hood, m_curpix);
       next();
    }
 }

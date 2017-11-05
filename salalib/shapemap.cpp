@@ -28,6 +28,7 @@
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
+#include "genlib/containerutils.h"
 
 #include <stdexcept>
 // for mapinfo interface
@@ -2251,14 +2252,10 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
                   size_t shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
                   SalaShape& poly = m_shapes[shapeindex];
                   if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) {
-                     if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
-                        bufferset.push_back(int(shapeindex));
-                     }
+                     depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   else if (dist(pt,poly.getLine()) < radius) { // if poly is line
-                      if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
-                         bufferset.push_back(int(shapeindex));
-                      }
+                      depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
                }
@@ -2271,9 +2268,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
                      SalaShape& poly = m_shapes[shapeindex];
                      Line li( poly[q], poly[(q+1)%poly.size()] );
                      if (dist(pt,li) < radius) {
-                         if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
-                            bufferset.push_back(int(shapeindex));
-                         }
+                         depthmapX::addIfNotExists(bufferset, int(shapeindex));
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,q),paftl::ADD_HERE);
                   }
@@ -2289,9 +2284,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
       ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
           int shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
-          if(std::find(bufferset.begin(), bufferset.end(), int(shapeindex)) == bufferset.end()) {
-             bufferset.push_back(shapeindex);
-          }
+          depthmapX::addIfNotExists(bufferset, shapeindex);
       }
    }
    return bufferset.size();
