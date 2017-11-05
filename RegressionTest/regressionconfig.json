@@ -57,7 +57,7 @@
             }
         },
         "vga_angular": {
-            "infile": "../../../testdata/gallery_connected.graph",
+            "infile": "../../../testdata/turns_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
             "extraArgs": {
@@ -65,7 +65,7 @@
             }
         },
         "vga_metric": {
-            "infile": "../../../testdata/gallery_connected.graph",
+            "infile": "../../../testdata/turns_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
             "extraArgs": {
