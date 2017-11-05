@@ -174,7 +174,11 @@ namespace depthmapX {
             QtRegion region;
 
             for(auto& point: points) {
-                region = runion(region, point);
+                if(region.isNull()) {
+                    region = point;
+                } else {
+                    region = runion(region, point);
+                }
             }
 
             shapeMap.init(points.size(),region);
@@ -190,7 +194,11 @@ namespace depthmapX {
             QtRegion region;
 
             for(auto& line: lines) {
-                region = runion(region, line);
+                if(region.isNull()) {
+                    region = line;
+                } else {
+                    region = runion(region, line);
+                }
             }
 
             shapeMap.init(lines.size(),region);
