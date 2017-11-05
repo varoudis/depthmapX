@@ -3096,12 +3096,13 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
             // note that m_misc is used in a different manner to analyseGraph / PointDepth
             // here it marks the node as used in calculation only
 
-            pqvector<MetricTriple> search_list;
-            search_list.add(MetricTriple(0.0f,curs,NoPixel));
+            std::set<MetricTriple> search_list;
+            search_list.insert(MetricTriple(0.0f,curs,NoPixel));
             int level = 0;
             while (search_list.size()) {
-               MetricTriple here = search_list[0];
-               search_list.remove_at(0);
+               std::set<MetricTriple>::iterator it = search_list.begin();
+               MetricTriple here = *it;
+               search_list.erase(it);
                if (options.radius != -1.0 && (here.dist * m_spacing) > options.radius) {
                   break;
                }
@@ -3169,10 +3170,10 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
    }
 
    // in order to calculate Penn angle, the MetricPair becomes a metric triple...
-   pqvector<MetricTriple> search_list; // contains root point
+   std::set<MetricTriple> search_list; // contains root point
 
    for (auto& sel: m_selection_set) {
-      search_list.add(MetricTriple(0.0f, sel, NoPixel));
+      search_list.insert(MetricTriple(0.0f,sel,NoPixel));
    }
 
    // note that m_misc is used in a different manner to analyseGraph / PointDepth
@@ -3180,8 +3181,9 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
    int count = 0;
    int level = 0;
    while (search_list.size()) {
-      MetricTriple here = search_list[0];
-      search_list.remove_at(0);
+      std::set<MetricTriple>::iterator it = search_list.begin();
+      MetricTriple here = *it;
+      search_list.erase(it);
       Point& p = getPoint(here.pixel);
       // nb, the filled check is necessary as diagonals seem to be stored with 'gaps' left in
       if (p.filled() && p.m_misc != ~0) {
@@ -3285,13 +3287,14 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
             // note that m_misc is used in a different manner to analyseGraph / PointDepth
             // here it marks the node as used in calculation only
 
-            pqvector<AngularTriple> search_list;
-            search_list.add(AngularTriple(0.0f,curs,NoPixel));
+            std::set<AngularTriple> search_list;
+            search_list.insert(AngularTriple(0.0f,curs,NoPixel));
             getPoint(curs).m_cumangle = 0.0f;
             int level = 0;
             while (search_list.size()) {
-               AngularTriple here = search_list[0];
-               search_list.remove_at(0);
+               std::set<AngularTriple>::iterator it = search_list.begin();
+               AngularTriple here = *it;
+               search_list.erase(it);
                if (options.radius != -1.0 && here.angle > options.radius) {
                   break;
                }
@@ -3351,10 +3354,10 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
       getPoint(pix).m_cumangle = -1.0f;
    }
 
-   pqvector<AngularTriple> search_list; // contains root point
+   std::set<AngularTriple> search_list; // contains root point
 
    for (auto& sel: m_selection_set) {
-      search_list.add(AngularTriple(0.0f, sel, NoPixel));
+      search_list.insert(AngularTriple(0.0f,sel,NoPixel));
       getPoint(sel).m_cumangle = 0.0f;
    }
 
@@ -3363,8 +3366,9 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
    int count = 0;
    int level = 0;
    while (search_list.size()) {
-      AngularTriple here = search_list[0];
-      search_list.remove_at(0);
+      std::set<AngularTriple>::iterator it = search_list.begin();
+      AngularTriple here = *it;
+      search_list.erase(it);
       Point& p = getPoint(here.pixel);
       // nb, the filled check is necessary as diagonals seem to be stored with 'gaps' left in
       if (p.filled() && p.m_misc != ~0) {
