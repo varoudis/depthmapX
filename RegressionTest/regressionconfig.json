@@ -56,6 +56,23 @@
                 "-vm": "isovist"
             }
         },
+        "vga_angular": {
+            "infile": "../../../testdata/turns_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "angular"
+            }
+        },
+        "vga_metric": {
+            "infile": "../../../testdata/turns_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "metric",
+                "-vr": "n"
+            }
+        },
         "vga_thru_vision": {
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
