@@ -530,7 +530,7 @@ void QDepthmapView::mouseMoveEvent(QMouseEvent *e)
                ShapeMap& map = graph->getLineLayer(i,j);
                if (map.isShown()) {
                   Point2f px = map.getClosestVertex(p);
-                  if (!px.isNull() && (d == -1 || dist(p,px) < d)) {
+                  if (!px.atZero() && (d == -1 || dist(p,px) < d)) {
                      d = dist(p,px);
                      m_snap_point = px;
                   }

@@ -213,7 +213,7 @@ IShapeMap *IGraphOrganizer::addShapeMap(const char *name, int type)
       
       // don't know why, but it looks like we need to do this here:
       QtRegion r = m_graph->getBoundingBox();
-      if (r.isNull()) {
+      if (r.atZero()) {
          r = QtRegion(Point2f(-50.0,-50.0),Point2f(50.0,50.0));
       }
       p_map->init(0,r);

@@ -611,7 +611,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {
@@ -1249,7 +1249,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {
@@ -1564,7 +1564,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {

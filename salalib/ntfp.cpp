@@ -67,7 +67,7 @@ int NtfPoint::parse(const std::string& token, bool secondhalf /* = false */)
 
 void NtfMap::fitBounds(const Line& li)
 {
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = li;
    }
    else {
