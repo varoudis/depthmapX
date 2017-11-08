@@ -189,9 +189,7 @@ void AgentSet::init(int agent, int trail_num)
 {
    if (m_release_locations.size()) {
       int which = pafrand() % m_release_locations.size();
-      std::set<int>::iterator it = m_release_locations.begin();
-      std::advance(it, which);
-      at(agent).onInit( *it, trail_num );
+      at(agent).onInit( m_release_locations[which], trail_num );
    }
    else {
       const PointMap& map = at(agent).getPointMap();
