@@ -28,6 +28,7 @@
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
+#include "genlib/containerutils.h"
 
 #include <stdexcept>
 // for mapinfo interface
@@ -549,11 +550,11 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
 int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
 {
    bool bounds_good = true;
-   PixelRefList selset;
+   PixelRefVector selset;
    Point2f offset = Point2f(pointmap.getSpacing()/2,pointmap.getSpacing()/2);
-   for (size_t i = 0; i < pointmap.getSelSet().size(); i++) {
-      selset.push_back(pointmap.getSelSet().at(i));
-      if (!m_region.contains_touch(pointmap.depixelate(selset[i])-offset) || !m_region.contains_touch(pointmap.depixelate(selset[i])+offset)) {
+   for (auto &sel: pointmap.getSelSet()) {
+      selset.push_back(sel);
+      if (!m_region.contains_touch(pointmap.depixelate(sel)-offset) || !m_region.contains_touch(pointmap.depixelate(sel)+offset)) {
          bounds_good = false;
       }
    }
@@ -1036,8 +1037,8 @@ bool ShapeMap::removeSelected()
 
    // pray that the selection set is in order! 
    // (it should be: code currently uses add() throughout)
-   for (size_t i = m_selection_set.size() - 1; i != paftl::npos; i--) {
-      removeShape(m_shapes.key(m_selection_set[i]));
+   for (auto &sel: m_selection_set) {
+      removeShape(m_shapes.key(sel));
    }
    m_selection_set.clear();
    m_selection = false;
@@ -1229,7 +1230,7 @@ void ShapeMap::makePolyPixels(int polyref)
          else {
             poly.m_region = runion(poly.m_region,li);
          }
-         PixelRefList pixels = pixelateLine(li);
+         PixelRefVector pixels = pixelateLine(li);
          // debug
          // int duplicate_shaperefs = 0;
          // end debug
@@ -1316,7 +1317,7 @@ void ShapeMap::makePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList pixels = pixelateLine(poly.m_region);
+            PixelRefVector pixels = pixelateLine(poly.m_region);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1336,7 +1337,7 @@ void ShapeMap::makePolyPixels(int polyref)
             else {
                poly.m_region = runion(poly.m_region,li);
             }
-            PixelRefList pixels = pixelateLine(li);
+            PixelRefVector pixels = pixelateLine(li);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1443,7 +1444,7 @@ void ShapeMap::removePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList list = pixelateLine(poly.m_region);
+            PixelRefVector list = pixelateLine(poly.m_region);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1456,7 +1457,7 @@ void ShapeMap::removePolyPixels(int polyref)
          for (size_t k = 0; k < poly.size() - 1; k++) {
             size_t nextk = (k + 1);
             Line li(poly[k],poly[nextk]);
-            PixelRefList list = pixelateLine(li);
+            PixelRefVector list = pixelateLine(li);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1622,7 +1623,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
    pointInPolyList(li.end(),shapeindexlist);
 
    // only now pixelate and test for any other shapes:
-   PixelRefList list = pixelateLine(li);
+   PixelRefVector list = pixelateLine(li);
    for (size_t i = 0; i < list.size(); i++) {
       PixelRef pix = list[i];
       if (includes(pix)) {
@@ -2121,7 +2122,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
    if (li.width() > li.height()) {
       axis = XAXIS;
    }
-   PixelRefList pixels = pixelateLine(li);
+   PixelRefVector pixels = pixelateLine(li);
    pvector<IntPair> tested;
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
@@ -2233,7 +2234,7 @@ void ShapeMap::cutLine(Line& li) //, short dir)
 
 // buffering type function, just for points for the time being
 
-int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
+int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& bufferset)
 {
    // first, get all the pixels within the radius (using square as simpler)
    PixelRef bl = pixelate( Point2f(pt.x - radius, pt.y - radius) );
@@ -2250,11 +2251,11 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                if (tested.searchindex(IntPair(shaperef.m_shape_ref,-1)) == paftl::npos) {
                   size_t shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
                   SalaShape& poly = m_shapes[shapeindex];
-                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) { 
-                     bufferset.add(int(shapeindex));
+                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) {
+                     depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   else if (dist(pt,poly.getLine()) < radius) { // if poly is line
-                     bufferset.add(int(shapeindex));
+                      depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
                }
@@ -2267,7 +2268,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                      SalaShape& poly = m_shapes[shapeindex];
                      Line li( poly[q], poly[(q+1)%poly.size()] );
                      if (dist(pt,li) < radius) {
-                        bufferset.add(int(shapeindex));
+                         depthmapX::addIfNotExists(bufferset, int(shapeindex));
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,q),paftl::ADD_HERE);
                   }
@@ -2282,7 +2283,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
    for (size_t k = 0; k < m_pixel_shapes[centre.x][centre.y].size(); k++) {
       ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
-         bufferset.add( m_shapes.searchindex(shaperef.m_shape_ref) );
+          int shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
+          depthmapX::addIfNotExists(bufferset, shapeindex);
       }
    }
    return bufferset.size();
@@ -2347,7 +2349,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
 
    int num_intersections = 0;
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       pqvector<ShapeRef>& shapes = m_pixel_shapes[ list[i].x ][ list[i].y ];
@@ -2472,7 +2474,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       }
       if (index != -1) {
          // relies on indices of shapes and attributes being aligned
-         if (m_selection_set.add(index) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes.value(index).m_selected = true;
@@ -2497,7 +2499,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       // actually probably often faster to set flag and later record list:
       for (size_t x = 0; x < m_shapes.size(); x++) {
          if (m_shapes.value(x).m_selected) {
-            if (m_selection_set.add(x) != -1) {
+             if(m_selection_set.insert(x).second) {
                m_attributes.selectRowByIndex(x);
             }
          }
@@ -2508,7 +2510,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
 }
 
 // this version is used by setSelSet in MetaGraph, ultimately called from CTableView and PlotView
-bool ShapeMap::setCurSel(const pvecint& selset, bool add)
+bool ShapeMap::setCurSel(const std::vector<int>& selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2517,7 +2519,7 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       size_t index = m_shapes.searchindex(selset[i]);  // relies on aligned indices for attributes and shapes
       if (index != paftl::npos) {
-         if (m_selection_set.add(int(index)) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(int(index));
          }
          m_shapes[index].m_selected = true;
@@ -2528,7 +2530,7 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
 }
 
 // this version is used when setting a selection set via the scripting language
-bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
+bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2537,7 +2539,7 @@ bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       int index = selset[i];  // relies on aligned indices for attributes and shapes
       if (index != -1) {
-         if (m_selection_set.add(index) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes[index].m_selected = true;
@@ -2554,8 +2556,8 @@ bool ShapeMap::clearSel()
    if (m_selection_set.size()) {
       m_attributes.deselectAll();
       m_selection = false;
-      for (size_t i = 0; i < m_selection_set.size(); i++) {
-         m_shapes.value(m_selection_set[i]).m_selected = false;
+      for (auto& sel: m_selection_set) {
+         m_shapes.value(sel).m_selected = false;
       }
       m_selection_set.clear();
    }
@@ -2566,9 +2568,8 @@ QtRegion ShapeMap::getSelBounds()
 {
    QtRegion r;
    if (m_selection_set.size()) {
-      r = m_shapes.value(m_selection_set[0]).getBoundingBox();
-      for (size_t i = 1; i < m_selection_set.size(); i++) {
-         r = runion(r, m_shapes.value(m_selection_set[i]).getBoundingBox());
+       for (auto& sel: m_selection_set) {
+         r = runion(r, m_shapes.value(sel).getBoundingBox());
       }
    }
    return r;
@@ -3181,7 +3182,7 @@ bool ShapeMap::linkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    // note: uses rowid not key
    int index2 = pointInPoly(p);
    if (index2 == -1) {
@@ -3266,7 +3267,7 @@ bool ShapeMap::unlinkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    int index2 = pointInPoly(p);
    if (index2 == -1) {
       // try looking for a polyline instead

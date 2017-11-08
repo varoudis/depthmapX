@@ -21,6 +21,7 @@
 #include "genlib/exceptions.h"
 #include "vertex.h"
 #include <vector>
+#include <set>
 
 class MetaGraph;
 class PointMap;
@@ -233,7 +234,7 @@ protected:
    bool m_processed;
    bool m_boundarygraph;
    int m_undocounter;
-   pqvector<PixelRefPair> m_merge_lines;
+   std::vector<PixelRefPair> m_merge_lines;
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
@@ -300,7 +301,7 @@ public:
    bool sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist );
    bool dynamicSparkGraph2();
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
-   bool sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int depth, PixelRef curs);
+   bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
    bool binDisplay(Communicator *comm);
@@ -353,7 +354,7 @@ public:
        }
    }
 protected:
-   int expand( const PixelRef p1, const PixelRef p2, PixelRefList& list, int filltype );
+   int expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype );
    //
    //void walk( PixelRef& start, int steps, Graph& graph, 
    //           int parity, int dominant_axis, const int grad_pair[] );
@@ -363,7 +364,7 @@ protected:
    enum { NO_SELECTION = 0, SINGLE_SELECTION = 1, COMPOUND_SELECTION = 2, LAYER_SELECTION = 4, OVERRIDE_SELECTION = 8 };
    int m_selection;
    bool m_pinned_selection;
-   pvecint m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
+   std::set<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
    mutable PixelRef s_bl; 
    mutable PixelRef s_tr;
 public:
@@ -373,18 +374,18 @@ public:
       { return m_pinned_selection; }
    bool clearSel(); // clear the current selection
    bool setCurSel( QtRegion& r, bool add = false ); // set current selection
-   bool setCurSel( const pvecint& selset, bool add = false );
+   bool setCurSel(const std::vector<int> &selset, bool add = false );
    bool overrideSelPixel(PixelRef pix);    // set a pixel to selected: careful!
    //bool togglePin();
    //bool convertSelToDataObject( MetaGraph& meta_graph );
    // Note: passed by ref, use with care in multi-threaded app
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
       { return m_selection_set; }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
       { return m_selection_set; }
    //
-   PixelRefList getLayerPixels(int layer);
-   PixelRefList getDataObjectPixels(int layer, int object);
+   PixelRefVector getLayerPixels(int layer);
+   PixelRefVector getDataObjectPixels(int layer, int object);
    //
    // Attribute functionality
 protected:
