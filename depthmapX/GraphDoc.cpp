@@ -1527,7 +1527,8 @@ void QGraphDoc::OnToolsAgentRun()
       eng.tail().m_sel_type = AgentProgram::SEL_OCCLUSION + (dlg.m_occlusion - 2);
    }
    if (dlg.m_release_location == 1) {
-      eng.tail().m_release_locations = m_meta_graph->getSelSet();
+      std::set<int> selected = m_meta_graph->getSelSet();
+      std::copy(selected.begin(), selected.end(), std::back_inserter(eng.tail().m_release_locations));;
    }
    else {
       eng.tail().m_release_locations.clear();
@@ -2584,7 +2585,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       else {
          // just check you really are viewing the layers:
          bool retvar;
-         pvecint selset;
+         std::vector<int> selset;
          if (dlg.m_selection_only) {
             retvar = proggy.runselect(selset,pointmap ? pointmap->getSelSet() : shapemap->getSelSet());
          }
@@ -2751,8 +2752,8 @@ void QGraphDoc::OnBinDistances()
 
 void QGraphDoc::OnShowBinDistances() 
 {
-   pvecint a = m_meta_graph->getDisplayedPointMap().getSelSet();
-   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(a.head());
+   std::set<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
+   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(*a.begin());
    QString all;
    for (int i = 0; i < 32; i++) {
       QString blah = QString(tr("%2d: %f\n")).arg(i).arg(p.getBinDistance(i));

@@ -141,7 +141,7 @@ inline double angle(const PixelRef a, const PixelRef b, const PixelRef c)
 }
 
 // Now sizeof(PixelRef) == sizeof(int) better stored directly:
-typedef pvector<PixelRef> PixelRefList;
+typedef std::vector<PixelRef> PixelRefVector;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -191,9 +191,9 @@ public:
    PixelBase() {;}
    // constrain is constrain to bounding box (i.e., in row / col bounds)
    virtual PixelRef pixelate(const Point2f&, bool constrain = true, int scalefactor = 1 ) const = 0;
-   PixelRefList pixelateLine( Line l, int scalefactor = 1 ) const;
-   PixelRefList pixelateLineTouching( Line l, double tolerance ) const;
-   PixelRefList quickPixelateLine(PixelRef p, PixelRef q);
+   PixelRefVector pixelateLine( Line l, int scalefactor = 1 ) const;
+   PixelRefVector pixelateLineTouching( Line l, double tolerance ) const;
+   PixelRefVector quickPixelateLine(PixelRef p, PixelRef q);
    bool includes(const PixelRef pix) const {
       return (pix.x >= 0 && pix.x < m_cols && pix.y >= 0 && pix.y < m_rows);
    }
@@ -293,7 +293,7 @@ public:
    void construct(const SpacePixel& spacepixel);
    //
    PixelRef pixelate( const Point2f& p, bool constrain = true, int = 1 ) const;
-//   PixelRefList pixelate( const Line& l ) const;
+//   PixelRefVector pixelate( const Line& l ) const;
    //
    void initLines(int size, const Point2f& min, const Point2f& max, double density = 1.0);
    void reinitLines(double density);   // just reinitialises pixel lines, keeps lines, current ref and test setting

@@ -470,7 +470,7 @@ bool MetaGraph::moveSelShape(const Line& line)
          return false;
       }
       // note, selection sets currently store rowids not uids, but moveShape sensibly works off uid:
-      int rowid = map.getSelSet()[0];
+      int rowid = *map.getSelSet().begin();
       retvar = map.moveShape(map.getIndex(rowid),line);
       if (retvar) {
          map.clearSel();
@@ -485,7 +485,7 @@ bool MetaGraph::moveSelShape(const Line& line)
          return false;
       }
       // note, selection sets currently store rowids not uids, but moveShape sensibly works off uid:
-      int rowid = map.getSelSet()[0];
+      int rowid = *map.getSelSet().begin();
       retvar = map.moveShape(map.getIndex(rowid),line);
       if (retvar) {
          map.clearSel();
@@ -566,10 +566,10 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
 
    bool first = true;
    if (makeBSPtree(communicator)) {
-      pvecint& selset = map->getSelSet();
+      std::set<int>& selset = map->getSelSet();
       pqmap<int,SalaShape>& shapes = map->getAllShapes();
-      for (size_t i = 0; i < selset.size(); i++) {
-         SalaShape& path = shapes.value(selset[i]);
+      for (auto& sel: selset) {
+         SalaShape& path = shapes.value(sel);
          if (path.isLine() || path.isPolyLine()) {
             if (first) {
                retvar = 1;
@@ -3096,7 +3096,7 @@ int MetaGraph::convertVirtualMem( ifstream& stream, int version )
    pvecint nodes;
    pvecint bins;
 
-   PixelRefList bins_b[32];
+   PixelRefVector bins_b[32];
    static float far_bin_dists[32];
    for (int ii = 0; ii < 32; ii++) {
       far_bin_dists[ii] = 0.0f;

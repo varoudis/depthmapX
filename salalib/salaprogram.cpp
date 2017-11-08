@@ -276,7 +276,7 @@ SalaObj SalaProgram::evaluate()
 // this function is called by depthmapX to run a script to update a column
 // the operation is on a single node / row of the database combination
 
-bool SalaProgram::runupdate(int col, const pvecint& selset)
+bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 {
    AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
@@ -285,8 +285,8 @@ bool SalaProgram::runupdate(int col, const pvecint& selset)
    int& row = m_thisobj.data.graph.node;
    m_col = col;
    if (selset.size()) {
-      for (size_t i = 0; i < selset.size(); i++) {
-         row = selset[i];  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+      for (auto& sel: selset) {
+         row = sel;  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
@@ -336,20 +336,20 @@ bool SalaProgram::runupdate(int col, const pvecint& selset)
 // this function is called by depthmapX to run a script to select values
 // the operation is on a single node / row of the database combination
 
-bool SalaProgram::runselect(pvecint& selsetout, const pvecint& selsetin)
+bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& selsetin)
 {
    AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
    //
    int& row = m_thisobj.data.graph.node;
    if (selsetin.size()) {
-      for (size_t i = 0; i < selsetin.size(); i++) {
-         row = selsetin[i];  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+      for (auto& sel: selsetin) {
+         row = sel;  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
          try {
             SalaObj val = evaluate();
             bool v = val.toBool();   // note, toBool will type check and throw if there's a problem
             if (v) {
-               selsetout.push_back(selsetin[i]);
+               selsetout.push_back(sel);
             }
          }
          catch (SalaError e) {
