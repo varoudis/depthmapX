@@ -394,7 +394,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     m_pDoc.m_meta_graph->getDisplayedPointMap().mergePoints( worldPoint );
                 } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc.m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
-                    const std::set<int>& selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const auto& selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
                         std::set<int>::iterator it = selectedSet.begin();
                         int axRef1 = *it;
@@ -422,7 +422,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                         m_pDoc.SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
                     }
                 } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
-                    const std::set<int> &selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const auto& selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     Point2f selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[*selectedSet.begin()].getCentroid();
                     m_tempFirstPoint = selectionCentre;
                     m_tempSecondPoint = selectionCentre;
@@ -437,7 +437,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             if (selectedCount > 0) {
                 if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc.m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
-                    const std::set<int>& selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const auto& selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
                         std::set<int>::iterator it = selectedSet.begin();
                         int axRef1 = *it;
