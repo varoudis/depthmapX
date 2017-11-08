@@ -40,6 +40,7 @@ SOURCES += \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
+    geometrygenerators.cpp \
     importutils.cpp
 
 HEADERS += \
@@ -69,6 +70,7 @@ HEADERS += \
     gridproperties.h \
     isovistdef.h \
     mgraph_consts.h \
+    geometrygenerators.h \
     importutils.h \
     importtypedefs.h
 

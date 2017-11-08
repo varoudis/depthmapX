@@ -1286,10 +1286,10 @@ bool PointMap::getPointSelected() const
    return false;
 }
 
-PafColor PointMap::getPointColor() const
+PafColor PointMap::getPointColor(PixelRef pixelRef) const
 {
    PafColor color;
-   int state = pointState( cur );
+   int state = pointState( pixelRef );
    if (state & Point::HIGHLIGHT) {
       return PafColor( SALA_HIGHLIGHTED_COLOR ); 
    }
@@ -1299,7 +1299,7 @@ PafColor PointMap::getPointColor() const
    else {
       if (state & Point::FILLED) {
          if (m_processed) {
-            return m_attributes.getDisplayColorByKey( cur );
+            return m_attributes.getDisplayColorByKey( pixelRef );
          }
          else if (state & Point::EDGE) {
             return PafColor( 0x0077BB77 );
@@ -1316,6 +1316,11 @@ PafColor PointMap::getPointColor() const
       }
    }
    return PafColor();   // <- note alpha channel set to transparent - will not be drawn
+}
+
+PafColor PointMap::getCurrentPointColor() const
+{
+    return getPointColor( cur );
 }
 
 /////////////////////////////////////////////////////////////////////////////////
