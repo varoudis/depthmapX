@@ -481,10 +481,10 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
 
     SECTION ("Make sure we get the correct number of merged pixel pairs")
     {
-        const std::vector<PixelRefPair> &pixelPairs = pointMap.getMergedPixelPairs();
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs = pointMap.getMergedPixelPairs();
         REQUIRE(pixelPairs.size() == 1);
-        REQUIRE(pixelPairs[0].a == bottomLeftPixel);
-        REQUIRE(pixelPairs[0].b == topRightPixel);
+        REQUIRE(pixelPairs[0].first == bottomLeftPixel);
+        REQUIRE(pixelPairs[0].second == topRightPixel);
     }
 
     SECTION ("Overwrite the pixelpair by re-merging the first pixel of the pair")
@@ -502,10 +502,10 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
         REQUIRE(!pointMap.isPixelMerged(bottomLeftPixel));
 
         // make sure we get the correct number of merged pixel pairs
-        const std::vector<PixelRefPair> &pixelPairs = pointMap.getMergedPixelPairs();
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs = pointMap.getMergedPixelPairs();
         REQUIRE(pixelPairs.size() == 1);
-        REQUIRE(pixelPairs[0].a == aboveBottomLeftPixel);
-        REQUIRE(pixelPairs[0].b == topRightPixel);
+        REQUIRE(pixelPairs[0].first == aboveBottomLeftPixel);
+        REQUIRE(pixelPairs[0].second == topRightPixel);
     }
 
     SECTION ("Overwrite the pixelpair by re-merging the second pixel of the pair")
@@ -523,10 +523,10 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
         REQUIRE(!pointMap.isPixelMerged(topRightPixel));
 
         // make sure we get the correct number of merged pixel pairs
-        const std::vector<PixelRefPair> &pixelPairs2 = pointMap.getMergedPixelPairs();
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs2 = pointMap.getMergedPixelPairs();
         REQUIRE(pixelPairs2.size() == 1);
-        REQUIRE(pixelPairs2[0].a == bottomLeftPixel);
-        REQUIRE(pixelPairs2[0].b == belowTopRightPixel);
+        REQUIRE(pixelPairs2[0].first == bottomLeftPixel);
+        REQUIRE(pixelPairs2[0].second == belowTopRightPixel);
     }
 
     SECTION ("Merge the same pixel twice to erase the pair")
@@ -538,7 +538,7 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
         REQUIRE(!pointMap.isPixelMerged(topRightPixel));
 
         // make sure we get the correct number of merged pixel pairs
-        const std::vector<PixelRefPair> &pixelPairs3 = pointMap.getMergedPixelPairs();
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs3 = pointMap.getMergedPixelPairs();
         REQUIRE(pixelPairs3.size() == 0);
     }
 }
