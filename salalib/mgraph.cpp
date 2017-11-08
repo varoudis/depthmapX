@@ -73,10 +73,10 @@ MetaGraph::~MetaGraph()
 QtRegion MetaGraph::getBoundingBox() const
 {
    QtRegion bounds = SuperSpacePixel::getRegion();
-   if (bounds.isNull() && ((getState() & MetaGraph::SHAPEGRAPHS) == MetaGraph::SHAPEGRAPHS)) {
+   if (bounds.atZero() && ((getState() & MetaGraph::SHAPEGRAPHS) == MetaGraph::SHAPEGRAPHS)) {
       bounds = m_shape_graphs.getBoundingBox();
    }
-   if (bounds.isNull() && ((getState() & MetaGraph::DATAMAPS) == MetaGraph::DATAMAPS)) {
+   if (bounds.atZero() && ((getState() & MetaGraph::DATAMAPS) == MetaGraph::DATAMAPS)) {
       bounds = m_data_maps.getBoundingBox();
    }
    return bounds;
@@ -1822,9 +1822,16 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
 }
 
 void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
-
-    SuperSpacePixel::tail().m_region = shapeMap.getRegion();
-    SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+    if(SuperSpacePixel::tail().m_region.atZero()) {
+        SuperSpacePixel::tail().m_region = shapeMap.getRegion();
+    } else {
+        SuperSpacePixel::tail().m_region = runion(SuperSpacePixel::tail().m_region, shapeMap.getRegion());
+    }
+    if(SuperSpacePixel::m_region.atZero()) {
+        SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
+    } else {
+        SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+    }
 }
 
 int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,

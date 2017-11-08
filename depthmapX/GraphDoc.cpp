@@ -226,7 +226,7 @@ void QGraphDoc::OnLayerNew()
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();
-      if (r.isNull()) {
+      if (r.atZero()) {
          r = QtRegion(Point2f(-50.0,-50.0),Point2f(50.0,50.0));
       }
       map->init(0,r);
@@ -441,7 +441,7 @@ void QGraphDoc::OnFileImport()
     // if there was something else in the graph after importing. If there was
     // then the view should not be reset, if there wasn't then the view can
     // be reset to point to the newly imported objects
-    bool graphHadNullBoundsBeforeImport = m_meta_graph->getBoundingBox().isNull();
+    bool graphHadNullBoundsBeforeImport = m_meta_graph->getBoundingBox().atZero();
 
    QFilePath filepath(infiles[0]);
    QString ext = filepath.m_ext;

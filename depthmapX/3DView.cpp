@@ -374,7 +374,7 @@ void Q3DView::ReloadLineData()
       for (int i = 0; i < superspacepix.size(); i++) {
          for (int j = 0; j < superspacepix.at(i).size(); j++) {
             if (superspacepix.at(i).at(j).isShown()) {
-               if (m_region.isNull()) {
+               if (m_region.atZero()) {
                   m_region = superspacepix.at(i).at(j).getRegion();
                }
                else {
@@ -452,7 +452,7 @@ void Q3DView::ReloadPointData()
 
    if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessedPoints()) {
       //
-      if (!m_region.isNull()) {
+      if (!m_region.atZero()) {
          GLfloat unit = pDoc->m_meta_graph->getDisplayedPointMap().getSpacing() / m_region.width();
          m_male_template.Init(unit, true);
          m_female_template.Init(unit, false);
