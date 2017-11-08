@@ -20,6 +20,8 @@
 #ifndef __NGRAPH_H__
 #define __NGRAPH_H__
 
+#include <set>
+
 class PointMap;
 struct MetricPair;
 struct MetricTriple;
@@ -63,8 +65,8 @@ public:
    //
    void make(const PixelRefList& pixels, char m_dir);
    void extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark);
-   void extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs);
-   void extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs);
+   void extractMetric(std::set<MetricTriple> &pixels, PointMap *pointdata, const MetricTriple& curs);
+   void extractAngular(std::set<AngularTriple> &pixels, PointMap *pointdata, const AngularTriple& curs);
    //
    int count() const 
    { return m_node_count; }
@@ -116,8 +118,8 @@ public:
    // Note: this function clears the bins as it goes
    void make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, int q_octants);
    void extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark);
-   void extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs);
-   void extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs);
+   void extractMetric(std::set<MetricTriple> &pixels, PointMap *pointdata, const MetricTriple& curs);
+   void extractAngular(std::set<AngularTriple> &pixels, PointMap *pointdata, const AngularTriple& curs);
    bool concaveConnected();
    bool fullyConnected();
    //

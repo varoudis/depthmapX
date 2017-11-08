@@ -3411,6 +3411,19 @@ Line ShapeMap::getNextLinkLine() const
    return Line();
 }
 
+std::vector<SimpleLine> ShapeMap::getAllLinkLines()
+{
+    std::vector<SimpleLine> linkLines;
+    for(size_t i = 0; i < m_links.size(); i++)
+    {
+        linkLines.push_back(SimpleLine(
+                                m_shapes.value(m_links[i].a).getCentroid(),
+                                m_shapes.value(m_links[i].b).getCentroid()
+                                ));
+    }
+    return linkLines;
+}
+
 // note: these functions would need slight work for arbitrary shape overlaps
 
 bool ShapeMap::findNextUnlinkPoint() const
@@ -3429,6 +3442,17 @@ Point2f ShapeMap::getNextUnlinkPoint() const
                                 m_shapes.value(m_unlinks[m_curunlinkpoint].b).getLine(), TOLERANCE_A);
    }
    return Point2f();
+}
+std::vector<Point2f> ShapeMap::getAllUnlinkPoints()
+{
+    std::vector<Point2f> unlinkPoints;
+    for(size_t i = 0; i < m_unlinks.size(); i++)
+    {
+        unlinkPoints.push_back(intersection_point(m_shapes.value(m_unlinks[i].a).getLine(),
+                                                  m_shapes.value(m_unlinks[i].b).getLine(), TOLERANCE_A));
+    }
+    return unlinkPoints;
+
 }
 
 void ShapeMap::outputUnlinkPoints( ofstream& stream, char delim )
@@ -4121,4 +4145,62 @@ void ShapeMap::ozlemSpecial7(ShapeMap& linemap)
 
    m_displayed_attribute = -2;
    setDisplayedAttribute(linerefcol);
+}
+
+std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
+    std::vector<SimpleLine> lines;
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        if (shape.isLine()) {
+            lines.push_back(SimpleLine(shape.getLine()));
+        }
+        else if (shape.isPolyLine() || shape.isPolygon()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                lines.push_back(SimpleLine(shape[n],shape[n+1]));
+            }
+            if (shape.isPolygon()) {
+                lines.push_back(SimpleLine(shape.tail(),shape.head()));
+            }
+        }
+    }
+    return lines;
+}
+
+std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
+    std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
+    const AttributeTable &attributeTable = getAttributeTable();
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        PafColor color(attributeTable.getDisplayColor(k));
+        if (shape.isLine()) {
+            colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
+        }
+        else if (shape.isPolyLine()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape[n],shape[n+1]), color));
+            }
+        }
+    }
+    return colouredLines;
+}
+
+std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
+    std::map<std::vector<Point2f>, PafColor> colouredPolygons;
+    const AttributeTable &attributeTable = getAttributeTable();
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        if (shape.isPolygon()) {
+            std::vector<Point2f> vertices;
+            for (size_t n = 0; n < shape.size(); n++) {
+                vertices.push_back(shape[n]);
+            }
+            vertices.push_back(shape.tail());
+            PafColor colour(attributeTable.getDisplayColor(k));
+            colouredPolygons.insert(std::make_pair(vertices, colour));
+        }
+    }
+    return colouredPolygons;
 }

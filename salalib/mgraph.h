@@ -40,6 +40,8 @@
 #include <salalib/nagent.h>
 #include <salalib/importtypedefs.h>
 
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 class Communicator;
@@ -398,6 +400,7 @@ public:
    int read( const std::string& filename );
    int write( const std::string& filename, int version, bool currentlayer = false);
    //
+   std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
    pqvector<AttrBody> *m_attr_conv_table;
    int convertAttributes( ifstream& stream, int version );

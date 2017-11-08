@@ -21,8 +21,6 @@ SOURCES += \
     axialmap.cpp \
     connector.cpp \
     datalayer.cpp \
-    idepthmap.cpp \
-    idepthmapx.cpp \
     isovist.cpp \
     MapInfoData.cpp \
     mgraph.cpp \
@@ -40,6 +38,7 @@ SOURCES += \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
+    geometrygenerators.cpp \
     importutils.cpp
 
 HEADERS += \
@@ -48,7 +47,6 @@ HEADERS += \
     connector.h \
     datalayer.h \
     fileproperties.h \
-    idepthmapx.h \
     isovist.h \
     MapInfoData.h \
     mgraph.h \
@@ -63,12 +61,12 @@ HEADERS += \
     tigerp.h \
     topomet.h \
     vertex.h \
-    idepthmap.h \
     entityparsing.h \
     linkutils.h \
     gridproperties.h \
     isovistdef.h \
     mgraph_consts.h \
+    geometrygenerators.h \
     importutils.h \
     importtypedefs.h
 

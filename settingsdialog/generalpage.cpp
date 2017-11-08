@@ -23,6 +23,7 @@ GeneralPage::GeneralPage(Settings &settings, QWidget *parent)
     readSettings(settings);
     QGroupBox *configGroup = new QGroupBox(tr("General configuration"));
     QCheckBox *simpleModeCheckBox = new QCheckBox(tr("Simple mode"));
+    simpleModeCheckBox->setToolTip(tr("If enabled, only Integration [HH] will be calulcated (or Visual Integration [HH] for VGA)"));
     simpleModeCheckBox->setChecked(m_simpleVersion);
     connect(simpleModeCheckBox, &QCheckBox::stateChanged, [=] () {m_simpleVersion = !m_simpleVersion;});
 

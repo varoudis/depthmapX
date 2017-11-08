@@ -36,8 +36,6 @@
 // Sala
 #include <salalib/mgraph.h>
 #include "salalib/salaprogram.h"
-#include <salalib/idepthmap.h>
-#include <salalib/idepthmapx.h>
 #include <salalib/entityparsing.h>
 #include <salalib/linkutils.h>
 
@@ -204,7 +202,7 @@ public:
          CONTROLS_LOADATTRIBUTES,CONTROLS_CHANGEATTRIBUTE};
 
    // Views attached (by viewtypes)
-   enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_TYPES = 5};
+   enum {VIEW_ALL = 0, VIEW_MAP = 1, VIEW_SCATTER = 2, VIEW_TABLE = 3, VIEW_3D = 4, VIEW_MAP_GL = 5, VIEW_TYPES = 6};
 
    void* m_mainFrame;
    QWidget *m_view[VIEW_TYPES];
@@ -285,6 +283,7 @@ public:
     void OnVGALinksFileImport();
     void OnFileImport();
 	void OnFileExport();
+    void OnFileExportLinks();
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
