@@ -45,7 +45,20 @@ HEADERS       = depthmapView.h \
     viewhelpers.h \
     version.h \
     settings.h \
-    settingsimpl.h
+    settingsimpl.h \
+    gllinesuniform.h \
+    glview.h \
+    gllines.h \
+    glrastertexture.h \
+    glpolygons.h \
+    glutriangulator.h \
+    gltrianglesuniform.h \
+    glpointmap.h \
+    glshapegraph.h \
+    glshapemap.h \
+    gldynamicrect.h \
+    gldynamicline.h \
+    mapview.h
 
 SOURCES       = depthmapView.cpp \
                 GraphDoc.cpp \
@@ -86,7 +99,20 @@ SOURCES       = depthmapView.cpp \
     licenseagreement.cpp \
     mainwindowfactory.cpp \
     viewhelpers.cpp \
-    settingsimpl.cpp
+    settingsimpl.cpp \
+    gllinesuniform.cpp \
+    glview.cpp \
+    gllines.cpp \
+    glrastertexture.cpp \
+    glpolygons.cpp \
+    glutriangulator.cpp \
+    gltrianglesuniform.cpp \
+    glpointmap.cpp \
+    glshapegraph.cpp \
+    glshapemap.cpp \
+    gldynamicrect.cpp \
+    gldynamicline.cpp \
+    mapview.cpp
 
 RESOURCES     = resource.qrc
 
