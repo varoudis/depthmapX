@@ -10,5 +10,6 @@ SUBDIRS = \
     depthmapXcli \
     cliTest \
     salaTest \
-    genlibTest
+    genlibTest \
+    depthmapXTest
 GuiApp.depends = depthmapX genlib salalib settingsdialog
