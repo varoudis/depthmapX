@@ -373,11 +373,11 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     selectionCentre.x = (selBounds.bottom_left.x + selBounds.top_right.x)*0.5;
                     selectionCentre.y = (selBounds.bottom_left.y + selBounds.top_right.y)*0.5;
                 } else {
-                    const pvecint &selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const std::set<int> &selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
-                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedPointMap().depixelate(selectedSet[0]);
+                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedPointMap().depixelate(*selectedSet.begin());
                     } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
-                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[selectedSet[0]].getCentroid();
+                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[*selectedSet.begin()].getCentroid();
                     }
                 }
                 m_tempFirstPoint = selectionCentre;
@@ -394,11 +394,15 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     m_pDoc.m_meta_graph->getDisplayedPointMap().mergePoints( worldPoint );
                 } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc.m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
-                    const pvecint& selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const std::set<int>& selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
+                        std::set<int>::iterator it = selectedSet.begin();
+                        int axRef1 = *it;
+                        it++;
+                        int axRef2 = *it;
                         // axial is only joined one-by-one
                         m_pDoc.modifiedFlag = true;
-                        m_pDoc.m_meta_graph->getDisplayedShapeGraph().linkShapes(selectedSet[0], selectedSet[1], true);
+                        m_pDoc.m_meta_graph->getDisplayedShapeGraph().linkShapes(axRef1, axRef2, true);
                         m_pDoc.m_meta_graph->clearSel();
                     }
                 }
@@ -418,8 +422,8 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                         m_pDoc.SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
                     }
                 } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
-                    const pvecint &selectedSet = m_pDoc.m_meta_graph->getSelSet();
-                    Point2f selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[selectedSet[0]].getCentroid();
+                    const std::set<int> &selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    Point2f selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[*selectedSet.begin()].getCentroid();
                     m_tempFirstPoint = selectionCentre;
                     m_tempSecondPoint = selectionCentre;
                     m_mouseMode = MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT;
@@ -433,11 +437,15 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             if (selectedCount > 0) {
                 if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL && selectedCount == 1) {
                     m_pDoc.m_meta_graph->setCurSel( r, true ); // add the new one to the selection set
-                    const pvecint& selectedSet = m_pDoc.m_meta_graph->getSelSet();
+                    const std::set<int>& selectedSet = m_pDoc.m_meta_graph->getSelSet();
                     if (selectedSet.size() == 2) {
+                        std::set<int>::iterator it = selectedSet.begin();
+                        int axRef1 = *it;
+                        it++;
+                        int axRef2 = *it;
                         // axial is only joined one-by-one
                         m_pDoc.modifiedFlag = true;
-                        m_pDoc.m_meta_graph->getDisplayedShapeGraph().unlinkShapes(selectedSet[0], selectedSet[1], true);
+                        m_pDoc.m_meta_graph->getDisplayedShapeGraph().unlinkShapes(axRef1, axRef2, true);
                         m_pDoc.m_meta_graph->clearSel();
                     }
                 }
