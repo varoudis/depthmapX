@@ -44,5 +44,6 @@ HEADERS += \
     exceptions.h \
     legacyconverters.h \
     stringutils.h \
+    containerutils.h \
     linreg.h \
     bspnode.h

@@ -729,7 +729,7 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
       int index = idx_x[i].index;
       xkeys.add(index);
    }
-   pvecint finalkeys;
+   std::vector<int> finalkeys;
    for (size_t j = yfloor + 1; j < yceil; j++) {
       int index = idx_y[j].index;
       if (xkeys.searchindex(index) != paftl::npos) {

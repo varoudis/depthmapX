@@ -341,21 +341,21 @@ public:
          return QtRegion();
    }
    // setSelSet expects a set of ref ids:
-   void setSelSet(const pvecint& selset, bool add = false)
+   void setSelSet(const std::vector<int>& selset, bool add = false)
    { if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          getDisplayedPointMap().setCurSel(selset,add);
       else if (m_view_class & VIEWAXIAL) 
          m_shape_graphs.getDisplayedMap().setCurSel(selset,add);
       else // if (m_view_class & VIEWDATA) 
          m_data_maps.getDisplayedMap().setCurSel(selset,add); }
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
          return m_data_maps.getDisplayedMap().getSelSet(); }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 

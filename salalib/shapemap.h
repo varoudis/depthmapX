@@ -26,6 +26,7 @@
 #include <string>
 #include "salalib/importtypedefs.h"
 #include "genlib/bspnode.h"
+#include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -332,7 +333,7 @@ public:
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
    // Find out which shapes are within a certain radius of a point:
-   int withinRadius(const Point2f& p, double radius, pvecint& bufferset);
+   int withinRadius(const Point2f& p, double radius, std::vector<int> &bufferset);
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
@@ -435,18 +436,18 @@ protected:
    bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
-   pvecint m_selection_set;   // note: uses rowids not keys
+   std::set<int> m_selection_set;   // note: uses rowids not keys
 public:
    // Selection
    bool isSelected() const
    { return m_selection; }
    bool setCurSel( QtRegion& r, bool add = false );
-   bool setCurSel( const pvecint& selset, bool add = false );
-   bool setCurSelDirect( const pvecint& selset, bool add = false );
+   bool setCurSel(const std::vector<int> &selset, bool add = false );
+   bool setCurSelDirect( const std::vector<int>& selset, bool add = false );
    bool clearSel();
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
    { return m_selection_set; }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
    { return m_selection_set; }
    size_t getSelCount()
    { return m_selection_set.size(); }
