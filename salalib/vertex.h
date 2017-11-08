@@ -60,13 +60,13 @@ struct DisplayParams
 struct PafColor
 {
    unsigned int m_color;
-   unsigned char redb() 
+   unsigned char redb() const
    { return (unsigned char) (m_color >> 16); }
-   unsigned char greenb() 
+   unsigned char greenb() const
    { return (unsigned char) (m_color >> 8); }
-   unsigned char blueb() 
+   unsigned char blueb() const
    { return (unsigned char) (m_color);  }
-   unsigned char alphab()
+   unsigned char alphab() const
    { return (unsigned char) (m_color >> 24); }
    // Quick mod - TV
    void setr(unsigned char r)
@@ -77,11 +77,11 @@ struct PafColor
    // Quick mod - TV
    void setb(unsigned char b)
    { m_color &= 0xffffff00; m_color |= ((unsigned int)b);}
-   float redf()
+   float redf() const
    { return float(redb()) / 255.0f; }
-   float greenf()
+   float greenf() const
    { return float(greenb()) / 255.0f; }
-   float bluef()
+   float bluef() const
    { return float(blueb()) / 255.0f; }
    PafColor()
    { m_color = 0x00000000; }  

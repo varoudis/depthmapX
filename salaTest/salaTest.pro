@@ -11,8 +11,11 @@ SOURCES += main.cpp \
     testlinkutils.cpp \
     testgridproperties.cpp \
     testisovistdef.cpp \
+    testmgraph.cpp \
     testshapegraphs.cpp \
     teststructsizes.cpp \
+    testshapemaps.cpp \
+    testgeometrygenerators.cpp \
     testsparksieve.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../salalib/release
