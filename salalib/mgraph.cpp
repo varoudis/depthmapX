@@ -29,7 +29,6 @@
 #include "isovist.h"
 #include "ntfp.h"
 #include "tigerp.h"
-#include "gmlmap.h"
 #include <salalib/mgraph.h>
 
 // shouldn't really include this -- required for node in PushValuesToLayer
