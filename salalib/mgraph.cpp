@@ -29,7 +29,6 @@
 #include "isovist.h"
 #include "ntfp.h"
 #include "tigerp.h"
-#include "gmlmap.h"
 #include <salalib/mgraph.h>
 
 // shouldn't really include this -- required for node in PushValuesToLayer
@@ -3161,3 +3160,17 @@ streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
    return (stream.tellg());
 }
 
+std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
+
+    std::vector<SimpleLine> lines;
+
+    for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
+        for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
+            if (SuperSpacePixel::at(i).at(j).isShown()) {
+                const std::vector<SimpleLine> &newLines = SuperSpacePixel::at(i).at(j).getAllShapesAsLines();
+                lines.insert(std::end(lines), std::begin(newLines), std::end(newLines));
+            }
+        }
+    }
+    return lines;
+}
