@@ -1700,10 +1700,7 @@ bool PointMap::read(ifstream& stream, int version )
          }
          // Add merge line if merged:
          if (!m_points[j][k].m_merge.empty()) {
-             auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
-             if(it == m_merge_lines.end()) {
-                 m_merge_lines.push_back(PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
-             }
+             depthmapX::addIfNotExists(m_merge_lines, PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
          }
       }
    }
@@ -3620,9 +3617,7 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
    bool altered = false;
    if (a == b && !getPoint(a).m_merge.empty()) {
       PixelRef c = getPoint(a).m_merge;
-      auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(a,c));
-      if(it != m_merge_lines.end())
-          m_merge_lines.erase(it);
+      depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
       getPoint(c).m_merge = NoPixel;
       getPoint(c).m_state &= ~Point::MERGED;
       getPoint(a).m_merge = NoPixel;
