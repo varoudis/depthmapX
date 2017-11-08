@@ -1527,7 +1527,8 @@ void QGraphDoc::OnToolsAgentRun()
       eng.tail().m_sel_type = AgentProgram::SEL_OCCLUSION + (dlg.m_occlusion - 2);
    }
    if (dlg.m_release_location == 1) {
-      eng.tail().m_release_locations = m_meta_graph->getSelSet();
+      std::set<int> selected = m_meta_graph->getSelSet();
+      std::copy(selected.begin(), selected.end(), std::back_inserter(eng.tail().m_release_locations));;
    }
    else {
       eng.tail().m_release_locations.clear();
