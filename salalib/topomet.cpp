@@ -279,9 +279,8 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
    {
       seen[i] = 0xffffffff;
    }
-   for (size_t i = 0; i < getSelCount(); i++)
+   for (auto& cursor: getSelSet())
    {
-      size_t cursor = getSelSet().at(i);
       seen[cursor] = 0;
       open++;
       double length = seglengths[cursor];

@@ -189,7 +189,7 @@ struct AgentProgram
 
 struct AgentSet : public AgentProgram, public prefvec<Agent>
 {
-   pvecint m_release_locations;
+   std::vector<int> m_release_locations;
    int m_release_locations_seed = 0;
    double m_release_rate;
    int m_lifetime;
@@ -247,7 +247,7 @@ protected:
    int m_trail_num;
    //
    // for occlusion memory
-   pflipper<PixelRefList> m_occ_memory;
+   pflipper<PixelRefVector> m_occ_memory;
    //
    // extra memory of last observed values for Gibsonian agents:
    float m_last_los[9];

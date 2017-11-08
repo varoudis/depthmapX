@@ -2079,7 +2079,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
    }
 
    for (size_t i = 0; i < polyconnections.size(); i++) {
-      PixelRefList pixels = pixelateLine(polyconnections[i].line);
+      PixelRefVector pixels = pixelateLine(polyconnections[i].line);
       pvecint testedshapes;
       size_t connindex = radialdivisions.searchindex(polyconnections[i].key);
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
@@ -2142,7 +2142,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
 void ShapeGraph::cutLines(const prefvec<Line>& lines, pqmap<int,pvecint>& axcuts)
 {
    for (size_t i = 0; i < lines.size(); i ++) {
-      PixelRefList pixels = pixelateLine(lines[i]);
+      PixelRefVector pixels = pixelateLine(lines[i]);
       pvecint testedshapes;
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
@@ -2723,8 +2723,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
       covered[i] = false;
    }
    pflipper<pvecint> foundlist;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int lineindex = m_selection_set[j];
+   for(auto& lineindex: m_selection_set) {
       foundlist.a().push_back(lineindex);
       covered[lineindex] = true;
       m_attributes.setValue(lineindex,stepdepth_col,0.0f);
@@ -4148,8 +4147,8 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
 
    int opencount = 0;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int row = m_attributes.getRowid(m_selection_set[j]);
+   for (auto& sel: m_selection_set) {
+      int row = m_attributes.getRowid(sel);
       if (row != -1) {
          bins[0].push_back(SegmentData(0,row,SegmentRef(),0,0.0,0));
          opencount++;
@@ -4251,7 +4250,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
       // we will use this later!
       m_test++;
       m_lines[i].test = m_test;
-      PixelRefList list = pixelateLine( m_lines[i].line );
+      PixelRefVector list = pixelateLine( m_lines[i].line );
       for (size_t a = 0; a < list.size(); a++) {
          for (size_t b = 0; b < m_pixel_lines[ list[a].x ][ list[a].y ].size(); b++) {
             int j = m_pixel_lines[ list[a].x ][ list[a].y ][b];
