@@ -1688,7 +1688,7 @@ void QDepthmapView::OutputEPS( ofstream& stream, QGraphDoc *pDoc, bool includeSc
 
    stream << "%!PS-Adobe-3.0 EPSF-3.0\n"
           << "%%BoundingBox: 0 0 " << clrect.width() << " " << clrect.height() << "\n"
-          << "%%Creator: depthmapX " << DEPTHMAPX_VERSION << "." << DEPTHMAPX_MINOR_VERSION << endl;
+          << "%%Creator: " << TITLE_BASE << endl;
 
    // temporarily inflate resolution for EPS draw
    rect = QRect(clrect.left() * 10, clrect.top() * 10, clrect.width() * 10, clrect.height() * 10);
@@ -2495,7 +2495,7 @@ void QDepthmapView::OutputSVG( ofstream& stream, QGraphDoc *pDoc )
    stream << "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << endl;
    stream << "<svg width=\"24cm\" height=\"" << (h/200) << "cm\" viewBox=\"0 0 4800 " << h << "\"" << endl;
    stream << "xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\">" << endl;
-   stream << "<desc>depthmapX " << DEPTHMAPX_VERSION << "." << DEPTHMAPX_MINOR_VERSION << "</desc>" << endl;
+   stream << "<desc>" << TITLE_BASE << "</desc>" << endl;
 
    // note, SVG draw completely overrides standard draw physical units to achieve hi-res output
    // (EPS should probably follow this model too)
