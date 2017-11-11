@@ -87,7 +87,7 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
    m_num_records = 0;
 
    std::string date = ViewHelpers::getCurrentDate();
-   QString version = QString("depthmapX v%1.%2").arg(DEPTHMAPX_VERSION).arg(DEPTHMAPX_MINOR_VERSION);
+   QString version = QString(TITLE_BASE);
 
    m_meta_graph->setProperties(author.toStdString(),organisation.toStdString(),date,version.toStdString());
 
