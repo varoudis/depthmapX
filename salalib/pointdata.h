@@ -18,8 +18,10 @@
 #ifndef __POINTDATA_H__
 #define __POINTDATA_H__
 
+#include "genlib/exceptions.h"
 #include "vertex.h"
 #include <vector>
+#include <set>
 
 class MetaGraph;
 class PointMap;
@@ -189,6 +191,23 @@ public:
 
 class sparkSieve2;
 
+namespace depthmapX
+{
+    enum PointMapExceptionType{NO_ISOVIST_ANALYSIS};
+    class PointMapException: public depthmapX::RuntimeException {
+    private:
+        PointMapExceptionType m_errorType;
+    public:
+        PointMapException(PointMapExceptionType errorType, std::string message) : depthmapX::RuntimeException(message)
+        {
+            m_errorType = errorType;
+        }
+        PointMapExceptionType getErrorType() const {
+            return m_errorType;
+        }
+    };
+}
+
 class PointMap : public PixelBase
 {
    friend class PointMaps;
@@ -198,6 +217,8 @@ class PointMap : public PixelBase
    // pushValuesToLayer: this swaps values from a PointMap to a DataLayer, and it needs to be changed in the future
    // (e.g., when making DataLayers into ShapeMaps)
    friend class MetaGraph;
+private:
+   bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
    Point **m_points;    // will contain the graph reference when created
@@ -213,7 +234,7 @@ protected:
    bool m_processed;
    bool m_boundarygraph;
    int m_undocounter;
-   pqvector<PixelRefPair> m_merge_lines;
+   std::vector<PixelRefPair> m_merge_lines;
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
@@ -237,6 +258,16 @@ public:
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
    bool setSpacePixel(const SuperSpacePixel *spacepix);  // (so different threads can use it... dangermouse!)
    bool setGrid(double spacing, const Point2f& offset = Point2f());
+   std::vector<std::pair<PixelRef, PixelRef>> getMergedPixelPairs()
+   {
+       // unnecessary converter until the m_merge_lines variable is
+       // replaced with a std container
+       std::vector<std::pair<PixelRef, PixelRef>> mergedPixelPairs;
+       for (size_t i = 0; i < m_merge_lines.size(); i++) {
+           mergedPixelPairs.push_back(std::make_pair(m_merge_lines[i].a, m_merge_lines[i].b));
+       }
+       return mergedPixelPairs;
+   }
    //
    bool isProcessed() const
    { return m_processed; }
@@ -270,7 +301,7 @@ public:
    bool sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist );
    bool dynamicSparkGraph2();
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
-   bool sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int depth, PixelRef curs);
+   bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
    bool binDisplay(Communicator *comm);
@@ -316,8 +347,14 @@ public:
    int getPointCount() const
       { return m_point_count; }
    //
+   void requireIsovistAnalysis()
+   {
+       if(!m_hasIsovistAnalysis) {
+           throw depthmapX::PointMapException(depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS, "Current pointmap does not contain isovist analysis");
+       }
+   }
 protected:
-   int expand( const PixelRef p1, const PixelRef p2, PixelRefList& list, int filltype );
+   int expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype );
    //
    //void walk( PixelRef& start, int steps, Graph& graph, 
    //           int parity, int dominant_axis, const int grad_pair[] );
@@ -327,7 +364,7 @@ protected:
    enum { NO_SELECTION = 0, SINGLE_SELECTION = 1, COMPOUND_SELECTION = 2, LAYER_SELECTION = 4, OVERRIDE_SELECTION = 8 };
    int m_selection;
    bool m_pinned_selection;
-   pvecint m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
+   std::set<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
    mutable PixelRef s_bl; 
    mutable PixelRef s_tr;
 public:
@@ -337,18 +374,18 @@ public:
       { return m_pinned_selection; }
    bool clearSel(); // clear the current selection
    bool setCurSel( QtRegion& r, bool add = false ); // set current selection
-   bool setCurSel( const pvecint& selset, bool add = false );
+   bool setCurSel(const std::vector<int> &selset, bool add = false );
    bool overrideSelPixel(PixelRef pix);    // set a pixel to selected: careful!
    //bool togglePin();
    //bool convertSelToDataObject( MetaGraph& meta_graph );
    // Note: passed by ref, use with care in multi-threaded app
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
       { return m_selection_set; }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
       { return m_selection_set; }
    //
-   PixelRefList getLayerPixels(int layer);
-   PixelRefList getDataObjectPixels(int layer, int object);
+   PixelRefVector getLayerPixels(int layer);
+   PixelRefVector getDataObjectPixels(int layer, int object);
    //
    // Attribute functionality
 protected:
@@ -446,7 +483,8 @@ public:
    bool findNextMergeLine() const;
    Line getNextMergeLine() const;
    bool getPointSelected() const;
-   PafColor getPointColor() const;
+   PafColor getPointColor(PixelRef pixelRef) const;
+   PafColor getCurrentPointColor() const;
    int getSelCount()
       { return (int) m_selection_set.size(); }
    const QtRegion& getSelBounds() const

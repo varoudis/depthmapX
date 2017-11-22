@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "modeparserregistry.h"
+#include "importparser.h"
 #include "linkparser.h"
 #include "vgaparser.h"
 #include "visprepparser.h"
@@ -33,5 +34,6 @@ void ModeParserRegistry::populateParsers()
     REGISTER_PARSER(AgentParser);
     REGISTER_PARSER(IsovistParser);
     REGISTER_PARSER(ExportParser);
+    REGISTER_PARSER(ImportParser);
     // *********
 }

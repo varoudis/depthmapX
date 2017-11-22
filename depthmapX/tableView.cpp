@@ -157,7 +157,7 @@ void tableView::itemChanged(QTableWidgetItem * item)
 	int col = item->column();
 	if(col == 0)
 	{
-		pvecint x;
+        std::vector<int> x;
 		AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
 		AttributeIndex& index = table.m_display_index;
 		x.push_back(table.getRowKey(index[row].index));

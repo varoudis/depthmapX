@@ -417,3 +417,128 @@ TEST_CASE("DXF Parsing (zero-length lwpolyline)")
     REQUIRE(polyline.getVertex(1).y == Approx(point2.y).epsilon(EPSILON));
     REQUIRE((polyline.getAttributes() & polyline.CLOSED) == closed);
 }
+
+
+TEST_CASE("DXF Parsing (block)")
+{
+    const float EPSILON = 0.001;
+    Point2f lineStart(-1,-2);
+    Point2f lineEnd(3,4);
+    std::string block("bl");
+    Point2f blockTranslation(5, -6);
+    Point2f blockScale(1, 1);
+    double blockRotation = 0;
+    std::string layer("0");
+
+    std::stringstream stream;
+
+    stream << "0\nSECTION\n"
+           << "2\nBLOCKS\n"
+           << "0\nBLOCK\n"
+           << "2\n" << block << "\n"
+           << "8\n" << layer << "\n"
+           << "0\nLINE\n"
+           << "8\n" << layer << "\n"
+           << "10\n" << lineStart.x << "\n"
+           << "20\n" << lineStart.y << "\n"
+           << "30\n0\n"
+           << "11\n" << lineEnd.x << "\n"
+           << "21\n" << lineEnd.y << "\n"
+           << "31\n0\n"
+           << "0\nENDBLK\n"
+           << "0\nENDSEC\n"
+           << "0\nSECTION\n"
+           << "2\nENTITIES\n"
+           << "0\nINSERT\n"
+           << "8\n" << layer << "\n"
+           << "2\n" << block << "\n"
+           << "10\n" << blockTranslation.x << "\n"
+           << "20\n" << blockTranslation.y << "\n"
+           << "30\n" << 0 << "\n"
+           << "41\n" << blockScale.x << "\n"
+           << "42\n" << blockScale.y << "\n"
+           << "43\n" << 0 << "\n"
+           << "50\n" << blockRotation << "\n"
+           << "0\nENDSEC\n"
+           << "0\nEOF\n";
+
+    DxfParser dxfParser;
+    dxfParser.open(stream);
+    REQUIRE(dxfParser.numLayers() == 1);
+    REQUIRE(dxfParser.getLayer(layer.c_str())->numLines() == 1);
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getStart().x == Approx(lineStart.x + blockTranslation.x).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getStart().y == Approx(lineStart.y + blockTranslation.y).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getEnd().x == Approx(lineEnd.x + blockTranslation.x).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getEnd().y == Approx(lineEnd.y + blockTranslation.y).epsilon(EPSILON));
+}
+
+
+TEST_CASE("DXF Parsing (deeper blocks)")
+{
+    const float EPSILON = 0.001;
+    Point2f lineStart(-1,-2);
+    Point2f lineEnd(3,4);
+    std::string block("bl");
+    std::string blockInternal("bli");
+    Point2f blockTranslation(5, -6);
+    Point2f blockScale(1, 1);
+    double blockRotation = 0;
+    std::string layer("0");
+
+    std::stringstream stream;
+
+    stream << "0\nSECTION\n"
+           << "2\nBLOCKS\n"
+           << "0\nBLOCK\n"
+           << "2\n" << block << "\n"
+           << "8\n" << layer << "\n"
+
+           << "0\nINSERT\n"
+           << "8\n" << layer << "\n"
+           << "2\n" << blockInternal << "\n"
+           << "10\n" << blockTranslation.x << "\n"
+           << "20\n" << blockTranslation.y << "\n"
+           << "30\n" << 0 << "\n"
+           << "41\n" << blockScale.x << "\n"
+           << "42\n" << blockScale.y << "\n"
+           << "43\n" << 0 << "\n"
+           << "50\n" << blockRotation << "\n"
+
+           << "0\nENDBLK\n"
+           << "0\nBLOCK\n"
+           << "2\n" << blockInternal << "\n"
+           << "8\n" << layer << "\n"
+           << "0\nLINE\n"
+           << "8\n" << layer << "\n"
+           << "10\n" << lineStart.x << "\n"
+           << "20\n" << lineStart.y << "\n"
+           << "30\n0\n"
+           << "11\n" << lineEnd.x << "\n"
+           << "21\n" << lineEnd.y << "\n"
+           << "31\n0\n"
+           << "0\nENDBLK\n"
+           << "0\nENDSEC\n"
+           << "0\nSECTION\n"
+           << "2\nENTITIES\n"
+           << "0\nINSERT\n"
+           << "8\n" << layer << "\n"
+           << "2\n" << block << "\n"
+           << "10\n" << blockTranslation.x << "\n"
+           << "20\n" << blockTranslation.y << "\n"
+           << "30\n" << 0 << "\n"
+           << "41\n" << blockScale.x << "\n"
+           << "42\n" << blockScale.y << "\n"
+           << "43\n" << 0 << "\n"
+           << "50\n" << blockRotation << "\n"
+           << "0\nENDSEC\n"
+           << "0\nEOF\n";
+
+    DxfParser dxfParser;
+    dxfParser.open(stream);
+    REQUIRE(dxfParser.numLayers() == 1);
+    REQUIRE(dxfParser.getLayer(layer.c_str())->numLines() == 1);
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getStart().x == Approx(lineStart.x + 2*blockTranslation.x).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getStart().y == Approx(lineStart.y + 2*blockTranslation.y).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getEnd().x == Approx(lineEnd.x + 2*blockTranslation.x).epsilon(EPSILON));
+    REQUIRE(dxfParser.getLayer(layer.c_str())->getLine(0).getEnd().y == Approx(lineEnd.y + 2*blockTranslation.y).epsilon(EPSILON));
+}

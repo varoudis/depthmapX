@@ -54,9 +54,9 @@
    }
 */
 
-PixelRefList PixelBase::pixelateLine( Line l, int scalefactor ) const
+PixelRefVector PixelBase::pixelateLine( Line l, int scalefactor ) const
 {
-   PixelRefList pixel_list;
+   PixelRefVector pixel_list;
 
    // this is *not* correct for lines that are off the edge...
    // should use non-constrained version (false), and find where line enters the region
@@ -144,9 +144,9 @@ PixelRefList PixelBase::pixelateLine( Line l, int scalefactor ) const
 // this version includes all pixels through which the line passes with touching
 // counting as both pixels.
 
-PixelRefList PixelBase::pixelateLineTouching( Line l, double tolerance ) const
+PixelRefVector PixelBase::pixelateLineTouching( Line l, double tolerance ) const
 {
-   PixelRefList pixel_list;
+   PixelRefVector pixel_list;
 
    // now assume that scaling to region then scaling up is going to give pixelation
    // this is not necessarily the case!
@@ -216,9 +216,9 @@ PixelRefList PixelBase::pixelateLineTouching( Line l, double tolerance ) const
 
 // this version for a quick set of pixels
 
-PixelRefList PixelBase::quickPixelateLine(PixelRef p, PixelRef q)
+PixelRefVector PixelBase::quickPixelateLine(PixelRef p, PixelRef q)
 {
-   PixelRefList list;
+   PixelRefVector list;
 
    double dx = q.x - p.x;
    double dy = q.y - p.y;
@@ -536,7 +536,7 @@ void SpacePixel::reinitLines(double density)
 
    // now re-add the lines:
    for (size_t i = 0; i < m_lines.size(); i++) {
-      PixelRefList list = pixelateLine( m_lines.value(i).line );
+      PixelRefVector list = pixelateLine( m_lines.value(i).line );
       for (size_t j = 0; j < list.size(); j++) {
          // note: m_pixel_lines will be reordered by sortPixelLines
          m_pixel_lines[list[j].x][list[j].y].push_back( m_lines.key(i) );
@@ -559,7 +559,7 @@ void SpacePixel::addLine(const Line& line)
    m_lines.add( m_ref, LineTest(line, 0) );
    m_newline = true;
 
-   PixelRefList list = pixelateLine( line );
+   PixelRefVector list = pixelateLine( line );
 
    for (size_t i = 0; i < list.size(); i++) {
       // note: m_pixel_lines will be reordered by sortPixelLines
@@ -573,7 +573,7 @@ int SpacePixel::addLineDynamic(const Line& line)
    m_lines.add( m_ref, LineTest(line, 0) );
    m_newline = true;
 
-   PixelRefList list = pixelateLine( line );
+   PixelRefVector list = pixelateLine( line );
 
    for (size_t i = 0; i < list.size(); i++) {
       // note: dynamic lines could be dodgy... only pixelate bits that fall in range
@@ -597,7 +597,7 @@ bool SpacePixel::removeLineDynamic(int ref, Line& line)   // fills in line if it
    }
 
    line = m_lines[lineref].line;
-   PixelRefList list = pixelateLine( line );
+   PixelRefVector list = pixelateLine( line );
 
    for (size_t i = 0; i < list.size(); i++) {
       // note: dynamic lines could be dodgy... only pixelate bits that fall in range
@@ -638,7 +638,7 @@ bool SpacePixel::intersect( const Line& l, double tolerance )
 {
    m_test++;  // note loops! (but vary rarely: inevitabley, lines will have been marked before it loops)
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       for (size_t j = 0; j < m_pixel_lines[ list[i].x ][ list[i].y ].size(); j++) {
@@ -668,7 +668,7 @@ bool SpacePixel::intersect_exclude( const Line& l, double tolerance )
 {
    m_test++;  // note loops! (but vary rarely: inevitabley, lines will have been marked before it loops)
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       for (size_t j = 0; j < m_pixel_lines[ list[i].x ][ list[i].y ].size(); j++) {
@@ -751,7 +751,7 @@ void SpacePixel::cutLine(Line& l, short dir)
    double tolerance = l.length() * 1e-9;
 
    pvecdouble loc;
-   PixelRefList vec = pixelateLine(l);
+   PixelRefVector vec = pixelateLine(l);
 
    int axis;
    if (l.width() >= l.height()) {
@@ -912,7 +912,7 @@ pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignor
    squash( l.top_right );
    */
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       for (size_t j = 0; j < m_pixel_lines[ list[i].x ][ list[i].y ].size(); j++) {
@@ -1021,7 +1021,7 @@ bool SpacePixel::read( ifstream& stream, int version )
    // now load into structure:
    for (size_t n = 0; n < m_lines.size(); n++) {
 
-      PixelRefList list = pixelateLine( m_lines[n].line );
+      PixelRefVector list = pixelateLine( m_lines[n].line );
 
       for (size_t m = 0; m < list.size(); m++) {
          // note: m_pixel_lines is an *ordered* list! --- used by other ops.

@@ -20,11 +20,17 @@
 #ifndef __SHAPEMAP_H__
 #define __SHAPEMAP_H__
 
-#include <string>
+#include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
+#include <vector>
+#include <string>
+#include "salalib/importtypedefs.h"
+#include "genlib/bspnode.h"
+#include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <map>
 // each pixel has various lists of information:
 
 struct ShapeRef
@@ -260,7 +266,7 @@ public:
    // or a single line into a shape
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
-   int makePolyShape(const pvecpoint& points, bool open, bool tempshape = false);
+   int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
    int makeShape(const SalaShape& shape, int override_shape_ref = -1);
@@ -285,7 +291,7 @@ public:
    bool polyCancel();
    // some shape creation tools for the scripting language or DLL interface
 protected:
-   pvecpoint m_temppoints;
+   pqvector<Point2f> m_temppoints;
 public:
    // add a shape (does not commit to poly pixels)
    void shapeBegin();
@@ -327,7 +333,7 @@ public:
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
    // Find out which shapes are within a certain radius of a point:
-   int withinRadius(const Point2f& p, double radius, pvecint& bufferset);
+   int withinRadius(const Point2f& p, double radius, std::vector<int> &bufferset);
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
@@ -430,18 +436,18 @@ protected:
    bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
-   pvecint m_selection_set;   // note: uses rowids not keys
+   std::set<int> m_selection_set;   // note: uses rowids not keys
 public:
    // Selection
    bool isSelected() const
    { return m_selection; }
    bool setCurSel( QtRegion& r, bool add = false );
-   bool setCurSel( const pvecint& selset, bool add = false );
-   bool setCurSelDirect( const pvecint& selset, bool add = false );
+   bool setCurSel(const std::vector<int> &selset, bool add = false );
+   bool setCurSelDirect( const std::vector<int>& selset, bool add = false );
    bool clearSel();
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
    { return m_selection_set; }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
    { return m_selection_set; }
    size_t getSelCount()
    { return m_selection_set.size(); }
@@ -498,7 +504,6 @@ public:
    bool write( ofstream& stream, int version );
    //
    bool output( ofstream& stream, char delimiter = '\t', bool updated_only = false );
-   bool importTxt(istream& stream, bool csv);
    //
    // links and unlinks
 protected:
@@ -518,9 +523,11 @@ public:
    // generic for all types of graphs
    bool findNextLinkLine() const;
    Line getNextLinkLine() const;
+   std::vector<SimpleLine> getAllLinkLines();
    // specific to axial line graphs 
    bool findNextUnlinkPoint() const;
    Point2f getNextUnlinkPoint() const;
+   std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
    void ozlemSpecial(ShapeMap& output);
@@ -530,6 +537,14 @@ public:
    void ozlemSpecial5(ShapeMap& buildings);
    void ozlemSpecial6();
    void ozlemSpecial7(ShapeMap& linemap);
+   std::vector<SimpleLine> getAllShapesAsLines();
+   std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
+   std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
+   bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+   bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
+private:
+   bool importData(const depthmapX::Table &data, std::vector<int> indices);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

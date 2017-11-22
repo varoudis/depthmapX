@@ -30,7 +30,8 @@ public:
     virtual std::string getHelp() const
     {
         return    "Mode options for EXPORT:\n"\
-                  "-em <export mode> one of:\n"
+                  "-em <export mode> one of:\n"\
+                  "    pointmap-data-csv\n"\
                   "    pointmap-connections-csv\n";
     }
 
@@ -41,6 +42,7 @@ public:
 
     enum ExportMode{
         NONE,
+        POINTMAP_DATA_CSV,
         POINTMAP_CONNECTIONS_CSV
     };
     ExportMode getExportMode() const { return _exportMode; }

@@ -50,13 +50,16 @@
 #include "AttributeSummary.h"
 #include "depthmapView.h"
 #include "viewhelpers.h"
+#include <QMetaType>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 #include "compatibilitydefines.h"
+#include "salalib/importutils.h"
 
 QT_BEGIN_NAMESPACE
+Q_DECLARE_METATYPE(std::string)
 
 QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 {
@@ -84,14 +87,37 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
    m_num_records = 0;
 
    std::string date = ViewHelpers::getCurrentDate();
-   QString version = QString("depthmapX v%1.%2").arg(DEPTHMAPX_VERSION).arg(DEPTHMAPX_MINOR_VERSION);
+   QString version = QString(TITLE_BASE);
 
    m_meta_graph->setProperties(author.toStdString(),organisation.toStdString(),date,version.toStdString());
 
+    qRegisterMetaType< std::string >();
+    connect(&m_thread, &RenderThread::runtimeExceptionThrown, this, &QGraphDoc::exceptionThrownInRenderThread);
+}
+void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
+    if(type == depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS) {
+        std::stringstream message;
+        message << "This operation requires isovist analysis. To run it go to: ";
+        message << "Tools -> Visibility -> Run Visibility Graph Analysis... ";
+        message << "and select \"Calculate isovist properties\"";
+        message << flush;
+        QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
+                             QMessageBox::Ok, QMessageBox::Ok);
+    }
 }
 
 bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *originator) // (almost) thread safe
 {
+
+    if(viewtype == VIEW_ALL && flag != REDRAW_DONE)
+    {
+        ((MainWindow *) m_mainFrame)->updateGLWindows(true, flag == REDRAW_TOTAL);
+    }
+    if(viewtype == VIEW_MAP && flag == REDRAW_TOTAL)
+    {
+        ((MainWindow *) m_mainFrame)->updateGLWindows(false, true);
+    }
+
    if (!m_flag_lock) {
       m_flag_lock = true;
       if (viewtype) {
@@ -200,7 +226,7 @@ void QGraphDoc::OnLayerNew()
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();
-      if (r.isNull()) {
+      if (r.atZero()) {
          r = QtRegion(Point2f(-50.0,-50.0),Point2f(50.0,50.0));
       }
       map->init(0,r);
@@ -319,7 +345,8 @@ void QGraphDoc::OnVGALinksFileImport()
     }
 
     // change the view before loading the file to make the changes apparent
-    ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
+    if(m_view[VIEW_MAP])
+        ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks = true;
     SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
 
     QString template_string;
@@ -410,6 +437,12 @@ void QGraphDoc::OnFileImport()
       return;
    }
 
+    // this is placed here as a proxy to be queried later so that we can find
+    // if there was something else in the graph after importing. If there was
+    // then the view should not be reset, if there wasn't then the view can
+    // be reset to point to the newly imported objects
+    bool graphHadNullBoundsBeforeImport = m_meta_graph->getBoundingBox().atZero();
+
    QFilePath filepath(infiles[0]);
    QString ext = filepath.m_ext;
    if (ext == tr("CAT") || ext == tr("DXF") || ext == tr("NTF") || ext == tr("RT1") || ext == tr("MIF") || ext == tr("GML") || ext == tr("")) {
@@ -472,10 +505,22 @@ void QGraphDoc::OnFileImport()
              QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         if (m_meta_graph->importTxt( file, filepath.m_name.toStdString(), (ext == tr("CSV")) ) != -1) {
+         std::unique_ptr<Communicator> comm(new ICommunicator());
+         bool mapParsed = depthmapX::importFile(*m_meta_graph,
+                                                file,
+                                                comm.get(),
+                                                filepath.m_name.toStdString(),
+                                                depthmapX::ImportType::DATAMAP,
+                                                (ext == tr("CSV")) ? depthmapX::ImportFileType::CSV : depthmapX::ImportFileType::TSV);
+         if(mapParsed) {
             // This should have added a new data map:
             SetUpdateFlag(NEW_TABLE);
-            SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_TABLE);
+
+            if(graphHadNullBoundsBeforeImport) {
+                SetRedrawFlag(VIEW_ALL, REDRAW_TOTAL, NEW_TABLE);
+            } else {
+                SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_TABLE);
+            }
          }
          else {
 			QMessageBox::warning(this, tr("Warning"), tr("Unable to import text file.\n \
@@ -512,39 +557,19 @@ void QGraphDoc::OnFileExport()
    QString suffix;
    int mode = -1;
 
-   bool showlinks = ((QDepthmapView*)m_view[VIEW_MAP])->m_showlinks;
-
    int view_class = m_meta_graph->getViewClass();
    if (view_class & MetaGraph::VIEWAXIAL) {
-      if (showlinks) { 
-         mode = 5;
-         suffix = tr("unlinks");
-      }
-      else {
-         mode = 0;
-         suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
-      }
+       mode = 0;
+       suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
    }
    else if (view_class & MetaGraph::VIEWDATA) {
-      if (showlinks) { 
-         mode = 6;
-         suffix = tr("links");
-      }
-      else {
-         mode = 1;
-         suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
-      }
+       mode = 1;
+       suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
    }
    else if (view_class & MetaGraph::VIEWVGA) {
       if (m_meta_graph->getDisplayedPointMap().isProcessed()) {
-         if (showlinks) { 
-            mode = 4;
-            suffix = tr("merge_lines");
-         }
-         else {
-            mode = 2;
-            suffix = tr("vga");
-         }
+          mode = 2;
+          suffix = tr("vga");
       }
       else {
          mode = 3;
@@ -614,13 +639,6 @@ void QGraphDoc::OnFileExport()
        case 3:
           m_meta_graph->getDisplayedPointMap().outputPoints( stream, delimiter );
           break;
-       case 4:
-          m_meta_graph->getDisplayedPointMap().outputMergeLines( stream, delimiter );
-          break;
-       case 5:
-          // note: specific to line graphs
-          m_meta_graph->getDisplayedShapeGraph().outputUnlinkPoints( stream, delimiter );
-          break;
        default:
           break;
        }
@@ -685,6 +703,104 @@ void QGraphDoc::OnFileExport()
             m_meta_graph->getDisplayedPointMap().outputMif(miffile,midfile);
         }
     }
+}
+
+void QGraphDoc::OnFileExportLinks()
+{
+    if (m_communicator) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"), QMessageBox::Ok, QMessageBox::Ok);
+        return;  // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"), QMessageBox::Ok, QMessageBox::Ok);
+        return;  // No graph to export
+    }
+
+    QString suffix;
+    int mode = -1;
+
+    int view_class = m_meta_graph->getViewClass();
+    if (view_class & MetaGraph::VIEWAXIAL) {
+        mode = 5;
+        suffix = tr("unlinks");
+    }
+    else if (view_class & MetaGraph::VIEWDATA) {
+        mode = 6;
+        suffix = tr("links");
+    }
+    else if (view_class & MetaGraph::VIEWVGA) {
+        if (m_meta_graph->getDisplayedPointMap().isProcessed()) {
+            mode = 4;
+            suffix = tr("merge_lines");
+        }
+    }
+
+    if (mode == -1) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, depthmapX does not support saving the currently displayed layer"), QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+    suffix.replace(' ','_');
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("Tab-delimited text file (*.txt)\n");
+    template_string += tr("Comma separated values file (*.csv)\n");
+    template_string += tr("All files (*.*)");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile = QFileDialog::getSaveFileName(
+                0, tr("Save Output As"),
+                defaultname,
+                template_string,
+                &selectedFilter,
+                options);
+    if(outfile.isEmpty())
+    {
+        return;
+    }
+
+    FILE* fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    QFilePath filepath(outfile);
+    QString ext = filepath.m_ext;
+
+    ofstream stream(outfile.toLatin1());
+    char delimiter = '\t';
+    if (ext == "CSV") {
+      delimiter = ',';
+    }
+    if (stream.fail() || stream.bad()) {
+      QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
+      mode = -1;
+    }
+
+    switch (mode) {
+    case 0:
+      m_meta_graph->getDisplayedShapeGraph().output(stream, delimiter);
+      break;
+    case 1:
+      m_meta_graph->getDisplayedDataMap().output(stream, delimiter);
+      break;
+    case 2:
+      m_meta_graph->getDisplayedPointMap().outputSummary( stream, delimiter );
+      break;
+    case 3:
+      m_meta_graph->getDisplayedPointMap().outputPoints( stream, delimiter );
+      break;
+    case 4:
+      m_meta_graph->getDisplayedPointMap().outputMergeLines( stream, delimiter );
+      break;
+    case 5:
+      // note: specific to line graphs
+      m_meta_graph->getDisplayedShapeGraph().outputUnlinkPoints( stream, delimiter );
+      break;
+    default:
+      break;
+    }
+    stream.close();
 }
 
 void QGraphDoc::OnAxialConnectionsExportAsDot()
@@ -1411,7 +1527,8 @@ void QGraphDoc::OnToolsAgentRun()
       eng.tail().m_sel_type = AgentProgram::SEL_OCCLUSION + (dlg.m_occlusion - 2);
    }
    if (dlg.m_release_location == 1) {
-      eng.tail().m_release_locations = m_meta_graph->getSelSet();
+      std::set<int> selected = m_meta_graph->getSelSet();
+      std::copy(selected.begin(), selected.end(), std::back_inserter(eng.tail().m_release_locations));;
    }
    else {
       eng.tail().m_release_locations.clear();
@@ -1788,11 +1905,11 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
    return ret;
 }
 
-void QGraphDoc::OnFileSave()
+bool QGraphDoc::OnFileSave()
 {
 	QString newName = m_opened_name;
 	if (newName.isEmpty()) {
-		newName = windowTitle() + tr(".graph");
+        newName = m_base_title + tr(".graph");
 		QFileDialog::Options options = 0;
 		QString outfile = QFileDialog::getSaveFileName(
 								   0, tr("Save As"),
@@ -1800,21 +1917,25 @@ void QGraphDoc::OnFileSave()
 								   tr("Graph file (*.graph)\nAll files (*.*)"),
 								   0,
 								   options);
-		if (outfile.isEmpty()) return;
+        if (outfile.isEmpty()) return false;
 
 		m_opened_name = outfile;
 
         FILE* fp = fopen(m_opened_name.toLatin1(), "wb");
 		fclose(fp);
 
-		OnSaveDocument(outfile);
-		return;
+        OnSaveDocument(outfile);
+
+        QFilePath path(m_opened_name);
+        m_base_title = path.m_name;
+        return true;
 	}
 	
-	OnSaveDocument(newName);
+    OnSaveDocument(newName);
+    return true;
 }
 
-void QGraphDoc::OnFileSaveAs()
+bool QGraphDoc::OnFileSaveAs()
 {
    // This is based on Microsoft's "DoSave" function, but
    // it allows two options for saving: one as the current 
@@ -1822,7 +1943,7 @@ void QGraphDoc::OnFileSaveAs()
 
 	QString newName = m_opened_name;
  	if (newName.isEmpty()) {
-       newName = windowTitle() + tr(".graph");
+       newName = m_base_title + tr(".graph");
 	}
 
 	QFileDialog::Options options = 0;
@@ -1834,7 +1955,7 @@ void QGraphDoc::OnFileSaveAs()
                                options);
 
 	if (outfile.isEmpty())
-		return;
+        return false;
 
     FILE* fp = fopen(outfile.toLatin1(), "wb");
 	fclose(fp);
@@ -1842,7 +1963,10 @@ void QGraphDoc::OnFileSaveAs()
     OnSaveDocument(outfile.toLatin1());
 	
 	// reset the title and change the document name
-	m_opened_name = newName;
+    m_opened_name = outfile;
+    QFilePath path(m_opened_name);
+    m_base_title = path.m_name;
+    return true;
 }
 
 int QGraphDoc::OnSaveDocument(QString lpszPathName) 
@@ -2086,7 +2210,7 @@ void QGraphDoc::OnTestButton()
                                                                    // <<
    m_evolved_paths.clear();
    for (int i = 0; i < 19; i++) {
-      m_evolved_paths.push_back(pvecpoint());
+      m_evolved_paths.push_back(pqvector<Point2f>());
       for (int j = 0; j < 1200; j++) {
          Point2f p;
          file >> p.x >> p.y;
@@ -2461,7 +2585,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       else {
          // just check you really are viewing the layers:
          bool retvar;
-         pvecint selset;
+         std::vector<int> selset;
          if (dlg.m_selection_only) {
             retvar = proggy.runselect(selset,pointmap ? pointmap->getSelSet() : shapemap->getSelSet());
          }
@@ -2628,8 +2752,8 @@ void QGraphDoc::OnBinDistances()
 
 void QGraphDoc::OnShowBinDistances() 
 {
-   pvecint a = m_meta_graph->getDisplayedPointMap().getSelSet();
-   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(a.head());
+   std::set<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
+   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(*a.begin());
    QString all;
    for (int i = 0; i < 32; i++) {
       QString blah = QString(tr("%2d: %f\n")).arg(i).arg(p.getBinDistance(i));

@@ -38,6 +38,9 @@
 
 // for agent engine interface
 #include <salalib/nagent.h>
+#include <salalib/importtypedefs.h>
+
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -102,15 +105,17 @@ public:
    //
    // quick loaders from input streams rather than files:
    bool importCat( istream& stream );
-   bool importDxf( istream& stream );
    // make a graph using the supplied seed and graph spacing:
    void fastGraph( const Point2f& seed, double spacing );
    //
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
-   int loadDxf( istream& stream, Communicator *communicator );
-   int loadRT1(const pqvector<string>& fileset, Communicator *communicator);
-   int importTxt( istream& stream, const std::string& layername, bool csv );
+   int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
+   ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
+   void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
+   void updateParentRegions(ShapeMap &shapeMap);
+   int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
+   int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
@@ -336,21 +341,21 @@ public:
          return QtRegion();
    }
    // setSelSet expects a set of ref ids:
-   void setSelSet(const pvecint& selset, bool add = false)
+   void setSelSet(const std::vector<int>& selset, bool add = false)
    { if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          getDisplayedPointMap().setCurSel(selset,add);
       else if (m_view_class & VIEWAXIAL) 
          m_shape_graphs.getDisplayedMap().setCurSel(selset,add);
       else // if (m_view_class & VIEWDATA) 
          m_data_maps.getDisplayedMap().setCurSel(selset,add); }
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
          return m_data_maps.getDisplayedMap().getSelSet(); }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
@@ -395,6 +400,7 @@ public:
    int read( const std::string& filename );
    int write( const std::string& filename, int version, bool currentlayer = false);
    //
+   std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
    pqvector<AttrBody> *m_attr_conv_table;
    int convertAttributes( ifstream& stream, int version );

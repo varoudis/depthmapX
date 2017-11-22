@@ -67,7 +67,7 @@ int NtfPoint::parse(const std::string& token, bool secondhalf /* = false */)
 
 void NtfMap::fitBounds(const Line& li)
 {
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = li;
    }
    else {
@@ -97,7 +97,7 @@ Line NtfMap::makeLine(const NtfPoint& a, const NtfPoint& b)
    );
 }
 
-void NtfMap::open(const pqvector<string>& fileset, Communicator *comm)
+void NtfMap::open(const std::vector<string>& fileset, Communicator *comm)
 {
    time_t time = 0;
    qtimer( time, 0 );

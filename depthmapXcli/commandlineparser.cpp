@@ -51,11 +51,11 @@ void CommandLineParser::parse(size_t argc, char *argv[])
     }
     for ( size_t i = 1; i < argc;  )
     {
-        if ( strcmp("-h", argv[i])== 0)
+        if ( std::strcmp("-h", argv[i])== 0)
         {
             return;
         }
-        else if ( strcmp ("-m", argv[i]) == 0)
+        else if ( std::strcmp ("-m", argv[i]) == 0)
         {
             if ( _modeParser)
             {
@@ -78,22 +78,22 @@ void CommandLineParser::parse(size_t argc, char *argv[])
                 throw CommandLineException(std::string("Invalid mode: ") + argv[i]);
             }
         }
-        else if ( strcmp ("-f", argv[i]) == 0)
+        else if ( std::strcmp ("-f", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-f", i)
             _fileName = argv[i];
         }
-        else if ( strcmp ("-o", argv[i]) == 0)
+        else if ( std::strcmp ("-o", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-o", i)
             _outputFile = argv[i];
         }
-        else if ( strcmp ("-t", argv[i]) == 0)
+        else if ( std::strcmp ("-t", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-t", i)
             _timingFile = argv[i];
         }
-        else if ( strcmp("-s", argv[i]) == 0)
+        else if ( std::strcmp("-s", argv[i]) == 0)
         {
             _simpleMode = true;
         }

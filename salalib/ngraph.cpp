@@ -22,8 +22,10 @@
 #include <salalib/spacepix.h>
 #include <salalib/pointdata.h>
 #include <salalib/ngraph.h>
+#include "genlib/legacyconverters.h"
+#include "genlib/containerutils.h"
 
-void Node::make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, int q_octants)
+void Node::make(const PixelRef pix, PixelRefVector *bins, float *bin_far_dists, int q_octants)
 {
    m_pixel = pix;
 
@@ -56,7 +58,7 @@ void Node::make(const PixelRef pix, PixelRefList *bins, float *bin_far_dists, in
    }
 }
 
-void Node::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
+void Node::extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark)
 {
    for (int i = 0; i < 32; i++) {
 //      if (~binmark & (1 << i)) {  // <- DON'T USE THIS, IT CAUSES TOO MANY ERRORS!
@@ -65,7 +67,7 @@ void Node::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
    }
 }
 
-void Node::extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs)
+void Node::extractMetric(std::set<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs)
 {
    //if (dist == 0.0f || concaveConnected()) { // increases effiency but is too inaccurate
    //if (dist == 0.0f || !fullyConnected()) { // increases effiency but can miss lines
@@ -78,9 +80,9 @@ void Node::extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, co
 
 // based on extract metric
 
-void Node::extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs)
+void Node::extractAngular(std::set<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs)
 {
-   if (curs.angle == 0.0f || pointdata->getPoint(curs.pixel).blocked() || pointdata->blockedAdjacent(curs.pixel)) { 
+   if (curs.angle == 0.0f || pointdata->getPoint(curs.pixel).blocked() || pointdata->blockedAdjacent(curs.pixel)) {
       for (int i = 0; i < 32; i++) {
          m_bins[i].extractAngular(pixels, pointdata, curs);
       }
@@ -182,11 +184,11 @@ PixelRef Node::cursor() const
    return m_bins[m_curbin].cursor();
 }
 
-void Node::contents(PixelRefList& hood) const
+void Node::contents(PixelRefVector& hood) const
 {
    first();
    while (!is_tail()) {
-      hood.add(cursor());
+      depthmapX::addIfNotExists(hood, cursor());
       next();
    }
 }
@@ -201,7 +203,9 @@ ifstream& Node::read(ifstream& stream, int version)
    }
    if (version >= VERSION_OCCLUSIONS) {
       for (i = 0; i < 32; i++) {
-         m_occlusion_bins[i].read(stream);
+         pvector<PixelRef> tempPvector;
+         tempPvector.read(stream);
+         m_occlusion_bins[i] = genshim::toSTLVector(tempPvector);
       }
    }
    return stream;
@@ -215,7 +219,8 @@ ofstream& Node::write(ofstream& stream, int version)
    }
    if (version >= VERSION_OCCLUSIONS) {
       for (i = 0; i < 32; i++) {
-         m_occlusion_bins[i].write(stream);
+         pvector<PixelRef> tempPvector = genshim::toPVector(m_occlusion_bins[i]);
+         tempPvector.write(stream);
       }
    }
    return stream;
@@ -233,7 +238,7 @@ ostream& operator << (ostream& stream, const Node& node)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::make(const PixelRefList& pixels, char dir)
+void Bin::make(const PixelRefVector& pixels, char dir)
 {
    if (m_pixel_vecs) {
       delete [] m_pixel_vecs;
@@ -253,11 +258,11 @@ void Bin::make(const PixelRefList& pixels, char dir)
          // Special, the diagonal should be pixels directly along the diagonal
          // Both posdiagonal and negdiagonal are positive in the x direction
          // Note that it is ordered anyway, so no need for anything too fancy:
-         if (pixels.tail().x < cur.start().x) {
-            cur.m_start = pixels.tail();
+         if (pixels.back().x < cur.start().x) {
+            cur.m_start = pixels.back();
          }
-         if (pixels.tail().x > cur.end().x) {
-            cur.m_end = pixels.tail();
+         if (pixels.back().x > cur.end().x) {
+            cur.m_end = pixels.back();
          }
 
          m_length = 1;
@@ -312,7 +317,7 @@ void Bin::make(const PixelRefList& pixels, char dir)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
+void Bin::extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark)
 {
    for (int i = 0; i < m_length; i++) {
       for (PixelRef pix = m_pixel_vecs[i].start(); pix.col(m_dir) <= m_pixel_vecs[i].end().col(m_dir); ) {
@@ -334,7 +339,7 @@ void Bin::extractUnseen(PixelRefList& pixels, PointMap *pointdata, int binmark)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs)
+void Bin::extractMetric(std::set<MetricTriple>& pixels, PointMap *pointdata, const MetricTriple& curs)
 {
    for (int i = 0; i < m_length; i++) {
       for (PixelRef pix = m_pixel_vecs[i].start(); pix.col(m_dir) <= m_pixel_vecs[i].end().col(m_dir); ) {
@@ -344,7 +349,7 @@ void Bin::extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, con
             pt.m_dist = curs.dist + (float) dist(pix,curs.pixel);
             // n.b. dmap v4.06r now sets angle in range 0 to 4 (1 = 90 degrees)
             pt.m_cumangle = pointdata->getPoint(curs.pixel).m_cumangle + (curs.lastpixel == NoPixel ? 0.0f : (float) (angle(pix,curs.pixel,curs.lastpixel) / (M_PI * 0.5)));
-            pixels.add(MetricTriple(pt.m_dist, pix, curs.pixel));
+            pixels.insert(MetricTriple(pt.m_dist, pix, curs.pixel));
          }
          pix.move(m_dir);
       }
@@ -353,7 +358,7 @@ void Bin::extractMetric(pqvector<MetricTriple>& pixels, PointMap *pointdata, con
 
 // based on metric
 
-void Bin::extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs)
+void Bin::extractAngular(std::set<AngularTriple>& pixels, PointMap *pointdata, const AngularTriple& curs)
 {
    for (int i = 0; i < m_length; i++) {
       for (PixelRef pix = m_pixel_vecs[i].start(); pix.col(m_dir) <= m_pixel_vecs[i].end().col(m_dir); ) {
@@ -363,7 +368,7 @@ void Bin::extractAngular(pqvector<AngularTriple>& pixels, PointMap *pointdata, c
             float ang = (curs.lastpixel == NoPixel) ? 0.0f : (float) (angle(pix,curs.pixel,curs.lastpixel) / (M_PI * 0.5));
             if (pt.m_cumangle == -1.0 || curs.angle + ang < pt.m_cumangle) {
                pt.m_cumangle = pointdata->getPoint(curs.pixel).m_cumangle + ang;
-               pixels.add(AngularTriple(pt.m_cumangle, pix, curs.pixel));
+               pixels.insert(AngularTriple(pt.m_cumangle, pix, curs.pixel));
             }
          }
          pix.move(m_dir);
@@ -396,11 +401,11 @@ bool Bin::containsPoint(const PixelRef p) const
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::contents(PixelRefList& hood) 
+void Bin::contents(PixelRefVector& hood)
 {
    first();
    while (!is_tail()) {
-      hood.add((int) m_curpix);
+      depthmapX::addIfNotExists(hood, m_curpix);
       next();
    }
 }
