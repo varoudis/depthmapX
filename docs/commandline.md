@@ -192,3 +192,7 @@ argument) should be a csv file, not a graph file in this mode.
 The file provided by -f here will be used as the base. If that fileis not a 
 graph, a new graph will be created and the file will be imported.
 - `-if <file(s) to import>` one or more files to import
+
+Example for importing a dxf:
+
+`./depthmapXcli -f in.dxf -o out.graph`
