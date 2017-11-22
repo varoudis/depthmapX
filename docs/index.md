@@ -7,6 +7,7 @@ under active development by a small team of members of Bartlett School of
 Architecture at UCL and volunteers.
 
 ## Table of Contents
+- [About](./about.md)
 - [Using the Graphical User Interface (GUI)](./gui.md)
 - [The command line interface](./commandline.md)
 
