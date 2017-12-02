@@ -3479,7 +3479,7 @@ bool ShapeMap::makeBSPtree() const
       return true;
    }
 
-   prefvec<TaggedLine> partitionlines;
+   std::vector<TaggedLine> partitionlines;
    for (size_t i = 0; i < m_shapes.size(); i++) {
       if (m_shapes[i].isLine()) {
          partitionlines.push_back(TaggedLine(m_shapes.value(i).getLine(),m_shapes.key(i)));

@@ -644,7 +644,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       return true;
    }
 
-   prefvec<TaggedLine> partitionlines;
+   std::vector<TaggedLine> partitionlines;
    for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
       for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
          // chooses the first editable layer it can find:

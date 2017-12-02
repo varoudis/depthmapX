@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include "genlib/paftl.h"
 #include "p2dpoly.h"
 
 // Binary Space Partition
@@ -25,10 +24,10 @@
 struct BSPNode
 {
 private:
-    std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > makeLines(Communicator *communicator,
-                                                                   time_t atime,
-                                                                   const prefvec<TaggedLine>& lines,
-                                                                   BSPNode *par);
+    std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > makeLines(Communicator *communicator,
+                                                                           time_t atime,
+                                                                           const std::vector<TaggedLine>& lines,
+                                                                           BSPNode *par);
 public:
    enum { BSPLEFT, BSPRIGHT };
    BSPNode *left;
@@ -47,7 +46,7 @@ public:
    bool isLeaf() {
       return left == NULL && right == NULL;
    }
-   void make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par);
+   void make(Communicator *communicator, time_t atime, const std::vector<TaggedLine> &lines, BSPNode *par);
    int classify(const Point2f& p);
    const Line& getLine() const { return line; }
    const int getTag() const { return m_tag; }

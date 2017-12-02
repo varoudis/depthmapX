@@ -20,14 +20,14 @@
 
 // Binary Space Partition
 
-void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par)
+void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<TaggedLine>& lines, BSPNode *par)
 {
 
     std::stack<BSPNode *> nodeStack;
-    std::stack<prefvec<TaggedLine> > leftLinesStack;
-    std::stack<prefvec<TaggedLine> > rightLinesStack;
+    std::stack<std::vector<TaggedLine> > leftLinesStack;
+    std::stack<std::vector<TaggedLine> > rightLinesStack;
 
-    typedef std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > TagLineVecPair;
+    typedef std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > TagLineVecPair;
     TagLineVecPair leftRightLines = makeLines(communicator, atime, lines, par);
 
     parent = par;
@@ -38,9 +38,9 @@ void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<Tagge
     while(nodeStack.size() > 0) {
         BSPNode *currNode = nodeStack.top();
         nodeStack.pop();
-        prefvec<TaggedLine> currLeftLines = leftLinesStack.top();
+        std::vector<TaggedLine> currLeftLines = leftLinesStack.top();
         leftLinesStack.pop();
-        prefvec<TaggedLine> currRightLines = rightLinesStack.top();
+        std::vector<TaggedLine> currRightLines = rightLinesStack.top();
         rightLinesStack.pop();
 
         if (currLeftLines.size()) {
@@ -60,9 +60,9 @@ void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<Tagge
     }
 }
 
-std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
+std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
                                                                         time_t atime,
-                                                                        const prefvec<TaggedLine>& lines,
+                                                                        const std::vector<TaggedLine> &lines,
                                                                         BSPNode *par)
 {
    m_count++;
@@ -77,13 +77,13 @@ std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > BSPNode::makeLines(Communic
       }
    }
 
-   prefvec<TaggedLine> leftlines;
-   prefvec<TaggedLine> rightlines;
+   std::vector<TaggedLine> leftlines;
+   std::vector<TaggedLine> rightlines;
 
    parent = par;
 
    // for optimization of the tree (this reduced a six-minute gen time to a 38 second gen time)
-   size_t chosen = paftl::npos;
+   int chosen = -1;
    if (lines.size() > 3) {
       size_t i;
       Point2f midpoint;
@@ -99,22 +99,22 @@ std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > BSPNode::makeLines(Communic
       for (i = 0; i < lines.size(); i++) {
          const Line& line = lines[i].line;
          if (ver) {
-            if (line.height() > line.width() && (chosen == paftl::npos || dist(line.midpoint(),midpoint) < chosendist)) {
+            if (line.height() > line.width() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
                chosen = i;
                chosendist = dist(line.midpoint(),midpoint);
             }
          }
          else {
-            if (line.width() > line.height() && (chosen == paftl::npos || dist(line.midpoint(),midpoint) < chosendist)) {
+            if (line.width() > line.height() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
                chosen = i;
                chosendist = dist(line.midpoint(),midpoint);
             }
          }
       }
       // argh... and again... there weren't any hoz / ver:
-      if (chosen == paftl::npos) {
+      if (chosen == -1) {
          for (size_t i = 0; i < lines.size(); i++) {
-            if (chosen == paftl::npos || dist(lines[i].line.midpoint(),midpoint) < chosendist) {
+            if (chosen == -1 || dist(lines[i].line.midpoint(),midpoint) < chosendist) {
                chosen = i;
                chosendist = dist(lines[i].line.midpoint(),midpoint);
             }
