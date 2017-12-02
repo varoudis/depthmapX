@@ -16,10 +16,54 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "bspnode.h"
+#include <stack>
 
 // Binary Space Partition
 
 void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<TaggedLine>& lines, BSPNode *par)
+{
+
+    std::stack<BSPNode *> nodeStack;
+    std::stack<prefvec<TaggedLine> > leftLinesStack;
+    std::stack<prefvec<TaggedLine> > rightLinesStack;
+
+    typedef std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > TagLineVecPair;
+    TagLineVecPair leftRightLines = makeLines(communicator, atime, lines, par);
+
+    parent = par;
+    nodeStack.push(this);
+    leftLinesStack.push(leftRightLines.first);
+    rightLinesStack.push(leftRightLines.second);
+
+    while(nodeStack.size() > 0) {
+        BSPNode *currNode = nodeStack.top();
+        nodeStack.pop();
+        prefvec<TaggedLine> currLeftLines = leftLinesStack.top();
+        leftLinesStack.pop();
+        prefvec<TaggedLine> currRightLines = rightLinesStack.top();
+        rightLinesStack.pop();
+
+        if (currLeftLines.size()) {
+           currNode->left = new BSPNode();
+           TagLineVecPair leftRightLinesFromLeft = currNode->left->makeLines(communicator,atime,currLeftLines,currNode);
+           nodeStack.push(currNode->left);
+           leftLinesStack.push(leftRightLinesFromLeft.first);
+           rightLinesStack.push(leftRightLinesFromLeft.second);
+        }
+        if (currRightLines.size()) {
+           currNode->right = new BSPNode();
+           TagLineVecPair leftRightLinesFromRight = currNode->right->makeLines(communicator,atime,currRightLines,currNode);
+           nodeStack.push(currNode->right);
+           leftLinesStack.push(leftRightLinesFromRight.first);
+           rightLinesStack.push(leftRightLinesFromRight.second);
+        }
+    }
+}
+
+std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
+                                                                        time_t atime,
+                                                                        const prefvec<TaggedLine>& lines,
+                                                                        BSPNode *par)
 {
    m_count++;
 
@@ -126,14 +170,7 @@ void BSPNode::make(Communicator *communicator, time_t atime, const prefvec<Tagge
       }
    }
 
-   if (leftlines.size()) {
-      left = new BSPNode();
-      left->make(communicator,atime,leftlines,this);
-   }
-   if (rightlines.size()) {
-      right = new BSPNode();
-      right->make(communicator,atime,rightlines,this);
-   }
+   return std::make_pair(leftlines, rightlines);
 }
 
 int BSPNode::classify(const Point2f& p)

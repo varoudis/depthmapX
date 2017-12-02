@@ -24,6 +24,11 @@
 
 struct BSPNode
 {
+private:
+    std::pair<prefvec<TaggedLine>, prefvec<TaggedLine> > makeLines(Communicator *communicator,
+                                                                   time_t atime,
+                                                                   const prefvec<TaggedLine>& lines,
+                                                                   BSPNode *par);
 public:
    enum { BSPLEFT, BSPRIGHT };
    BSPNode *left;
