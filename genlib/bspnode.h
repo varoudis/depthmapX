@@ -28,6 +28,7 @@ private:
                                                                            time_t atime,
                                                                            const std::vector<TaggedLine>& lines,
                                                                            BSPNode *par);
+    int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 public:
    enum { BSPLEFT, BSPRIGHT };
    BSPNode *left;

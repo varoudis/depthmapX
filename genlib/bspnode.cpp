@@ -51,6 +51,46 @@ void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<T
     }
 }
 
+int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par) {
+    int chosen = -1;
+    size_t i;
+    Point2f midpoint;
+    for (i = 0; i < lines.size(); i++) {
+       midpoint += lines[i].line.start() + lines[i].line.end();
+    }
+    midpoint /= 2.0 * lines.size();
+    bool ver = true;
+    if (par && par->line.height() > par->line.width()) {
+       ver = false;
+    }
+    double chosendist = -1.0;
+    for (i = 0; i < lines.size(); i++) {
+       const Line& line = lines[i].line;
+       if (ver) {
+          if (line.height() > line.width() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
+             chosen = i;
+             chosendist = dist(line.midpoint(),midpoint);
+          }
+       }
+       else {
+          if (line.width() > line.height() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
+             chosen = i;
+             chosendist = dist(line.midpoint(),midpoint);
+          }
+       }
+    }
+    // argh... and again... there weren't any hoz / ver:
+    if (chosen == -1) {
+       for (size_t i = 0; i < lines.size(); i++) {
+          if (chosen == -1 || dist(lines[i].line.midpoint(),midpoint) < chosendist) {
+             chosen = i;
+             chosendist = dist(lines[i].line.midpoint(),midpoint);
+          }
+       }
+    }
+    return chosen;
+}
+
 std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
                                                                         time_t atime,
                                                                         const std::vector<TaggedLine> &lines,
@@ -76,41 +116,7 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
    // for optimization of the tree (this reduced a six-minute gen time to a 38 second gen time)
    int chosen = -1;
    if (lines.size() > 3) {
-      size_t i;
-      Point2f midpoint;
-      for (i = 0; i < lines.size(); i++) {
-         midpoint += lines[i].line.start() + lines[i].line.end();
-      }
-      midpoint /= 2.0 * lines.size();
-      bool ver = true;
-      if (par && par->line.height() > par->line.width()) {
-         ver = false;
-      }
-      double chosendist = -1.0;
-      for (i = 0; i < lines.size(); i++) {
-         const Line& line = lines[i].line;
-         if (ver) {
-            if (line.height() > line.width() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
-               chosen = i;
-               chosendist = dist(line.midpoint(),midpoint);
-            }
-         }
-         else {
-            if (line.width() > line.height() && (chosen == -1 || dist(line.midpoint(),midpoint) < chosendist)) {
-               chosen = i;
-               chosendist = dist(line.midpoint(),midpoint);
-            }
-         }
-      }
-      // argh... and again... there weren't any hoz / ver:
-      if (chosen == -1) {
-         for (size_t i = 0; i < lines.size(); i++) {
-            if (chosen == -1 || dist(lines[i].line.midpoint(),midpoint) < chosendist) {
-               chosen = i;
-               chosendist = dist(lines[i].line.midpoint(),midpoint);
-            }
-         }
-      }
+      chosen = pickMidpointLine(lines, par);
    }
    else {
       chosen = pafrand() % lines.size();
