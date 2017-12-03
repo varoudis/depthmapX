@@ -23,39 +23,30 @@
 void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<TaggedLine>& lines, BSPNode *par)
 {
 
-    std::stack<BSPNode *> nodeStack;
-    std::stack<std::vector<TaggedLine> > leftLinesStack;
-    std::stack<std::vector<TaggedLine> > rightLinesStack;
-
     typedef std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > TagLineVecPair;
-    TagLineVecPair leftRightLines = makeLines(communicator, atime, lines, par);
+
+    std::stack<BSPNode *> nodeStack;
+    std::stack<TagLineVecPair> lineStack;
 
     parent = par;
     nodeStack.push(this);
-    leftLinesStack.push(leftRightLines.first);
-    rightLinesStack.push(leftRightLines.second);
+    lineStack.push(makeLines(communicator, atime, lines, par));
 
     while(nodeStack.size() > 0) {
         BSPNode *currNode = nodeStack.top();
         nodeStack.pop();
-        std::vector<TaggedLine> currLeftLines = leftLinesStack.top();
-        leftLinesStack.pop();
-        std::vector<TaggedLine> currRightLines = rightLinesStack.top();
-        rightLinesStack.pop();
+        TagLineVecPair currLines = lineStack.top();
+        lineStack.pop();
 
-        if (currLeftLines.size()) {
+        if (currLines.first.size()) {
            currNode->left = new BSPNode();
-           TagLineVecPair leftRightLinesFromLeft = currNode->left->makeLines(communicator,atime,currLeftLines,currNode);
            nodeStack.push(currNode->left);
-           leftLinesStack.push(leftRightLinesFromLeft.first);
-           rightLinesStack.push(leftRightLinesFromLeft.second);
+           lineStack.push(currNode->left->makeLines(communicator,atime,currLines.first,currNode));
         }
-        if (currRightLines.size()) {
+        if (currLines.second.size()) {
            currNode->right = new BSPNode();
-           TagLineVecPair leftRightLinesFromRight = currNode->right->makeLines(communicator,atime,currRightLines,currNode);
            nodeStack.push(currNode->right);
-           leftLinesStack.push(leftRightLinesFromRight.first);
-           rightLinesStack.push(leftRightLinesFromRight.second);
+           lineStack.push(currNode->right->makeLines(communicator,atime,currLines.second,currNode));
         }
     }
 }
