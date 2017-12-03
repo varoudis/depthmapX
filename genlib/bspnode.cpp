@@ -20,6 +20,16 @@
 
 // Binary Space Partition
 
+/* Takes a set of lines and creates a binary-space-partition tree by starting from a
+ * root node, setting its left and right nodes and recursively doing the same process
+ * over those. Through this process the set of lines is split in two (one set for each
+ * left and right nodes) and those are split and passed again further down the recursion.
+ * While the original implementation was actually recursive it was hitting the recursion
+ * limit when the input was a large number of lines that fell on the same side (i.e. an
+ * arc divided in 500 pieces). It has been refactored here to an iterative solution, where
+ * the current node (left or right) is pushed to a stack along with the relevant set of lines.
+ */
+
 void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<TaggedLine>& lines, BSPNode *par)
 {
 
@@ -50,6 +60,10 @@ void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<T
         }
     }
 }
+
+/* Finds the midpoint from all the lines given and returns the index of the line
+ * closest to it.
+ */
 
 int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par) {
     int chosen = -1;
@@ -90,6 +104,13 @@ int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par
     }
     return chosen;
 }
+
+/* Breaks a set of lines in two (left-right). First chooses a line closest to the midpoint
+ * of the set ("chosen") and then classifies lines left or right depending on whether they
+ * lie clockwise or anti-clockwise of the chosen one (with chosen start as centre, angles
+ * from the chosen end up to 180 are clockwise, down to -180 anti-clockwise). Lines that cross
+ * from one side of the chosen to the other are split in two and each part goes to the relevant set.
+ */
 
 std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
                                                                         time_t atime,
