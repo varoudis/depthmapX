@@ -23,12 +23,6 @@
 
 struct BSPNode
 {
-private:
-    std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > makeLines(Communicator *communicator,
-                                                                           time_t atime,
-                                                                           const std::vector<TaggedLine>& lines,
-                                                                           BSPNode *par);
-    int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 public:
    enum { BSPLEFT, BSPRIGHT };
    BSPNode *left;
@@ -51,4 +45,9 @@ public:
    int classify(const Point2f& p);
    const Line& getLine() const { return line; }
    const int getTag() const { return m_tag; }
+   std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > makeLines(Communicator *communicator,
+                                                                          time_t atime,
+                                                                          const std::vector<TaggedLine>& lines,
+                                                                          BSPNode *par);
+   int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 };
