@@ -35,6 +35,8 @@
 #include <salalib/ngraph.h>
 #include <salalib/importutils.h>
 
+#include "mgraph440/mgraph.h";
+
 // Quick mod - TV
 #pragma warning (disable: 4800)
 
@@ -2687,6 +2689,15 @@ int MetaGraph::read( const std::string& filename )
    if (version > METAGRAPH_VERSION) {
       stream.close();
       return NEWER_VERSION;
+   }
+   if (version < METAGRAPH_VERSION) {
+       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
+       auto result = mgraph->read(filename);
+       if ( result != mgraph440::MetaGraph::OK)
+       {
+           return DAMAGED_FILE;
+       }
+       return OK;
    }
    if (version == VERSION_VIEW_CLASS_ADDED) {
       stream.close();

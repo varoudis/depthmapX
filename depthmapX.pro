@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 CONFIG+=ordered
 SUBDIRS = \
+    mgraph440 \
     genlib \
     salalib \
     settingsdialog \
@@ -12,4 +13,4 @@ SUBDIRS = \
     salaTest \
     genlibTest \
     depthmapXTest
-GuiApp.depends = depthmapX genlib salalib settingsdialog
+GuiApp.depends = depthmapX genlib mgraph440 salalib settingsdialog
