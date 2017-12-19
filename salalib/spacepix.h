@@ -472,22 +472,16 @@ bool SpacePixelGroup<T>::findNextShape(bool& nextlayer) const
 template <class T>
 bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer )
 {
-   if (version >= VERSION_SPACEPIXELGROUPS) {
-      m_name = dXstring::readString(stream);
-      stream.read( (char *) &m_region, sizeof(m_region) );
-      int count;
-      stream.read( (char *) &count, sizeof(count) );
-      for (int i = 0; i < count; i++) {
-         SpacePixelGroup<T>::push_back(T());
-         prefvec<T>::tail().read(stream,version,true);
-      }
+
+   m_name = dXstring::readString(stream);
+   stream.read( (char *) &m_region, sizeof(m_region) );
+   int count;
+   stream.read( (char *) &count, sizeof(count) );
+   for (int i = 0; i < count; i++) {
+       SpacePixelGroup<T>::push_back(T());
+       prefvec<T>::tail().read(stream,version,true);
    }
-   else {
-      m_name = "<unknown>";
-      SpacePixelGroup<T>::push_back(T());
-      prefvec<T>::tail().read(stream,version,true);
-      m_region = prefvec<T>::tail().getRegion();
-   }
+
    if (m_name.empty()) {
       m_name = "<unknown>";
    }

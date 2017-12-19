@@ -475,13 +475,9 @@ public:
    //
    ifstream& read( ifstream& stream, streampos offset, int metagraph_version )
    {
-      if (metagraph_version >= VERSION_BINS_INTROD) {
-         m_nodes.read(stream,offset);  // read from offset...
-         m_bins.read(stream);          // <- and now read bins straight away
-      }
-      else {
-         m_nodes.read(stream,offset);  // no angular before version 30
-      }
+      m_nodes.read(stream,offset);  // read from offset...
+      m_bins.read(stream);          // <- and now read bins straight away
+
       return stream;
    }
    ofstream& write(ofstream& stream )

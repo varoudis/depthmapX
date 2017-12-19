@@ -201,13 +201,13 @@ ifstream& Node::read(ifstream& stream, int version)
    for (i = 0; i < 32; i++) {
       m_bins[i].read(stream, version);
    }
-   if (version >= VERSION_OCCLUSIONS) {
-      for (i = 0; i < 32; i++) {
-         pvector<PixelRef> tempPvector;
-         tempPvector.read(stream);
-         m_occlusion_bins[i] = genshim::toSTLVector(tempPvector);
-      }
+
+   for (i = 0; i < 32; i++) {
+      pvector<PixelRef> tempPvector;
+      tempPvector.read(stream);
+      m_occlusion_bins[i] = genshim::toSTLVector(tempPvector);
    }
+
    return stream;
 }
 
@@ -217,11 +217,10 @@ ofstream& Node::write(ofstream& stream, int version)
    for (i = 0; i < 32; i++) {
       m_bins[i].write(stream,version);
    }
-   if (version >= VERSION_OCCLUSIONS) {
-      for (i = 0; i < 32; i++) {
-         pvector<PixelRef> tempPvector = genshim::toPVector(m_occlusion_bins[i]);
-         tempPvector.write(stream);
-      }
+
+   for (i = 0; i < 32; i++) {
+      pvector<PixelRef> tempPvector = genshim::toPVector(m_occlusion_bins[i]);
+      tempPvector.write(stream);
    }
    return stream;
 }
@@ -442,62 +441,28 @@ ifstream& Bin::read(ifstream& stream, int version)
 {
    stream.read( (char *) &m_dir, sizeof(m_dir) );
    stream.read( (char *) &m_node_count, sizeof(m_node_count) );
-   if (version >= VERSION_FILE_COMPRESSION) {
-      if (version >= VERSION_ALWAYS_RECORD_BINDISTANCES) {
-         stream.read( (char *) &m_distance, sizeof(m_distance) );
-         stream.read( (char *) &m_occ_distance, sizeof(m_occ_distance) );
-      }
-      if (m_node_count) {
-         if (version < VERSION_ALWAYS_RECORD_BINDISTANCES) {
-            stream.read( (char *) &m_distance, sizeof(m_distance) );
-         }
-         if (m_dir & PixelRef::DIAGONAL) {
-            m_length = 1;
-            m_pixel_vecs = new PixelVec [m_length];
-            m_pixel_vecs[0].read(stream, version, m_dir);
-         }
-         else {
-            stream.read( (char *) &m_length, sizeof(m_length) );
-            m_pixel_vecs = new PixelVec [m_length];
-            m_pixel_vecs[0].read(stream, version, m_dir);
-            for (int i = 1; i < m_length; i++) {
-               m_pixel_vecs[i].read(stream, version, m_dir,m_pixel_vecs[i-1]);
-            }
-         }
-         if (version < VERSION_ALWAYS_RECORD_BINDISTANCES) {
-            if (version >= VERSION_OCCDISTANCES) {
-               stream.read( (char *) &m_occ_distance, sizeof(m_occ_distance) );
-            }
-            else {
-               m_occ_distance = 0.0f;
-            }
-         }
+
+   stream.read( (char *) &m_distance, sizeof(m_distance) );
+   stream.read( (char *) &m_occ_distance, sizeof(m_occ_distance) );
+
+   if (m_node_count) {
+      if (m_dir & PixelRef::DIAGONAL) {
+         m_length = 1;
+         m_pixel_vecs = new PixelVec [m_length];
+         m_pixel_vecs[0].read(stream, version, m_dir);
       }
       else {
-         m_pixel_vecs = NULL;
-         m_length = 0;
-         if (version < VERSION_ALWAYS_RECORD_BINDISTANCES) {
-            m_distance = 0.0f;
-            m_occ_distance = 0.0f;
+         stream.read( (char *) &m_length, sizeof(m_length) );
+         m_pixel_vecs = new PixelVec [m_length];
+         m_pixel_vecs[0].read(stream, version, m_dir);
+         for (int i = 1; i < m_length; i++) {
+            m_pixel_vecs[i].read(stream, version, m_dir,m_pixel_vecs[i-1]);
          }
       }
    }
    else {
-      stream.read( (char *) &m_length, sizeof(m_length) );
-      if (version >= VERSION_BINDISTANCES) {
-         stream.read( (char *) &m_distance, sizeof(m_distance) );
-      }
-      else {
-         m_distance = 0.0f;
-      }
-      if (m_pixel_vecs) {
-         delete m_pixel_vecs;
-         m_pixel_vecs = NULL;
-      }
-      if (m_length) {
-         m_pixel_vecs = new PixelVec [m_length];
-         stream.read( (char *) m_pixel_vecs, sizeof(PixelVec) * m_length);
-      }
+      m_pixel_vecs = NULL;
+      m_length = 0;
    }
 
    return stream;
@@ -507,14 +472,12 @@ ofstream& Bin::write(ofstream& stream, int version)
 {
    stream.write( (char *) &m_dir, sizeof(m_dir) );
    stream.write( (char *) &m_node_count, sizeof(m_node_count) );
-   if (version >= VERSION_ALWAYS_RECORD_BINDISTANCES) {
-      stream.write( (char *) &m_distance, sizeof(m_distance) );
-      stream.write( (char *) &m_occ_distance, sizeof(m_occ_distance) );
-   }
+
+   stream.write( (char *) &m_distance, sizeof(m_distance) );
+   stream.write( (char *) &m_occ_distance, sizeof(m_occ_distance) );
+
    if (m_node_count) {
-      if (version < VERSION_ALWAYS_RECORD_BINDISTANCES) {
-         stream.write( (char *) &m_distance, sizeof(m_distance) );
-      }
+
       if (m_dir & PixelRef::DIAGONAL) {
          m_pixel_vecs[0].write(stream,m_dir);
       }
@@ -524,9 +487,6 @@ ofstream& Bin::write(ofstream& stream, int version)
          for (int i = 1; i < m_length; i++) {
             m_pixel_vecs[i].write(stream,m_dir,m_pixel_vecs[i-1]);
          }
-      }
-      if (version >= VERSION_OCCDISTANCES && version < VERSION_ALWAYS_RECORD_BINDISTANCES) {
-         stream.write( (char *) &m_occ_distance, sizeof(m_occ_distance) );
       }
    }
 

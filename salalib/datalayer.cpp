@@ -154,9 +154,7 @@ bool DataObject::read(ifstream& stream, int version)
    stream.read( (char *) &m_object_ref, sizeof(int) );
    m_object_name = dXstring::readString(stream);
    m_data_cols.read(stream);
-   if (version >= VERSION_LAYERS_CENTROID_INTROD) {
-      stream.read( (char *) &m_centroid, sizeof(Point2f) );
-   }
+   stream.read( (char *) &m_centroid, sizeof(Point2f) );
    // default values for selection / output color
    m_selected = false;
    m_color = 0.0f;

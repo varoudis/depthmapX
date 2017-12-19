@@ -35,8 +35,6 @@
 #include <salalib/ngraph.h>
 #include <salalib/importutils.h>
 
-#include "mgraph440/mgraph.h";
-
 // Quick mod - TV
 #pragma warning (disable: 4800)
 
@@ -2691,33 +2689,22 @@ int MetaGraph::read( const std::string& filename )
       return NEWER_VERSION;
    }
    if (version < METAGRAPH_VERSION) {
-       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
-       auto result = mgraph->read(filename);
-       if ( result != mgraph440::MetaGraph::OK)
-       {
-           return DAMAGED_FILE;
-       }
+//       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
+//       auto result = mgraph->read(filename);
+//       if ( result != mgraph440::MetaGraph::OK)
+//       {
+//           return DAMAGED_FILE;
+//       }
+
        return OK;
-   }
-   if (version == VERSION_VIEW_CLASS_ADDED) {
-      stream.close();
-      return DEPRECATED_VERSION; // trial version no longer supported
    }
 
    // have to use temporary state here as redraw attempt may come too early:
    int temp_state = 0;
-   if (version >= VERSION_STATE_RECORDED) {
-      stream.read( (char *) &temp_state, sizeof( temp_state ) );      
-   }
-
-   if (version >= VERSION_VIEW_CLASS_ADDED) {
-      stream.read( (char *) &m_view_class, sizeof(m_view_class) );
-   }
-
-   if (version >= VERSION_STORE_GRIDTEXTINFO) {
-      stream.read( (char *) &m_showgrid, sizeof(m_showgrid) );
-      stream.read( (char *) &m_showtext, sizeof(m_showtext) );
-   }
+   stream.read( (char *) &temp_state, sizeof( temp_state ) );
+   stream.read( (char *) &m_view_class, sizeof(m_view_class) );
+   stream.read( (char *) &m_showgrid, sizeof(m_showgrid) );
+   stream.read( (char *) &m_showtext, sizeof(m_showtext) );
 
    // type codes: x --- properties
    //             v --- virtual graph (from versions below 70)
@@ -2785,27 +2772,8 @@ int MetaGraph::read( const std::string& filename )
       }
    }
    if (type == 'p') {
-      if (version < VERSION_NGRAPH_INTROD) {
-         // This hasn't been coded yet
-         stream.close();
-         return DEPRECATED_VERSION;
-      }
-      if (version < VERSION_POINT_MAPS) {
-         PointMaps::push_back(PointMap());
-         if (temp_state & 0x0001) { // 0x0001 was "GRAPH"
-            PointMaps::tail().m_processed = true;
-            temp_state &= ~0x0001;
-         }
-         if (temp_state & 0x0080) { // 0x0080 was "BOUNDARYGRAPH"
-            PointMaps::tail().m_boundarygraph = true;
-            temp_state &= ~0x0080;
-         }
-         PointMaps::tail().read( stream, version );
-         setDisplayedPointMapRef(0);
-      }
-      else {
-         PointMaps::read( stream, version );
-      }
+      PointMaps::read( stream, version );
+
       PointMaps::setSpacePixel( (SuperSpacePixel *) this );
       temp_state |= POINTMAPS;
       if (!stream.eof()) {
@@ -2813,15 +2781,6 @@ int MetaGraph::read( const std::string& filename )
       }
    }
    if (type == 'g') {
-      // Note the older version stored its attributes in a different location...
-      // ...well, actually, now it's been rearranged, pretty similar to the original...
-      // hasn't been coded yet, though (see above)
-      if (version < VERSION_NGRAPH_INTROD) {
-         if (!convertAttributes( stream, version )) {
-            stream.close();
-            return DAMAGED_FILE;
-         }
-      }
       // record on state of actual point map:
       PointMaps::tail().m_processed = true;
 
@@ -2863,26 +2822,6 @@ int MetaGraph::read( const std::string& filename )
    if (type == 'x') {
       m_shape_graphs.read( stream, version );
       temp_state |= SHAPEGRAPHS;
-      /*
-      // THIS CODE IS NO LONGER REQUIRED AS AXIAL MAPS *ARE* SHAPE MAPS -- can just be switched to shape map layer
-      if (version < VERSION_SHAPE_MAPS && m_shape_graphs.m_gate_map != -1) {
-         // check for a gate map:
-         convertShapeGraphToShapeMap(m_shape_graphs.at(m_shape_graphs.m_gate_map));
-         // delete the gate map:
-         m_shape_graphs.remove_at(m_shape_graphs.m_gate_map);
-         if (m_shape_graphs.m_displayed_map >= m_shape_graphs.m_gate_map) {
-            int map = m_shape_graphs.m_displayed_map;
-            m_shape_graphs.m_displayed_map = -1; // <- have to do this as setDisplayedShapeGraph clearSels a map that may not exist anymore
-            setDisplayedShapeGraph(map-1);
-         }
-         m_shape_graphs.m_gate_map = -1;
-         if (m_shape_graphs.size() == 0) {
-            temp_state &= ~SHAPEGRAPHS;
-         }
-         // assume objects read in okay:
-         temp_state |= DATAMAPS;
-      }
-      */
       if (!stream.eof()) {
          stream.read( &type, 1 );         
       }
@@ -2898,29 +2837,6 @@ int MetaGraph::read( const std::string& filename )
    stream.close();
 
    m_state = temp_state;
-
-   if (version < VERSION_VIEW_CLASS_ADDED) {
-      if (m_state & POINTMAPS) {
-         m_view_class = VIEWVGA;
-      }
-      else {
-         m_view_class = VIEWNONE;
-      }
-   }
-   
-   // Note, below version 70, the graph data must be reread:
-   if (version < VERSION_NGRAPH_INTROD && conversion_required) {
-      // reopen the stream and convert
-      stream.open(filename.c_str(), ios::binary | ios::in );
-      int ok = convertVirtualMem(stream, version);
-      stream.close();
-      return ok;
-   }
-
-   if (version == VERSION_EXTRA_POINT_DATA_INTROD || version == VERSION_NGRAPH_INTROD || version == VERSION_SEGMENT_MAPS) {
-      m_state |= BUGGY;
-      return WARN_BUGGY_VERSION;
-   }
 
    return OK;
 }
@@ -3158,9 +3074,7 @@ streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
    int nodes = -1;
    stream.read( (char *) &nodes, sizeof(nodes) );
 
-   // in angular version, have to skip two pvectors for each node:
-   if (version >= 30)
-      nodes *= 2;
+   nodes *= 2;
 
    for (int i = 0; i < nodes; i++) {
       int connections;

@@ -666,14 +666,7 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
    unsigned int count = 0;
    stream.read((char *) &count, sizeof(count));
-   if (version < VERSION_NO_SHAPEMAP_NAME_LOOKUP) {
-      for (size_t i = 0; i < size_t(count); i++) {
-         // dummy name lookup (now simply creates on fly, as the name lookup may be corrupted in earlier versions)
-         std::string name = dXstring::readString(stream);
-         int number;
-         stream.read((char *)&number,sizeof(number));
-      }
-   }
+
    for (size_t j = 0; j < size_t(count); j++) {
       ShapeMaps<T>::push_back(T());
       prefvec<T>::tail().read(stream,version);
