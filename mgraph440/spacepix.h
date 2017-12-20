@@ -86,6 +86,7 @@ public:
 
 public:
    bool read( ifstream& stream, int version, bool drawinglayer = true );
+   bool write( ofstream& stream, int version );
 };
 
 template <class T>
@@ -113,6 +114,20 @@ bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer 
    return true;
 }
 
+template <class T>
+bool SpacePixelGroup<T>::write( ofstream& stream, int version )
+{
+   dXstring440::writeString(stream, m_name);
+   stream.write( (char *) &m_region, sizeof(m_region) );
+
+   // Quick mod - TV
+   int count = prefvec<T>::size();
+   stream.write( (char *) &count, sizeof(count) );
+   for (int i = 0; i < count; i++) {
+      prefvec<T>::at(i).write(stream,version);
+   }
+   return true;
+}
 typedef SpacePixelGroup < ShapeMap> SpacePixelFile;
 typedef SpacePixelGroup<SpacePixelFile > SuperSpacePixel;
 

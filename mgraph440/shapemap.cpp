@@ -1286,5 +1286,95 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
    }
    return (shapeindex == paftl::npos) ? -1 : int(shapeindex); // note convert to -1
 }
+template <class T>
+bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
+{
+   if (!displayedmaponly) {
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int displayed_map = (unsigned int)(m_displayed_map);
+      stream.write((char *)&displayed_map,sizeof(displayed_map));
+      // write maps
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int count = (unsigned int) pmemvec<T*>::size();
+      stream.write((char *) &count, sizeof(count));
+      for (size_t j = 0; j < count; j++) {
+         prefvec<T>::at(j).write(stream,version);
+      }
+   }
+   else {
+      unsigned int dummy;
+      // displayed map is 0
+      dummy = 0;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // write map:
+      prefvec<T>::at(m_displayed_map).write(stream,version);
+   }
+   return true;
+}
+
+bool ShapeMap::write( ofstream& stream, int version )
+{
+   // name
+   dXstring440::writeString(stream, m_name);
+
+   stream.write( (char *) &m_map_type, sizeof(m_map_type));
+   stream.write( (char *) &m_show, sizeof(m_show) );
+   stream.write( (char *) &m_editable, sizeof(m_editable) );
+
+   // PixelBase write
+   // write extents:
+   stream.write( (char *) &m_region, sizeof(m_region) );
+   // write rows / cols
+   stream.write( (char *) &m_rows, sizeof(m_rows) );
+   stream.write( (char *) &m_cols, sizeof(m_cols) );
+
+   // write next object ref to be used:
+   stream.write((char *) &m_obj_ref, sizeof(m_obj_ref));
+   stream.write((char *) &m_shape_ref, sizeof(m_shape_ref));
+
+   // write shape data
+   int count = m_shapes.size();
+   stream.write((char *) &count, sizeof(count));
+   for (int j = 0; j < count; j++) {
+      int key = m_shapes.key(j);
+      stream.write((char *) &key, sizeof(key));
+      m_shapes.value(j).write(stream);
+   }
+   // write object data (currently unused)
+   count = m_objects.size();
+   stream.write((char *) &count, sizeof(count));
+   for (int k = 0; k < count; k++) {
+      int key = m_objects.key(k);
+      stream.write((char *) &key, sizeof(key));
+      m_objects.value(k).write(stream);
+   }
+   // write attribute data
+   m_attributes.write(stream,version);
+   stream.write((char *)&m_displayed_attribute,sizeof(m_displayed_attribute));
+
+   // write connections data
+   count = m_connectors.size();
+   stream.write((char *)&count,sizeof(count));
+
+   for (int i = 0; i < count; i++) {
+      m_connectors[i].write(stream);
+   }
+   m_links.write(stream);
+   m_unlinks.write(stream);
+
+   // some miscellaneous extra data for mapinfo files
+   if (m_mapinfodata) {
+      stream.put('m');
+      m_mapinfodata->write(stream);
+   }
+   else {
+      stream.put('x');
+   }
+
+   return true;
+}
 
 }

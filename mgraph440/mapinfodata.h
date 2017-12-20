@@ -69,6 +69,29 @@ public:
 
       return stream;
    }
+   std::ostream& write(std::ostream& stream)
+   {
+      dXstring440::writeString(stream, m_version);
+      dXstring440::writeString(stream, m_charset);
+      stream.put(m_delimiter);
+      dXstring440::writeString(stream, m_index);
+      dXstring440::writeString(stream, m_coordsys);
+      dXstring440::writeString(stream, m_bounds);
+      /*
+      // No longer used as of VERSION_MAPINFO_SHAPES
+      int columns = m_columnheads.size();
+      int rows = m_table.size();
+      stream.write((char *)&columns, sizeof(columns));
+      for (int i = 0; i < m_columnheads.size(); i++) {
+         m_columnheads[i].write(stream);
+      }
+      stream.write((char *)&rows, sizeof(rows));
+      for (int j = 0; j < m_table.size(); j++) {
+         m_table[j].write(stream);
+      }
+      */
+      return stream;
+   }
 };
 
 }

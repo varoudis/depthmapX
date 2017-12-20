@@ -20,7 +20,7 @@ public:
 
     enum { ANGULARGRAPH = 0x0010, LINEDATA = 0x0004, POINTMAPS = 0x0002, DATAMAPS = 0x0020, SHAPEGRAPHS = 0x0100, BUGGY = 0x8000 };
     enum { OK, WARN_BUGGY_VERSION, WARN_CONVERTED, NOT_A_GRAPH, DAMAGED_FILE, DISK_ERROR, NEWER_VERSION, DEPRECATED_VERSION };
-    enum { VIEWNONE = 0x00, VIEWVGA = 0x01 };
+    enum { VIEWNONE = 0x00, VIEWVGA = 0x01, VIEWAXIAL = 0x04, VIEWDATA = 0x20 };
 
     int m_state;
     int m_file_version;
@@ -41,6 +41,7 @@ public:
     int convertAttributes(ifstream &stream, int version);
     int convertVirtualMem(ifstream &stream, int version);
     int read(const std::string &filename);
+    int write( const std::string& filename, int version, bool currentlayer = false);
 };
 
 }

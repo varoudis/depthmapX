@@ -60,4 +60,27 @@ std::ifstream& Point::read(std::ifstream& stream, int version, int attr_count)
    return stream;
 }
 
+ofstream& Point::write(ofstream& stream, int version)
+{
+   stream.write( (char *) &m_state, sizeof(m_state) );
+   // block is the same size as m_noderef used to be for ease of replacement:
+   // note block is no longer used at all
+   stream.write( (char *) &m_block, sizeof(m_block) );
+   stream.write( (char *) &m_misc, sizeof(m_misc) );
+   stream.write( (char *) &m_grid_connections, sizeof(m_grid_connections) );
+   stream.write( (char *) &m_merge, sizeof(m_merge) );
+   bool ngraph;
+   if (m_node) {
+      ngraph = true;
+      stream.write( (char *) &ngraph, sizeof(ngraph) );
+      m_node->write(stream, version);
+   }
+   else {
+      ngraph = false;
+      stream.write( (char *) &ngraph, sizeof(ngraph) );
+   }
+   stream.write((char *) &m_location, sizeof(m_location));
+   return stream;
+}
+
 }

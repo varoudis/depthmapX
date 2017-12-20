@@ -180,6 +180,7 @@ public:
    void setLock(bool lock = true)
    { m_locked = lock; }
    bool read( ifstream& stream, int version );
+   bool write( ofstream& stream, int version );
    friend bool operator == (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator < (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator > (const AttributeColumn& a, const AttributeColumn& b);
@@ -284,6 +285,7 @@ public:
    { m_columns.clear(); pqmap<int,AttributeRow>::clear(); }
 
    bool read( ifstream& stream, int version );
+   bool write( ofstream& stream, int version );
 };
 
 }

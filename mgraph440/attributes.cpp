@@ -364,4 +364,52 @@ int AttributeIndex::makeIndex(const AttributeTable& table, int col, bool setdisp
    return viscount;
 }
 
+bool AttributeTable::write( ofstream& stream, int version )
+{
+
+   stream.write((char *)&m_available_layers,sizeof(int64));
+   stream.write((char *)&m_visible_layers,sizeof(int64));
+   int count = m_layers.size();
+   stream.write((char *)&count,sizeof(int));
+   for (size_t i = 0; i < m_layers.size(); i++) {
+      int64 key = m_layers.key(i);
+      stream.write((char *)&key,sizeof(key));
+      dXstring440::writeString(stream ,m_layers.value(i));
+   }
+
+   int colcount = m_columns.size();
+   stream.write((char *)&colcount, sizeof(colcount));
+   for (int j = 0; j < colcount; j++) {
+      m_columns[j].write(stream,version);
+   }
+   int rowcount = size(), rowkey;
+   stream.write((char *)&rowcount, sizeof(rowcount));
+   for (int i = 0; i < rowcount; i++) {
+      rowkey = key(i);
+      stream.write((char *)&rowkey, sizeof(rowkey));
+      stream.write((char *)&(value(i).m_layers),sizeof(int64));
+      value(i).write(stream);
+   }
+   // ref column display params
+   stream.write((char *)&m_display_params,sizeof(m_display_params));
+   return true;
+}
+
+bool AttributeColumn::write( ofstream& stream, int version )
+{
+   m_updated = false;
+   dXstring440::writeString(stream, m_name);
+   float min = (float) m_min;
+   float max = (float) m_max;
+   stream.write((char *)&min, sizeof(min));
+   stream.write((char *)&max, sizeof(max));
+   stream.write((char *)&m_tot, sizeof(m_tot));
+   stream.write((char *)&m_physical_col, sizeof(m_physical_col));
+   stream.write((char *)&m_hidden, sizeof(m_hidden));
+   stream.write((char *)&m_locked, sizeof(m_locked));
+   stream.write((char *)&m_display_params,sizeof(m_display_params));
+   dXstring440::writeString(stream, m_formula);
+   return true;
+}
+
 }

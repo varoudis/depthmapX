@@ -381,4 +381,54 @@ bool PointMap::clearSel()
    return true;
 }
 
+bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
+{
+   if (!displayedmaponly) {
+      stream.write((char *) &m_displayed_map, sizeof(m_displayed_map));
+      int count = size();
+      stream.write((char *) &count, sizeof(count));
+      for (int i = 0; i < count; i++) {
+         at(i).write( stream, version );
+      }
+   }
+   else {
+      int dummy;
+      // displayed map is 0:
+      dummy = 0;
+      stream.write((char *) &dummy, sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *) &dummy, sizeof(dummy));
+      //
+      at(m_displayed_map).write(stream, version);
+   }
+   return true;
+}
+bool PointMap::write( ofstream& stream, int version )
+{
+   dXstring440::writeString(stream, m_name);
+
+   stream.write( (char *) &m_spacing, sizeof(m_spacing) );
+
+   stream.write( (char *) &m_rows, sizeof(m_rows) );
+   stream.write( (char *) &m_cols, sizeof(m_cols) );
+
+   stream.write( (char *) &m_point_count, sizeof(m_point_count) );
+
+   stream.write( (char *) &m_bottom_left, sizeof(m_bottom_left) );
+
+   stream.write( (char *) &m_displayed_attribute, sizeof(m_displayed_attribute) );
+   m_attributes.write( stream, version );
+
+   for (int j = 0; j < m_cols; j++) {
+      for (int k = 0; k < m_rows; k++) {
+         m_points[j][k].write( stream, version );
+      }
+   }
+
+   stream.write((char *) &m_processed, sizeof(m_processed));
+   stream.write((char *) &m_boundarygraph, sizeof(m_boundarygraph));
+
+   return false;
+}
 }

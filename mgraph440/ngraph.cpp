@@ -179,6 +179,20 @@ PixelRef Bin::cursor() const
    return stream;
 }
 
+std::ofstream& Node::write(std::ofstream& stream, int version)
+{
+   int i;
+   for (i = 0; i < 32; i++) {
+      m_bins[i].write(stream,version);
+   }
+
+   for (i = 0; i < 32; i++) {
+      pvector<PixelRef> tempPvector = genshim440::toPVector(m_occlusion_bins[i]);
+      tempPvector.write(stream);
+   }
+   return stream;
+}
+
 ::std::ifstream& Bin::read(::std::ifstream& stream, int version)
 {
    stream.read( (char *) &m_dir, sizeof(m_dir) );
@@ -244,6 +258,31 @@ PixelRef Bin::cursor() const
    return stream;
 }
 
+std::ofstream& Bin::write(std::ofstream& stream, int version)
+{
+   stream.write( (char *) &m_dir, sizeof(m_dir) );
+   stream.write( (char *) &m_node_count, sizeof(m_node_count) );
+
+   stream.write( (char *) &m_distance, sizeof(m_distance) );
+   stream.write( (char *) &m_occ_distance, sizeof(m_occ_distance) );
+
+   if (m_node_count) {
+
+      if (m_dir & PixelRef::DIAGONAL) {
+         m_pixel_vecs[0].write(stream,m_dir);
+      }
+      else {
+         stream.write( (char *) &m_length, sizeof(m_length) );
+         m_pixel_vecs[0].write(stream,m_dir);
+         for (int i = 1; i < m_length; i++) {
+            m_pixel_vecs[i].write(stream,m_dir,m_pixel_vecs[i-1]);
+         }
+      }
+   }
+
+   return stream;
+}
+
 ::std::ifstream& PixelVec::read(::std::ifstream& stream, int version, const char dir)
 {
    unsigned short runlength;
@@ -295,6 +334,45 @@ struct ShiftLength {
          m_end.y = m_start.y + shiftlength.runlength;
          break;
    }
+
+   return stream;
+}
+
+std::ofstream& PixelVec::write(std::ofstream& stream, const char dir)
+{
+   stream.write((char *) &m_start, sizeof(m_start));
+   unsigned short runlength;
+   switch (dir) {
+      case PixelRef::HORIZONTAL:
+      case PixelRef::POSDIAGONAL:
+      case PixelRef::NEGDIAGONAL:
+         runlength = m_end.x - m_start.x;
+         break;
+      case PixelRef::VERTICAL:
+         runlength = m_end.y - m_start.y;
+         break;
+   }
+   stream.write((char *) &runlength, sizeof(runlength));
+
+   return stream;
+}
+
+std::ofstream& PixelVec::write(std::ofstream& stream, const char dir, const PixelVec& context)
+{
+   ShiftLength shiftlength;
+   switch (dir) {
+      case PixelRef::HORIZONTAL:
+         stream.write((char *) &(m_start.x), sizeof(m_start.x));
+         shiftlength.runlength = m_end.x - m_start.x;
+         shiftlength.shift = m_start.y - context.m_start.y;
+         break;
+      case PixelRef::VERTICAL:
+         stream.write((char *) &(m_start.y), sizeof(m_start.y));
+         shiftlength.runlength = m_end.y - m_start.y;
+         shiftlength.shift = m_start.x - context.m_start.x;
+         break;
+   }
+   stream.write((char *) &shiftlength, sizeof(shiftlength));
 
    return stream;
 }

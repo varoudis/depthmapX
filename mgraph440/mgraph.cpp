@@ -495,4 +495,99 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
    return retvar;
 }
 
+int MetaGraph::write( const std::string& filename, int version, bool currentlayer )
+{
+   ofstream stream;
+
+   int oldstate = m_state;
+   m_state = 0;   // <- temporarily clear out state, avoids any potential read / write errors
+
+   char type;
+
+   // As of MetaGraph version 70 the disk caching has been removed
+   stream.open( filename.c_str(), ios::binary | ios::out | ios::trunc );
+   if (stream.fail()) {
+      if (stream.rdbuf()->is_open()) {
+         stream.close();
+      }
+      m_state = oldstate;
+      return DISK_ERROR;
+   }
+   stream.write("grf", 3);
+   m_file_version = version; // <- note, the file may now have an updated file version
+   stream.write( (char *) &version, sizeof(version) );
+   if (currentlayer) {
+      int tempstate, tempclass;
+      if (m_view_class & VIEWVGA) {
+         tempstate = POINTMAPS;
+         tempclass = VIEWVGA;
+      }
+      else if (m_view_class & MetaGraph::VIEWAXIAL) {
+         tempstate = SHAPEGRAPHS;
+         tempclass = VIEWAXIAL;
+      }
+      else if (m_view_class & MetaGraph::VIEWDATA) {
+         tempstate = DATAMAPS;
+         tempclass = VIEWDATA;
+      }
+      stream.write( (char *) &tempstate, sizeof(tempstate) );
+      stream.write( (char *) &tempclass, sizeof(tempclass) );
+   }
+   else {
+      stream.write( (char *) &oldstate, sizeof(oldstate) );
+      stream.write( (char *) &m_view_class, sizeof(m_view_class) );
+   }
+   stream.write( (char *) &m_showgrid, sizeof(m_showgrid) );
+   stream.write( (char *) &m_showtext, sizeof(m_showtext) );
+
+   type = 'x';
+   stream.write(&type, 1);
+   FileProperties::write(stream);
+
+   if (currentlayer) {
+      if (m_view_class & MetaGraph::VIEWVGA) {
+         type = 'p';
+         stream.write(&type, 1);
+         PointMaps::write( stream, version, true );
+      }
+      else if (m_view_class & MetaGraph::VIEWAXIAL) {
+         type = 'x';
+         stream.write(&type, 1);
+         m_shape_graphs.write( stream, version, true );
+      }
+      else if (m_view_class & MetaGraph::VIEWDATA) {
+         type = 's';
+         stream.write(&type, 1);
+         m_data_maps.write( stream, version, true );
+      }
+   }
+   else {
+      if (oldstate & LINEDATA) {
+         type = 'l';
+         stream.write(&type, 1);
+         SuperSpacePixel::write( stream, version );
+      }
+      if (oldstate & POINTMAPS) {
+         type = 'p';
+         stream.write(&type, 1);
+         PointMaps::write( stream, version );
+      }
+      if (oldstate & SHAPEGRAPHS) {
+         type = 'x';
+         stream.write(&type, 1);
+         m_shape_graphs.write( stream, version );
+      }
+      if (oldstate & DATAMAPS) {
+         type = 's';
+         stream.write(&type, 1);
+         m_data_maps.write( stream, version );
+      }
+   }
+
+   stream.close();
+
+   m_state = oldstate;
+   return OK;
+}
+
 }

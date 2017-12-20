@@ -180,6 +180,17 @@ bool ShapeGraphs::readold( ifstream& stream, int version )
    return true;
 }
 
+bool ShapeGraphs::write( ofstream& stream, int version, bool displayedmaponly )
+{
+   // base class write
+   ShapeMaps<ShapeGraph>::write(stream, version, displayedmaponly);
+
+   m_poly_connections.write(stream);
+   m_radial_lines.write(stream);
+
+   return true;
+}
+
 AxialPolygons::AxialPolygons()
 {
    m_pixel_polys = NULL;

@@ -140,6 +140,7 @@ public:
    virtual ~ShapeGraphs() {;}
    bool read( ifstream& stream, int version );
    bool readold( ifstream& stream, int version );
+   bool write( ofstream& stream, int version, bool displayedmaponly = false );
 };
 
 }

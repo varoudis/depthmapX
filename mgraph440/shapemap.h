@@ -183,6 +183,7 @@ public:
     const std::string& getName() const
        { return m_name; }
     bool read( ifstream& stream, int version, bool drawinglayer = false );
+    bool write( ofstream& stream, int version );
     void invalidateDisplayedAttribute()
        { m_invalidate = true; }
     void setDisplayedAttribute( int col ) const;
@@ -236,6 +237,7 @@ public:
    { return prefvec<T>::at(index); }
    size_t getMapRef(const std::string& name) const;
    bool read( ifstream& stream, int version );
+   bool write( ofstream& stream, int version, bool displayedmaponly = false );
 };
 template <class T>
 void ShapeMaps<T>::setDisplayedMapRef(size_t map)
