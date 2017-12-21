@@ -41,7 +41,8 @@ public:
     int convertAttributes(ifstream &stream, int version);
     int convertVirtualMem(ifstream &stream, int version);
     int read(const std::string &filename);
-    int write( const std::string& filename, int version, bool currentlayer = false);
+    int writeToFile( const std::string& filename, int version, bool currentlayer = false);
+    int writeToStream(ostream &stream, int version, bool currentlayer = false);
 };
 
 }

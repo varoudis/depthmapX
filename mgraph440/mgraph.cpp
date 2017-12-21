@@ -495,14 +495,12 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
    return retvar;
 }
 
-int MetaGraph::write( const std::string& filename, int version, bool currentlayer )
+int MetaGraph::writeToFile( const std::string& filename, int version, bool currentlayer )
 {
    ofstream stream;
 
    int oldstate = m_state;
    m_state = 0;   // <- temporarily clear out state, avoids any potential read / write errors
-
-   char type;
 
    // As of MetaGraph version 70 the disk caching has been removed
    stream.open( filename.c_str(), ios::binary | ios::out | ios::trunc );
@@ -513,6 +511,15 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       m_state = oldstate;
       return DISK_ERROR;
    }
+   m_state = oldstate;
+   int result = writeToStream(stream, version, currentlayer);
+   stream.close();
+   return result;
+}
+int MetaGraph::writeToStream(std::ostream &stream, int version, bool currentlayer) {
+   int oldstate = m_state;
+   char type;
+
    stream.write("grf", 3);
    m_file_version = version; // <- note, the file may now have an updated file version
    stream.write( (char *) &version, sizeof(version) );
@@ -583,8 +590,6 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
          m_data_maps.write( stream, version );
       }
    }
-
-   stream.close();
 
    m_state = oldstate;
    return OK;

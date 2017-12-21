@@ -397,7 +397,8 @@ public:
    // a few read-write returns:
    enum { OK, WARN_BUGGY_VERSION, WARN_CONVERTED, NOT_A_GRAPH, DAMAGED_FILE, DISK_ERROR, NEWER_VERSION, DEPRECATED_VERSION };
    // likely to use communicator if too slow...
-   int read( const std::string& filename );
+   int readFromFile( const std::string& filename );
+   int readFromStream( istream &stream, const std::string& filename );
    int write( const std::string& filename, int version, bool currentlayer = false);
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
@@ -406,8 +407,8 @@ protected:
    int convertAttributes( ifstream& stream, int version );
    int convertVirtualMem( ifstream& stream, int version );
    //
-   streampos skipVirtualMem(ifstream& stream, int version);
-   streampos copyVirtualMem(ifstream& reader, ofstream& writer, int version);
+   streampos skipVirtualMem(istream &stream, int version);
+   streampos copyVirtualMem(istream& reader, ofstream& writer, int version);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -35,6 +35,9 @@
 #include <salalib/ngraph.h>
 #include <salalib/importutils.h>
 
+#include "mgraph440/mgraph.h"
+#include <sstream>
+
 // Quick mod - TV
 #pragma warning (disable: 4800)
 
@@ -2654,7 +2657,24 @@ void MetaGraph::unloadGraphAgent()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int MetaGraph::read( const std::string& filename )
+int MetaGraph::readFromFile( const std::string& filename )
+{
+
+    if (filename.empty()) {
+       return NOT_A_GRAPH;
+    }
+
+ #ifdef _WIN32
+    ifstream stream( filename.c_str(), ios::binary | ios::in );
+ #else
+    ifstream stream( filename.c_str(), ios::in );
+ #endif
+    int result = readFromStream(stream, filename);
+    stream.close();
+    return result;
+}
+
+int MetaGraph::readFromStream( std::istream &stream, const std::string& filename )
 {
    m_state = 0;   // <- clear the state out
 
@@ -2665,38 +2685,28 @@ int MetaGraph::read( const std::string& filename )
    }
    m_bsp_tree = false;
 
-   if (filename.empty()) {
-      return NOT_A_GRAPH;
-   }
-
-#ifdef _WIN32
-   ifstream stream( filename.c_str(), ios::binary | ios::in );
-#else
-   ifstream stream( filename.c_str(), ios::in );
-#endif
-
    char header[3];
    stream.read( header, 3 );
    if (stream.fail() || header[0] != 'g' || header[1] != 'r' || header[2] != 'f') {
-      stream.close();
       return NOT_A_GRAPH;
    }
    int version;
    stream.read( (char *) &version, sizeof( version ) );
    m_file_version = version;  // <- recorded for easy debugging
    if (version > METAGRAPH_VERSION) {
-      stream.close();
       return NEWER_VERSION;
    }
    if (version < METAGRAPH_VERSION) {
-//       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
-//       auto result = mgraph->read(filename);
-//       if ( result != mgraph440::MetaGraph::OK)
-//       {
-//           return DAMAGED_FILE;
-//       }
+       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
+       auto result = mgraph->read(filename);
+       if ( result != mgraph440::MetaGraph::OK)
+       {
+           return DAMAGED_FILE;
+       }
+       std::stringstream tempstream;
+       mgraph->writeToStream(tempstream, METAGRAPH_VERSION, 0);
 
-       return OK;
+       return readFromStream(tempstream, filename);
    }
 
    // have to use temporary state here as redraw attempt may come too early:
@@ -2721,7 +2731,6 @@ int MetaGraph::read( const std::string& filename )
       FileProperties::read(stream,version);
       if (stream.eof()) {
          // erk... this shouldn't happen
-         stream.close();
          return DAMAGED_FILE;
       }
       else if (!stream.eof()) {
@@ -2733,7 +2742,6 @@ int MetaGraph::read( const std::string& filename )
    }
    if (stream.eof()) {
        // file is still ok, just empty
-       stream.close();
        return OK;
    }
    if (type == 'v') {
@@ -2750,7 +2758,6 @@ int MetaGraph::read( const std::string& filename )
 
       if (stream.eof()) {
          // erk... this shouldn't happen
-         stream.close();
          return DAMAGED_FILE;
       }
       else if (!stream.eof()) {
@@ -2767,7 +2774,6 @@ int MetaGraph::read( const std::string& filename )
       }
       catch (pexception) {
          // erk... this shouldn't happen
-         stream.close();
          return DAMAGED_FILE;
       }
    }
@@ -2833,9 +2839,6 @@ int MetaGraph::read( const std::string& filename )
          stream.read( &type, 1 );         
       }
    }
-
-   stream.close();
-
    m_state = temp_state;
 
    return OK;
@@ -3068,7 +3071,7 @@ int MetaGraph::convertVirtualMem( ifstream& stream, int version )
    return WARN_CONVERTED;
 }
 
-streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
+streampos MetaGraph::skipVirtualMem(istream& stream, int version)
 {
    // it's graph virtual memory: skip it
    int nodes = -1;

@@ -1859,7 +1859,7 @@ int QGraphDoc::OnOpenDocument(char* lpszPathName)
 
    m_opened_name = QString(lpszPathName);
 
-   int ok = m_meta_graph->read( lpszPathName );
+   int ok = m_meta_graph->readFromFile( lpszPathName );
    QFilePath path(m_opened_name);
 
    SetUpdateFlag(QGraphDoc::NEW_FILE,false);
