@@ -80,7 +80,7 @@ public:
 //   pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
 //   //
    bool read(ifstream& stream, int version);
-   bool write(ofstream& stream);
+   bool write(ostream& stream);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ public:
    SalaObject() {;}
    //
    bool read(ifstream& stream, int version);
-   bool write(ofstream& stream);
+   bool write(ostream& stream);
 };
 inline bool SalaObject::read(ifstream& stream, int)
 {
@@ -102,7 +102,7 @@ inline bool SalaObject::read(ifstream& stream, int)
    pvecint::read(stream);
    return true;
 }
-inline bool SalaObject::write(ofstream& stream)
+inline bool SalaObject::write(ostream& stream)
 {
    stream.write((char *)&m_centroid,sizeof(m_centroid));
    pvecint::write(stream);
@@ -188,7 +188,7 @@ public:
     const std::string& getName() const
        { return m_name; }
     bool read( ifstream& stream, int version, bool drawinglayer = false );
-    bool write( ofstream& stream, int version );
+    bool write( ostream& stream, int version );
     void invalidateDisplayedAttribute()
        { m_invalidate = true; }
     void setDisplayedAttribute( int col ) const;
@@ -242,7 +242,7 @@ public:
    { return prefvec<T>::at(index); }
    size_t getMapRef(const std::string& name) const;
    bool read( ifstream& stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool write(::std::ostream &stream, int version, bool displayedmaponly = false );
 };
 template <class T>
 void ShapeMaps<T>::setDisplayedMapRef(size_t map)
@@ -285,7 +285,7 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    return true;
 }
 template <class T>
-bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
+bool ShapeMaps<T>::write( ::std::ostream& stream, int version, bool displayedmaponly )
 {
    if (!displayedmaponly) {
       // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
@@ -312,7 +312,6 @@ bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
    }
    return true;
 }
-
 template <class T>
 size_t ShapeMaps<T>::getMapRef(const std::string& name) const
 {

@@ -92,7 +92,7 @@ public:
    friend bool operator >  (const DataObject& a, const DataObject& b);
    //
    bool read( ifstream& stream, int version );
-   bool write( ofstream& stream );
+   bool write(std::ostream &stream );
 };
 
 inline bool operator == (const DataObject& a, const DataObject& b) {

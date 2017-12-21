@@ -249,7 +249,7 @@ ostream& operator << (ostream& stream, const AttrBody& attr)
    return stream;
 }
 
-void AttrBody::write( ofstream& stream ) const
+void AttrBody::write( ostream& stream ) const
 {
    stream.write( (char *) &pos, sizeof(pos) );
    stream.write( (char *) &ref, sizeof(ref) );
@@ -400,7 +400,7 @@ bool ArVertexList::read( ifstream& stream, int metagraph_version )
    return true;
 }
 
-bool ArVertexList::write( ofstream& stream )
+bool ArVertexList::write( ostream& stream )
 {
    stream.write( (char *) &m_which_attributes, sizeof(m_which_attributes) );
    // I'm phasing this out again for now (attribute header),

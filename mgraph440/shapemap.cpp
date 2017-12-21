@@ -1287,7 +1287,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
    return (shapeindex == paftl::npos) ? -1 : int(shapeindex); // note convert to -1
 }
 
-bool ShapeMap::write( ofstream& stream, int version )
+bool ShapeMap::write(ostream &stream, int version )
 {
    // name
    dXstring440::writeString(stream, m_name);
@@ -1349,7 +1349,7 @@ bool ShapeMap::write( ofstream& stream, int version )
    return true;
 }
 
-bool SalaShape::write(ofstream& stream)
+bool SalaShape::write(ostream &stream)
 {
    stream.write((char *)&m_type,sizeof(m_type));
    stream.write((char *)&m_region,sizeof(m_region));

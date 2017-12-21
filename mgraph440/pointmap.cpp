@@ -381,7 +381,7 @@ bool PointMap::clearSel()
    return true;
 }
 
-bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
+bool PointMaps::write(ostream& stream, int version, bool displayedmaponly)
 {
    if (!displayedmaponly) {
       stream.write((char *) &m_displayed_map, sizeof(m_displayed_map));
@@ -404,7 +404,7 @@ bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
    }
    return true;
 }
-bool PointMap::write( ofstream& stream, int version )
+bool PointMap::write( ostream& stream, int version )
 {
    dXstring440::writeString(stream, m_name);
 

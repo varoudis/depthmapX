@@ -180,13 +180,29 @@ bool ShapeGraphs::readold( ifstream& stream, int version )
    return true;
 }
 
-bool ShapeGraphs::write( ofstream& stream, int version, bool displayedmaponly )
+bool ShapeGraphs::write(ostream &stream, int version, bool displayedmaponly )
 {
    // base class write
    ShapeMaps<ShapeGraph>::write(stream, version, displayedmaponly);
 
    m_poly_connections.write(stream);
    m_radial_lines.write(stream);
+
+   return true;
+}
+
+bool ShapeGraph::write( ostream& stream, int version )
+{
+   // note keyvertexcount and keyvertices are different things!  (length keyvertices not the same as keyvertexcount!)
+   stream.write((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
+   int size = m_keyvertices.size();
+   stream.write((char *)&size,sizeof(size));
+   for (size_t i = 0; i < m_keyvertices.size(); i++) {
+      m_keyvertices[i].write(stream);
+   }
+
+   // now simply run base class write:
+   ShapeMap::write(stream,version);
 
    return true;
 }

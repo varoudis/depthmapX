@@ -50,7 +50,7 @@ bool Connector::read( ::std::ifstream& stream, int version, pvecint *keyvertices
    return true;
 }
 
-bool Connector::write( ::std::ofstream& stream )
+bool Connector::write( ::std::ostream& stream )
 {
    // n.b., must set displayed attribute as soon as loaded...
    m_connections.write(stream);

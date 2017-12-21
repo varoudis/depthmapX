@@ -127,7 +127,7 @@ struct AttrBody {
    double getAttr(int attr) const
       { return header->getAttr(attr, attributes); }
    //
-   void write( ofstream& stream ) const;
+   void write(ostream &stream ) const;
    void read(  ifstream& stream, int attr_count );
    //
    // Save a bit of memory, use integer / floating as appropriate
@@ -450,7 +450,7 @@ public:
    void commit( const Point2f& p, int far_node, float far_dist, float total_dist ); // when creating new node
    //
    bool read( ifstream& stream, int metagraph_version );
-   bool write( ofstream& stream );
+   bool write(ostream &stream );
    //
    const AttrBody& getAttributes(int i) const {
       return m_attributes[i];

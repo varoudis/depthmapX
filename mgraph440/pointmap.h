@@ -51,7 +51,7 @@ public:
     // Note: passed by ref, use with care in multi-threaded app
     const std::set<int>& getSelSet() const
        { return m_selection_set; }
-    bool write( ofstream& stream, int version );
+    bool write(ostream &stream, int version );
 };
 
 inline Point2f PointMap::depixelate( const PixelRef& p, double scalefactor ) const
@@ -92,7 +92,7 @@ public:
       }
       return true;
    }
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool write(ostream &stream, int version, bool displayedmaponly = false );
 };
 
 }

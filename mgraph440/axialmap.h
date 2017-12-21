@@ -124,7 +124,7 @@ public:
    void outputNet(ostream& netfile) const;
    virtual bool read( ifstream& stream, int version );
    bool readold( ifstream& stream, int version );
-
+   virtual bool write(ostream &stream, int version );
 };
 
 class ShapeGraphs : public ShapeMaps<ShapeGraph>
@@ -140,7 +140,7 @@ public:
    virtual ~ShapeGraphs() {;}
    bool read( ifstream& stream, int version );
    bool readold( ifstream& stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool write( ostream& stream, int version, bool displayedmaponly = false );
 };
 
 }

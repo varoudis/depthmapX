@@ -138,7 +138,7 @@ bool DataObject::read(ifstream& stream, int version)
    return true;
 }
 
-bool DataObject::write(ofstream& stream)
+bool DataObject::write(ostream& stream)
 {
    stream.write( (char *) &m_object_ref, sizeof(int) );
    dXstring440::writeString(stream, m_object_name);

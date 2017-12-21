@@ -85,7 +85,7 @@ public:
       { if (m_attributes) delete m_attributes;
         m_attributes = new AttrBody(attr); }
    ifstream& read(ifstream& stream, int version, int attr_count);
-   ofstream& write(ofstream& stream, int version);
+   ostream &write(ostream &stream, int version);
    void *m_user_data;
    Node& getNode()
       { return *m_node; }

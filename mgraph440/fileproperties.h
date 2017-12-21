@@ -61,7 +61,7 @@ public:
    { return m_description; }
    //
    bool read( ifstream& stream, int version );
-   bool write( ofstream& stream );
+   bool write(std::ostream &stream );
 };
 
 inline bool FileProperties::read(ifstream& stream, int version)
@@ -77,7 +77,7 @@ inline bool FileProperties::read(ifstream& stream, int version)
    return true;
 }
 
-inline bool FileProperties::write(ofstream& stream)
+inline bool FileProperties::write(std::ostream& stream)
 {
    dXstring440::writeString(stream, m_create_person);
    dXstring440::writeString(stream, m_create_organization);

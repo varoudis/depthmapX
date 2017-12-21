@@ -86,7 +86,7 @@ public:
 
 public:
    bool read( ifstream& stream, int version, bool drawinglayer = true );
-   bool write( ofstream& stream, int version );
+   bool write(ostream &stream, int version );
 };
 
 template <class T>
@@ -115,7 +115,7 @@ bool SpacePixelGroup<T>::read( ifstream& stream, int version, bool drawinglayer 
 }
 
 template <class T>
-bool SpacePixelGroup<T>::write( ofstream& stream, int version )
+bool SpacePixelGroup<T>::write( ostream& stream, int version )
 {
    dXstring440::writeString(stream, m_name);
    stream.write( (char *) &m_region, sizeof(m_region) );

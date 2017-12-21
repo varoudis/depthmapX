@@ -85,7 +85,7 @@ struct Connector
    { m_connections.clear(); m_back_segconns.clear(); m_forward_segconns.clear(); }
    //
    bool read( ::std::ifstream& stream, int version, pvecint *keyvertices = NULL );
-   bool write( ::std::ofstream& stream );
+   bool write(std::ostream &stream );
    //
    // Cursor extras
    enum { CONN_ALL, SEG_CONN_ALL, SEG_CONN_FW, SEG_CONN_BK };

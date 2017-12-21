@@ -179,7 +179,7 @@ PixelRef Bin::cursor() const
    return stream;
 }
 
-std::ofstream& Node::write(std::ofstream& stream, int version)
+std::ostream& Node::write(std::ostream& stream, int version)
 {
    int i;
    for (i = 0; i < 32; i++) {
@@ -258,7 +258,7 @@ std::ofstream& Node::write(std::ofstream& stream, int version)
    return stream;
 }
 
-std::ofstream& Bin::write(std::ofstream& stream, int version)
+std::ostream& Bin::write(std::ostream& stream, int version)
 {
    stream.write( (char *) &m_dir, sizeof(m_dir) );
    stream.write( (char *) &m_node_count, sizeof(m_node_count) );
@@ -338,7 +338,7 @@ struct ShiftLength {
    return stream;
 }
 
-std::ofstream& PixelVec::write(std::ofstream& stream, const char dir)
+std::ostream& PixelVec::write(std::ostream& stream, const char dir)
 {
    stream.write((char *) &m_start, sizeof(m_start));
    unsigned short runlength;
@@ -357,7 +357,7 @@ std::ofstream& PixelVec::write(std::ofstream& stream, const char dir)
    return stream;
 }
 
-std::ofstream& PixelVec::write(std::ofstream& stream, const char dir, const PixelVec& context)
+std::ostream& PixelVec::write(std::ostream& stream, const char dir, const PixelVec& context)
 {
    ShiftLength shiftlength;
    switch (dir) {
