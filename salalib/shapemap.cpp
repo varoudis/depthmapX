@@ -48,7 +48,7 @@ static const double TOLERANCE_B = 1e-12;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SalaShape::read(ifstream& stream, int version)
+bool SalaShape::read(istream& stream, int version)
 {
    // defaults
    m_draworder = -1; 
@@ -2568,7 +2568,7 @@ bool ShapeMap::selectionToLayer(const std::string& name)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;

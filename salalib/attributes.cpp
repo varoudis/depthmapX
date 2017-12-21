@@ -303,7 +303,7 @@ void AttributeTable::setDisplayColumn(int col, bool override) const
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-bool AttributeTable::read( ifstream& stream, int version )
+bool AttributeTable::read( istream& stream, int version )
 {
 
    m_layers.clear();
@@ -518,7 +518,7 @@ void AttributeColumn::reset()
    m_visible_tot = 0.0;
 }
 
-bool AttributeColumn::read( ifstream& stream, int version )
+bool AttributeColumn::read( istream& stream, int version )
 {
    m_updated = false;
    m_name = dXstring::readString(stream);

@@ -24,7 +24,7 @@
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/connector.h>
 
-bool Connector::read( ifstream& stream, int version, pvecint *keyvertices )
+bool Connector::read( istream& stream, int version, pvecint *keyvertices )
 {
    m_connections.clear();
    m_forward_segconns.clear();

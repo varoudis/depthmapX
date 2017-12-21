@@ -944,7 +944,7 @@ pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignor
    return cross_list;
 }
 
-bool SpacePixel::read( ifstream& stream, int version )
+bool SpacePixel::read( istream& stream, int version )
 {
    // clear anything that was there:
    if (m_pixel_lines)

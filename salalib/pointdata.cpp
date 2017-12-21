@@ -52,7 +52,7 @@ float Point::getBinDistance(int i)
    return m_node->bindistance(i);
 }
 
-ifstream& Point::read(ifstream& stream, int version, int attr_count)
+istream& Point::read(istream& stream, int version, int attr_count)
 {
    if (m_node) {
       delete m_node;
@@ -129,7 +129,7 @@ int PointMaps::addNewMap(const std::string& name)
    return size() - 1; 
 }
 
-bool PointMaps::read(ifstream& stream, int version)
+bool PointMaps::read(istream& stream, int version)
 {
    stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
    int count;
@@ -1560,7 +1560,7 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool PointMap::read(ifstream& stream, int version )
+bool PointMap::read(istream& stream, int version )
 {
    m_name = dXstring::readString(stream);
 

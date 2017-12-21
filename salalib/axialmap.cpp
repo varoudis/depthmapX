@@ -1826,7 +1826,7 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraphs::read( ifstream& stream, int version )
+bool ShapeGraphs::read( istream& stream, int version )
 {
    // base class read
 
@@ -1858,7 +1858,7 @@ bool ShapeGraphs::read( ifstream& stream, int version )
 }
 
 // for backward compatibility only:
-bool ShapeGraphs::readold( ifstream& stream, int version )
+bool ShapeGraphs::readold( istream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
    dXstring::readString(stream);
@@ -2750,7 +2750,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraph::read( ifstream& stream, int version )
+bool ShapeGraph::read(istream &stream, int version )
 {
    m_attributes.clear();
    m_connectors.clear();
@@ -2772,7 +2772,7 @@ bool ShapeGraph::read( ifstream& stream, int version )
    return true;
 }
 
-bool ShapeGraph::readold( ifstream& stream, int version )
+bool ShapeGraph::readold( istream& stream, int version )
 {
    // read in from old base class
    SpacePixel linemap;

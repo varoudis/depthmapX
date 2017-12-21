@@ -176,7 +176,7 @@ public:
       { return m_grid_connections; }
    float getBinDistance(int i);
 public:
-   ifstream& read(ifstream& stream, int version, int attr_count);
+   istream &read(istream &stream, int version, int attr_count);
    ofstream& write(ofstream& stream, int version);
    //
 protected:
@@ -497,7 +497,7 @@ public:
    // this is an odd helper function, value in range 0 to 1
    PixelRef pickPixel(double value) const;
 public:
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream, int version );
    void convertAttributes( int which_attributes );
    void addGridConnections(); // adds grid connections where graph does not include them
@@ -550,7 +550,7 @@ public:
    void redoBlockLines()   // (flags blockedlines, but also flags that you need to rebuild a bsp tree if you have one)
    { for (size_t i = 0; i < size(); i++) { at(i).m_blockedlines = false; } }
    //
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream, int version, bool displayedmaponly = false );
 };
 

@@ -89,7 +89,7 @@ public:
    friend bool operator <  (const DataObject& a, const DataObject& b);
    friend bool operator >  (const DataObject& a, const DataObject& b);
    //
-   bool read( ifstream& stream, int version );
+   bool read(std::istream &stream, int version );
    bool write( ofstream& stream );
 };
 
@@ -234,7 +234,7 @@ public:
    friend bool operator <  (const DataLayer& a, const DataLayer& b);
    friend bool operator >  (const DataLayer& a, const DataLayer& b);
    //
-   bool read( ifstream& stream, int version );
+   bool read(std::istream &stream, int version );
    bool write( ofstream& stream );
    bool output( ofstream& stream );
 };
@@ -311,7 +311,7 @@ public:
       return (int) m_layers.size();
    }
    //
-   bool read( ifstream& stream, int version );
+   bool read(std::istream &stream, int version );
    bool write( ofstream& stream );
 };
 

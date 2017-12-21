@@ -195,7 +195,7 @@ void Node::contents(PixelRefVector& hood) const
 
 //////////////////////////////////////////////////////////////////////////////////
 
-ifstream& Node::read(ifstream& stream, int version)
+istream& Node::read(istream& stream, int version)
 {
    int i;
    for (i = 0; i < 32; i++) {
@@ -437,7 +437,7 @@ PixelRef Bin::cursor() const
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-ifstream& Bin::read(ifstream& stream, int version)
+istream& Bin::read(istream& stream, int version)
 {
    stream.read( (char *) &m_dir, sizeof(m_dir) );
    stream.read( (char *) &m_node_count, sizeof(m_node_count) );
@@ -510,7 +510,7 @@ ostream& operator << (ostream& stream, const Bin& bin)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-ifstream& PixelVec::read(ifstream& stream, int version, const char dir)
+istream& PixelVec::read(istream& stream, int version, const char dir)
 {
    unsigned short runlength;
    stream.read((char *) &m_start, sizeof(m_start));
@@ -560,7 +560,7 @@ struct ShiftLength {
    unsigned short runlength : 12;
 };
 
-ifstream& PixelVec::read(ifstream& stream, int version, const char dir, const PixelVec& context)
+istream& PixelVec::read(istream& stream, int version, const char dir, const PixelVec& context)
 {
    short primary;
    ShiftLength shiftlength;
