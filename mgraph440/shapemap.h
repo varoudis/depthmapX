@@ -80,7 +80,7 @@ public:
 //   pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
 //   //
    bool read(ifstream& stream, int version);
-//   bool write(ofstream& stream);
+   bool write(ofstream& stream);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,12 @@ inline bool SalaObject::read(ifstream& stream, int)
    pvecint::read(stream);
    return true;
 }
-
+inline bool SalaObject::write(ofstream& stream)
+{
+   stream.write((char *)&m_centroid,sizeof(m_centroid));
+   pvecint::write(stream);
+   return true;
+}
 struct SalaEvent
 {
    enum { SALA_NULL_EVENT, SALA_CREATED, SALA_DELETED, SALA_MOVED };
@@ -279,6 +284,35 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    }
    return true;
 }
+template <class T>
+bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
+{
+   if (!displayedmaponly) {
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int displayed_map = (unsigned int)(m_displayed_map);
+      stream.write((char *)&displayed_map,sizeof(displayed_map));
+      // write maps
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int count = (unsigned int) pmemvec<T*>::size();
+      stream.write((char *) &count, sizeof(count));
+      for (size_t j = 0; j < count; j++) {
+         prefvec<T>::at(j).write(stream,version);
+      }
+   }
+   else {
+      unsigned int dummy;
+      // displayed map is 0
+      dummy = 0;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // write map:
+      prefvec<T>::at(m_displayed_map).write(stream,version);
+   }
+   return true;
+}
+
 template <class T>
 size_t ShapeMaps<T>::getMapRef(const std::string& name) const
 {

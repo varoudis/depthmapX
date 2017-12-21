@@ -1286,34 +1286,6 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
    }
    return (shapeindex == paftl::npos) ? -1 : int(shapeindex); // note convert to -1
 }
-template <class T>
-bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
-{
-   if (!displayedmaponly) {
-      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
-      unsigned int displayed_map = (unsigned int)(m_displayed_map);
-      stream.write((char *)&displayed_map,sizeof(displayed_map));
-      // write maps
-      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
-      unsigned int count = (unsigned int) pmemvec<T*>::size();
-      stream.write((char *) &count, sizeof(count));
-      for (size_t j = 0; j < count; j++) {
-         prefvec<T>::at(j).write(stream,version);
-      }
-   }
-   else {
-      unsigned int dummy;
-      // displayed map is 0
-      dummy = 0;
-      stream.write((char *)&dummy,sizeof(dummy));
-      // count is 1
-      dummy = 1;
-      stream.write((char *)&dummy,sizeof(dummy));
-      // write map:
-      prefvec<T>::at(m_displayed_map).write(stream,version);
-   }
-   return true;
-}
 
 bool ShapeMap::write( ofstream& stream, int version )
 {
@@ -1374,6 +1346,17 @@ bool ShapeMap::write( ofstream& stream, int version )
       stream.put('x');
    }
 
+   return true;
+}
+
+bool SalaShape::write(ofstream& stream)
+{
+   stream.write((char *)&m_type,sizeof(m_type));
+   stream.write((char *)&m_region,sizeof(m_region));
+   stream.write((char *)&m_centroid,sizeof(m_centroid));
+   stream.write((char *)&m_area,sizeof(m_area));
+   stream.write((char *)&m_perimeter,sizeof(m_perimeter));
+   pqvector<Point2f>::write(stream);
    return true;
 }
 
