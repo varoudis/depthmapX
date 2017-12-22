@@ -14,8 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __VERTEX_H__
-#define __VERTEX_H__
+#pragma once
 
 // Modifed by Dream
 #if defined(_WIN32)
@@ -590,5 +589,3 @@ const AttrMap g_attr_summary_map[] = {
 };
 
 }
-
-#endif
