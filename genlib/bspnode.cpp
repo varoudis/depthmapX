@@ -42,18 +42,18 @@ void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<T
     nodeStack.push(this);
     lineStack.push(makeLines(communicator, atime, lines, par));
 
-    while(nodeStack.size() > 0) {
+    while(!nodeStack.empty()) {
         BSPNode *currNode = nodeStack.top();
         nodeStack.pop();
         TagLineVecPair currLines = lineStack.top();
         lineStack.pop();
 
-        if (currLines.first.size()) {
+        if (!currLines.first.empty()) {
            currNode->left = new BSPNode();
            nodeStack.push(currNode->left);
            lineStack.push(currNode->left->makeLines(communicator,atime,currLines.first,currNode));
         }
-        if (currLines.second.size()) {
+        if (!currLines.second.empty()) {
            currNode->right = new BSPNode();
            nodeStack.push(currNode->right);
            lineStack.push(currNode->right->makeLines(communicator,atime,currLines.second,currNode));
