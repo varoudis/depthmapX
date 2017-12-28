@@ -74,7 +74,7 @@ int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par
     }
     midpoint /= 2.0 * lines.size();
     bool ver = true;
-    if (par && par->line.height() > par->line.width()) {
+    if (par && par->m_line.height() > par->m_line.width()) {
        ver = false;
     }
     double chosendist = -1.0;
@@ -143,10 +143,10 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
       chosen = pafrand() % lines.size();
    }
 
-   line = lines[chosen].line;
+   m_line = lines[chosen].line;
    m_tag = lines[chosen].tag;
 
-   Point2f v0 = line.end() - line.start();
+   Point2f v0 = m_line.end() - m_line.start();
    v0.normalise();
 
    for (size_t i = 0; i < lines.size(); i++) {
@@ -155,13 +155,13 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
       }
       const Line& testline = lines[i].line;
       int tag = lines[i].tag;
-      Point2f v1 = testline.start()-line.start();
+      Point2f v1 = testline.start()-m_line.start();
       v1.normalise();
-      Point2f v2 = testline.end()-line.start();
+      Point2f v2 = testline.end()-m_line.start();
       v2.normalise();
       // should use approxeq here:
-      double a = testline.start() == line.start() ? 0 : det(v0,v1);
-      double b = testline.end() == line.start() ? 0 : det(v0,v2);
+      double a = testline.start() == m_line.start() ? 0 : det(v0,v1);
+      double b = testline.end() == m_line.start() ? 0 : det(v0,v2);
       // note sure what to do if a == 0 and b == 0 (i.e., it's parallel... this test at least ensures on the line is one or the other side)
       if (a >= 0 && b >= 0) {
          leftlines.push_back(TaggedLine(testline,tag));
@@ -170,7 +170,7 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
          rightlines.push_back(TaggedLine(testline,tag));
       }
       else {
-         Point2f p = intersection_point(line,testline);
+         Point2f p = intersection_point(m_line,testline);
          Line x = Line(testline.start(),p);
          Line y = Line(p,testline.end());
          if (a >= 0) {
@@ -193,9 +193,9 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
 
 int BSPNode::classify(const Point2f& p)
 {
-   Point2f v0 = line.end() - line.start();
+   Point2f v0 = m_line.end() - m_line.start();
    v0.normalise();
-   Point2f v1 = p - line.start();
+   Point2f v1 = p - m_line.start();
    v1.normalise();
    if (det(v0,v1) >= 0) {
       return BSPLEFT;

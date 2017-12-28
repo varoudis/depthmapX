@@ -163,22 +163,22 @@ TEST_CASE("BSPNode::make (all horizontal lines)", "all-left tree")
 
     node.make(0, 0, lines, 0);
 
-    compareLines(node.line, lines[1].line, EPSILON);
+    compareLines(node.getLine(), lines[1].line, EPSILON);
 
     REQUIRE(node.left != NULL);
     REQUIRE(node.right == NULL);
 
-    compareLines(node.left->line, lines[2].line, EPSILON);
+    compareLines(node.left->getLine(), lines[2].line, EPSILON);
 
     REQUIRE(node.left->left != NULL);
     REQUIRE(node.left->right == NULL);
 
-    compareLines(node.left->left->line, lines[3].line, EPSILON);
+    compareLines(node.left->left->getLine(), lines[3].line, EPSILON);
 
     REQUIRE(node.left->left->left != NULL);
     REQUIRE(node.left->left->right == NULL);
 
-    compareLines(node.left->left->left->line, lines[0].line, EPSILON);
+    compareLines(node.left->left->left->getLine(), lines[0].line, EPSILON);
 
     REQUIRE(node.left->left->left->left == NULL);
     REQUIRE(node.left->left->left->right == NULL);
@@ -198,13 +198,13 @@ TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
 
     node.make(0, 0, lines, 0);
 
-    compareLines(node.line, lines[1].line, EPSILON);
+    compareLines(node.getLine(), lines[1].line, EPSILON);
 
     REQUIRE(node.left != NULL);
     REQUIRE(node.right != NULL);
 
-    compareLines(node.left->line, lines[0].line, EPSILON);
-    compareLines(node.right->line, lines[3].line, EPSILON);
+    compareLines(node.left->getLine(), lines[0].line, EPSILON);
+    compareLines(node.right->getLine(), lines[3].line, EPSILON);
 
     REQUIRE(node.left->left == NULL);
     REQUIRE(node.left->right == NULL);
@@ -212,7 +212,7 @@ TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
     REQUIRE(node.right->left != NULL);
     REQUIRE(node.right->right == NULL);
 
-    compareLines(node.right->left->line, lines[2].line, EPSILON);
+    compareLines(node.right->left->getLine(), lines[2].line, EPSILON);
 
     REQUIRE(node.right->left->left == NULL);
     REQUIRE(node.right->left->right == NULL);

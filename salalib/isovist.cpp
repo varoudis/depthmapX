@@ -150,14 +150,14 @@ void Isovist::make(BSPNode *here)
       if (which == BSPNode::BSPLEFT) {
          if (here->left)
             make(here->left);
-         drawnode(here->line,here->m_tag);
+         drawnode(here->getLine(),here->getTag());
          if (here->right)
             make(here->right);
       }
       else {
          if (here->right)
             make(here->right);
-         drawnode(here->line,here->m_tag);
+         drawnode(here->getLine(),here->getTag());
          if (here->left)
             make(here->left);
       }
