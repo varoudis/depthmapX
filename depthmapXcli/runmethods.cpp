@@ -78,12 +78,20 @@ namespace dm_runmethods
             ifstream file(cmdP.getFileName());
 
             std::unique_ptr<Communicator> comm(new ICommunicator());
+
+            depthmapX::ImportFileType importFileType = depthmapX::ImportFileType::TSV;
+            if(dXstring::toLower(ext) == ".csv") {
+                importFileType = depthmapX::ImportFileType::CSV;
+            } else if (dXstring::toLower(ext) == ".dxf") {
+                importFileType = depthmapX::ImportFileType::DXF;
+            }
+
             depthmapX::importFile(*mgraph,
                                   file,
-                                  comm.get(),
+                                  false,
                                   cmdP.getFileName(),
                                   depthmapX::ImportType::DRAWINGMAP,
-                                  (dXstring::toLower(ext) == ".csv") ? depthmapX::ImportFileType::CSV : depthmapX::ImportFileType::TSV);
+                                  importFileType);
         }
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
