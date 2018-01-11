@@ -7,7 +7,7 @@ notifications:
 
 before_install:
   - sudo add-apt-repository --yes ppa:beineri/opt-qt571-trusty
-  - sudo add-apt-repository --yes ppa:fkrull/deadsnakes
+  - sudo add-apt-repository --yes ppa:deadsnakes/ppa
   - sudo apt-get update -qq
 
 install:
