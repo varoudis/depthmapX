@@ -271,37 +271,37 @@ void Bin::make(const PixelRefVector& pixels, char dir)
          m_node_count = pixels.size();
       }
       else {
-         prefvec<PixelVec> pixel_vecs;
+         std::vector<PixelVec> pixel_vecs;
          // Reorder the pixels:
          if (m_dir == PixelRef::HORIZONTAL) {
-            pvector<PixelRefH> pixels_h;
+            std::vector<PixelRefH> pixels_h;
             for (size_t i = 0; i < pixels.size(); i++) {
-               pixels_h.add(pixels[i]);
+               depthmapX::addIfNotExists(pixels_h, PixelRefH(pixels[i]));
             }
             // this looks like a simple bubble sort
             pixel_vecs.push_back(PixelVec(pixels_h[0],pixels_h[0]));
             for (size_t j = 1; j < pixels_h.size(); j++) {
                if (pixels_h[j-1].y != pixels_h[j].y || pixels_h[j-1].x + 1 != pixels_h[j].x) {
-                  pixel_vecs.tail().m_end = pixels_h[j-1];
+                  pixel_vecs.back().m_end = pixels_h[j-1];
                   pixel_vecs.push_back(PixelVec(pixels_h[j],pixels_h[j]));
                }
             }
-            pixel_vecs.tail().m_end = pixels_h.tail();
+            pixel_vecs.back().m_end = pixels_h.back();
          }
          if (m_dir == PixelRef::VERTICAL) {
-            pvector<PixelRefV> pixels_v;
+            std::vector<PixelRefV> pixels_v;
             for (size_t i = 0; i < pixels.size(); i++) {
-               pixels_v.add(pixels[i]);
+               depthmapX::addIfNotExists(pixels_v, PixelRefV(pixels[i]));
             }
             // this looks like a simple bubble sort
             pixel_vecs.push_back(PixelVec(pixels_v[0],pixels_v[0]));
             for (size_t j = 1; j < pixels_v.size(); j++) {
                if (pixels_v[j-1].x != pixels_v[j].x || pixels_v[j-1].y + 1 != pixels_v[j].y) {
-                  pixel_vecs.tail().m_end = pixels_v[j-1];
+                  pixel_vecs.back().m_end = pixels_v[j-1];
                   pixel_vecs.push_back(PixelVec(pixels_v[j],pixels_v[j]));
                }
             }
-            pixel_vecs.tail().m_end = pixels_v.tail();
+            pixel_vecs.back().m_end = pixels_v.back();
          }
 
          // Now compact the representation:
