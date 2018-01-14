@@ -460,8 +460,13 @@ bool MapInfoData::readheader(istream& miffile)
       line[5] = 'S'; // set back to CoordSys
       // coordsys and bounds together in one line
       auto boundIndex = line.find("Bounds");
-      m_coordsys = line.substr(0,boundIndex);
-      m_bounds = line.substr(boundIndex);
+      if(boundIndex != std::string::npos) {
+          m_coordsys = line.substr(0,boundIndex);
+          m_bounds = line.substr(boundIndex);
+      } else {
+          m_coordsys = line;
+          m_bounds = "";
+      }
    }
    else {
       return false;
