@@ -111,7 +111,7 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
    try {
    // now read line data into the axial map   
    while (!miffile.eof()) {
-      std::getline(miffile, textline);
+      dXstring::safeGetline(miffile, textline);
       dXstring::ltrim(textline);
       dXstring::toLower(textline);
       if (textline.empty()) {
@@ -154,14 +154,14 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
                count = stoi(tokens[1]);
             }
             else {
-               std::getline(miffile, textline);
+               dXstring::safeGetline(miffile, textline);
                dXstring::ltrim(textline);
                count = stoi(textline);
             }
             pointsets.push_back(pqvector<Point2f>());
             types.push_back(type);
             for (int j = 0; j < count; j++) {
-               std::getline(miffile, textline);
+               dXstring::safeGetline(miffile, textline);
                dXstring::ltrim(textline);
                auto tokens = dXstring::split(textline,' ',true);
                pointsets.tail().push_back(Point2f(stod(tokens[0]),stod(tokens[1])));
@@ -213,7 +213,7 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
             // read next row:
             std::string line;
             while (!midfile.eof() && line.empty()) {
-               std::getline(midfile, line);
+               dXstring::safeGetline(midfile, line);
             }
             if (line.empty()) {
                return MINFO_OBJROWS;
@@ -431,8 +431,8 @@ bool MapInfoData::readheader(istream& miffile)
 {
    std::string line;
 
-   std::getline(miffile, m_version);
-   std::getline(miffile, m_charset);
+   dXstring::safeGetline(miffile, m_version);
+   dXstring::safeGetline(miffile, m_charset);
    dXstring::makeInitCaps(m_charset);
    // this should read "Charset..." but some files have delimiter straight away...
    if (dXstring::beginsWith<std::string>(m_charset,"Delimiter")) {
@@ -440,18 +440,18 @@ bool MapInfoData::readheader(istream& miffile)
       m_charset = "Charset \"WindowsLatin1\"";
    }
    else {
-      std::getline(miffile, line);
+      dXstring::safeGetline(miffile, line);
    }
    size_t index = line.find_first_of("\"");
    if (index == std::string::npos) {
       return false;
    }
    m_delimiter = line[index+1];
-   std::getline(miffile, line);
+   dXstring::safeGetline(miffile, line);
    dXstring::makeInitCaps(line);
    while (dXstring::beginsWith<std::string>(line,"Index") || dXstring::beginsWith<std::string>(line,"Unique")) {
       m_index = line;
-      std::getline(miffile, line);
+      dXstring::safeGetline(miffile, line);
    }
 
    dXstring::ltrim(line);
@@ -479,7 +479,7 @@ bool MapInfoData::readcolumnheaders(istream& miffile, istream& midfile, std::vec
 {
    std::string line;
 
-   std::getline(miffile, line);
+   dXstring::safeGetline(miffile, line);
    dXstring::makeInitCaps(line);
    auto bits = dXstring::split(line, ' ');
 
@@ -490,12 +490,12 @@ bool MapInfoData::readcolumnheaders(istream& miffile, istream& midfile, std::vec
    int cols = stoi(bits[1]);
 
    for (int i = 0; i < cols; i++) {
-      std::getline(miffile, line);
+      dXstring::safeGetline(miffile, line);
       dXstring::makeInitCaps(line);
       columnheads.push_back(line);
    }
 
-   std::getline(miffile, line);
+   dXstring::safeGetline(miffile, line);
    dXstring::makeInitCaps(line);
    if (line != "Data") {
       return false;
