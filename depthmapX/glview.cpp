@@ -251,7 +251,8 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         case MOUSE_MODE_SELECT:
         {
             // typical selection
-            m_pDoc.m_meta_graph->setCurSel( r, false );
+            Qt::KeyboardModifiers keyMods = QApplication::keyboardModifiers();
+            m_pDoc.m_meta_graph->setCurSel( r, keyMods & Qt::ShiftModifier );
             break;
         }
         case MOUSE_MODE_ZOOM_IN:
