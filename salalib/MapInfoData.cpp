@@ -22,46 +22,6 @@
 #include <salalib/axialmap.h>
 #include "MapInfoData.h"
 
-///////////////////////////////////////////////////////////////////////
-
-// A typical MIF
-
-/*
-Version 300
-Charset "WindowsLatin1"
-Delimiter ","
-Index 1,2
-CoordSys Earth Projection 8, 79, "m", -2, 49, 0.9996012717, 400000, -100000 Bounds (-7845061.1011, -15524202.1641) (8645061.1011, 4470074.53373)
-Columns 2
-  ID Integer
-  Length_m Float
-Data
-
-Line 534014.29 182533.33 535008.52 182764.11
-    Pen (1,2,0) 
-Line 533798.68 183094.69 534365.48 183159.01
-    Pen (1,2,0)
-...etc...
-Point 534014.29 182533.33
-    Symbol (34,0,12) 
-Point 533798.68 183094.69
-    Symbol (34,0,12) 
-Point 534365.48 183159.01
-    Symbol (34,0,12) 
-...etc...
-*/
-
-// A Typical MID
-
-/*
-1,1017.81
-2,568.795
-3,216.026
-*/
-
-
-///////////////////////////////////////////////////////////////////////////////////
-
 int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
 {
    int retvar = MINFO_OK;
