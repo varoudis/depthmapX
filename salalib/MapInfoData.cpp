@@ -483,7 +483,7 @@ bool MapInfoData::readcolumnheaders(istream& miffile, istream& midfile, std::vec
    dXstring::makeInitCaps(line);
    auto bits = dXstring::split(line, ' ');
 
-   if (line.find_first_of("Columns") == std::string::npos && bits.size() < 2 )
+   if (line.find("Columns") == std::string::npos || bits.size() < 2 )
    {
       return false;
    }
