@@ -199,3 +199,16 @@ TEST_CASE("test begins with")
     REQUIRE_FALSE(dXstring::beginsWith<std::string>("abcd", "ef"));
     REQUIRE_FALSE(dXstring::beginsWith<std::string>("abcd", "aec"));
 }
+
+TEST_CASE("test safeGetline")
+{
+    std::stringstream stream;
+    std::string out;
+
+    SECTION("Windows") { stream << "Test\r"; }
+    SECTION("Unix") { stream << "Test\n"; }
+    SECTION("Mixed") { stream << "Test\r\n"; }
+
+    dXstring::safeGetline(stream, out);
+    REQUIRE(out == "Test");
+}
