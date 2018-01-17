@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     teststructsizes.cpp \
     testshapemaps.cpp \
     testgeometrygenerators.cpp \
-    testsparksieve.cpp
+    testsparksieve.cpp \
+    testmapinfodata.cpp
 
 win32:Release:LIBS += -L../genlib/release -L../mgraph440/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../mgraph440/debug -L../salalib/debug
