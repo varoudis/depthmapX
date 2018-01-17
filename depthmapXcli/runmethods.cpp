@@ -42,7 +42,7 @@ namespace dm_runmethods
     std::unique_ptr<MetaGraph> loadGraph(const std::string& filename, IPerformanceSink &perfWriter) {
         std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
         std::cout << "Loading graph " << filename << std::flush;
-        DO_TIMED( "Load graph file", auto result = mgraph->read(filename);)
+        DO_TIMED( "Load graph file", auto result = mgraph->readFromFile(filename);)
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
@@ -63,7 +63,7 @@ namespace dm_runmethods
         }
 
         std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
-        DO_TIMED( "Load graph file", auto result = mgraph->read(cmdP.getFileName());)
+        DO_TIMED( "Load graph file", auto result = mgraph->readFromFile(cmdP.getFileName());)
         if ( result != MetaGraph::OK && result != MetaGraph::NOT_A_GRAPH)
         {
             std::stringstream message;

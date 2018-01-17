@@ -37,8 +37,8 @@ struct PixelVec
    PixelRef end() const
    { return m_end; }
    //
-   ifstream& read(ifstream& stream, int version, const char dir);
-   ifstream& read(ifstream& stream, int version, const char dir, const PixelVec& context);
+   std::istream &read(std::istream &stream, int version, const char dir);
+   std::istream &read(std::istream &stream, int version, const char dir, const PixelVec& context);
    ofstream& write(ofstream& stream, const char dir);
    ofstream& write(ofstream& stream, const char dir, const PixelVec& context);
 };
@@ -92,7 +92,7 @@ public:
    bool is_tail() const;
    PixelRef cursor() const;
    //
-   ifstream& read(ifstream& stream, int version);
+   std::istream &read(std::istream &stream, int version);
    ofstream& write(ofstream& stream, int version);
    //
    friend ostream& operator << (ostream& stream, const Bin& bin);
@@ -156,7 +156,7 @@ public:
    bool is_tail() const;
    PixelRef cursor() const;
    //
-   ifstream& read(ifstream& stream, int version);
+   std::istream &read(std::istream &stream, int version);
    ofstream& write(ofstream& stream, int version);
    //
    friend ostream& operator << (ostream& stream, const Node& node);

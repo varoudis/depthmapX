@@ -944,7 +944,7 @@ pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignor
    return cross_list;
 }
 
-bool SpacePixel::read( ifstream& stream, int version )
+bool SpacePixel::read( istream& stream, int version )
 {
    // clear anything that was there:
    if (m_pixel_lines)
@@ -962,22 +962,17 @@ bool SpacePixel::read( ifstream& stream, int version )
    m_lines.clear();
 
    // read name:
-   if (version >= VERSION_SPACEPIXELGROUPS) {
-      m_name = dXstring::readString(stream );
-      stream.read( (char *) &m_show, sizeof(m_show) );
-   }
-   else {
-      m_name = "<unknown>";
-   }
+
+   m_name = dXstring::readString(stream );
+   stream.read( (char *) &m_show, sizeof(m_show) );
+
    if (m_name.empty()) {
       m_name = "<unknown>";
    }
 
    m_edit = false; // <- just default to not editable on read
 
-   if (version >= VERSION_LAYERCOLORS) {
-      stream.read( (char *) &m_color, sizeof(m_color) );
-   }
+   stream.read( (char *) &m_color, sizeof(m_color) );
 
    // read extents:
    stream.read( (char *) &m_region, sizeof(m_region) );
@@ -996,27 +991,9 @@ bool SpacePixel::read( ifstream& stream, int version )
       m_pixel_lines[i] = new pvecint[m_rows];
    }
 
-   if (version < VERSION_DYNAMICLINES) {
-      // read lines as refvec...
-      prefvec<Line> lines;
-      lines.read( stream );
-      // ... and transfer to new system:
-      m_ref = -1;
-      for (size_t i = 0; i < lines.size(); i++) {
-         m_lines.add(++m_ref, LineTest(lines[i],0));
-      }
-   }
-   else {
-      stream.read((char *) &m_ref, sizeof(m_ref));
-      m_lines.read( stream );
-   }
 
-   if (version < VERSION_SPACEPIXELGROUPS) {
-      // Scale up lines (should just work)
-      for (size_t i = 0; i < m_lines.size(); i++) {
-         m_lines[i].line.denormalScale(m_region);
-      }
-   }
+   stream.read((char *) &m_ref, sizeof(m_ref));
+   m_lines.read( stream );
 
    // now load into structure:
    for (size_t n = 0; n < m_lines.size(); n++) {

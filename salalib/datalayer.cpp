@@ -27,7 +27,7 @@
 #include <salalib/mgraph.h>
 #include <salalib/datalayer.h>
 
-bool DataLayers::read(ifstream& stream, int version)
+bool DataLayers::read(istream& stream, int version)
 {
    m_layers.clear();
    stream.read( (char *) &m_current_layer_index, sizeof(int) );
@@ -82,7 +82,7 @@ void DataLayer::setDisplayColumn(int i)
    m_display_column = i;
 }
 
-bool DataLayer::read(ifstream& stream, int version)
+bool DataLayer::read(istream& stream, int version)
 {
    m_data_objects.clear();
    m_column_titles.clear();
@@ -149,14 +149,12 @@ bool DataLayer::output(ofstream& stream)
 
 //////////////////////////////////////////////////////////////
 
-bool DataObject::read(ifstream& stream, int version)
+bool DataObject::read(istream& stream, int version)
 {
    stream.read( (char *) &m_object_ref, sizeof(int) );
    m_object_name = dXstring::readString(stream);
    m_data_cols.read(stream);
-   if (version >= VERSION_LAYERS_CENTROID_INTROD) {
-      stream.read( (char *) &m_centroid, sizeof(Point2f) );
-   }
+   stream.read( (char *) &m_centroid, sizeof(Point2f) );
    // default values for selection / output color
    m_selected = false;
    m_color = 0.0f;

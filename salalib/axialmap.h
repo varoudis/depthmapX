@@ -213,8 +213,8 @@ public:
    void makeSegmentConnections(prefvec<Connector>& connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
-   virtual bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
+   virtual bool read( istream& stream, int version );
+   bool readold( istream& stream, int version );
    virtual bool write( ofstream& stream, int version );
    void writeAxialConnectionsAsDotGraph(ostream &stream);
    void writeAxialConnectionsAsPairsCSV(ostream &stream);
@@ -251,8 +251,8 @@ public:
    bool hasAllLineMap()
    { return m_all_line_map != -1; }
    //
-   bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
+   bool read(istream &stream, int version );
+   bool readold( istream& stream, int version );
    bool write( ofstream& stream, int version, bool displayedmaponly = false );
 };
 

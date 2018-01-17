@@ -57,11 +57,11 @@ public:
    const std::string& getDescription() const
    { return m_description; }
    //
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream );
 };
 
-inline bool FileProperties::read(ifstream& stream, int version)
+inline bool FileProperties::read(istream& stream, int version)
 {
    m_create_person=dXstring::readString(stream);
    m_create_organization=dXstring::readString(stream);

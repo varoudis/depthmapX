@@ -52,7 +52,7 @@ float Point::getBinDistance(int i)
    return m_node->bindistance(i);
 }
 
-ifstream& Point::read(ifstream& stream, int version, int attr_count)
+istream& Point::read(istream& stream, int version, int attr_count)
 {
    if (m_node) {
       delete m_node;
@@ -64,39 +64,22 @@ ifstream& Point::read(ifstream& stream, int version, int attr_count)
    // block is the same size as m_noderef used to be for ease of replacement:
    // (note block NO LONGER used!)
    stream.read( (char *) &m_block, sizeof(m_block) );
-   if (version < VERSION_BLOCKEDQUAD) {
-      m_block = 0;
-   }
+
    stream.read( (char *) &m_misc, sizeof(m_misc) );
-   if (version >= VERSION_GRID_CONNECTIONS) {
-      stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
+
+   stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
+
+
+   stream.read( (char *) &m_merge, sizeof(m_merge) );
+   bool ngraph;
+   stream.read( (char *) &ngraph, sizeof(ngraph) );
+   if (ngraph) {
+       m_node = new Node;
+       m_node->read(stream, version);
    }
-   if (version >= VERSION_NGRAPH_INTROD) {
-      stream.read( (char *) &m_merge, sizeof(m_merge) );
-      bool ngraph;
-      stream.read( (char *) &ngraph, sizeof(ngraph) );
-      if (ngraph) {
-         m_node = new Node;
-         m_node->read(stream, version);
-         if (version < VERSION_ATTRIBUTES_TABLE) {
-            // don't deal with this here, just get the attributes into memory
-            m_attributes = new AttrBody(-1,g_attr_header);
-            m_attributes->read( stream, attr_count );
-         }
-      }
-   }
-   if (version >= VERSION_POINT_LOCATIONS) {
-      stream.read((char *) &m_location, sizeof(m_location));
-   }
-   if (version < VERSION_SHAPE_MAPS) {
-      // old layer information
-      m_data_objects.read(stream);
-   }
-   if (version >= VERSION_BOUNDARYGRAPH && version < VERSION_NEWBOUNDARYGRAPH) {
-      // dummy pvecint to hold old format boundary nodes
-      pvecint old_boundary_nodes;
-      old_boundary_nodes.read(stream);
-   }
+
+   stream.read((char *) &m_location, sizeof(m_location));
+
    return stream;
 }
 
@@ -146,7 +129,7 @@ int PointMaps::addNewMap(const std::string& name)
    return size() - 1; 
 }
 
-bool PointMaps::read(ifstream& stream, int version)
+bool PointMaps::read(istream& stream, int version)
 {
    stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
    int count;
@@ -1577,14 +1560,10 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool PointMap::read(ifstream& stream, int version )
+bool PointMap::read(istream& stream, int version )
 {
-   if (version >= VERSION_POINT_MAP_NAMES) {
-      m_name = dXstring::readString(stream);
-   }
-   else {
-      m_name = "VGA Map";
-   }
+   m_name = dXstring::readString(stream);
+
 
    // NOTE: You MUST set m_spacepix manually!
    m_displayed_attribute = -1;
@@ -1598,17 +1577,6 @@ bool PointMap::read(ifstream& stream, int version )
    }
 
    stream.read( (char *) &m_spacing, sizeof(m_spacing) );
-
-   if (version < VERSION_STATE_RECORDED) {
-      if (version >= VERSION_SPARK_GRAPH_INTROD) {
-         bool redundant;
-         stream.read( (char *) &redundant, sizeof(redundant) );
-      }
-      else {
-         double redundant;
-         stream.read( (char *) &redundant, sizeof(redundant) );
-      }
-   }
 
    stream.read( (char *) &m_rows, sizeof(m_rows) );
    stream.read( (char *) &m_cols, sizeof(m_cols) );
@@ -1626,77 +1594,42 @@ bool PointMap::read(ifstream& stream, int version )
    int attr_count = -1, which_attributes = -1;
 
    int displayed_attribute;  // n.b., temp variable necessary to force recalc below
-   if (version >= VERSION_ATTRIBUTES_TABLE) {
-      // our data read
-      stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
-      m_attributes.read( stream, version );
-   }
-   else if (version >= VERSION_NGRAPH_INTROD) {
-      // ick, a very specific subset have this file format:
-      stream.read( (char *) &which_attributes, sizeof(which_attributes) );
-      stream.read( (char *) &attr_count, sizeof(int) );
-   }
+
+   // our data read
+   stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
+   m_attributes.read( stream, version );
 
    m_points = new Point *[m_cols];
    
    for (int j = 0; j < m_cols; j++) {
       m_points[j] = new Point [m_rows];
       // ...and read...
-      if (version >= VERSION_LAYERS_INTROD) {
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].read(stream,version,attr_count);
 
-            // check if occdistance of any pixel's bin is set, meaning that
-            // the isovist analysis was done
-            if(!m_hasIsovistAnalysis) {
-                for(int b = 0; b < 32; b++) {
-                   if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
-                       m_hasIsovistAnalysis = true;
-                       break;
-                   }
+      for (int k = 0; k < m_rows; k++) {
+         m_points[j][k].read(stream,version,attr_count);
+
+         // check if occdistance of any pixel's bin is set, meaning that
+         // the isovist analysis was done
+         if(!m_hasIsovistAnalysis) {
+             for(int b = 0; b < 32; b++) {
+                if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
+                    m_hasIsovistAnalysis = true;
+                    break;
                 }
-            }
+             }
          }
       }
-      else if (version >= VERSION_EXTRA_POINT_DATA_INTROD) {
-         // Hmm... more untidiness from a previous incarnation
-         OldPoint2 *oldpoints = new OldPoint2 [m_rows];
-         stream.read( (char *) oldpoints, sizeof(OldPoint2) * m_rows );
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].m_block = oldpoints[k].m_noderef;  // <- block is actually for something else!
-            m_points[j][k].m_state = oldpoints[k].m_state;
-            m_points[j][k].m_misc = oldpoints[k].m_misc;
-         }
-      }
-      else {
-         // Hmm... more untidiness from a previous incarnation
-         OldPoint1 *oldpoints = new OldPoint1 [m_rows];
-         stream.read( (char *) oldpoints, sizeof(OldPoint1) * m_rows );
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].m_block= oldpoints[k].m_noderef;  // <- block is actually for something else!
-            m_points[j][k].m_state = oldpoints[k].m_state;
-         }
-      }
+
 
       for (int k = 0; k < m_rows; k++) {
          // Old style point node reffing and also unselects selected nodes which would otherwise be difficult
-         if (version >= VERSION_QUICK_GRAPH_INTROD) {
-            // would soon be better simply to turn off the select flag....
-            m_points[j][k].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
-         }
-         else if (m_points[j][k].m_state == -1) {
-            m_points[j][k].m_state = Point::EMPTY;
-         }
-         else {
-            m_points[j][k].m_state = Point::FILLED;
-         }
+
+         // would soon be better simply to turn off the select flag....
+         m_points[j][k].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
+
          // Set the node pixel if it exists:
          if (m_points[j][k].m_node) {
             m_points[j][k].m_node->setPixel(PixelRef(j,k));
-         }
-         // Set the point location if required:
-         if (version < VERSION_POINT_LOCATIONS) {
-            m_points[j][k].m_location = depixelate(PixelRef(j,k));
          }
          // Add merge line if merged:
          if (!m_points[j][k].m_merge.empty()) {
@@ -1705,32 +1638,14 @@ bool PointMap::read(ifstream& stream, int version )
       }
    }
 
-   // this is my attempt to enter these into the new attribute table:
-   if (version >= VERSION_NGRAPH_INTROD && version < VERSION_ATTRIBUTES_TABLE) {
-      if (which_attributes != GraphVertexList::NONE) {
-         displayed_attribute = 0;
-         convertAttributes(which_attributes);
-      }
-      else {
-         displayed_attribute = -1;
-      }
-   }
-
-   // and if the attribute tables are ready, calculate the direct grid connections:
-   if (version >= VERSION_NGRAPH_INTROD && version < VERSION_GRID_CONNECTIONS) {
-      addGridConnections();
-   }
-
    m_selection = NO_SELECTION;
    m_pinned_selection = false;
 
    m_initialised = true;
    m_blockedlines = false;
 
-   if (version >= VERSION_POINT_MAPS) {
-      stream.read((char *) &m_processed, sizeof(m_processed));
-      stream.read((char *) &m_boundarygraph, sizeof(m_boundarygraph));
-   }
+   stream.read((char *) &m_processed, sizeof(m_processed));
+   stream.read((char *) &m_boundarygraph, sizeof(m_boundarygraph));
 
    // now, as soon as loaded, must recalculate our screen display:
    // note m_displayed_attribute should be -2 in order to force recalc...

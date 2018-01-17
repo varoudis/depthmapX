@@ -568,21 +568,6 @@ istream& MapInfoData::read(istream& stream, int version)
    m_index = dXstring::readString(stream);
    m_coordsys = dXstring::readString(stream);
    m_bounds = dXstring::readString(stream);
-   //
-   // this is no longer used: just a dummy read:
-   if (version < VERSION_MAPINFO_SHAPES) {
-      int columns, rows;
-      std::vector<std::string> columnheads;
-      std::vector<std::string> table;
-      stream.read((char *) &columns, sizeof(int));
-      for (int i = 0; i < columns; i++) {
-          columnheads.push_back(dXstring::readString(stream));
-      }
-      stream.read((char *) &rows, sizeof(int));
-      for (int j = 0; j < rows; j++) {
-         table.push_back(dXstring::readString(stream));
-      }
-   }
    
    return stream;
 }

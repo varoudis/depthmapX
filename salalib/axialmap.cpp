@@ -1826,15 +1826,11 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraphs::read( ifstream& stream, int version )
+bool ShapeGraphs::read( istream& stream, int version )
 {
    // base class read
-   if (version >= VERSION_AXIAL_SHAPES) {
-      ShapeMaps<ShapeGraph>::read(stream,version);
-   }
-   else {
-      readold(stream,version);
-   }
+
+   ShapeMaps<ShapeGraph>::read(stream,version);
 
    // these are additional essentially for all line axial maps
    // should probably be kept *with* the all line axial map...
@@ -1862,7 +1858,7 @@ bool ShapeGraphs::read( ifstream& stream, int version )
 }
 
 // for backward compatibility only:
-bool ShapeGraphs::readold( ifstream& stream, int version )
+bool ShapeGraphs::readold( istream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
    dXstring::readString(stream);
@@ -2754,54 +2750,29 @@ bool ShapeGraph::stepdepth(Communicator *comm)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraph::read( ifstream& stream, int version )
+bool ShapeGraph::read(istream &stream, int version )
 {
    m_attributes.clear();
    m_connectors.clear();
    m_selection = false;
    m_map_type = ShapeMap::EMPTYMAP;
 
-   // the old version used SpacePixel as base class
-   // actually easiest to read and translate, rather than try to use new method
-   if (version < VERSION_AXIAL_SHAPES) {
-      readold(stream, version);
+   bool segmentmap = false;
+   // note that keyvertexcount and keyvertices are different things! (length keyvertices not the same as keyvertexcount!)
+   stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
+   int size;
+   stream.read((char *)&size,sizeof(size));
+   for (int i = 0; i < size; i++) {
+      m_keyvertices.push_back(pvecint());
+      m_keyvertices[i].read(stream);
    }
-   else {
-      bool segmentmap = false;
-      if (version < VERSION_MAP_TYPES) {
-         // axial specific reads -- segment map flag and keyvertices (part of all line map functionality)
-         // note, now stored in the "map_type", and read / written with shape map
-         char segmentmapc = stream.get();
-         if (segmentmapc == '1') {
-            segmentmap = true;
-         }
-      }
-      // note that keyvertexcount and keyvertices are different things! (length keyvertices not the same as keyvertexcount!)
-      stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
-      int size;
-      stream.read((char *)&size,sizeof(size));
-      for (int i = 0; i < size; i++) {
-         m_keyvertices.push_back(pvecint());
-         m_keyvertices[i].read(stream);
-      }
-      // now base class read:
-      ShapeMap::read(stream,version);
-      //
-      // override shapemap map type designation if necessary:
-      if (version < VERSION_MAP_TYPES) {
-         if (segmentmap) {
-            m_map_type = ShapeMap::SEGMENTMAP;
-         }
-         else {
-            m_map_type = ShapeMap::AXIALMAP;
-         }
-      }
-   }
+   // now base class read:
+   ShapeMap::read(stream,version);
 
    return true;
 }
 
-bool ShapeGraph::readold( ifstream& stream, int version )
+bool ShapeGraph::readold( istream& stream, int version )
 {
    // read in from old base class
    SpacePixel linemap;
@@ -2820,22 +2791,21 @@ bool ShapeGraph::readold( ifstream& stream, int version )
 
    // continue old read:
    int pushmap = -1;
-   if (version >= VERSION_SEGMENT_MAPS) {
-      char segmentmapc = stream.get();
-      if (segmentmapc == '1') {
-         m_map_type = ShapeMap::SEGMENTMAP;
-      }
-      else {
-         m_map_type = ShapeMap::AXIALMAP;
-      }
+
+   char segmentmapc = stream.get();
+   if (segmentmapc == '1') {
+      m_map_type = ShapeMap::SEGMENTMAP;
    }
-   if (version >= VERSION_GATE_MAPS) {
-      char gatemapc = stream.get();
-      if (gatemapc == '1') {
-         m_map_type = ShapeMap::DATAMAP;
-      }
-      stream.read((char *)&pushmap,sizeof(pushmap));
+   else {
+      m_map_type = ShapeMap::AXIALMAP;
    }
+
+   char gatemapc = stream.get();
+   if (gatemapc == '1') {
+      m_map_type = ShapeMap::DATAMAP;
+   }
+   stream.read((char *)&pushmap,sizeof(pushmap));
+
 
    int displayed_attribute;  // n.b., temp variable necessary to force recalc below
    stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
@@ -2852,22 +2822,22 @@ bool ShapeGraph::readold( ifstream& stream, int version )
    }
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
-   if (version >= VERSION_AXIAL_LINKS) {
-      m_links.read(stream);
-      m_unlinks.read(stream);
-   }
+
+   m_links.read(stream);
+   m_unlinks.read(stream);
+
    // some miscellaneous extra data for mapinfo files
    if (m_mapinfodata) {
       delete m_mapinfodata;
       m_mapinfodata = NULL;
    }
-   if (version >= VERSION_MAPINFO_DATA) {
-      char x = stream.get();
-      if (x == 'm') {
-         m_mapinfodata = new MapInfoData;
-         m_mapinfodata->read(stream,version);
-      }
+
+   char x = stream.get();
+   if (x == 'm') {
+      m_mapinfodata = new MapInfoData;
+      m_mapinfodata->read(stream,version);
    }
+
 
    // now, as soon as loaded, must recalculate our screen display:
    // note m_displayed_attribute should be -2 in order to force recalc...

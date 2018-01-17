@@ -48,7 +48,7 @@ static const double TOLERANCE_B = 1e-12;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SalaShape::read(ifstream& stream, int version)
+bool SalaShape::read(istream& stream, int version)
 {
    // defaults
    m_draworder = -1; 
@@ -56,35 +56,14 @@ bool SalaShape::read(ifstream& stream, int version)
 
    stream.read((char *)&m_type,sizeof(m_type));
 
-   int sss = sizeof(m_region);
    stream.read((char *)&m_region,sizeof(m_region));
 
-   if (version >= VERSION_SHAPE_CENTROIDS) {
-      stream.read((char *)&m_centroid,sizeof(m_centroid));
-      if (version >= VERSION_SHAPE_AREA_PERIMETER) {
-         stream.read((char *)&m_area,sizeof(m_area));
-         stream.read((char *)&m_perimeter,sizeof(m_perimeter));
-      }
-   }
-   else {
-      // old types were simply 1,2,3... these are now labelled using bits:
-      if (m_type == 3) {
-         m_type = SHAPE_POLY;
-      }
-      else if (m_type == 4) {
-         m_type = SHAPE_POLY | SHAPE_CLOSED;
-      }
-   }
-   pqvector<Point2f>::read(stream);
+   stream.read((char *)&m_centroid,sizeof(m_centroid));
+      
+   stream.read((char *)&m_area,sizeof(m_area));
+   stream.read((char *)&m_perimeter,sizeof(m_perimeter));
 
-   if (version < VERSION_SHAPE_AREA_PERIMETER) {
-      if (m_type & SHAPE_POLY) {
-         setCentroidAreaPerim();
-      }
-      else if (m_type & SHAPE_LINE) {
-         m_perimeter = m_region.length();
-      }
-   }
+   pqvector<Point2f>::read(stream);
 
    return true;
 }
@@ -2589,7 +2568,7 @@ bool ShapeMap::selectionToLayer(const std::string& name)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;
@@ -2621,68 +2600,15 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
    m_unlinks.clear();
    m_undobuffer.clear();
 
-   // read in an old file:
-   if (drawinglayer && version < VERSION_DRAWING_SHAPES) {
-      // the data in the file is for a SpacePixel
-      // the easiest solution, although not the most memory effective, is to read in the space pixel,
-      // and convert to a shape map:
-      SpacePixel layer;
-      layer.read(stream,version);
-      m_name = layer.m_name;
-      m_show = layer.m_show;
-      m_editable = false;  // <- don't take from spacepixel in case conflicts in some way
-      m_region = layer.m_region;
-      m_rows = layer.m_rows;
-      m_cols = layer.m_cols;
-      m_tolerance = __max(m_region.width(), m_region.height()) * TOLERANCE_A;
-      m_shape_ref = -1;
-      for (size_t i = 0; i < layer.m_lines.size(); i++) {
-         m_shape_ref++;
-         int index = m_shapes.add(m_shape_ref, SalaShape(layer.m_lines[i].line));
-         // insert a dummy attribute row:
-         m_attributes.insertRow(m_shape_ref);
-         // note: as this is always a drawing layer, no need to set shape attributes
-      }
-      // prepare pixel map (using same number of cols and rows as the original spacepixel for convenience)
-      m_pixel_shapes = new pqvector<ShapeRef> *[m_cols];
-      for (int j = 0; j < m_cols; j++) {
-         m_pixel_shapes[j] = new pqvector<ShapeRef>[m_rows];
-      }
-      // Now add the pixel shapes pixel map:
-      // pixelate all polys in the pixel structure:
-      for (size_t k = 0; k < m_shapes.size(); k++) {
-         makePolyPixels(m_shapes.key(k));
-      }
-      // set to read in display attribute:
-      // note that even though it's only a drawing layer, this still needs to be done
-      invalidateDisplayedAttribute();
-      setDisplayedAttribute(-1);
-
-      // all done
-      return true;
-   }
-
    // name
    m_name = dXstring::readString(stream);
 
-   if (version >= VERSION_MAP_TYPES) {
-      stream.read( (char *) &m_map_type, sizeof(m_map_type));
-   }
-   else {
-      // old versions data maps or drawing maps, 
-      // the axial reader will override this with its own map type designation if necessary
-      if (drawinglayer) {
-         m_map_type = DRAWINGMAP;
-      }
-      else {
-         m_map_type = DATAMAP;
-      }
-   }
 
-   if (version >= VERSION_DRAWING_SHAPES_B) {
-      stream.read( (char *) &m_show, sizeof(m_show) );
-      stream.read( (char *) &m_editable, sizeof(m_editable) );
-   }
+   stream.read( (char *) &m_map_type, sizeof(m_map_type));
+
+   stream.read( (char *) &m_show, sizeof(m_show) );
+   stream.read( (char *) &m_editable, sizeof(m_editable) );
+
 
    // PixelBase read
    // read extents:
@@ -2705,24 +2631,6 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
       stream.read((char *) &key, sizeof(key));
       int index = m_shapes.add(key, SalaShape());
       m_shapes.value(index).read(stream,version);
-   }
-   if (version < VERSION_SHAPE_CENTROIDS) {
-      // manually set centroid according to type:
-      for (size_t i = 0; i < m_shapes.size(); i++) {
-         switch (m_shapes[i].m_type & SalaShape::SHAPE_TYPE) {
-         case SalaShape::SHAPE_POINT:
-            m_shapes[i].m_centroid = m_shapes[i].m_region.bottom_left;
-            break;
-         case SalaShape::SHAPE_LINE:
-            m_shapes[i].m_centroid = m_shapes[i].m_region.getCentre();
-            break;
-         case SalaShape::SHAPE_POLY:
-            m_shapes[i].setCentroidAreaPerim();
-            break;
-         default:
-            break;
-         }
-      }
    }
 
    // read object data (currently unused)
@@ -2749,36 +2657,27 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
       makePolyPixels(m_shapes.key(j));
    }
 
-   // later versions can have shape connections:
-   if (version >= VERSION_AXIAL_SHAPES) {
-      int count;
-      stream.read((char *)&count,sizeof(count));   
-      for (int i = 0; i < count; i++) {
-         m_connectors.push_back(Connector());
-         m_connectors[i].read(stream,version);
-         if (version < VERSION_NO_SELF_CONNECTION) {
-            size_t self = m_connectors[i].m_connections.searchindex(i);
-            if (self != paftl::npos) {
-               m_connectors[i].m_connections.remove_at(self);
-            }
-         }
-      }
-      m_links.read(stream);
-      m_unlinks.read(stream);
+   // shape connections:
+   count = 0;
+   stream.read((char *)&count,sizeof(count));
+   for (int i = 0; i < count; i++) {
+      m_connectors.push_back(Connector());
+      m_connectors[i].read(stream,version);
    }
+   m_links.read(stream);
+   m_unlinks.read(stream);
 
    // some miscellaneous extra data for mapinfo files
    if (m_mapinfodata) {
       delete m_mapinfodata;
       m_mapinfodata = NULL;
    }
-   if (version >= VERSION_MAPINFO_SHAPES) {
-      char x = stream.get();
-      if (x == 'm') {
-         m_mapinfodata = new MapInfoData;
-         m_mapinfodata->read(stream,version);
-      }
+   char x = stream.get();
+   if (x == 'm') {
+      m_mapinfodata = new MapInfoData;
+      m_mapinfodata->read(stream,version);
    }
+
 
    invalidateDisplayedAttribute();
    setDisplayedAttribute(m_displayed_attribute);

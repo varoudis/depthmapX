@@ -137,7 +137,7 @@ public:
    //
    pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
-   bool read(ifstream& stream, int version);
+   bool read(istream &stream, int version);
    bool write(ofstream& stream);
 };
 
@@ -151,10 +151,10 @@ protected:
 public:
    SalaObject() {;}
    //
-   bool read(ifstream& stream, int version);
+   bool read(istream &stream, int version);
    bool write(ofstream& stream);
 };
-inline bool SalaObject::read(ifstream& stream, int)
+inline bool SalaObject::read(istream& stream, int)
 {
    stream.read((char *)&m_centroid,sizeof(m_centroid));
    pvecint::read(stream);
@@ -500,7 +500,7 @@ public:
    //
 public:
    // file
-   bool read( ifstream& stream, int version, bool drawinglayer = false );
+   bool read(istream &stream, int version, bool drawinglayer = false );
    bool write( ofstream& stream, int version );
    //
    bool output( ofstream& stream, char delimiter = '\t', bool updated_only = false );
@@ -597,7 +597,7 @@ public:
    const size_t getShapeCount() const
    { return prefvec<T>::at(m_displayed_map).m_shapes.size(); }
    //
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream, int version, bool displayedmaponly = false );
    //
    const QtRegion& getBoundingBox() const
@@ -655,7 +655,7 @@ void ShapeMaps<T>::setDisplayedMapRef(size_t map)
    m_displayed_map = map;
 }
 template <class T>
-bool ShapeMaps<T>::read( ifstream& stream, int version )
+bool ShapeMaps<T>::read( istream& stream, int version )
 {
     prefvec<T>::clear(); // empty existing data
    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
@@ -666,14 +666,7 @@ bool ShapeMaps<T>::read( ifstream& stream, int version )
    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
    unsigned int count = 0;
    stream.read((char *) &count, sizeof(count));
-   if (version < VERSION_NO_SHAPEMAP_NAME_LOOKUP) {
-      for (size_t i = 0; i < size_t(count); i++) {
-         // dummy name lookup (now simply creates on fly, as the name lookup may be corrupted in earlier versions)
-         std::string name = dXstring::readString(stream);
-         int number;
-         stream.read((char *)&number,sizeof(number));
-      }
-   }
+
    for (size_t j = 0; j < size_t(count); j++) {
       ShapeMaps<T>::push_back(T());
       prefvec<T>::tail().read(stream,version);
