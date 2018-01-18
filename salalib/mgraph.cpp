@@ -569,7 +569,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
 
    bool first = true;
    if (makeBSPtree(communicator)) {
-      std::set<int>& selset = map->getSelSet();
+      std::set<int> selset = map->getSelSet();
       pqmap<int,SalaShape>& shapes = map->getAllShapes();
       for (auto& sel: selset) {
          SalaShape& path = shapes.value(sel);
