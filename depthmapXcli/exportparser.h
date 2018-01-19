@@ -43,7 +43,8 @@ public:
     enum ExportMode{
         NONE,
         POINTMAP_DATA_CSV,
-        POINTMAP_CONNECTIONS_CSV
+        POINTMAP_CONNECTIONS_CSV,
+        POINTMAP_LINKS_CSV
     };
     ExportMode getExportMode() const { return _exportMode; }
 
