@@ -36,6 +36,8 @@
 #include <salalib/axialmap.h>
 #include <salalib/datalayer.h>   // datalayers deprecated
 
+#include <mutex>
+
 // for agent engine interface
 #include <salalib/nagent.h>
 #include <salalib/importtypedefs.h>
@@ -60,7 +62,6 @@ public:
 protected:
    int m_file_version;
    int m_state;
-   void *m_lock;
 public:
    // some display options now set at file level
    bool m_showgrid;
@@ -78,22 +79,21 @@ public:
       // note, if unsaved, m_file_version is -1
       return m_file_version;
    }
-   bool setLock(void *who) 
-   { 
-      if (m_lock == 0) {
-         m_lock = who;
-         return true;
-      }
-      return false;
+
+
+
+private:
+   std::recursive_mutex mLock;
+
+public:
+    std::unique_lock<std::recursive_mutex> getLock(){
+       return std::unique_lock<recursive_mutex>(mLock);
    }
-   bool releaseLock(void *who)
-   {
-      if (m_lock != who) {
-         return false;
-      }
-      m_lock = NULL;
-      return true;
-   }
+
+    std::unique_lock<std::recursive_mutex> getLockDeferred(){
+        return std::unique_lock<std::recursive_mutex>(mLock, std::defer_lock_t());
+    }
+
    //
    void copyLineData(const SuperSpacePixel& meta);
    void copyPointMap(const PointMap& meta);
