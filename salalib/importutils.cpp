@@ -316,7 +316,7 @@ namespace depthmapX {
             int segments = circ.numSegments(DXFCIRCLERES);
             if (segments > 1) {
                 for (int m = 0; m <= segments; m++) {
-                    DxfVertex v = circ.getVertex(m,DXFCIRCLERES);
+                    DxfVertex v = circ.getVertex(m,segments);
                     vertices.push_back(Point2f(v.x, v.y));
                 }
             }
