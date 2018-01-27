@@ -333,6 +333,59 @@ protected:
    bool parse( const DxfToken& token, DxfParser *parser );
 };
 
+
+class DxfEllipse : public DxfEntity, public DxfRegion
+{
+   friend class DxfParser;
+   DxfVertex m_centre;
+   DxfVertex m_majorAxisEndPoint;
+   DxfVertex m_extrusionDirection;
+   double m_minorMajorAxisRatio;
+   mutable double m_start;
+   double m_end;
+public:
+   DxfEllipse( int tag = -1 );
+   void clear();  // for reuse when parsing
+   // getVertex splits into number of segments
+   int numSegments(int segments) const;
+   DxfVertex getVertex(int i, int segments) const;
+   const DxfVertex& getCentre() const
+   { return m_centre; }
+   const double& getMinorMajorAxisRatio() const
+   { return m_minorMajorAxisRatio; }
+   int getAttributes() const;
+   const DxfRegion& getBoundingBox();
+   //
+   // some basic manipulation
+   void scale(const DxfVertex& base_vertex, const DxfVertex& scale)
+   { m_centre.scale(base_vertex, scale);
+
+       m_majorAxisEndPoint.x *= scale.x;
+       m_majorAxisEndPoint.y *= scale.y;
+
+     // this is rather tricky to do, need to think more than just reflect around 0,0,0
+     if (m_start != m_end && (scale.x < 0 || scale.y < 0)) {
+        reflect(scale.x, scale.y);
+     }
+     DxfRegion::scale(base_vertex, scale);
+   }
+   void reflect(double x, double y);
+   void rotate(const DxfVertex& base_vertex, double angle)
+   { m_centre.rotate(base_vertex, angle);
+     // this is rather tricky to do, need to think more than just rotate around 0,0,0
+     if (m_start != m_end) {
+        m_start += angle; m_end += angle;
+     }
+     DxfRegion::rotate(base_vertex, angle);
+   }
+   void translate(const DxfVertex& translation)
+   { m_centre.translate(translation);
+     DxfRegion::translate(translation); }
+   //
+protected:
+   bool parse( const DxfToken& token, DxfParser *parser );
+};
+
 class DxfCircle : public DxfEntity, public DxfRegion
 {
    friend class DxfParser;
@@ -457,6 +510,7 @@ protected:
    std::vector<DxfLine>     m_lines;
    std::vector<DxfPolyLine> m_poly_lines;
    std::vector<DxfArc>      m_arcs;
+   std::vector<DxfEllipse>  m_ellipses;
    std::vector<DxfCircle>   m_circles;
    std::vector<DxfSpline>   m_splines;
    std::vector<DxfInsert>   m_inserts;
@@ -469,6 +523,7 @@ public:
    const DxfLine& getLine( int i ) const;
    const DxfPolyLine& getPolyLine( int i ) const;
    const DxfArc& getArc( int i ) const;
+   const DxfEllipse& getEllipse( int i ) const;
    const DxfCircle& getCircle( int i ) const;
    const DxfSpline& getSpline( int i ) const;
    //
@@ -476,6 +531,7 @@ public:
    int numLines() const;
    int numPolyLines() const;
    int numArcs() const;
+   int numEllipses() const;
    int numCircles() const;
    int numSplines() const;
    //
@@ -515,7 +571,7 @@ public:
    enum section_t { HEADER, CLASSES, TABLES, BLOCKS, ENTITIES, OBJECTS, _EOF };
    enum subsection_t { EXTMIN, EXTMAX,
                        LTYPE_TABLE, LTYPE_ROW, LAYER_TABLE, LAYER_ROW, BLOCK,
-                       POINT, LINE, POLYLINE, LWPOLYLINE, ARC, CIRCLE, SPLINE, INSERT, VERTEX,
+                       POINT, LINE, POLYLINE, LWPOLYLINE, ARC, ELLIPSE, CIRCLE, SPLINE, INSERT, VERTEX,
                        ENDSEC };
 protected:
    time_t            m_time;
