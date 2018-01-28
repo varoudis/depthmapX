@@ -55,7 +55,7 @@
 // Q3DView
 
 Q3DView::Q3DView(QWidget *parent, QGraphDoc* doc)
-	: QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    : QOpenGLWidget(parent)
 {
    m_points = NULL;
    m_pointcount = 0;
@@ -136,7 +136,7 @@ void Q3DView::timerEvent(QTimerEvent *event)
       if (!m_animating) {  // if animating will redraw below
          DrawScene();
       }
-      updateGL();
+      update();
    }
    else if (m_key_mode_on) {
       QSize diff(0,0);
@@ -246,7 +246,7 @@ void Q3DView::DrawScene()
    QRgb bg = qRgb(0,0,0);
    QRgb fg = qRgb(128,128,128);
 
-   glClearColor((GLfloat)GetRValue(bg)/255.0f,(GLfloat)GetGValue(bg)/255.0f,(GLfloat)GetBValue(bg)/255.0f, 0.0f);
+   glClearColor((GLfloat)GetRValue(bg)/255.0f,(GLfloat)GetGValue(bg)/255.0f,(GLfloat)GetBValue(bg)/255.0f, 1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glColor3f(1.0f,0.0f,0.0f);
