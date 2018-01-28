@@ -733,7 +733,11 @@ void Q3DView::CreateAgent(QPoint point)
    GLint viewport[4];
    GLdouble mvmatrix[16], projmatrix[16];
 
+   glViewport(0, 0, width(), height());
    glGetIntegerv(GL_VIEWPORT, viewport);
+   Reshape(viewport[2], viewport[3]);
+   SetModelMat();
+
    glGetDoublev(GL_MODELVIEW_MATRIX, mvmatrix);
    glGetDoublev(GL_PROJECTION_MATRIX, projmatrix);
 
