@@ -561,8 +561,6 @@ void Q3DView::OnLButtonDown(unsigned int nFlags, QPoint point)
 {
     m_right_mouse = false;
 
-    std::unique_lock<std::mutex> lock(m_draw_mutex);
-
    switch (m_mouse_mode) {
    case ID_3D_PAN: case ID_3D_ROT: case ID_3D_ZOOM:
       m_mouse_mode_on = m_mouse_mode;
