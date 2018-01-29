@@ -323,6 +323,19 @@ namespace depthmapX {
             polylines.push_back(depthmapX::Polyline(vertices, false));
         }
 
+        for (int n = 0; n < dxfLayer.numEllipses(); n++) {
+            const DxfEllipse& ellipse = dxfLayer.getEllipse( n );
+            std::vector<Point2f> vertices;
+            int segments = ellipse.numSegments(DXFCIRCLERES);
+            if (segments > 1) {
+                for (int m = 0; m <= segments; m++) {
+                    DxfVertex v = ellipse.getVertex(m, segments);
+                    vertices.push_back(Point2f(v.x, v.y));
+                }
+            }
+            polylines.push_back(depthmapX::Polyline(vertices, false));
+        }
+
         for (int nc = 0; nc < dxfLayer.numCircles(); nc++) {
             const DxfCircle& circ = dxfLayer.getCircle( nc );
             std::vector<Point2f> vertices;
