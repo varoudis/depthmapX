@@ -18,7 +18,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // Q3DView view
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QRect>
 #include <QPoint>
 #include <QSize>
@@ -88,7 +88,7 @@ struct C3DPixelData
 
 /////////////////////////////////////////////////////////////////////////////
 
-class Q3DView : public QGLWidget
+class Q3DView : public QOpenGLWidget
 {
    Q_OBJECT
 

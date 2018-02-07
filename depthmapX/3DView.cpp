@@ -55,7 +55,7 @@
 // Q3DView
 
 Q3DView::Q3DView(QWidget *parent, QGraphDoc* doc)
-	: QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    : QOpenGLWidget(parent)
 {
    m_points = NULL;
    m_pointcount = 0;
@@ -136,7 +136,7 @@ void Q3DView::timerEvent(QTimerEvent *event)
       if (!m_animating) {  // if animating will redraw below
          DrawScene();
       }
-      updateGL();
+      update();
    }
    else if (m_key_mode_on) {
       QSize diff(0,0);
@@ -246,7 +246,7 @@ void Q3DView::DrawScene()
    QRgb bg = qRgb(0,0,0);
    QRgb fg = qRgb(128,128,128);
 
-   glClearColor((GLfloat)GetRValue(bg)/255.0f,(GLfloat)GetGValue(bg)/255.0f,(GLfloat)GetBValue(bg)/255.0f, 0.0f);
+   glClearColor((GLfloat)GetRValue(bg)/255.0f,(GLfloat)GetGValue(bg)/255.0f,(GLfloat)GetBValue(bg)/255.0f, 1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glColor3f(1.0f,0.0f,0.0f);
@@ -561,8 +561,6 @@ void Q3DView::OnLButtonDown(unsigned int nFlags, QPoint point)
 {
     m_right_mouse = false;
 
-    std::unique_lock<std::mutex> lock(m_draw_mutex);
-
    switch (m_mouse_mode) {
    case ID_3D_PAN: case ID_3D_ROT: case ID_3D_ZOOM:
       m_mouse_mode_on = m_mouse_mode;
@@ -735,7 +733,11 @@ void Q3DView::CreateAgent(QPoint point)
    GLint viewport[4];
    GLdouble mvmatrix[16], projmatrix[16];
 
+   glViewport(0, 0, width(), height());
    glGetIntegerv(GL_VIEWPORT, viewport);
+   Reshape(viewport[2], viewport[3]);
+   SetModelMat();
+
    glGetDoublev(GL_MODELVIEW_MATRIX, mvmatrix);
    glGetDoublev(GL_PROJECTION_MATRIX, projmatrix);
 
