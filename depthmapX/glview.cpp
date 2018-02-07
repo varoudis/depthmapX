@@ -472,13 +472,15 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     int dx = event->x() - m_mouseLastPos.x();
     int dy = event->y() - m_mouseLastPos.y();
 
+    Point2f worldPoint = getWorldPoint(event->pos());
+
     if (event->buttons() & Qt::RightButton
             || (event->buttons() & Qt::LeftButton && m_mouseMode == MOUSE_MODE_PAN)) {
         panBy(dx, dy);
         m_wasPanning = true;
     } else if (event->buttons() & Qt::LeftButton) {
         Point2f lastWorldPoint = getWorldPoint(m_mouseLastPos);
-        Point2f worldPoint = getWorldPoint(event->pos());
+
         if(m_mouseDragRect.isNull()) {
             m_mouseDragRect.setX(lastWorldPoint.x);
             m_mouseDragRect.setY(lastWorldPoint.y);
@@ -489,10 +491,12 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     }
     if((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT)
     {
-        m_tempSecondPoint = getWorldPoint(event->pos());
+        m_tempSecondPoint = worldPoint;
         update();
     }
     m_mouseLastPos = event->pos();
+    m_pDoc.m_position = worldPoint;
+    m_pDoc.UpdateMainframestatus();
 }
 
 void GLView::wheelEvent(QWheelEvent *event)
