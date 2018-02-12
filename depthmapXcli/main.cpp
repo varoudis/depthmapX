@@ -27,6 +27,12 @@ int main(int argc, char *argv[])
     CommandLineParser args(registry);
     try{
         args.parse(argc, argv);
+
+        if (args.justPrint())
+        {
+            return 0;
+        }
+
         if (!args.isValid())
         {
             args.printHelp();
