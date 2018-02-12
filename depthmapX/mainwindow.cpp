@@ -1220,6 +1220,11 @@ int MainWindow::OnFocusGraph(QGraphDoc* pDoc, int lParam)
         MakeGraphTree();
     }
     else if (lParam == QGraphDoc::CONTROLS_LOADDRAWING && pDoc == m_treeDoc) {     // Force update if match current window
+        m_backgraph = NULL;
+        m_attrWindow->clear();
+        m_indexWidget->clear();
+        ClearGraphTree();
+        MakeGraphTree();
         MakeDrawingTree();
     }
     else if (lParam == QGraphDoc::CONTROLS_LOADATTRIBUTES && pDoc == m_treeDoc) {     // Force update if match current window
