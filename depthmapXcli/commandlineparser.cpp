@@ -50,7 +50,7 @@ CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
 void CommandLineParser::parse(size_t argc, char *argv[])
 {
     _valid = false;
-    _justPrint = false;
+    _printVersionMode = false;
     if (argc <= 1)
     {
         throw CommandLineException("No commandline parameters provided - don't know what to do");
@@ -59,14 +59,11 @@ void CommandLineParser::parse(size_t argc, char *argv[])
     {
         if ( std::strcmp("-h", argv[i])== 0)
         {
-            _justPrint = true;
-            printHelp();
             return;
         }
         else if ( std::strcmp("-v", argv[i])== 0)
         {
-            _justPrint = true;
-            printVersion();
+            _printVersionMode = true;
             return;
         }
         else if ( std::strcmp ("-m", argv[i]) == 0)

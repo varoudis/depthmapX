@@ -35,7 +35,7 @@ public:
     const std::string &getOuputFile() const {return _outputFile;}
     const std::string &getTimingFile() const {return _timingFile;}
     bool isValid() const { return _valid; }
-    bool justPrint() const { return _justPrint; }
+    bool printVersionMode() const { return _printVersionMode; }
     bool simpleMode() const { return _simpleMode; }
     const IModeParser& modeOptions() const{ return *_modeParser;};
 
@@ -50,7 +50,7 @@ private:
     std::string _outputFile;
     std::string _timingFile;
     bool _valid;
-    bool _justPrint;
+    bool _printVersionMode;
     bool _simpleMode;
 
     const IModeParserFactory &_parserFactory;
