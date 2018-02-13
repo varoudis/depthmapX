@@ -25,4 +25,7 @@ win32:LIBS += -lOpenGl32 -lglu32 -lgdi32
 HEADERS += \
     coreapplication.h
 
+mac {
+    QMAKE_INFO_PLIST = resources/Info.plist
+}
 
