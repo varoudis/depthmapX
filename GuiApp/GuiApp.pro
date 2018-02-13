@@ -27,6 +27,9 @@ HEADERS += \
 
 mac {
     QMAKE_INFO_PLIST = resources/Info.plist
+    BUNDLE_RESOURCES.files = icons/graph.icns
+    BUNDLE_RESOURCES.path = Contents/Resources
+    QMAKE_BUNDLE_DATA += BUNDLE_RESOURCES
 }
 
 FORMS += \
