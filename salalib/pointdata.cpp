@@ -34,6 +34,7 @@
 
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+#include <unordered_set>
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -1069,7 +1070,7 @@ void PointMap::outputConnections(ostream& myout)
 void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
-    std::vector<PixelRef> seenPix;
+    std::unordered_set<PixelRef, hashPixelRef> seenPix;
     for (int i = 0; i < m_cols; i++)
     {
         for (int j = 0; j < m_rows; j++)
@@ -1077,7 +1078,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
             if (m_points[i][j].filled() && m_points[i][j].m_node)
             {
                 PixelRef pix(i,j);
-                seenPix.push_back(pix);
+                seenPix.insert(pix);
                 for (int b = 0; b < 32; b++)
                 {
                     PixelRefVector hood;
@@ -1098,7 +1099,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
 void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
-    std::vector<PixelRef> seenPix;
+    std::unordered_set<PixelRef, hashPixelRef> seenPix;
     for (int i = 0; i < m_cols; i++)
     {
         for (int j = 0; j < m_rows; j++)
@@ -1108,8 +1109,7 @@ void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
                 PixelRef mergePixelRef = m_points[i][j].getMergePixel();
                 if(mergePixelRef != NoPixel) {
                     PixelRef pix(i,j);
-                    seenPix.push_back(pix);
-                    if(!(std::find(seenPix.begin(), seenPix.end(), mergePixelRef) != seenPix.end()))
+                    if(seenPix.insert(pix).second)
                     {
                         myout << std::endl << pix << delim << mergePixelRef;
                     }

@@ -92,6 +92,13 @@ public:
    { return ((int(x) << 16) + (int(y) & 0xffff)); }
 };
 
+struct hashPixelRef {
+  size_t operator()(const PixelRef &pixelRef) const{
+    return std::hash<int>()(int(pixelRef));
+  }
+};
+
+
 const PixelRef NoPixel( -1, -1 );
 
 inline bool operator == (const PixelRef a, const PixelRef b)
