@@ -16,14 +16,14 @@
 #ifndef MAINWINDOWFACTORY_H
 #define MAINWINDOWFACTORY_H
 
-#include <QMainWindow>
+#include <mainwindow.h>
 #include <QDialog>
 #include <memory>
 
 class Settings;
 
 namespace MainWindowFactory{
-    std::unique_ptr<QMainWindow> getMainWindow(const QString &fileToLoad, Settings &settings);
+    std::unique_ptr<MainWindow> getMainWindow(const QString &fileToLoad, Settings &settings);
     std::unique_ptr<QDialog> getLicenseDialog();
 }
 #endif // MAINWINDOWFACTORY_H

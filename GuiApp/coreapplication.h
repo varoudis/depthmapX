@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <depthmapX/mainwindow.h>
 #include <QApplication>
 #include <QFileOpenEvent>
 #include <QtDebug>
@@ -23,13 +24,19 @@ class CoreApplication : public QApplication
 {
 private:
     QString mFileToLoad;
+    MainWindow* mMainWindow;
 public:
     CoreApplication(int &argc, char **argv)
         : QApplication(argc, argv)
     {
     }
 
+    ~CoreApplication() {
+        delete mMainWindow;
+    }
+
     const QString& fileToLoad() const { return mFileToLoad;}
+    void setMainWindow(MainWindow* mainWindow) { mMainWindow = mainWindow;}
 
     bool event(QEvent *event)
     {
@@ -39,6 +46,7 @@ public:
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
             mFileToLoad = openEvent->file();
+            mMainWindow->loadFile(openEvent->file());
         }
 
         return QApplication::event(event);

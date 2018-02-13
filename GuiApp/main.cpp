@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
     }
 
     auto mainWindow = MainWindowFactory::getMainWindow(fileToLoad, settings);
+    app.setMainWindow(mainWindow.get());
     mainWindow->show();
 
     //splash->finish(&mainWin);
