@@ -389,9 +389,7 @@ TEST_CASE("Test PointMap connections output", "")
         }
         std::vector<std::string> expected{ "RefFrom,RefTo",
                                            "65537,131074",
-                                           "65538,131073",
-                                           "131073,65538",
-                                           "131074,65537"};
+                                           "65538,131073"};
         REQUIRE(lines == expected);
     }
 

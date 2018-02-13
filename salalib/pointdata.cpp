@@ -1111,6 +1111,7 @@ void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
                     PixelRef pix(i,j);
                     if(seenPix.insert(pix).second)
                     {
+                        seenPix.insert(mergePixelRef);
                         myout << std::endl << pix << delim << mergePixelRef;
                     }
                 }
