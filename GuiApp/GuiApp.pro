@@ -29,3 +29,6 @@ mac {
     QMAKE_INFO_PLIST = resources/Info.plist
 }
 
+FORMS += \
+    ../depthmapX/UI/ColourScaleDlg.ui
+
