@@ -15,7 +15,9 @@
 
 #pragma once
 
-#include <depthmapX/mainwindow.h>
+#include "depthmapX/mainwindowfactory.h"
+#include "version.h"
+#include "settingsimpl.h"
 #include <QApplication>
 #include <QFileOpenEvent>
 #include <QtDebug>
@@ -24,19 +26,12 @@ class CoreApplication : public QApplication
 {
 private:
     QString mFileToLoad;
-    MainWindow* mMainWindow;
+    std::unique_ptr<MainWindow> mMainWindow;
 public:
     CoreApplication(int &argc, char **argv)
         : QApplication(argc, argv)
     {
     }
-
-    ~CoreApplication() {
-        delete mMainWindow;
-    }
-
-    const QString& fileToLoad() const { return mFileToLoad;}
-    void setMainWindow(MainWindow* mainWindow) { mMainWindow = mainWindow;}
 
     bool event(QEvent *event)
     {
@@ -50,5 +45,53 @@ public:
         }
 
         return QApplication::event(event);
+    }
+
+    int exec() {
+        SettingsImpl settings(new DefaultSettingsFactory);
+
+        if (!settings.readSetting(SettingTag::licenseAccepted, false).toBool())
+        {
+            auto dummy = MainWindowFactory::getLicenseDialog();
+            dummy->setModal(true);
+            dummy->setWindowTitle(TITLE_BASE);
+            dummy->exec();
+            if ( dummy->result() == QDialog::Rejected) {
+                return 0;
+            }
+            settings.writeSetting(SettingTag::licenseAccepted, true);
+        }
+
+        if (!settings.readSetting(SettingTag::licenseAccepted, false).toBool())
+        {
+            auto dummy = MainWindowFactory::getLicenseDialog();
+            dummy->setModal(true);
+            dummy->setWindowTitle(TITLE_BASE);
+            dummy->exec();
+            if ( dummy->result() == QDialog::Rejected) {
+                return 0;
+            }
+            settings.writeSetting(SettingTag::licenseAccepted, true);
+        }
+
+        QSplashScreen *splash = 0;
+        int screenId = QApplication::desktop()->screenNumber();
+        splash = new QSplashScreen(QPixmap(QLatin1String("images/splash.png")));
+        if (QApplication::desktop()->isVirtualDesktop())
+        {
+            QRect srect(0, 0, splash->width(), splash->height());
+            splash->move(QApplication::desktop()->availableGeometry(screenId).center() - srect.center() );
+        }
+
+        auto args = arguments();
+        QString fileToLoad = mFileToLoad;
+        if (args.length() == 2)
+        {
+            fileToLoad = args[1];
+        }
+
+        mMainWindow = MainWindowFactory::getMainWindow(fileToLoad, settings);
+        mMainWindow->show();
+        return QApplication::exec();
     }
 };
