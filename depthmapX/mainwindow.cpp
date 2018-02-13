@@ -107,23 +107,7 @@ MainWindow::MainWindow(const QString &fileToLoad, Settings &settings) : mSetting
 
     if (fileToLoad.length()>0)
     {
-        MapView *child = createMapView();
-
-        QByteArray ba = fileToLoad.toUtf8(); // quick fix for weird chars (russian filename bug report)
-        char *file = ba.data(); // quick fix for weird chars (russian filename bug report)
-        if(child->getGraphDoc()->OnOpenDocument(file)) // quick fix for weird chars (russian filename bug report)
-        {
-             child->setCurrentFile(fileToLoad);
-             child->postLoadFile();
-             statusBar()->showMessage(tr("File loaded"), 2000);
-             child->show();
-             OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
-             setCurrentFile(fileToLoad);
-        } else {
-             child->close();
-             QMessageBox::warning(this, "Failed to load", QString("Failed to load file ")+fileToLoad, QMessageBox::Ok, QMessageBox::Ok );
-        }
-
+        loadFile(fileToLoad);
     }
 }
 
@@ -181,6 +165,29 @@ void MainWindow::OnFileNew()
     OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
 }
 
+void MainWindow::loadFile(QString fileName) {
+    QMdiSubWindow *existing = findMapView(fileName);
+    if (existing) {
+          mdiArea->setActiveSubWindow(existing);
+          return;
+    }
+    MapView *child = createMapView();
+    QByteArray ba = fileName.toUtf8(); // quick fix for weird chars (russian filename bug report)
+    char *file = ba.data(); // quick fix for weird chars (russian filename bug report)
+    if(child->getGraphDoc()->OnOpenDocument(file)) // quick fix for weird chars (russian filename bug report)
+    {
+         child->setCurrentFile(fileName);
+         child->postLoadFile();
+         statusBar()->showMessage(tr("File loaded"), 2000);
+         child->show();
+         OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
+         setCurrentFile(fileName);
+    } else {
+         child->close();
+         QMessageBox::warning(this, "Failed to load", QString("Failed to load file ")+fileName, QMessageBox::Ok, QMessageBox::Ok );
+    }
+}
+
 void MainWindow::OnFileOpen()
 {
    QString template_string;
@@ -195,25 +202,7 @@ void MainWindow::OnFileOpen()
        &selectedFilter,
        options);
      if (!fileName.isEmpty()) {
-          QMdiSubWindow *existing = findMapView(fileName);
-          if (existing) {
-                mdiArea->setActiveSubWindow(existing);
-                return;
-          }
-          MapView *child = createMapView();
-          QByteArray ba = fileName.toUtf8(); // quick fix for weird chars (russian filename bug report)
-          char *file = ba.data(); // quick fix for weird chars (russian filename bug report)
-          if(child->getGraphDoc()->OnOpenDocument(file)) // quick fix for weird chars (russian filename bug report)
-          {
-               child->setCurrentFile(fileName);
-               child->postLoadFile();
-               statusBar()->showMessage(tr("File loaded"), 2000);
-               child->show();
-               OnFocusGraph(child->getGraphDoc(), QGraphDoc::CONTROLS_LOADALL);
-               setCurrentFile(fileName);
-          } else {
-               child->close();
-          }
+          loadFile(fileName);
      }
 }
 
