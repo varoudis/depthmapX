@@ -21,7 +21,7 @@
 #ifndef __ISOVIST_H__
 #define __ISOVIST_H__
 
-#include "genlib/bspnode.h"
+#include "genlib/bsptree.h"
 
 // this is very much like sparksieve:
 

@@ -31,7 +31,7 @@ SOURCES += \
     pafmath.cpp \
     xmlparse.cpp \
     stringutils.cpp \
-    bspnode.cpp
+    bsptree.cpp
 
 HEADERS += \
     comm.h \
@@ -46,4 +46,4 @@ HEADERS += \
     stringutils.h \
     containerutils.h \
     linreg.h \
-    bspnode.h
+    bsptree.h

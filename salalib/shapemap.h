@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 #include "salalib/importtypedefs.h"
-#include "genlib/bspnode.h"
+#include "genlib/bsptree.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
