@@ -39,23 +39,35 @@ void BSPTree::make(Communicator *communicator, time_t atime, const std::vector<T
     std::stack<TagLineVecPair> lineStack;
 
     nodeStack.push(root);
-    lineStack.push(root->makeLines(communicator, atime, lines, NULL));
+    lineStack.push(makeLines(communicator, atime, lines, root));
 
+    int progress = 0;
     while(!nodeStack.empty()) {
+        progress++; // might need to increase by 2 because it was one for each left/right in the previous iteration
+
+        if (communicator)
+        {
+           if (communicator->IsCancelled()) {
+              throw Communicator::CancelledException();
+           }
+           if (qtimer( atime, 500 )) {
+              communicator->CommPostMessage( Communicator::CURRENT_RECORD, progress );
+           }
+        }
         BSPNode *currNode = nodeStack.top();
         nodeStack.pop();
         TagLineVecPair currLines = lineStack.top();
         lineStack.pop();
 
         if (!currLines.first.empty()) {
-           currNode->left = new BSPNode();
-           nodeStack.push(currNode->left);
-           lineStack.push(currNode->left->makeLines(communicator,atime,currLines.first,currNode));
+           currNode->m_left = new BSPNode(currNode);
+           nodeStack.push(currNode->m_left);
+           lineStack.push(makeLines(communicator,atime,currLines.first,currNode->m_left));
         }
         if (!currLines.second.empty()) {
-           currNode->right = new BSPNode();
-           nodeStack.push(currNode->right);
-           lineStack.push(currNode->right->makeLines(communicator,atime,currLines.second,currNode));
+           currNode->m_right = new BSPNode(currNode);
+           nodeStack.push(currNode->m_right);
+           lineStack.push(makeLines(communicator,atime,currLines.second,currNode->m_right));
         }
     }
 }
@@ -111,41 +123,29 @@ int BSPTree::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par
  * from one side of the chosen to the other are split in two and each part goes to the relevant set.
  */
 
-std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(Communicator *communicator,
+std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPTree::makeLines(Communicator *communicator,
                                                                         time_t atime,
                                                                         const std::vector<TaggedLine> &lines,
-                                                                        BSPNode *par)
+                                                                        BSPNode *base)
 {
-   m_count++;
-
-   if (communicator)
-   {
-      if (communicator->IsCancelled()) {
-         throw Communicator::CancelledException();
-      }
-      if (qtimer( atime, 500 )) {
-         communicator->CommPostMessage( Communicator::CURRENT_RECORD, m_count );
-      }
-   }
-
    std::vector<TaggedLine> leftlines;
    std::vector<TaggedLine> rightlines;
-
-   parent = par;
 
    // for optimization of the tree (this reduced a six-minute gen time to a 38 second gen time)
    int chosen = -1;
    if (lines.size() > 3) {
-      chosen = BSPTree::pickMidpointLine(lines, par);
+      chosen = BSPTree::pickMidpointLine(lines, base->m_parent);
    }
    else {
       chosen = pafrand() % lines.size();
    }
 
-   m_line = lines[chosen].line;
-   m_tag = lines[chosen].tag;
+   Line chosenLine = lines[chosen].line;
+   int chosenTag = lines[chosen].tag;
+   base->setLine(chosenLine);
+   base->setTag(chosenTag);
 
-   Point2f v0 = m_line.end() - m_line.start();
+   Point2f v0 = chosenLine.end() - chosenLine.start();
    v0.normalise();
 
    for (size_t i = 0; i < lines.size(); i++) {
@@ -154,13 +154,13 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
       }
       const Line& testline = lines[i].line;
       int tag = lines[i].tag;
-      Point2f v1 = testline.start()-m_line.start();
+      Point2f v1 = testline.start()-chosenLine.start();
       v1.normalise();
-      Point2f v2 = testline.end()-m_line.start();
+      Point2f v2 = testline.end()-chosenLine.start();
       v2.normalise();
       // should use approxeq here:
-      double a = testline.start() == m_line.start() ? 0 : det(v0,v1);
-      double b = testline.end() == m_line.start() ? 0 : det(v0,v2);
+      double a = testline.start() == chosenLine.start() ? 0 : det(v0,v1);
+      double b = testline.end() == chosenLine.start() ? 0 : det(v0,v2);
       // note sure what to do if a == 0 and b == 0 (i.e., it's parallel... this test at least ensures on the line is one or the other side)
       if (a >= 0 && b >= 0) {
          leftlines.push_back(TaggedLine(testline,tag));
@@ -169,7 +169,7 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
          rightlines.push_back(TaggedLine(testline,tag));
       }
       else {
-         Point2f p = intersection_point(m_line,testline);
+         Point2f p = intersection_point(chosenLine,testline);
          Line x = Line(testline.start(),p);
          Line y = Line(p,testline.end());
          if (a >= 0) {

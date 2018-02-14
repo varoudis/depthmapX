@@ -27,32 +27,33 @@ struct BSPNode
 private:
    Line m_line;
    int m_tag;
-   int m_count;
 
 public:
    enum { BSPLEFT, BSPRIGHT };
-   BSPNode *left;
-   BSPNode *right;
-   BSPNode *parent;
+   BSPNode *m_left;
+   BSPNode *m_right;
+   BSPNode *m_parent;
 
-   BSPNode()
-   { left = NULL; right = NULL; parent = NULL; m_count = 0; m_tag = -1; }
+   BSPNode(BSPNode *parent = NULL)
+   { m_left = NULL; m_right = NULL; m_parent = parent; m_tag = -1; }
    virtual ~BSPNode()
-   { if (left) delete left; left = NULL; if (right) delete right; right = NULL; }
+   { if (m_left) delete m_left; m_left = NULL; if (m_right) delete m_right; m_right = NULL; }
    //
    bool isLeaf() {
-      return left == NULL && right == NULL;
+      return m_left == NULL && m_right == NULL;
    }
    int classify(const Point2f& p);
    const Line& getLine() const { return m_line; }
+   void setLine(const Line& line) { m_line = line; }
    const int getTag() const { return m_tag; }
-   std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > makeLines(Communicator *communicator,
-                                                                          time_t atime,
-                                                                          const std::vector<TaggedLine>& lines,
-                                                                          BSPNode *par);
+   void setTag(const int tag) { m_tag = tag; }
 };
 
 namespace BSPTree {
 void make(Communicator *communicator, time_t atime, const std::vector<TaggedLine> &lines, BSPNode *root);
 int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
+std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > makeLines(Communicator *communicator,
+                                                                       time_t atime,
+                                                                       const std::vector<TaggedLine>& lines,
+                                                                       BSPNode *base);
 }

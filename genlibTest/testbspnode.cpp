@@ -62,7 +62,7 @@ void compareLines(Line l1, Line l2, float EPSILON) {
     REQUIRE(l1.end().y == Approx(l2.end().y).epsilon(EPSILON));
 }
 
-TEST_CASE("BSPNode::makeLines")
+TEST_CASE("BSPTree::makeLines")
 {
     const float EPSILON = 0.001;
     typedef std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > TagLineVecPair;
@@ -73,9 +73,9 @@ TEST_CASE("BSPNode::makeLines")
     lines.push_back(TaggedLine(Line(Point2f(3, 2), Point2f(4, 2)), 0));
     lines.push_back(TaggedLine(Line(Point2f(4, 2), Point2f(5, 2)), 0));
 
-    BSPNode node;
+    std::unique_ptr<BSPNode> node(new BSPNode());
 
-    TagLineVecPair result = node.makeLines(0, 0, lines, 0);
+    TagLineVecPair result = BSPTree::makeLines(0, 0, lines, node.get());
 
     REQUIRE(result.first.size() == 3);
     REQUIRE(result.second.size() == 0);
@@ -89,7 +89,7 @@ TEST_CASE("BSPNode::makeLines")
     {
         lines.push_back(TaggedLine(Line(Point2f(5, 1), Point2f(6, 1)), 0));
 
-        result = node.makeLines(0, 0, lines, 0);
+        result = BSPTree::makeLines(0, 0, lines, node.get());
 
         REQUIRE(result.first.size() == 3);
         REQUIRE(result.second.size() == 1);
@@ -103,7 +103,7 @@ TEST_CASE("BSPNode::makeLines")
 
         lines.push_back(TaggedLine(Line(Point2f(6, 2), Point2f(7, 2)), 0));
 
-        result = node.makeLines(0, 0, lines, 0);
+        result = BSPTree::makeLines(0, 0, lines, node.get());
 
         REQUIRE(result.first.size() == 4);
         REQUIRE(result.second.size() == 1);
@@ -128,7 +128,7 @@ TEST_CASE("BSPNode::makeLines")
         // line with two points at different sides of chosen
         lines.push_back(TaggedLine(Line(Point2f(3, -2), Point2f(6, -2)), 0));
 
-        result = node.makeLines(0, 0, lines, 0);
+        result = BSPTree::makeLines(0, 0, lines, node.get());
 
         // adds one on each side
         REQUIRE(result.first.size() == 5);
@@ -149,7 +149,7 @@ TEST_CASE("BSPNode::makeLines")
     }
 }
 
-TEST_CASE("BSPNode::make (all horizontal lines)", "all-left tree")
+TEST_CASE("BSPTree::make (all horizontal lines)", "all-left tree")
 {
     const float EPSILON = 0.001;
 
@@ -165,26 +165,26 @@ TEST_CASE("BSPNode::make (all horizontal lines)", "all-left tree")
 
     compareLines(node->getLine(), lines[1].line, EPSILON);
 
-    REQUIRE(node->left != NULL);
-    REQUIRE(node->right == NULL);
+    REQUIRE(node->m_left != NULL);
+    REQUIRE(node->m_right == NULL);
 
-    compareLines(node->left->getLine(), lines[2].line, EPSILON);
+    compareLines(node->m_left->getLine(), lines[2].line, EPSILON);
 
-    REQUIRE(node->left->left != NULL);
-    REQUIRE(node->left->right == NULL);
+    REQUIRE(node->m_left->m_left != NULL);
+    REQUIRE(node->m_left->m_right == NULL);
 
-    compareLines(node->left->left->getLine(), lines[3].line, EPSILON);
+    compareLines(node->m_left->m_left->getLine(), lines[3].line, EPSILON);
 
-    REQUIRE(node->left->left->left != NULL);
-    REQUIRE(node->left->left->right == NULL);
+    REQUIRE(node->m_left->m_left->m_left != NULL);
+    REQUIRE(node->m_left->m_left->m_right == NULL);
 
-    compareLines(node->left->left->left->getLine(), lines[0].line, EPSILON);
+    compareLines(node->m_left->m_left->m_left->getLine(), lines[0].line, EPSILON);
 
-    REQUIRE(node->left->left->left->left == NULL);
-    REQUIRE(node->left->left->left->right == NULL);
+    REQUIRE(node->m_left->m_left->m_left->m_left == NULL);
+    REQUIRE(node->m_left->m_left->m_left->m_right == NULL);
 }
 
-TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
+TEST_CASE("BSPTree::make (all vertical lines)", "split tree")
 {
     const float EPSILON = 0.001;
 
@@ -200,20 +200,20 @@ TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
 
     compareLines(node->getLine(), lines[1].line, EPSILON);
 
-    REQUIRE(node->left != NULL);
-    REQUIRE(node->right != NULL);
+    REQUIRE(node->m_left != NULL);
+    REQUIRE(node->m_right != NULL);
 
-    compareLines(node->left->getLine(), lines[0].line, EPSILON);
-    compareLines(node->right->getLine(), lines[3].line, EPSILON);
+    compareLines(node->m_left->getLine(), lines[0].line, EPSILON);
+    compareLines(node->m_right->getLine(), lines[3].line, EPSILON);
 
-    REQUIRE(node->left->left == NULL);
-    REQUIRE(node->left->right == NULL);
+    REQUIRE(node->m_left->m_left == NULL);
+    REQUIRE(node->m_left->m_right == NULL);
 
-    REQUIRE(node->right->left != NULL);
-    REQUIRE(node->right->right == NULL);
+    REQUIRE(node->m_right->m_left != NULL);
+    REQUIRE(node->m_right->m_right == NULL);
 
-    compareLines(node->right->left->getLine(), lines[2].line, EPSILON);
+    compareLines(node->m_right->m_left->getLine(), lines[2].line, EPSILON);
 
-    REQUIRE(node->right->left->left == NULL);
-    REQUIRE(node->right->left->right == NULL);
+    REQUIRE(node->m_right->m_left->m_left == NULL);
+    REQUIRE(node->m_right->m_left->m_right == NULL);
 }
