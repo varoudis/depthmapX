@@ -189,17 +189,3 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPTree::makeLines(
 
    return std::make_pair(leftlines, rightlines);
 }
-
-int BSPNode::classify(const Point2f& p)
-{
-   Point2f v0 = m_line.end() - m_line.start();
-   v0.normalise();
-   Point2f v1 = p - m_line.start();
-   v1.normalise();
-   if (det(v0,v1) >= 0) {
-      return BSPLEFT;
-   }
-   else {
-      return BSPRIGHT;
-   }
-}

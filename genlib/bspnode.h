@@ -42,7 +42,18 @@ public:
    bool isLeaf() {
       return m_left == NULL && m_right == NULL;
    }
-   int classify(const Point2f& p);
+   int classify(const Point2f& p) {
+       Point2f v0 = m_line.end() - m_line.start();
+       v0.normalise();
+       Point2f v1 = p - m_line.start();
+       v1.normalise();
+       if (det(v0,v1) >= 0) {
+          return BSPLEFT;
+       }
+       else {
+          return BSPRIGHT;
+       }
+   }
    const Line& getLine() const { return m_line; }
    void setLine(const Line& line) { m_line = line; }
    int getTag() const { return m_tag; }
