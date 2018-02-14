@@ -64,7 +64,7 @@ void BSPTree::make(Communicator *communicator, time_t atime, const std::vector<T
  * closest to it.
  */
 
-int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par) {
+int BSPTree::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par) {
     int chosen = -1;
     size_t i;
     Point2f midpoint;
@@ -73,7 +73,7 @@ int BSPNode::pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par
     }
     midpoint /= 2.0 * lines.size();
     bool ver = true;
-    if (par && par->m_line.height() > par->m_line.width()) {
+    if (par && par->getLine().height() > par->getLine().width()) {
        ver = false;
     }
     double chosendist = -1.0;
@@ -136,7 +136,7 @@ std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > BSPNode::makeLines(
    // for optimization of the tree (this reduced a six-minute gen time to a 38 second gen time)
    int chosen = -1;
    if (lines.size() > 3) {
-      chosen = pickMidpointLine(lines, par);
+      chosen = BSPTree::pickMidpointLine(lines, par);
    }
    else {
       chosen = pafrand() % lines.size();

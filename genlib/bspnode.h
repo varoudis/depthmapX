@@ -50,9 +50,9 @@ public:
                                                                           time_t atime,
                                                                           const std::vector<TaggedLine>& lines,
                                                                           BSPNode *par);
-   int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 };
 
 namespace BSPTree {
 void make(Communicator *communicator, time_t atime, const std::vector<TaggedLine> &lines, BSPNode *root);
+int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 }

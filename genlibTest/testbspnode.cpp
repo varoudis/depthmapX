@@ -18,7 +18,7 @@
 #include "genlib/p2dpoly.h"
 #include "genlib/bspnode.h"
 
-TEST_CASE("BSPNode::pickMidpointLine")
+TEST_CASE("BSPTree::pickMidpointLine")
 {
     std::vector<TaggedLine> lines;
     lines.push_back(TaggedLine(Line(Point2f(1, 2), Point2f(2, 2)), 0));
@@ -27,18 +27,18 @@ TEST_CASE("BSPNode::pickMidpointLine")
 
     BSPNode node;
 
-    REQUIRE(node.pickMidpointLine(lines, 0) == 1);
+    REQUIRE(BSPTree::pickMidpointLine(lines, 0) == 1);
 
     SECTION("Additional lines") {
         lines.push_back(TaggedLine(Line(Point2f(4, 2), Point2f(5, 2)), 0));
-        REQUIRE(node.pickMidpointLine(lines, 0) == 1);
+        REQUIRE(BSPTree::pickMidpointLine(lines, 0) == 1);
 
         lines.push_back(TaggedLine(Line(Point2f(5, 1), Point2f(6, 1)), 0));
-        REQUIRE(node.pickMidpointLine(lines, 0) == 2);
+        REQUIRE(BSPTree::pickMidpointLine(lines, 0) == 2);
 
         // the only line with height > width becomes chosen
         lines.push_back(TaggedLine(Line(Point2f(15, 4), Point2f(15, 0)), 0));
-        REQUIRE(node.pickMidpointLine(lines, 0) == 5);
+        REQUIRE(BSPTree::pickMidpointLine(lines, 0) == 5);
     }
     SECTION("rotated middle") {
 
@@ -51,7 +51,7 @@ TEST_CASE("BSPNode::pickMidpointLine")
         // height > width, rotated, not close to midpoint
         lines.push_back(TaggedLine(Line(Point2f(6.5, 1), Point2f(6.5, 3)), 0));
 
-        REQUIRE(node.pickMidpointLine(lines, 0) == 3);
+        REQUIRE(BSPTree::pickMidpointLine(lines, 0) == 3);
     }
 }
 
