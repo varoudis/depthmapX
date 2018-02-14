@@ -16,7 +16,7 @@
 #include "catch.hpp"
 #include "genlib/comm.h"
 #include "genlib/p2dpoly.h"
-#include "genlib/bspnode.h"
+#include "genlib/bsptree.h"
 
 TEST_CASE("BSPTree::pickMidpointLine")
 {
