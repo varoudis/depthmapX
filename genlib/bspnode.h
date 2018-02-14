@@ -45,7 +45,7 @@ public:
    int classify(const Point2f& p);
    const Line& getLine() const { return m_line; }
    void setLine(const Line& line) { m_line = line; }
-   const int getTag() const { return m_tag; }
+   int getTag() const { return m_tag; }
    void setTag(const int tag) { m_tag = tag; }
 };
 
