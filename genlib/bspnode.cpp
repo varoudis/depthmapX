@@ -30,7 +30,7 @@
  * the current node (left or right) is pushed to a stack along with the relevant set of lines.
  */
 
-void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<TaggedLine>& lines, BSPNode *par)
+void BSPTree::make(Communicator *communicator, time_t atime, const std::vector<TaggedLine>& lines, BSPNode* root)
 {
 
     typedef std::pair<std::vector<TaggedLine>, std::vector<TaggedLine> > TagLineVecPair;
@@ -38,9 +38,8 @@ void BSPNode::make(Communicator *communicator, time_t atime, const std::vector<T
     std::stack<BSPNode *> nodeStack;
     std::stack<TagLineVecPair> lineStack;
 
-    parent = par;
-    nodeStack.push(this);
-    lineStack.push(makeLines(communicator, atime, lines, par));
+    nodeStack.push(root);
+    lineStack.push(root->makeLines(communicator, atime, lines, NULL));
 
     while(!nodeStack.empty()) {
         BSPNode *currNode = nodeStack.top();

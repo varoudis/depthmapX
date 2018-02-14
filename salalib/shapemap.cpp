@@ -3496,7 +3496,7 @@ bool ShapeMap::makeBSPtree() const
       }
       m_bsp_root = new BSPNode();
 
-      m_bsp_root->make(NULL,0,partitionlines,NULL);
+      BSPTree::make(NULL,0,partitionlines,m_bsp_root);
       m_bsp_tree = true;
    }
 

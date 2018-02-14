@@ -159,29 +159,29 @@ TEST_CASE("BSPNode::make (all horizontal lines)", "all-left tree")
     lines.push_back(TaggedLine(Line(Point2f(3, 2), Point2f(4, 2)), 0));
     lines.push_back(TaggedLine(Line(Point2f(4, 2), Point2f(5, 2)), 0));
 
-    BSPNode node;
+    std::unique_ptr<BSPNode> node(new BSPNode());
 
-    node.make(0, 0, lines, 0);
+    BSPTree::make(0, 0, lines, node.get());
 
-    compareLines(node.getLine(), lines[1].line, EPSILON);
+    compareLines(node->getLine(), lines[1].line, EPSILON);
 
-    REQUIRE(node.left != NULL);
-    REQUIRE(node.right == NULL);
+    REQUIRE(node->left != NULL);
+    REQUIRE(node->right == NULL);
 
-    compareLines(node.left->getLine(), lines[2].line, EPSILON);
+    compareLines(node->left->getLine(), lines[2].line, EPSILON);
 
-    REQUIRE(node.left->left != NULL);
-    REQUIRE(node.left->right == NULL);
+    REQUIRE(node->left->left != NULL);
+    REQUIRE(node->left->right == NULL);
 
-    compareLines(node.left->left->getLine(), lines[3].line, EPSILON);
+    compareLines(node->left->left->getLine(), lines[3].line, EPSILON);
 
-    REQUIRE(node.left->left->left != NULL);
-    REQUIRE(node.left->left->right == NULL);
+    REQUIRE(node->left->left->left != NULL);
+    REQUIRE(node->left->left->right == NULL);
 
-    compareLines(node.left->left->left->getLine(), lines[0].line, EPSILON);
+    compareLines(node->left->left->left->getLine(), lines[0].line, EPSILON);
 
-    REQUIRE(node.left->left->left->left == NULL);
-    REQUIRE(node.left->left->left->right == NULL);
+    REQUIRE(node->left->left->left->left == NULL);
+    REQUIRE(node->left->left->left->right == NULL);
 }
 
 TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
@@ -194,26 +194,26 @@ TEST_CASE("BSPNode::make (all vertical lines)", "split tree")
     lines.push_back(TaggedLine(Line(Point2f(3.5, 1), Point2f(3.5, 3)), 0));
     lines.push_back(TaggedLine(Line(Point2f(4.5, 1), Point2f(4.5, 3)), 0));
 
-    BSPNode node;
+    std::unique_ptr<BSPNode> node(new BSPNode());
 
-    node.make(0, 0, lines, 0);
+    BSPTree::make(0, 0, lines, node.get());
 
-    compareLines(node.getLine(), lines[1].line, EPSILON);
+    compareLines(node->getLine(), lines[1].line, EPSILON);
 
-    REQUIRE(node.left != NULL);
-    REQUIRE(node.right != NULL);
+    REQUIRE(node->left != NULL);
+    REQUIRE(node->right != NULL);
 
-    compareLines(node.left->getLine(), lines[0].line, EPSILON);
-    compareLines(node.right->getLine(), lines[3].line, EPSILON);
+    compareLines(node->left->getLine(), lines[0].line, EPSILON);
+    compareLines(node->right->getLine(), lines[3].line, EPSILON);
 
-    REQUIRE(node.left->left == NULL);
-    REQUIRE(node.left->right == NULL);
+    REQUIRE(node->left->left == NULL);
+    REQUIRE(node->left->right == NULL);
 
-    REQUIRE(node.right->left != NULL);
-    REQUIRE(node.right->right == NULL);
+    REQUIRE(node->right->left != NULL);
+    REQUIRE(node->right->right == NULL);
 
-    compareLines(node.right->left->getLine(), lines[2].line, EPSILON);
+    compareLines(node->right->left->getLine(), lines[2].line, EPSILON);
 
-    REQUIRE(node.right->left->left == NULL);
-    REQUIRE(node.right->left->right == NULL);
+    REQUIRE(node->right->left->left == NULL);
+    REQUIRE(node->right->left->right == NULL);
 }

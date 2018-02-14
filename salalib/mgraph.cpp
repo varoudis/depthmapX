@@ -692,7 +692,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       qtimer( atime, 0 );
 
       try {
-         m_bsp_root->make(communicator,atime,partitionlines,NULL);
+         BSPTree::make(communicator,atime,partitionlines,m_bsp_root);
          m_bsp_tree = true;
       } 
       catch (Communicator::CancelledException) {

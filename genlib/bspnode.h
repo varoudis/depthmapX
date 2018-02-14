@@ -43,7 +43,6 @@ public:
    bool isLeaf() {
       return left == NULL && right == NULL;
    }
-   void make(Communicator *communicator, time_t atime, const std::vector<TaggedLine> &lines, BSPNode *par);
    int classify(const Point2f& p);
    const Line& getLine() const { return m_line; }
    const int getTag() const { return m_tag; }
@@ -53,3 +52,7 @@ public:
                                                                           BSPNode *par);
    int pickMidpointLine(const std::vector<TaggedLine> &lines, BSPNode *par);
 };
+
+namespace BSPTree {
+void make(Communicator *communicator, time_t atime, const std::vector<TaggedLine> &lines, BSPNode *root);
+}
