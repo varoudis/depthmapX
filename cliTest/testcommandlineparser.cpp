@@ -219,6 +219,15 @@ TEST_CASE("Run Tests","Check we only run if it's appropriate"){
         REQUIRE_THROWS_WITH(cmdP.run(perfSink.get()), Catch::Contains("Trying to run with invalid command line parameters"));
     }
 
+    SECTION("Fail run with version on the command line as last parameter")
+    {
+        CommandLineParser cmdP(factoryMock.get());
+        ArgumentHolder ah{"prog", "-m", "TEST1", "-f", "inputfile.graph", "-o", "outputfile.graph", "-v"};
+        cmdP.parse(ah.argc(), ah.argv());
+        REQUIRE_FALSE(cmdP.isValid());
+        REQUIRE_THROWS_WITH(cmdP.run(perfSink.get()), Catch::Contains("Trying to run with invalid command line parameters"));
+    }
+
     SECTION("Fail run without sub parser")
     {
         CommandLineParser cmdP(factoryMock.get());
