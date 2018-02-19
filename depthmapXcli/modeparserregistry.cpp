@@ -22,6 +22,7 @@
 #include "agentparser.h"
 #include "isovistparser.h"
 #include "exportparser.h"
+#include "stepdepthparser.h"
 
 
 void ModeParserRegistry::populateParsers()
@@ -35,5 +36,6 @@ void ModeParserRegistry::populateParsers()
     REGISTER_PARSER(IsovistParser);
     REGISTER_PARSER(ExportParser);
     REGISTER_PARSER(ImportParser);
+    REGISTER_PARSER(StepDepthParser);
     // *********
 }
