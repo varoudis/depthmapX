@@ -86,6 +86,7 @@ public:
     void showContextMenu(QPoint &point);
     void UpdateStatus(QString s1, QString s2, QString s3);
     void updateGLWindows(bool datasetChanged, bool recentreView);
+    void loadFile(QString fileName);
 
 protected:
     QGraphDoc* m_treeDoc;

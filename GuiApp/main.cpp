@@ -16,14 +16,9 @@
 
 #include <QPixmap>
 #include <QDir>
-#include <QSplashScreen>
-#include <QDesktopWidget>
 #include <QDateTime>
 
-#include "mainwindowfactory.h"
 #include "coreapplication.h"
-#include "version.h"
-#include "settingsimpl.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -40,40 +35,5 @@ int main(int argc, char *argv[])
 
     CoreApplication app(argc, argv);
 
-    SettingsImpl settings(new DefaultSettingsFactory);
-
-    if (!settings.readSetting(SettingTag::licenseAccepted, false).toBool())
-    {
-        auto dummy = MainWindowFactory::getLicenseDialog();
-        dummy->setModal(true);
-        dummy->setWindowTitle(TITLE_BASE);
-        dummy->exec();
-        if ( dummy->result() == QDialog::Rejected) {
-            return 0;
-        }
-        settings.writeSetting(SettingTag::licenseAccepted, true);
-    }
-
-	QSplashScreen *splash = 0;
-    int screenId = QApplication::desktop()->screenNumber();
-    splash = new QSplashScreen(QPixmap(QLatin1String("images/splash.png")));
-    if (QApplication::desktop()->isVirtualDesktop()) 
-	{
-        QRect srect(0, 0, splash->width(), splash->height());
-        splash->move(QApplication::desktop()->availableGeometry(screenId).center() - srect.center() );
-    }
-    //splash->show();
-
-    auto args = app.arguments();
-    QString fileToLoad = app.fileToLoad();
-    if (args.length() == 2)
-    {
-        fileToLoad = args[1];
-    }
-
-    auto mainWindow = MainWindowFactory::getMainWindow(fileToLoad, settings);
-    mainWindow->show();
-
-    //splash->finish(&mainWin);
     return app.exec();
 }
