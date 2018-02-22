@@ -1220,6 +1220,11 @@ int MainWindow::OnFocusGraph(QGraphDoc* pDoc, int lParam)
         MakeGraphTree();
     }
     else if (lParam == QGraphDoc::CONTROLS_LOADDRAWING && pDoc == m_treeDoc) {     // Force update if match current window
+        m_backgraph = NULL;
+        m_attrWindow->clear();
+        m_indexWidget->clear();
+        ClearGraphTree();
+        MakeGraphTree();
         MakeDrawingTree();
     }
     else if (lParam == QGraphDoc::CONTROLS_LOADATTRIBUTES && pDoc == m_treeDoc) {     // Force update if match current window
@@ -1736,7 +1741,7 @@ void MainWindow::MakeDrawingTree()
         m_treeroots[4] = root;
         for (int i = 0; i < m_treeDoc->m_meta_graph->getLineFileCount(); i++) {
 
-            QTreeWidgetItem* subroot = m_indexWidget->addNewFolder(QString(m_treeDoc->m_meta_graph->getLineFileName(i).c_str()));
+            QTreeWidgetItem* subroot = m_indexWidget->addNewFolder(QString(m_treeDoc->m_meta_graph->getLineFileName(i).c_str()), m_treeroots[4]);
             subroot->setIcon(0, m_tree_icon[8]);
             ItemTreeEntry entry(4,i,-1);
             m_treedrawingmap.add(subroot,entry);
