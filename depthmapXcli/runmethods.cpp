@@ -460,9 +460,7 @@ namespace dm_runmethods
 
         std::cout << "ok\nSelecting cells... " << std::flush;
 
-        for_each(stepDepthPoints.begin(),
-                 stepDepthPoints.end(),
-                 [&mGraph](const Point2f &point)->void{
+        for( auto & point : stepDepthPoints ) {
             auto graphRegion = mGraph->getRegion();
             if (!graphRegion.contains(point))
             {
@@ -470,7 +468,7 @@ namespace dm_runmethods
             }
             QtRegion r(point, point);
             mGraph->setCurSel(r, true);
-        });
+        }
 
         std::cout << "ok\nCalculating step-depth... " << std::flush;
 
