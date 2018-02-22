@@ -17,6 +17,7 @@
 #include "exceptions.h"
 #include "imodeparserfactory.h"
 #include "parsingutils.h"
+#include "version.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -25,6 +26,7 @@ using namespace depthmapX;
 
 void CommandLineParser::printHelp(){
     std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
+              << "       depthmapXcli -v prints the current version\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
               << "-t <times.csv> enables output of runtimes as csv file\n"
@@ -36,6 +38,9 @@ void CommandLineParser::printHelp(){
               std::cout << std::flush;
 }
 
+void CommandLineParser::printVersion(){
+    std::cout << TITLE_BASE << "\n" << std::flush;
+}
 
 
 CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
@@ -45,6 +50,7 @@ CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
 void CommandLineParser::parse(size_t argc, char *argv[])
 {
     _valid = false;
+    _printVersionMode = false;
     if (argc <= 1)
     {
         throw CommandLineException("No commandline parameters provided - don't know what to do");
@@ -53,6 +59,11 @@ void CommandLineParser::parse(size_t argc, char *argv[])
     {
         if ( std::strcmp("-h", argv[i])== 0)
         {
+            return;
+        }
+        else if ( std::strcmp("-v", argv[i])== 0)
+        {
+            _printVersionMode = true;
             return;
         }
         else if ( std::strcmp ("-m", argv[i]) == 0)
