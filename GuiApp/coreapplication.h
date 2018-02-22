@@ -62,18 +62,6 @@ public:
             settings.writeSetting(SettingTag::licenseAccepted, true);
         }
 
-        if (!settings.readSetting(SettingTag::licenseAccepted, false).toBool())
-        {
-            auto dummy = MainWindowFactory::getLicenseDialog();
-            dummy->setModal(true);
-            dummy->setWindowTitle(TITLE_BASE);
-            dummy->exec();
-            if ( dummy->result() == QDialog::Rejected) {
-                return 0;
-            }
-            settings.writeSetting(SettingTag::licenseAccepted, true);
-        }
-
         QSplashScreen *splash = 0;
         int screenId = QApplication::desktop()->screenNumber();
         splash = new QSplashScreen(QPixmap(QLatin1String("images/splash.png")));
