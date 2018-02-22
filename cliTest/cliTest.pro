@@ -34,7 +34,9 @@ SOURCES += main.cpp \
     testexportparser.cpp \
     ../depthmapXcli/exportparser.cpp \
     ../depthmapXcli/importparser.cpp \
-    testimportparser.cpp
+    testimportparser.cpp \
+    ../depthmapXcli/stepdepthparser.cpp \
+    teststepdepthparser.cpp
 
 
 HEADERS += \
