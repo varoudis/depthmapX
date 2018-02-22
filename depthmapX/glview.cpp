@@ -19,6 +19,7 @@
 #include "depthmapX/depthmapView.h"
 #include "salalib/linkutils.h"
 #include "salalib/geometrygenerators.h"
+#include "mainwindow.h"
 #include <QMouseEvent>
 #include <QCoreApplication>
 
@@ -252,6 +253,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             // typical selection
             Qt::KeyboardModifiers keyMods = QApplication::keyboardModifiers();
             m_pDoc.m_meta_graph->setCurSel( r, keyMods & Qt::ShiftModifier );
+            ((MainWindow *) m_pDoc.m_mainFrame)->updateToolbar();
             break;
         }
         case MOUSE_MODE_ZOOM_IN:
