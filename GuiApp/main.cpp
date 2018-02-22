@@ -16,8 +16,6 @@
 
 #include <QPixmap>
 #include <QDir>
-#include <QSplashScreen>
-#include <QDesktopWidget>
 #include <QDateTime>
 
 #include "coreapplication.h"

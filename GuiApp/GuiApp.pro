@@ -5,7 +5,8 @@ DEFINES    += _DEPTHMAP
 TEMPLATE   = app
 TARGET     = depthmapX
 ICON       = icons/depthmapX.icns
-SOURCES    = main.cpp
+SOURCES    = main.cpp \
+    coreapplication.cpp
 
 win32:RC_ICONS += icons/depthmapX.ico
 
