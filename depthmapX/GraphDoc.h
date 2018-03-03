@@ -84,7 +84,7 @@ public:
    void ProcPostMessage(int m, int x, int y);
    CMSCommunicator();
    virtual ~CMSCommunicator();
-   virtual void CommPostMessage(int m, int x, int y) const;  // Inline below CWaitDialog
+   virtual void CommPostMessage(int m, int x) const;  // Inline below CWaitDialog
 
    void * parent_doc;
 
@@ -250,7 +250,7 @@ public:
    int m_step;
    int m_num_records;
    QTime m_timer;
-   void ProcPostMessage(int m, int x, int y);
+   void ProcPostMessage(int m, int x);
    void UpdateMainframestatus();
 
 public slots:
