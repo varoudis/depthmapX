@@ -517,12 +517,15 @@ bool PointMap::blockLines()
          PixelRef curs = PixelRef( i, j );
          Point& pt = getPoint( curs );
          QtRegion viewport = regionate( curs, 1e-10 );
-         for (size_t k = pt.m_lines.size() - 1; k != paftl::npos; k--) {
-            if (!pt.m_lines.value(k).crop( viewport )) {
-               // the pixelation is fairly rough to make sure that no point is missed: this just
-               // clears up if any point has been added in error:
-               pt.m_lines.remove_at(k);
-            }
+         std::map<int, Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
+         for(; iter != end; ) {
+             if (!iter->second.crop( viewport )) {
+                 // the pixelation is fairly rough to make sure that no point is missed: this just
+                 // clears up if any point has been added in error:
+                 iter = pt.m_lines.erase(iter);
+             } else {
+                 ++iter;
+             }
          }
       }
    }
@@ -539,7 +542,7 @@ void PointMap::blockLine(int key, const Line& li)
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
    {
-      getPoint(pixels[n]).m_lines.add(key,li);
+      getPoint(pixels[n]).m_lines.insert(std::make_pair(key,li));
       getPoint(pixels[n]).setBlock(true);
    }
 }
@@ -2164,13 +2167,12 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          viewport0.top_right.y = centre0.y;
          break;
       }
-      pqmap<int,Line> lines0;
-      for (size_t m = 0; m < getPoint(curs).m_lines.size(); m++)
+      std::map<int,Line> lines0;
+      for (std::pair<int,Line> line: getPoint(curs).m_lines)
       {
-         int key = getPoint(curs).m_lines.key(m);
-         Line l = getPoint(curs).m_lines.value(m);
+         Line l = line.second;
          if (l.crop(viewport0)) {
-            lines0.add(key,l);
+            lines0.insert(std::make_pair(line.first,l));
          }
       }
       sieve.block(lines0, q);
