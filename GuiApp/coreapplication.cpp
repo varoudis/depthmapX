@@ -14,7 +14,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "GuiApp/coreapplication.h"
-#include <QSplashScreen>
 #include <QDesktopWidget>
 
 int CoreApplication::exec() {
@@ -30,15 +29,6 @@ int CoreApplication::exec() {
             return 0;
         }
         settings.writeSetting(SettingTag::licenseAccepted, true);
-    }
-
-    QSplashScreen *splash = 0;
-    int screenId = QApplication::desktop()->screenNumber();
-    splash = new QSplashScreen(QPixmap(QLatin1String("images/splash.png")));
-    if (QApplication::desktop()->isVirtualDesktop())
-    {
-        QRect srect(0, 0, splash->width(), splash->height());
-        splash->move(QApplication::desktop()->availableGeometry(screenId).center() - srect.center() );
     }
 
     auto args = arguments();
