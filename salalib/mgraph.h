@@ -25,7 +25,7 @@
 #include <genlib/paftl.h>
 #include <genlib/p2dpoly.h>
 
-#include <salalib/vertex.h>      // mainly deprecated, but includes display params
+#include <salalib/displayparams.h>
 #include <salalib/fileproperties.h>
 #include <salalib/spacepix.h>
 #include <salalib/attributes.h>
@@ -404,8 +404,6 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   pqvector<AttrBody> *m_attr_conv_table;
-   int convertAttributes( ifstream& stream, int version );
    int convertVirtualMem( ifstream& stream, int version );
    //
    streampos skipVirtualMem(istream &stream, int version);
