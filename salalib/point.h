@@ -57,11 +57,6 @@ protected:
    // every line that goes through the gridsquare -- memory intensive I know, but what can you do:
    // accuracy is imperative here!  Calculated pre-fillpoints / pre-makegraph, and (importantly) it works.
    pqmap<int,Line> m_lines;
-   // and when dynamic lines are being used, the process flag tells you which q octants to reprocess:
-   //
-   // Deprecated, kept for compatibility with previous versions:
-   pmap<int,int> m_data_objects; // deprecated: (first int is data layer -- presumably the KEY not the index, second int is object ref)
-   //
    int m_processflag;
 public:
    Point()
@@ -126,12 +121,6 @@ public:
       { return m_misc; }
    void setMisc(int misc)
       { m_misc = misc; }
-   int getDataObject( int layer ) {
-      size_t var = m_data_objects.searchindex( layer );
-      if (var != paftl::npos)
-         return m_data_objects.at(var);
-      return -1;  // note: not paftl::npos
-   }
    // note -- set merge pixel should be done only through merge pixels
    PixelRef getMergePixel() {
       return m_merge;

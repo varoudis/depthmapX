@@ -1902,26 +1902,13 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 
    for (i = 0; i < conversion_lookup.size(); i++) {
       ShapeMap& shapemap = m_data_maps.getMap(conversion_lookup.value(i));
-      int layer_ref = datalayers.getLayerRef(conversion_lookup.key(i));
-      pvecint *shape_pixel_lists = new pvecint [datalayers[i].getObjectCount()];
       int j;
-      for (j = 0; j < pointmap.getAttributeTable().getRowCount(); j++) {
-         PixelRef pix = pointmap.getAttributeTable().getRowKey(j);
-         int z = pointmap.getPoint(pix).getDataObject(layer_ref);
-         if (z != -1) {
-            shape_pixel_lists[z].push_back(pix);
-         }
-      }
       // add shapes:
       pvecint row_lookup;
       for (j = 0; j < datalayers[i].getObjectCount(); j++) {
-         for (size_t k = 0; k < shape_pixel_lists[j].size(); k++) {
-            pointmap.overrideSelPixel(shape_pixel_lists[j][k]);
-         }
          row_lookup.push_back(shapemap.makeShapeFromPointSet(pointmap));
          pointmap.clearSel();
       }
-      delete [] shape_pixel_lists;
       // now add attributes:
       AttributeTable& table = shapemap.getAttributeTable();
       // add columns, note, we'll have to add and then have lookups because not necessarily in alphabetical order:

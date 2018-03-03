@@ -431,38 +431,6 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    return ref;
 }
 
-PixelRefVector PointMap::getLayerPixels(int layer) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (obj != paftl::npos) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
-PixelRefVector PointMap::getDataObjectPixels(int layer, int object) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (paftl::npos != -1 && m_points[i][j].m_data_objects[obj] == object) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
 // I've reverted to actually filling the lines, provided there's space to put a filled point in
 
 bool PointMap::fillLines()
@@ -2507,7 +2475,7 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
          if ( getPoint( curs ).filled()) {
 
             if ((getPoint( curs ).contextfilled() && !curs.iseven()) ||
-                (options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1)) {
+                (options.gates_only)) {
                count++;
                continue;
             }
@@ -2805,7 +2773,7 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -2998,7 +2966,7 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }

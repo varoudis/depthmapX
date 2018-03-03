@@ -199,11 +199,6 @@ public:
       { return m_points[p.x][p.y]; }
    const int& pointState( const PixelRef& p ) const
       { return m_points[p.x][p.y].m_state; }
-   const int pointObject( const PixelRef& p, int layer_ref ) const
-      { size_t layer_index = m_points[p.x][p.y].m_data_objects.searchindex(layer_ref);
-        if (layer_index != paftl::npos)
-           return m_points[p.x][p.y].m_data_objects.at(layer_index);
-        return -1; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
