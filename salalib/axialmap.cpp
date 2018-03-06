@@ -896,7 +896,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
    // make new lines here (assumes line map has only lines
    for (k = 0; k < at(m_all_line_map).m_shapes.size(); k++) {
       if (!minimiser.removed(k)) {
-         lines_m.push_back( at(m_all_line_map).m_shapes.find(k)->second.getLine() );
+         lines_m.push_back( depthmapX::getMapAtIndex(at(m_all_line_map).m_shapes, k)->second.getLine() );
       }
    }
 
@@ -997,7 +997,7 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
       m_vps[y].index = y;
       double length = m_axialconns[y].m_connections.size();
       m_vps[y].value1 = (int) length;
-      length = m_alllinemap->m_shapes.find(y)->second.getLine().length();
+      length = depthmapX::getMapAtIndex(m_alllinemap->m_shapes, y)->second.getLine().length();
       m_vps[y].value2 = (float) length;
    }
 
@@ -1073,7 +1073,7 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
             size_t removeindex = ii;
             // now check removing it won't break any topological loops
             bool presumedvital = false;
-            auto axSegCut = depthmapX::getMapAtIndex(axsegcuts, removeindex)->second;
+            auto& axSegCut = depthmapX::getMapAtIndex(axsegcuts, removeindex)->second;
             for (size_t k = 0; k < axSegCut.size(); k++) {
                if (m_radialsegcounts[axSegCut[k]] <= 1) {
                   presumedvital = true;
@@ -1128,7 +1128,7 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       if (!m_removed[y] && !m_vital[y]) {
          m_vps[livecount].index = (int) y;
          m_vps[livecount].value1 = (int) m_axialconns[y].m_connections.size();
-         m_vps[livecount].value2 = (float) m_alllinemap->m_shapes.find(y)->second.getLine().length();
+         m_vps[livecount].value2 = (float) depthmapX::getMapAtIndex(m_alllinemap->m_shapes, y)->second.getLine().length();
          livecount++;
       }
    }
@@ -1154,7 +1154,7 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       }
       //
       bool presumedvital = false;
-      auto axSegCut = depthmapX::getMapAtIndex(axsegcuts, j)->second;
+      auto &axSegCut = depthmapX::getMapAtIndex(axsegcuts, j)->second;
       for (k = 0; k < axSegCut.size(); k++) {
          if (m_radialsegcounts[axSegCut[k]] <= 1) {
             presumedvital = true;
@@ -4313,23 +4313,25 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
    sortPixelLines();
 
    // and chop duplicate lines:
-
-   iter = lines.begin(), end = lines.end();
+   std::vector<int> removelist;
    int i = -1;
-   for(; iter != end; ) {
-       i++;
-       PixelRef start = pixelate(iter->second.start());
-       for (size_t j = 0; j < m_pixel_lines[start.x][start.y].size(); j++) {
-          int k = m_pixel_lines[start.x][start.y][j];
-          if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
-             if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
-                iter = lines.erase(iter);
-                break;
-             }
-          }
-       }
-       ++iter;
+   for (auto line: lines) {
+      i++;
+      PixelRef start = pixelate(line.second.start());
+      for (size_t j = 0; j < m_pixel_lines[start.x][start.y].size(); j++) {
+         int k = m_pixel_lines[start.x][start.y][j];
+         if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
+            if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
+               removelist.push_back(i);
+               break;
+            }
+         }
+      }
    }
+   for(int remove: removelist) {
+       lines.erase(depthmapX::getMapAtIndex(lines, remove));
+   }
+   removelist.clear(); // always clear this list, it's reused}
 }
 
 /////////////////////////////////////////////////////
