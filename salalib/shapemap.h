@@ -294,13 +294,6 @@ public:
 protected:
    pqvector<Point2f> m_temppoints;
 public:
-   // add a shape (does not commit to poly pixels)
-   void shapeBegin();
-   void shapeVertex(const Point2f& p);
-   int shapeEnd(bool close);
-   // this simply adds all shapes to the poly pixels
-   void shapesCommit();
-   // 
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
    void undo();
