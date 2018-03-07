@@ -523,6 +523,7 @@ bool PointMap::blockLines()
                  // the pixelation is fairly rough to make sure that no point is missed: this just
                  // clears up if any point has been added in error:
                  iter = pt.m_lines.erase(iter);
+                 end = pt.m_lines.end();
              } else {
                  ++iter;
              }
@@ -2168,7 +2169,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          break;
       }
       std::map<int,Line> lines0;
-      for (std::pair<int,Line> line: getPoint(curs).m_lines)
+      for (const std::pair<int,Line>& line: getPoint(curs).m_lines)
       {
          Line l = line.second;
          if (l.crop(viewport0)) {

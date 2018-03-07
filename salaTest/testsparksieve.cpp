@@ -25,7 +25,7 @@ TEST_CASE("One block garbage")
     std::map<int, Line> lines;
     // these lines get turned into "blocks" based by a tanify function based on q and the centre given
     // above. Given q=4 and centre 1,1 this line will be from 0.625 to something bigger than 1
-    lines.insert(std::make_pair(1, Line(Point2f(0.5, 0.2), Point2f(0.5, 0.7))));
+    lines[1] = Line(Point2f(0.5, 0.2), Point2f(0.5, 0.7));
     sieve.block(lines,4);
     sieve.collectgarbage();
     REQUIRE(sieve.m_gaps.size() == 1);
