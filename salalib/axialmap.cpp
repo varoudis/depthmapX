@@ -867,10 +867,11 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
    minimiser.removeSubsets(ax_seg_cuts, radialsegs, radialdivisions, m_radial_lines, keyvertexconns, keyvertexcounts);
 
    // make new lines here (assumes line map has only lines)
-   size_t k;
-   for (k = 0; k < at(m_all_line_map).m_shapes.size(); k++) {
+   int k = -1;
+   for (auto& shape: at(m_all_line_map).m_shapes) {
+      k++;
       if (!minimiser.removed(k)) {
-         lines_s.push_back( at(m_all_line_map).m_shapes.find(k)->second.getLine() );
+         lines_s.push_back( shape.second.getLine() );
       }
    }
 
@@ -2962,10 +2963,12 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          size_t j;
          for (j = 0; j < pix_shapes.size(); j++) {
             for (size_t k = j + 1; k < pix_shapes.size(); k++) {
-               int a = depthmapX::findIndexFromKey(m_shapes, (int) pix_shapes[j].m_shape_ref);
-               int b = depthmapX::findIndexFromKey(m_shapes, (int) pix_shapes[k].m_shape_ref);
-               if (a != -1 && b != -1 && m_shapes.find(a)->second.isLine() && m_shapes.find(b)->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
-                  closepoints.push_back( intersection_point(m_shapes.find(a)->second.getLine(), m_shapes.find(b)->second.getLine(), TOLERANCE_A) );
+               auto aIter = m_shapes.find((int) pix_shapes[j].m_shape_ref);
+               auto bIter = m_shapes.find((int) pix_shapes[k].m_shape_ref);
+               int a = std::distance(m_shapes.begin(), aIter);
+               int b = std::distance(m_shapes.begin(), bIter);
+               if (aIter != m_shapes.end() && bIter != m_shapes.end() && aIter->second.isLine() && bIter->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
+                  closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
                   intersections.push_back( IntPair((int)a,(int)b) );
                }
             }
@@ -3088,10 +3091,11 @@ void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& conn
    // this code relies on the polygon order being the same as the connections
 
    for (size_t i = 0; i < m_connectors.size(); i++) {
-      if (!m_shapes.find(i)->second.isLine()) {
+      auto shape = depthmapX::getMapAtIndex(m_shapes, i)->second;
+      if (!shape.isLine()) {
          continue;
       }
-      const Line& line = m_shapes.find(i)->second.getLine();
+      const Line& line = shape.getLine();
       pmap<double,int> breaks;
       int axis = line.width() >= line.height() ? XAXIS : YAXIS;
       // we need the breaks ordered from start to end of the line
@@ -3103,8 +3107,9 @@ void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& conn
       for (size_t j = 0; j < connections.size(); j++) {
          // find the intersection point and add...
          // note: more than one break at the same place allowed
-         if (i != connections[j] && m_shapes.find(connections[j])->second.isLine()) {
-            breaks.add( parity * line.intersection_point( m_shapes.find(connections[j])->second.getLine(), axis, TOLERANCE_A ), connections[j], paftl::ADD_DUPLICATE );
+         auto shapeJ = depthmapX::getMapAtIndex(m_shapes, connections[j])->second;
+         if (i != connections[j] && shapeJ.isLine()) {
+            breaks.add( parity * line.intersection_point( shapeJ.getLine(), axis, TOLERANCE_A ), connections[j], paftl::ADD_DUPLICATE );
          }
       }
       // okay, now we have a list from one end of the other of lines this line connects with

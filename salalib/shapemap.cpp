@@ -2643,8 +2643,8 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    for (int j = 0; j < count; j++) {
       int key;
       stream.read((char *) &key, sizeof(key));
-      m_shapes.insert(std::make_pair(key, SalaShape()));
-      m_shapes.find(key)->second.read(stream,version);
+      auto iter = m_shapes.insert(std::make_pair(key, SalaShape())).first;
+      iter->second.read(stream,version);
    }
 
    // read object data (currently unused)
@@ -2652,8 +2652,8 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    for (int k = 0; k < count; k++) {
       int key;
       stream.read((char *) &key, sizeof(key));
-      m_objects.insert(std::make_pair(key, SalaObject()));
-      m_objects.end()->second.read(stream,version);
+      auto iter = m_objects.insert(std::make_pair(key, SalaObject())).first;
+      iter->second.read(stream,version);
    }
    // read attribute data
    m_attributes.read(stream,version);
@@ -3682,7 +3682,7 @@ void ShapeMap::ozlemSpecial2(ShapeMap& buildings)
    for (i = 0; i < removelist.size(); i++) {
       removePolyPixels(depthmapX::getMapAtIndex(m_shapes, removelist[i])->first);
    }
-   for (i = 0; i < removelist.size(); i++) {
+   for (i = removelist.size()-1; i >= 0; i--) {
        auto iter = m_shapes.begin();
        std::advance(iter, removelist[i]);
        m_shapes.erase(iter);

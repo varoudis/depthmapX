@@ -2028,7 +2028,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(depthmapX::getMapAtIndex(shapeMap, table_out.getRowKey(i))->second,gatelist);
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(shapeMap.find(table_out.getRowKey(i))->second,gatelist);
          }
          else if (desttype == VIEWDATA) {
             if (sourcelayer == destlayer) {
@@ -2036,7 +2036,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                return false;
             }
             auto dataMap = m_data_maps.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(depthmapX::getMapAtIndex(dataMap, table_out.getRowKey(i))->second,gatelist);
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(dataMap.find(table_out.getRowKey(i))->second,gatelist);
          }
          double val = -1.0;
          int count = 0;
