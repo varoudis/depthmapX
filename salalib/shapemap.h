@@ -524,13 +524,6 @@ public:
    std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
-   void ozlemSpecial(ShapeMap& output);
-   void ozlemSpecial2(ShapeMap& buildings);
-   void ozlemSpecial3(ShapeMap& all);
-   bool ozlemSpecial4(ValuePair& cut, IntPair& previous, int& state, AttributeTable& table, IntPair& lookupcols);
-   void ozlemSpecial5(ShapeMap& buildings);
-   void ozlemSpecial6();
-   void ozlemSpecial7(ShapeMap& linemap);
    std::vector<SimpleLine> getAllShapesAsLines();
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();

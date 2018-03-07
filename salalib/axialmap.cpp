@@ -100,6 +100,7 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    Point2f o = av.m_point - av.m_openspace;
 
    // using an anglemap means that there are now no anti-clockwise vertices...
+   // TODO: (CS) Double as key is problematic - books have been written about double equality...
    std::map<double,int> anglemap;
    for (size_t i = 0; i < pointlist.size(); i++) {
       anglemap.insert(std::make_pair( angle(openspace,av.m_point,pointlist[i]), i ));
