@@ -281,7 +281,7 @@ protected:
    int *m_keyvertexcounts;
    prefvec<Connector> m_axialconns; // <- uses a copy of axial lines as it will remove connections
 public:
-   AxialMinimiser(const ShapeGraph& alllinemap, std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs);
+   AxialMinimiser(const ShapeGraph& alllinemap, int no_of_axsegcuts, int no_of_radialsegs);
    ~AxialMinimiser();
    void removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts);
    void fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts);

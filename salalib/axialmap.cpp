@@ -229,6 +229,7 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
 
    size_t i = 0;
 
+   // TODO: (CS) these should be vectors, not raw pointers.
    int *found[2];
    found[0] = new int [lines.size()];
    found[1] = new int [lines.size()];
@@ -265,11 +266,13 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
    // three pass operation: (2) connect up vertex possibles
    for (i = 0; i < lines.size(); i++) {
       if (found[0][i] == -1 || found[1][i] == -1) {
+         // TODO: (CS) What are these integers being thrown?!
          throw 1;
       }
       auto index0 = m_vertex_possibles.find(pointlookup.at(found[0][i]));
       auto index1 = m_vertex_possibles.find(pointlookup.at(found[1][i]));
       if (index0 == m_vertex_possibles.end() || index1 == m_vertex_possibles.end()) {
+         // TODO: (CS) What are these integers being thrown?!
          throw 2;
       }
       index0->second.add(pointlookup.at(found[1][i]));
@@ -818,6 +821,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
          }
          else {
             // Quick mod - TV
+            // TODO: (CS) Is there still any point to that #ifdef?
 #if defined(_WIN32)
             radialsegs.insert(std::make_pair( (RadialKey)m_radial_lines[i], (RadialKey)m_radial_lines[i-1]));
 #else
@@ -828,19 +832,21 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
    }
 
    // and segment divisors from the axial lines...
+   // TODO: (CS) Restructure this to get rid of all those brittle parallel data structure
+   auto axIter = ax_radial_cuts.begin();
+   auto axSeg = ax_seg_cuts.begin();
    for (i = 0; i < at(m_all_line_map).m_shapes.size(); i++) {
-      auto axIter = depthmapX::getMapAtIndex(ax_radial_cuts, i);
-      auto axSeg = depthmapX::getMapAtIndex(ax_seg_cuts, i)->second;
+      std::advance(axIter, 1);
+      std::advance(axSeg, 1);
       for (size_t j = 1; j < axIter->second.size(); j++) {
          // note similarity to loop above
          RadialKey rk_end = m_radial_lines[axIter->second[j]];
          RadialKey rk_start = m_radial_lines[axIter->second[j-1]];
          if (rk_start.vertex == rk_end.vertex) {
             auto radialSegIter = radialsegs.find(rk_end);
-            size_t index = std::distance(radialsegs.begin(), radialSegIter);
             if (radialSegIter != radialsegs.end() && rk_start == radialSegIter->second.radial_b) {
                radialSegIter->second.add(axIter->first);
-               axSeg.add(index);
+               axSeg->second.add(std::distance(radialsegs.begin(), radialSegIter));
             }
          }
       }
@@ -870,7 +876,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
    // ok, after this fairly tedious set up, we are ready to go... 
    // note axradialcuts aren't required anymore...
 
-   AxialMinimiser minimiser(at(m_all_line_map), ax_seg_cuts, radialsegs);
+   AxialMinimiser minimiser(at(m_all_line_map), ax_seg_cuts.size(), radialsegs.size());
 
    prefvec<Line> lines_s, lines_m;
 
@@ -947,15 +953,15 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-AxialMinimiser::AxialMinimiser(const ShapeGraph& alllinemap, std::map<int, pvecint> &axsegcuts, std::map<RadialKey, RadialSegment> &radialsegs)
+AxialMinimiser::AxialMinimiser(const ShapeGraph& alllinemap, int no_of_axsegcuts, int no_of_radialsegs)
 {
    m_alllinemap = (ShapeGraph *) &alllinemap;
 
-   m_vps = new ValueTriplet[axsegcuts.size()];
-   m_removed = new bool [axsegcuts.size()];
-   m_affected = new bool [axsegcuts.size()];
-   m_vital = new bool [axsegcuts.size()];
-   m_radialsegcounts = new int [radialsegs.size()];
+   m_vps = new ValueTriplet[no_of_axsegcuts];
+   m_removed = new bool [no_of_axsegcuts];
+   m_affected = new bool [no_of_axsegcuts];
+   m_vital = new bool [no_of_axsegcuts];
+   m_radialsegcounts = new int [no_of_radialsegs];
 }
 
 AxialMinimiser::~AxialMinimiser()
@@ -1578,7 +1584,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
       comm->CommPostMessage( Communicator::CURRENT_STEP, 1 );
    }
 
-   std::map<int,Line> lines;  // pqmap for tidier, does not matter elsewhere...
+   std::map<int,Line> lines;
    pmap<int,int> layers;  // this is used to say which layer it originated from
    bool recordlayer = false;
 

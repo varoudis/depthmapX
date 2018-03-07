@@ -185,7 +185,7 @@ void Q3DView::timerEvent(QTimerEvent *event)
                      PixelRef pix = pointmap.pixelate(p); // note, take the pix before you scale!
                      p.normalScale(m_region);
                      m_mannequins[i].advance(p);
-                     auto iter = depthmapX::getMapAtIndex(m_pixels, pix);
+                     auto iter = m_pixels.find(pix);
                      if (iter != m_pixels.end()) {
                         if (iter->second.m_value < 10) {
                            iter->second.m_value += 1;
@@ -467,7 +467,7 @@ void Q3DView::ReloadPointData()
          PixelRef pix = table.getRowKey(i);
          Point2f p = map.depixelate(pix);
          p.normalScale(m_region);
-         m_pixels.insert(std::make_pair(pix,C3DPixelData(p)));
+         m_pixels[pix] = C3DPixelData(p);
       }
    }
    else {
