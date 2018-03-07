@@ -18,7 +18,7 @@
 #ifndef __ATTRIBUTES_H__
 #define __ATTRIBUTES_H__
 
-#include "vertex.h"
+#include "salalib/mgraph_consts.h"
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable

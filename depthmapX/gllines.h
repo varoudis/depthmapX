@@ -17,7 +17,7 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-#include "salalib/vertex.h"
+#include "salalib/pafcolor.h"
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>

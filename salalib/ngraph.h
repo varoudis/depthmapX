@@ -25,6 +25,7 @@
 class PointMap;
 struct MetricPair;
 struct MetricTriple;
+struct AngularTriple;
 
 struct PixelVec
 {

@@ -317,7 +317,7 @@ void QGraphDoc::timerEvent(QTimerEvent *event)
 	}
 }
 
-void QGraphDoc::ProcPostMessage(int m, int x, int y)
+void QGraphDoc::ProcPostMessage(int m, int x)
 {
 	switch (m) {
 	case Communicator::NUM_STEPS:

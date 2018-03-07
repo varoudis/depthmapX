@@ -35,76 +35,6 @@
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
 
-/////////////////////////////////////////////////////////////////////////////////
-
-Point::~Point()
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-}
-
-float Point::getBinDistance(int i)
-{
-   return m_node->bindistance(i);
-}
-
-istream& Point::read(istream& stream, int version, int attr_count)
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-   stream.read( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // (note block NO LONGER used!)
-   stream.read( (char *) &m_block, sizeof(m_block) );
-
-   stream.read( (char *) &m_misc, sizeof(m_misc) );
-
-   stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-
-
-   stream.read( (char *) &m_merge, sizeof(m_merge) );
-   bool ngraph;
-   stream.read( (char *) &ngraph, sizeof(ngraph) );
-   if (ngraph) {
-       m_node = new Node;
-       m_node->read(stream, version);
-   }
-
-   stream.read((char *) &m_location, sizeof(m_location));
-
-   return stream;
-}
-
-ofstream& Point::write(ofstream& stream, int version)
-{
-   stream.write( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // note block is no longer used at all
-   stream.write( (char *) &m_block, sizeof(m_block) );
-   stream.write( (char *) &m_misc, sizeof(m_misc) );
-   stream.write( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-   stream.write( (char *) &m_merge, sizeof(m_merge) );
-   bool ngraph;
-   if (m_node) {
-      ngraph = true;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-      m_node->write(stream, version);
-   }
-   else {
-      ngraph = false;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-   }
-   stream.write((char *) &m_location, sizeof(m_location));
-   return stream;
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -499,38 +429,6 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    }
 
    return ref;
-}
-
-PixelRefVector PointMap::getLayerPixels(int layer) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (obj != paftl::npos) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
-PixelRefVector PointMap::getDataObjectPixels(int layer, int object) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (paftl::npos != -1 && m_points[i][j].m_data_objects[obj] == object) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
 }
 
 // I've reverted to actually filling the lines, provided there's space to put a filled point in
@@ -1685,123 +1583,6 @@ bool PointMap::write( ofstream& stream, int version )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// A horrible piece of code: this is to convert a file from the old format
-// AttrHeader / AttrBody to the new format Attributes Table
-
-// This code converts attributes for all versions
-// between VERSION_NGRAPH_INTROD and VERSION_ATTRIBUTES_TABLE
-
-void PointMap::convertAttributes(int which_attributes)
-{
-   if (which_attributes & GraphVertexList::BASIC) {
-      int connectivity_col = m_attributes.insertLockedColumn("Connectivity");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               // insert row...
-               int row = m_attributes.insertRow(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::NEIGHBOURHOOD_SIZE);
-               m_attributes.setValue(row, connectivity_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::LOCAL) {
-      int cluster_col = m_attributes.insertColumn("Visual Clustering Coefficient");
-      int control_col = m_attributes.insertColumn("Visual Control");
-      int controllability_col = m_attributes.insertColumn("Visual Controllability");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CLUSTER);
-               m_attributes.setValue(row, cluster_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_HILL);
-               m_attributes.setValue(row, control_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_TURN);
-               m_attributes.setValue(row, controllability_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::GLOBAL) {
-      int entropy_col = m_attributes.insertColumn("Visual Entropy");
-      int integ_hh_col = m_attributes.insertColumn("Visual Integration [HH]");
-      int integ_tk_col = m_attributes.insertColumn("Visual Integration [Tekl]");
-      int depth_col = m_attributes.insertColumn("Visual Mean Depth");
-      int count_col = m_attributes.insertColumn("Visual Node Count");
-      int rel_entropy_col = m_attributes.insertColumn("Visual Relativised Entropy");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::ENTROPY);
-               m_attributes.setValue(row, entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::REL_ENTROPY);
-               m_attributes.setValue(row, rel_entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_HILL);
-               m_attributes.setValue(row, integ_hh_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_TEKL);
-               m_attributes.setValue(row, integ_tk_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::MEAN_DEPTH);
-               m_attributes.setValue(row, depth_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::GRAPH_SIZE);
-               m_attributes.setValue(row, count_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::POINTDEPTH) {
-      int col = m_attributes.insertColumn("Visual Step Depth");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::POINT_DEPTH);
-               m_attributes.setValue(row, col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::METRIC) {
-      int mspa_col = m_attributes.insertColumn("Metric Mean Shortest-Path Angle");
-      int mspl_col = m_attributes.insertColumn("Metric Mean Shortest-Path Distance");
-      int dist_col = m_attributes.insertColumn("Metric Mean Straight-Line Distance");
-      int count_col = m_attributes.insertColumn("Metric Node Count");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               double val, total = m_points[i][j].getAttributes().getAttr(AttrHeader::METRIC_GRAPH_SIZE);
-               //
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_ANGLE) / total;
-               m_attributes.setValue(row, mspa_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_DEPTH) / total;
-               m_attributes.setValue(row, mspl_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_EUCLID_DIST) / total;
-               m_attributes.setValue(row, dist_col, float(val));
-               //
-               m_attributes.setValue(row, count_col, float(total));
-            }
-         }
-      }
-   }
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         if (m_points[i][j].m_attributes) {
-            delete m_points[i][j].m_attributes;
-            m_points[i][j].m_attributes = NULL;
-         }
-      }
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 // Now what this class is actually for: making a visibility graph!
 
 // Visibility graph construction constants
@@ -2694,7 +2475,7 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
          if ( getPoint( curs ).filled()) {
 
             if ((getPoint( curs ).contextfilled() && !curs.iseven()) ||
-                (options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1)) {
+                (options.gates_only)) {
                count++;
                continue;
             }
@@ -2992,7 +2773,7 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -3185,7 +2966,7 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }

@@ -49,11 +49,6 @@ MetaGraph::MetaGraph()
    m_view_class = VIEWNONE;
    m_file_version = -1; // <- if unsaved, file version is -1
 
-   // Standard layers no longer added: the gates layer will be initialised with the first push to layer,
-   // or when made from axial lines.
-
-   m_attr_conv_table = NULL;
-
    // whether or not showing text / grid saved with file:
    m_showtext = false;
    m_showgrid = false;
@@ -1907,26 +1902,13 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 
    for (i = 0; i < conversion_lookup.size(); i++) {
       ShapeMap& shapemap = m_data_maps.getMap(conversion_lookup.value(i));
-      int layer_ref = datalayers.getLayerRef(conversion_lookup.key(i));
-      pvecint *shape_pixel_lists = new pvecint [datalayers[i].getObjectCount()];
       int j;
-      for (j = 0; j < pointmap.getAttributeTable().getRowCount(); j++) {
-         PixelRef pix = pointmap.getAttributeTable().getRowKey(j);
-         int z = pointmap.getPoint(pix).getDataObject(layer_ref);
-         if (z != -1) {
-            shape_pixel_lists[z].push_back(pix);
-         }
-      }
       // add shapes:
       pvecint row_lookup;
       for (j = 0; j < datalayers[i].getObjectCount(); j++) {
-         for (size_t k = 0; k < shape_pixel_lists[j].size(); k++) {
-            pointmap.overrideSelPixel(shape_pixel_lists[j][k]);
-         }
          row_lookup.push_back(shapemap.makeShapeFromPointSet(pointmap));
          pointmap.clearSel();
       }
-      delete [] shape_pixel_lists;
       // now add attributes:
       AttributeTable& table = shapemap.getAttributeTable();
       // add columns, note, we'll have to add and then have lookups because not necessarily in alphabetical order:
@@ -2936,138 +2918,6 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
 
    m_state = oldstate;
    return OK;
-}
-
-int MetaGraph::convertAttributes( ifstream& stream, int version )
-{
-   int ret = 1;
-
-   // This is adapted from original ArVertexList code:
-
-   int attr_count, which_attributes;
-   stream.read( (char *) &which_attributes, sizeof(int) );
-   stream.read( (char *) &attr_count, sizeof(int) );
-
-   int size;
-   stream.read( (char *) &size, sizeof(int) );
-   
-   if (m_attr_conv_table)
-      delete m_attr_conv_table;
-   m_attr_conv_table = new pqvector<AttrBody>;
-   pqvector<AttrBody>& attrs = *m_attr_conv_table;
-
-   size_t i;
-   for (i = 0; i < size_t(size); i++) {
-      AttrBody attr(-1, g_attr_header);
-      attr.read(stream, attr_count);   // <- only write in saved attributes
-      if (attr.ref != -1) {
-         attrs.add( attr );
-      }
-   }
-
-   for (size_t ii = 0; ii < attrs.size(); ii++) {
-      // Check these are numbered 0 to n, and set the pos to be used later:
-      if (attrs[ii].ref != ii) {
-         ret = 0;
-         break;
-      }
-      attrs[ii].pos = -1;
-   }
-
-   if (ret == 0) {
-      delete m_attr_conv_table;
-      m_attr_conv_table = NULL;
-      return 0;
-   }
-
-   for (i = 0; i < PointMaps::size(); i++) {
-      PointMap& map = PointMaps::at(i);
-      for (int j = 0; j < map.m_cols; j++) {
-         for (int k = 0; k < map.m_rows; k++) {
-            // Note: block used to be the noderef
-            if (map.m_points[j][k].filled() && map.m_points[j][k].m_block != -1) {
-               AttrBody test(-1,g_attr_header);
-               test.ref = map.m_points[j][k].m_block;
-               size_t pos = attrs.searchindex(test);
-               if (pos != paftl::npos) {
-                  map.m_points[j][k].setAttributes(attrs[pos]);
-                  attrs[pos].pos = (int) PixelRef(j,k);  // <- note this can be used to convert the virtual mem quickly
-               }
-               else {
-                  // oops
-                  ret = 0;
-               }
-            }
-         }
-      }
-   }
-   return ret;
-}
-
-#include <salalib/ngraph.h>  // for conversion
-
-int MetaGraph::convertVirtualMem( ifstream& stream, int version )
-{
-   if (!m_attr_conv_table) {
-      return 0;
-   }
-   if (~m_state & ANGULARGRAPH) {
-      // can't convert non-angular graphs:
-      if (m_attr_conv_table)
-         delete m_attr_conv_table;
-      m_attr_conv_table = NULL;
-      return DEPRECATED_VERSION;
-   }
-
-   // The attr conv table can help us quickly convert:
-   pqvector<AttrBody>& attrs = *m_attr_conv_table;
-
-   pvecint nodes;
-   pvecint bins;
-
-   PixelRefVector bins_b[32];
-   static float far_bin_dists[32];
-   for (int ii = 0; ii < 32; ii++) {
-      far_bin_dists[ii] = 0.0f;
-   }
-
-   char header[3];
-   stream.read( header, 3 );                             // 'grf'
-   stream.read( (char *) &version, sizeof( version ) );  // version
-   char type;
-   stream.read( (char *) &type, sizeof( type ) );        // 'v'
-
-   int size;
-   stream.read( (char *) &size, sizeof( size ) );
-
-   PointMap& map = PointMaps::tail();
-   for (int i = 0; i < size; i++) {
-      nodes.read(stream);
-      bins.read(stream);
-      if (attrs[i].pos != -1) {
-         PixelRef curs = (PixelRef) attrs[i].pos;
-         
-         for (int j = 0; j < 32; j++) {
-            for (int k = loword(bins[j]); k < hiword(bins[j]); k++) {
-               int next = attrs[nodes[k]].pos;
-               if (next != -1) {
-                  bins_b[j].push_back( (PixelRef) next );
-               }
-            }
-         }
-
-         Point& pt = map.getPoint( curs );
-         pt.m_node = new Node;
-         pt.m_node->make( curs, bins_b, far_bin_dists, 0x00FF );
-      }
-      nodes.clear();
-      bins.clear();
-   }
-
-   delete m_attr_conv_table;
-   m_attr_conv_table = NULL;
-
-   return WARN_CONVERTED;
 }
 
 streampos MetaGraph::skipVirtualMem(istream& stream, int version)

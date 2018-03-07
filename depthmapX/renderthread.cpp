@@ -32,10 +32,10 @@ CMSCommunicator::~CMSCommunicator()
 {
 }
 
-inline void CMSCommunicator::CommPostMessage(int m, int x, int y) const
+inline void CMSCommunicator::CommPostMessage(int m, int x) const
 {
    QGraphDoc *pDoc = (QGraphDoc *)parent_doc;
-   pDoc->ProcPostMessage(m, x, y);
+   pDoc->ProcPostMessage(m, x);
 }
 
 //! [0]

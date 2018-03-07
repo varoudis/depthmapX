@@ -34,7 +34,7 @@ void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>&
 
         m_polygons.push_back(std::unique_ptr<GLTrianglesUniform>(new GLTrianglesUniform));
 
-        vector<Point2f> triangulated = GLUTriangulator::triangulate(points);
+        std::vector<Point2f> triangulated = GLUTriangulator::triangulate(points);
         m_polygons.back()->loadTriangleData(triangulated, colour);
     }
 }
