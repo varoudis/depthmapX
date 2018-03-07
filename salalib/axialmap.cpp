@@ -4322,14 +4322,14 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
          int k = m_pixel_lines[start.x][start.y][j];
          if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
             if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
-               removelist.push_back(i);
+               removelist.push_back(line.first);
                break;
             }
          }
       }
    }
    for(int remove: removelist) {
-       lines.erase(depthmapX::getMapAtIndex(lines, remove));
+       lines.erase(remove);
    }
    removelist.clear(); // always clear this list, it's reused}
 }

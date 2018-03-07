@@ -59,8 +59,7 @@ void TigerMap::parse(const std::vector<string>& fileset, Communicator *comm)
             if (code[0] == 'A' || code[0] == 'B') {
                auto iter = find(code);
                if (iter == end()) {
-                  insert(std::make_pair(code,TigerCategory()));
-                  iter = find(code);
+                  iter = insert(std::make_pair(code,TigerCategory())).first;
                }
                int long1 = stoi(line.substr(190,10));
                int lat1  = stoi(line.substr(200,9));
