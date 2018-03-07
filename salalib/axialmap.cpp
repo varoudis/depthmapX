@@ -836,8 +836,6 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
    auto axIter = ax_radial_cuts.begin();
    auto axSeg = ax_seg_cuts.begin();
    for (i = 0; i < at(m_all_line_map).m_shapes.size(); i++) {
-      std::advance(axIter, 1);
-      std::advance(axSeg, 1);
       for (size_t j = 1; j < axIter->second.size(); j++) {
          // note similarity to loop above
          RadialKey rk_end = m_radial_lines[axIter->second[j]];
@@ -850,6 +848,8 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
             }
          }
       }
+      std::advance(axIter, 1);
+      std::advance(axSeg, 1);
    }
 
    // and a little more setting up: key vertex relationships
