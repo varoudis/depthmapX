@@ -1408,7 +1408,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
    usermap.init(lines.size(),region);  // used to be double density
    for (size_t k = 0; k < lines.size(); k++) {
-      usermap.makeLineShape(lines[k]);
+      usermap.makeLineShapeWithRef(lines[k], keys[k]);
    }
 
    // n.b. make connections also initialises attributes
@@ -1720,7 +1720,7 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
 
    usermap.init(lines.size(),region);
    for (size_t k = 0; k < lines.size(); k++) {
-      usermap.makeLineShape(lines[k]);
+      usermap.makeLineShapeWithRef(lines[k], keys[k]);
    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits

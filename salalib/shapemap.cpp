@@ -311,7 +311,7 @@ void ShapeMap::clearAll()
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-int ShapeMap::makePointShape(const Point2f& point, bool tempshape)
+int ShapeMap::makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape)
 {
    bool bounds_good = true;
 
@@ -320,12 +320,11 @@ int ShapeMap::makePointShape(const Point2f& point, bool tempshape)
       init(m_shapes.size(),QtRegion(point,point));
    }
 
-   int new_shape_ref = getNextShapeKey();
-   int x = m_shapes.add(new_shape_ref,SalaShape(point));
+   int x = m_shapes.add(shape_ref,SalaShape(point));
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
-      makePolyPixels(new_shape_ref);
+      makePolyPixels(shape_ref);
    }
    else {
       // pixelate all polys in the pixel new structure:
@@ -335,14 +334,19 @@ int ShapeMap::makePointShape(const Point2f& point, bool tempshape)
    }
 
    if (!tempshape) {
-      int rowid = m_attributes.insertRow(new_shape_ref);
+      int rowid = m_attributes.insertRow(shape_ref);
       m_newshape = true;
    }
 
-   return new_shape_ref;
+   return shape_ref;
 }
 
-int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
+int ShapeMap::makePointShape(const Point2f& point, bool tempshape)
+{
+    return makePointShapeWithRef(point, getNextShapeKey(), tempshape);
+}
+
+int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui, bool tempshape)
 {
    // note, map must have editable flag on if we are to make a shape through the user interface:
    if (through_ui && !m_editable) {
@@ -356,15 +360,12 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
       init(m_shapes.size(),line);
    }
 
-
-   int new_shape_ref = getNextShapeKey();
-
    // note, shape constructor sets centroid, length etc
-   int rowid = m_shapes.add(new_shape_ref,SalaShape(line));
+   int rowid = m_shapes.add(shape_ref,SalaShape(line));
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
-      makePolyPixels(new_shape_ref);
+      makePolyPixels(shape_ref);
    }
    else {
       // pixelate all polys in the pixel new structure:
@@ -374,7 +375,7 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
    }
 
    if (!tempshape) {
-      m_attributes.insertRow(new_shape_ref);
+      m_attributes.insertRow(shape_ref);
       m_newshape = true;
    }
 
@@ -390,13 +391,13 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
          }
       }
       // if through ui, set undo counter:
-      m_undobuffer.push_back(SalaEvent(SalaEvent::SALA_CREATED, new_shape_ref));
+      m_undobuffer.push_back(SalaEvent(SalaEvent::SALA_CREATED, shape_ref));
       // update displayed attribute if through ui:
       invalidateDisplayedAttribute();
       setDisplayedAttribute(m_displayed_attribute);
    }
 
-   return new_shape_ref;
+   return shape_ref;
 }
 
 int ShapeMap::getNextShapeKey() {
@@ -404,7 +405,12 @@ int ShapeMap::getNextShapeKey() {
     return m_shapes.key(m_shapes.size() - 1) + 1;
 }
 
-int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape)
+int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
+{
+    return makeLineShapeWithRef(line, getNextShapeKey(), through_ui, tempshape);
+}
+
+int ShapeMap::makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape)
 {
    bool bounds_good = true;
 
@@ -427,8 +433,6 @@ int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tem
       init(m_shapes.size(),region);
    }
 
-   int new_shape_ref = getNextShapeKey();
-
    size_t len = points.size();
    // NOTE: This is commented out deliberately
    // Sometimes you really do want a polyline that forms a loop
@@ -442,10 +446,10 @@ int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tem
    // not sure if it matters if the polygon is clockwise or anticlockwise... we'll soon tell!
 
    if (open) {
-      m_shapes.add(new_shape_ref,SalaShape(SalaShape::SHAPE_POLY));
+      m_shapes.add(shape_ref,SalaShape(SalaShape::SHAPE_POLY));
    }
    else {
-      m_shapes.add(new_shape_ref,SalaShape(SalaShape::SHAPE_POLY | SalaShape::SHAPE_CLOSED));
+      m_shapes.add(shape_ref,SalaShape(SalaShape::SHAPE_POLY | SalaShape::SHAPE_CLOSED));
    }
    for (i = 0; i < len; i++) {
       m_shapes.tail().push_back(points[i]);
@@ -453,7 +457,7 @@ int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tem
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
-      makePolyPixels(new_shape_ref);
+      makePolyPixels(shape_ref);
    }
    else {
       // pixelate all polys in the pixel new structure:
@@ -465,11 +469,16 @@ int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tem
    if (!tempshape) {
       // set centroid now also adds a few other things: as well as area, perimeter
       m_shapes.tail().setCentroidAreaPerim();
-      m_attributes.insertRow(new_shape_ref);
+      m_attributes.insertRow(shape_ref);
       m_newshape = true;
    }
 
-   return new_shape_ref;
+   return shape_ref;
+}
+
+int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape)
+{
+    return makePolyShapeWithRef(points, open, getNextShapeKey(), tempshape);
 }
 
 int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
@@ -2793,6 +2802,25 @@ bool ShapeMap::importPoints(const std::vector<Point2f> &points,
     return dataImported;
 }
 
+bool ShapeMap::importPointsWithRefs(const std::map<int, Point2f> &points,
+                            const depthmapX::Table &data)
+{
+    //assumes that points and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& point: points) {
+        indices.push_back(makePointShapeWithRef(point.second, point.first));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
+
 bool ShapeMap::importLines(const std::vector<Line> &lines,
                            const depthmapX::Table &data)
 {
@@ -2802,6 +2830,25 @@ bool ShapeMap::importLines(const std::vector<Line> &lines,
 
     for(auto& line: lines) {
         indices.push_back(makeLineShape(line));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
+
+bool ShapeMap::importLinesWithRefs(const std::map<int, Line> &lines,
+                                        const depthmapX::Table &data)
+{
+    //assumes that lines and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& line: lines) {
+        indices.push_back(makeLineShapeWithRef(line.second, line.first));
     }
 
     bool dataImported = importData(data, indices);
@@ -2831,6 +2878,24 @@ bool ShapeMap::importPolylines(const std::vector<depthmapX::Polyline> &polylines
     return dataImported;
 }
 
+bool ShapeMap::importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &polylines,
+                           const depthmapX::Table &data)
+{
+    //assumes that lines and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& polyline: polylines) {
+        indices.push_back(makePolyShapeWithRef(genshim::toPQVector(polyline.second.m_vertices), !polyline.second.m_closed, polyline.first));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
 
 bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices)
 {

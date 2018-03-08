@@ -262,10 +262,13 @@ public:
    void init(int size, const QtRegion& r);
    int getNextShapeKey();
    // convert a single point into a shape
+   int makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape = false);
    int makePointShape(const Point2f& point, bool tempshape = false);
    // or a single line into a shape
+   int makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui = false, bool tempshape = false);
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
+   int makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape = false);
    int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
@@ -541,8 +544,11 @@ public:
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importLinesWithRefs(const std::map<int, Line> &lines, const depthmapX::Table &data);
    bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+   bool importPointsWithRefs(const std::map<int, Point2f> &points, const depthmapX::Table &data);
    bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
+   bool importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &lines, const depthmapX::Table &data);
 private:
    bool importData(const depthmapX::Table &data, std::vector<int> indices);
 };
