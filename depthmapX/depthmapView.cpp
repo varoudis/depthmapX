@@ -1026,7 +1026,7 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			 update();
 			 // if it's the first part, just make it a line:
 			 if (m_poly_points == 0) {
-                m_pDoc.m_meta_graph->polyBegin(Line(m_line.t_start(),location));
+                m_currentlyEditingShapeRef = m_pDoc.m_meta_graph->polyBegin(Line(m_line.t_start(),location));
 				m_poly_start = m_line.t_start();
 				m_poly_points += 2;
 				m_mouse_mode |= DRAWLINE;
@@ -1036,11 +1036,12 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 			 }
 			 else if (m_poly_points > 2 && PixelDist(point,PhysicalUnits(m_poly_start)) < 6) {
 				// check to see if it's back to the original start point, if so, close off
-                m_pDoc.m_meta_graph->polyClose();
+                m_pDoc.m_meta_graph->polyClose(m_currentlyEditingShapeRef);
 				m_poly_points = 0;
+                m_currentlyEditingShapeRef = -1;
 			 }
 			 else {
-                m_pDoc.m_meta_graph->polyAppend(location);
+                m_pDoc.m_meta_graph->polyAppend(m_currentlyEditingShapeRef, location);
 				m_poly_points += 1;
 				m_mouse_mode |= DRAWLINE;
 				m_line = Line(location, location);
@@ -1118,7 +1119,8 @@ void QDepthmapView::mouseReleaseEvent(QMouseEvent *e)
 				m_mouse_mode &= ~DRAWLINE;
 				if (m_mouse_mode & POLYGONTOOL && m_poly_points > 0) {
 					m_poly_points = 0;
-                    m_pDoc.m_meta_graph->polyCancel();
+                    m_currentlyEditingShapeRef = -1;
+                    m_pDoc.m_meta_graph->polyCancel(m_currentlyEditingShapeRef);
                     m_pDoc.SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
 				}
 				else {

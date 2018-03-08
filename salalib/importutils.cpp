@@ -262,6 +262,7 @@ namespace depthmapX {
         }
         return lines;
     }
+
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y) {
         std::vector<Point2f> points;
         for(size_t i = 0; i < x.size(); i++) {

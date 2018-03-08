@@ -204,7 +204,6 @@ protected:
    bool m_hasgraph;
    // counters
    int m_obj_ref;
-   int m_shape_ref;
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
@@ -261,6 +260,7 @@ public:
    //
    //
    void init(int size, const QtRegion& r);
+   int getNextShapeKey();
    // convert a single point into a shape
    int makePointShape(const Point2f& point, bool tempshape = false);
    // or a single line into a shape
@@ -286,9 +286,9 @@ public:
    //
    // some UI polygon creation tools:
    int polyBegin(const Line& line);
-   bool polyAppend(const Point2f& point);
-   bool polyClose();
-   bool polyCancel();
+   bool polyAppend(int shape_ref, const Point2f& point);
+   bool polyClose(int shape_ref);
+   bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
 protected:
    pqvector<Point2f> m_temppoints;
@@ -390,7 +390,7 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shape_ref; } 
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.key(m_shapes.size()-1); }
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const

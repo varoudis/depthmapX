@@ -340,19 +340,20 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         case MOUSE_MODE_POLYGON_TOOL | MOUSE_MODE_SECOND_POINT:
         {
             if (m_polyPoints == 0) {
-               m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
+               m_currentlyEditingShapeRef = m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
                m_polyStart = m_tempFirstPoint;
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 2;
             }
             else if (m_polyPoints > 2 && PixelDist(mousePoint, getScreenPoint(m_polyStart)) < 6) {
                // check to see if it's back to the original start point, if so, close off
-               m_pDoc.m_meta_graph->polyClose();
+               m_pDoc.m_meta_graph->polyClose(m_currentlyEditingShapeRef);
                m_polyPoints = 0;
+               m_currentlyEditingShapeRef = -1;
                m_mouseMode = MOUSE_MODE_POLYGON_TOOL;
             }
             else {
-               m_pDoc.m_meta_graph->polyAppend(worldPoint);
+               m_pDoc.m_meta_graph->polyAppend(m_currentlyEditingShapeRef, worldPoint);
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 1;
             }
