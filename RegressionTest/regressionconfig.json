@@ -150,6 +150,49 @@
                 "-xa": "n",
                 "-xal": ""
             }
+        },
+        "axial_rn_noncont_keys":{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n"
+            }
+        },
+        "axial_r3_noncont_keys":{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "3"
+            }
+        },
+        "axial_rn_rra_noncont_keys":{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xar": ""
+            }
+        },
+        "axial_rn_choice_noncont_keys":{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xac": ""
+            }
+        },
+        "axial_rn_local_noncont_keys":{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out,graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xal": ""
+            }
         }
 
 
