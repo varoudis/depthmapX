@@ -30,7 +30,7 @@ float Point::getBinDistance(int i)
    return m_node->bindistance(i);
 }
 
-istream& Point::read(istream& stream, int version, int attr_count)
+std::istream& Point::read(std::istream& stream, int version, int attr_count)
 {
    if (m_node) {
       delete m_node;
@@ -59,7 +59,7 @@ istream& Point::read(istream& stream, int version, int attr_count)
    return stream;
 }
 
-ofstream& Point::write(ofstream& stream, int version)
+std::ofstream& Point::write(std::ofstream& stream, int version)
 {
    stream.write( (char *) &m_state, sizeof(m_state) );
    // block is the same size as m_noderef used to be for ease of replacement:
