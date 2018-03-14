@@ -25,6 +25,7 @@
 #include <vector>
 #include <salalib/gridproperties.h>
 #include <genlib/legacyconverters.h>
+#include <salalib/importutils.h>
 
 namespace dm_runmethods
 {
@@ -41,7 +42,7 @@ namespace dm_runmethods
     std::unique_ptr<MetaGraph> loadGraph(const std::string& filename, IPerformanceSink &perfWriter) {
         std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
         std::cout << "Loading graph " << filename << std::flush;
-        DO_TIMED( "Load graph file", auto result = mgraph->read(filename);)
+        DO_TIMED( "Load graph file", auto result = mgraph->readFromFile(filename);)
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
@@ -50,6 +51,49 @@ namespace dm_runmethods
         }
         std::cout << " ok\n" << std::flush;
         return mgraph;
+    }
+
+    void importFiles(const CommandLineParser &cmdP, const std::vector<string> &filesToImport, IPerformanceSink &perfWriter)
+    {
+        std::ifstream mainFileStream(cmdP.getFileName().c_str());
+        if(!mainFileStream.good()) {
+            std::stringstream message;
+            message << "File not found: " << cmdP.getFileName() << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+
+        std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
+        DO_TIMED( "Load graph file", auto result = mgraph->readFromFile(cmdP.getFileName());)
+        if ( result != MetaGraph::OK && result != MetaGraph::NOT_A_GRAPH)
+        {
+            std::stringstream message;
+            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            throw depthmapX::RuntimeException(message.str().c_str());
+        }
+
+        if ( result == MetaGraph::NOT_A_GRAPH)
+        {
+            // not a graph, try to import the file
+            std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 4, cmdP.getFileName().length() - 1);
+            ifstream file(cmdP.getFileName());
+
+            std::unique_ptr<Communicator> comm(new ICommunicator());
+
+            depthmapX::ImportFileType importFileType = depthmapX::ImportFileType::TSV;
+            if(dXstring::toLower(ext) == ".csv") {
+                importFileType = depthmapX::ImportFileType::CSV;
+            } else if (dXstring::toLower(ext) == ".dxf") {
+                importFileType = depthmapX::ImportFileType::DXF;
+            }
+
+            depthmapX::importFile(*mgraph,
+                                  file,
+                                  false,
+                                  cmdP.getFileName(),
+                                  depthmapX::ImportType::DRAWINGMAP,
+                                  importFileType);
+        }
+        DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
 
     void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter)
@@ -388,6 +432,12 @@ namespace dm_runmethods
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
         switch(exportP.getExportMode()) {
+            case ExportParser::POINTMAP_DATA_CSV:
+            {
+                ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
+                break;
+            }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
                 ofstream stream(cmdP.getOuputFile().c_str());
@@ -401,4 +451,37 @@ namespace dm_runmethods
         }
     }
 
+    void runStepDepth(
+            const CommandLineParser &clp,
+            const std::vector<Point2f> &stepDepthPoints,
+            IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
+
+        std::cout << "ok\nSelecting cells... " << std::flush;
+
+        for( auto & point : stepDepthPoints ) {
+            auto graphRegion = mGraph->getRegion();
+            if (!graphRegion.contains(point))
+            {
+                throw depthmapX::RuntimeException("Point outside of target region");
+            }
+            QtRegion r(point, point);
+            mGraph->setCurSel(r, true);
+        }
+
+        std::cout << "ok\nCalculating step-depth... " << std::flush;
+
+        Options options;
+        options.global = 0;
+        options.point_depth_selection = 1;
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        DO_TIMED("Calculating step-depth", mGraph->analyseGraph( comm.get(), options, false))
+
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
+    }
 }

@@ -24,13 +24,17 @@
 #include <genlib/comm.h> // for communicator
 #include <genlib/stringutils.h>
 #include <genlib/exceptions.h>
+#include <genlib/legacyconverters.h>
 
 #include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/shapemap.h>
+#include "genlib/containerutils.h"
 
 #include <stdexcept>
 // for mapinfo interface
 #include "MapInfoData.h"
+
+#include <unordered_map>
 
 #ifndef _WIN32
 #define _finite finite
@@ -44,7 +48,7 @@ static const double TOLERANCE_B = 1e-12;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SalaShape::read(ifstream& stream, int version)
+bool SalaShape::read(istream& stream, int version)
 {
    // defaults
    m_draworder = -1; 
@@ -52,35 +56,14 @@ bool SalaShape::read(ifstream& stream, int version)
 
    stream.read((char *)&m_type,sizeof(m_type));
 
-   int sss = sizeof(m_region);
    stream.read((char *)&m_region,sizeof(m_region));
 
-   if (version >= VERSION_SHAPE_CENTROIDS) {
-      stream.read((char *)&m_centroid,sizeof(m_centroid));
-      if (version >= VERSION_SHAPE_AREA_PERIMETER) {
-         stream.read((char *)&m_area,sizeof(m_area));
-         stream.read((char *)&m_perimeter,sizeof(m_perimeter));
-      }
-   }
-   else {
-      // old types were simply 1,2,3... these are now labelled using bits:
-      if (m_type == 3) {
-         m_type = SHAPE_POLY;
-      }
-      else if (m_type == 4) {
-         m_type = SHAPE_POLY | SHAPE_CLOSED;
-      }
-   }
-   pqvector<Point2f>::read(stream);
+   stream.read((char *)&m_centroid,sizeof(m_centroid));
+      
+   stream.read((char *)&m_area,sizeof(m_area));
+   stream.read((char *)&m_perimeter,sizeof(m_perimeter));
 
-   if (version < VERSION_SHAPE_AREA_PERIMETER) {
-      if (m_type & SHAPE_POLY) {
-         setCentroidAreaPerim();
-      }
-      else if (m_type & SHAPE_LINE) {
-         m_perimeter = m_region.length();
-      }
-   }
+   pqvector<Point2f>::read(stream);
 
    return true;
 }
@@ -233,7 +216,7 @@ void ShapeMap::init(int size, const QtRegion &r)
    }
    m_rows = __min(__max(20,(int)sqrt((double)size)),32768);
    m_cols = __min(__max(20,(int)sqrt((double)size)),32768);
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = r;
    }
    else {
@@ -417,7 +400,7 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
    return m_shape_ref;
 }
 
-int ShapeMap::makePolyShape(const pvecpoint& points, bool open, bool tempshape)
+int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape)
 {
    bool bounds_good = true;
 
@@ -546,11 +529,11 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
 int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
 {
    bool bounds_good = true;
-   PixelRefList selset;
+   PixelRefVector selset;
    Point2f offset = Point2f(pointmap.getSpacing()/2,pointmap.getSpacing()/2);
-   for (size_t i = 0; i < pointmap.getSelSet().size(); i++) {
-      selset.push_back(pointmap.getSelSet().at(i));
-      if (!m_region.contains_touch(pointmap.depixelate(selset[i])-offset) || !m_region.contains_touch(pointmap.depixelate(selset[i])+offset)) {
+   for (auto &sel: pointmap.getSelSet()) {
+      selset.push_back(sel);
+      if (!m_region.contains_touch(pointmap.depixelate(sel)-offset) || !m_region.contains_touch(pointmap.depixelate(sel)+offset)) {
          bounds_good = false;
       }
    }
@@ -640,7 +623,7 @@ bool ShapeMap::convertPointsToPolys(double poly_radius, bool selected_only)
          // construct a poly from the point:
          Point2f p = m_shapes[i].getCentroid();
          //
-         if (region.isNull()) {
+         if (region.atZero()) {
             region = QtRegion(p,p);
          }
          // replace with a polygon:
@@ -959,7 +942,7 @@ int ShapeMap::shapeEnd(bool open)
       return -1;
    }
 
-   if (m_region.isNull()) {
+   if (m_region.atZero()) {
       m_region = QtRegion(m_temppoints[0],m_temppoints[0]);
    }
    for (int i = 0; i < len; i++) {
@@ -1033,8 +1016,8 @@ bool ShapeMap::removeSelected()
 
    // pray that the selection set is in order! 
    // (it should be: code currently uses add() throughout)
-   for (size_t i = m_selection_set.size() - 1; i != paftl::npos; i--) {
-      removeShape(m_shapes.key(m_selection_set[i]));
+   for (auto &sel: m_selection_set) {
+      removeShape(m_shapes.key(sel));
    }
    m_selection_set.clear();
    m_selection = false;
@@ -1226,7 +1209,7 @@ void ShapeMap::makePolyPixels(int polyref)
          else {
             poly.m_region = runion(poly.m_region,li);
          }
-         PixelRefList pixels = pixelateLine(li);
+         PixelRefVector pixels = pixelateLine(li);
          // debug
          // int duplicate_shaperefs = 0;
          // end debug
@@ -1313,7 +1296,7 @@ void ShapeMap::makePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList pixels = pixelateLine(poly.m_region);
+            PixelRefVector pixels = pixelateLine(poly.m_region);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1333,7 +1316,7 @@ void ShapeMap::makePolyPixels(int polyref)
             else {
                poly.m_region = runion(poly.m_region,li);
             }
-            PixelRefList pixels = pixelateLine(li);
+            PixelRefVector pixels = pixelateLine(li);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
                size_t x = m_pixel_shapes[pix.x][pix.y].searchindex(ShapeRef(polyref));
@@ -1440,7 +1423,7 @@ void ShapeMap::removePolyPixels(int polyref)
          break;
       case SalaShape::SHAPE_LINE:
          {
-            PixelRefList list = pixelateLine(poly.m_region);
+            PixelRefVector list = pixelateLine(poly.m_region);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1453,7 +1436,7 @@ void ShapeMap::removePolyPixels(int polyref)
          for (size_t k = 0; k < poly.size() - 1; k++) {
             size_t nextk = (k + 1);
             Line li(poly[k],poly[nextk]);
-            PixelRefList list = pixelateLine(li);
+            PixelRefVector list = pixelateLine(li);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
                if (pos != paftl::npos) {
@@ -1619,7 +1602,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
    pointInPolyList(li.end(),shapeindexlist);
 
    // only now pixelate and test for any other shapes:
-   PixelRefList list = pixelateLine(li);
+   PixelRefVector list = pixelateLine(li);
    for (size_t i = 0; i < list.size(); i++) {
       PixelRef pix = list[i];
       if (includes(pix)) {
@@ -2118,7 +2101,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
    if (li.width() > li.height()) {
       axis = XAXIS;
    }
-   PixelRefList pixels = pixelateLine(li);
+   PixelRefVector pixels = pixelateLine(li);
    pvector<IntPair> tested;
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
@@ -2230,7 +2213,7 @@ void ShapeMap::cutLine(Line& li) //, short dir)
 
 // buffering type function, just for points for the time being
 
-int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
+int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& bufferset)
 {
    // first, get all the pixels within the radius (using square as simpler)
    PixelRef bl = pixelate( Point2f(pt.x - radius, pt.y - radius) );
@@ -2247,11 +2230,11 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                if (tested.searchindex(IntPair(shaperef.m_shape_ref,-1)) == paftl::npos) {
                   size_t shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
                   SalaShape& poly = m_shapes[shapeindex];
-                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) { 
-                     bufferset.add(int(shapeindex));
+                  if (poly.isPoint() && dist(pt,poly.getPoint()) < radius) {
+                     depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   else if (dist(pt,poly.getLine()) < radius) { // if poly is line
-                     bufferset.add(int(shapeindex));
+                      depthmapX::addIfNotExists(bufferset, int(shapeindex));
                   }
                   tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
                }
@@ -2264,7 +2247,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
                      SalaShape& poly = m_shapes[shapeindex];
                      Line li( poly[q], poly[(q+1)%poly.size()] );
                      if (dist(pt,li) < radius) {
-                        bufferset.add(int(shapeindex));
+                         depthmapX::addIfNotExists(bufferset, int(shapeindex));
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,q),paftl::ADD_HERE);
                   }
@@ -2279,7 +2262,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, pvecint& bufferset)
    for (size_t k = 0; k < m_pixel_shapes[centre.x][centre.y].size(); k++) {
       ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
-         bufferset.add( m_shapes.searchindex(shaperef.m_shape_ref) );
+          int shapeindex = m_shapes.searchindex(shaperef.m_shape_ref);
+          depthmapX::addIfNotExists(bufferset, shapeindex);
       }
    }
    return bufferset.size();
@@ -2344,7 +2328,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
 
    int num_intersections = 0;
 
-   PixelRefList list = pixelateLine( l );
+   PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
       pqvector<ShapeRef>& shapes = m_pixel_shapes[ list[i].x ][ list[i].y ];
@@ -2469,7 +2453,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       }
       if (index != -1) {
          // relies on indices of shapes and attributes being aligned
-         if (m_selection_set.add(index) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes.value(index).m_selected = true;
@@ -2494,7 +2478,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       // actually probably often faster to set flag and later record list:
       for (size_t x = 0; x < m_shapes.size(); x++) {
          if (m_shapes.value(x).m_selected) {
-            if (m_selection_set.add(x) != -1) {
+             if(m_selection_set.insert(x).second) {
                m_attributes.selectRowByIndex(x);
             }
          }
@@ -2505,7 +2489,7 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
 }
 
 // this version is used by setSelSet in MetaGraph, ultimately called from CTableView and PlotView
-bool ShapeMap::setCurSel(const pvecint& selset, bool add)
+bool ShapeMap::setCurSel(const std::vector<int>& selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2514,7 +2498,7 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       size_t index = m_shapes.searchindex(selset[i]);  // relies on aligned indices for attributes and shapes
       if (index != paftl::npos) {
-         if (m_selection_set.add(int(index)) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(int(index));
          }
          m_shapes[index].m_selected = true;
@@ -2525,7 +2509,7 @@ bool ShapeMap::setCurSel(const pvecint& selset, bool add)
 }
 
 // this version is used when setting a selection set via the scripting language
-bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
+bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -2534,7 +2518,7 @@ bool ShapeMap::setCurSelDirect(const pvecint& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       int index = selset[i];  // relies on aligned indices for attributes and shapes
       if (index != -1) {
-         if (m_selection_set.add(index) != -1) {
+         if(m_selection_set.insert(index).second) {
             m_attributes.selectRowByIndex(index);
          }
          m_shapes[index].m_selected = true;
@@ -2551,8 +2535,8 @@ bool ShapeMap::clearSel()
    if (m_selection_set.size()) {
       m_attributes.deselectAll();
       m_selection = false;
-      for (size_t i = 0; i < m_selection_set.size(); i++) {
-         m_shapes.value(m_selection_set[i]).m_selected = false;
+      for (auto& sel: m_selection_set) {
+         m_shapes.value(sel).m_selected = false;
       }
       m_selection_set.clear();
    }
@@ -2563,9 +2547,8 @@ QtRegion ShapeMap::getSelBounds()
 {
    QtRegion r;
    if (m_selection_set.size()) {
-      r = m_shapes.value(m_selection_set[0]).getBoundingBox();
-      for (size_t i = 1; i < m_selection_set.size(); i++) {
-         r = runion(r, m_shapes.value(m_selection_set[i]).getBoundingBox());
+       for (auto& sel: m_selection_set) {
+         r = runion(r, m_shapes.value(sel).getBoundingBox());
       }
    }
    return r;
@@ -2585,7 +2568,7 @@ bool ShapeMap::selectionToLayer(const std::string& name)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;
@@ -2617,68 +2600,15 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
    m_unlinks.clear();
    m_undobuffer.clear();
 
-   // read in an old file:
-   if (drawinglayer && version < VERSION_DRAWING_SHAPES) {
-      // the data in the file is for a SpacePixel
-      // the easiest solution, although not the most memory effective, is to read in the space pixel,
-      // and convert to a shape map:
-      SpacePixel layer;
-      layer.read(stream,version);
-      m_name = layer.m_name;
-      m_show = layer.m_show;
-      m_editable = false;  // <- don't take from spacepixel in case conflicts in some way
-      m_region = layer.m_region;
-      m_rows = layer.m_rows;
-      m_cols = layer.m_cols;
-      m_tolerance = __max(m_region.width(), m_region.height()) * TOLERANCE_A;
-      m_shape_ref = -1;
-      for (size_t i = 0; i < layer.m_lines.size(); i++) {
-         m_shape_ref++;
-         int index = m_shapes.add(m_shape_ref, SalaShape(layer.m_lines[i].line));
-         // insert a dummy attribute row:
-         m_attributes.insertRow(m_shape_ref);
-         // note: as this is always a drawing layer, no need to set shape attributes
-      }
-      // prepare pixel map (using same number of cols and rows as the original spacepixel for convenience)
-      m_pixel_shapes = new pqvector<ShapeRef> *[m_cols];
-      for (int j = 0; j < m_cols; j++) {
-         m_pixel_shapes[j] = new pqvector<ShapeRef>[m_rows];
-      }
-      // Now add the pixel shapes pixel map:
-      // pixelate all polys in the pixel structure:
-      for (size_t k = 0; k < m_shapes.size(); k++) {
-         makePolyPixels(m_shapes.key(k));
-      }
-      // set to read in display attribute:
-      // note that even though it's only a drawing layer, this still needs to be done
-      invalidateDisplayedAttribute();
-      setDisplayedAttribute(-1);
-
-      // all done
-      return true;
-   }
-
    // name
    m_name = dXstring::readString(stream);
 
-   if (version >= VERSION_MAP_TYPES) {
-      stream.read( (char *) &m_map_type, sizeof(m_map_type));
-   }
-   else {
-      // old versions data maps or drawing maps, 
-      // the axial reader will override this with its own map type designation if necessary
-      if (drawinglayer) {
-         m_map_type = DRAWINGMAP;
-      }
-      else {
-         m_map_type = DATAMAP;
-      }
-   }
 
-   if (version >= VERSION_DRAWING_SHAPES_B) {
-      stream.read( (char *) &m_show, sizeof(m_show) );
-      stream.read( (char *) &m_editable, sizeof(m_editable) );
-   }
+   stream.read( (char *) &m_map_type, sizeof(m_map_type));
+
+   stream.read( (char *) &m_show, sizeof(m_show) );
+   stream.read( (char *) &m_editable, sizeof(m_editable) );
+
 
    // PixelBase read
    // read extents:
@@ -2702,32 +2632,14 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
       int index = m_shapes.add(key, SalaShape());
       m_shapes.value(index).read(stream,version);
    }
-   if (version < VERSION_SHAPE_CENTROIDS) {
-      // manually set centroid according to type:
-      for (size_t i = 0; i < m_shapes.size(); i++) {
-         switch (m_shapes[i].m_type & SalaShape::SHAPE_TYPE) {
-         case SalaShape::SHAPE_POINT:
-            m_shapes[i].m_centroid = m_shapes[i].m_region.bottom_left;
-            break;
-         case SalaShape::SHAPE_LINE:
-            m_shapes[i].m_centroid = m_shapes[i].m_region.getCentre();
-            break;
-         case SalaShape::SHAPE_POLY:
-            m_shapes[i].setCentroidAreaPerim();
-            break;
-         default:
-            break;
-         }
-      }
-   }
 
    // read object data (currently unused)
    stream.read((char *) &count, sizeof(count));
    for (int k = 0; k < count; k++) {
       int key;
       stream.read((char *) &key, sizeof(key));
-      int index = m_objects.add(key, SalaObject());
-      m_objects.value(index).read(stream,version);
+      m_objects.insert(std::make_pair(key, SalaObject()));
+      m_objects.end()->second.read(stream,version);
    }
    // read attribute data
    m_attributes.read(stream,version);
@@ -2745,36 +2657,27 @@ bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
       makePolyPixels(m_shapes.key(j));
    }
 
-   // later versions can have shape connections:
-   if (version >= VERSION_AXIAL_SHAPES) {
-      int count;
-      stream.read((char *)&count,sizeof(count));   
-      for (int i = 0; i < count; i++) {
-         m_connectors.push_back(Connector());
-         m_connectors[i].read(stream,version);
-         if (version < VERSION_NO_SELF_CONNECTION) {
-            size_t self = m_connectors[i].m_connections.searchindex(i);
-            if (self != paftl::npos) {
-               m_connectors[i].m_connections.remove_at(self);
-            }
-         }
-      }
-      m_links.read(stream);
-      m_unlinks.read(stream);
+   // shape connections:
+   count = 0;
+   stream.read((char *)&count,sizeof(count));
+   for (int i = 0; i < count; i++) {
+      m_connectors.push_back(Connector());
+      m_connectors[i].read(stream,version);
    }
+   m_links.read(stream);
+   m_unlinks.read(stream);
 
    // some miscellaneous extra data for mapinfo files
    if (m_mapinfodata) {
       delete m_mapinfodata;
       m_mapinfodata = NULL;
    }
-   if (version >= VERSION_MAPINFO_SHAPES) {
-      char x = stream.get();
-      if (x == 'm') {
-         m_mapinfodata = new MapInfoData;
-         m_mapinfodata->read(stream,version);
-      }
+   char x = stream.get();
+   if (x == 'm') {
+      m_mapinfodata = new MapInfoData;
+      m_mapinfodata->read(stream,version);
    }
+
 
    invalidateDisplayedAttribute();
    setDisplayedAttribute(m_displayed_attribute);
@@ -2813,10 +2716,10 @@ bool ShapeMap::write( ofstream& stream, int version )
    // write object data (currently unused)
    count = m_objects.size();
    stream.write((char *) &count, sizeof(count));
-   for (int k = 0; k < count; k++) {
-      int key = m_objects.key(k);
+   for (auto obj: m_objects) {
+      int key = obj.first;
       stream.write((char *) &key, sizeof(key));
-      m_objects.value(k).write(stream);
+      obj.second.write(stream);
    }
    // write attribute data
    m_attributes.write(stream,version);
@@ -2872,218 +2775,120 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
    return true;
 }
 
-// simple text file to a data map
-// to start with, we'll just use fixed format:
-// tab delimited -- x1,y1,x2,y2 implies line data
-//                  x,y implies point data
-
-bool ShapeMap::importTxt(istream& stream, bool csv)
+bool ShapeMap::importPoints(const std::vector<Point2f> &points,
+                            const depthmapX::Table &data)
 {
-   std::string inputline;
-   std::getline(stream, inputline);
-   
-   // if not known to be csv or tab delimited, try both:
-   if (!csv) {
-      size_t n = inputline.find_first_of('\t');
-      // if can't find tabs, then try commas:
-      if (n == std::string::npos) {
-         n = inputline.find_first_of(',');
-         if (n == std::string::npos) {
-            // neither tabs nor commas
-            return false;
-         }
-         else {
-            // found commas
-            csv = true;
-         }
-      }
-   }
+    //assumes that points and data come in the same order
 
-   // check for a tab delimited header line...
-   auto strings = dXstring::split(inputline, csv ? ',' : '\t');
-   if (strings.size() < 2) {
-      return false;
-   }
+    std::vector<int> indices;
 
-   size_t i;
-   for (i = 0; i < strings.size(); i++) {
-      if (!strings[i].empty()) {
-         dXstring::toLower(strings[i]);
-         dXstring::ltrim(strings[i],'\"');
-         dXstring::rtrim(strings[i],'\"');
-      }
-   }
+    for(auto& point: points) {
+        indices.push_back(makePointShape(point));
+    }
 
-   int xcol = -1, ycol = -1, x1col = -1, y1col = -1, x2col = -1, y2col = -1;
-   for (i = 0; i < strings.size(); i++) {
-      if (strings[i] == "x" || strings[i] == "easting")
-         xcol = i;
-      else if (strings[i] == "y" || strings[i] == "northing")
-         ycol = i;
-      else if (strings[i] == "x1")
-         x1col = i;
-      else if (strings[i] == "x2")
-         x2col = i;
-      else if (strings[i] == "y1")
-         y1col = i;
-      else if (strings[i] == "y2")
-         y2col = i;
-      else {
-         std::replace(strings[i].begin(), strings[i].end(), '_',' ');
-         dXstring::makeInitCaps(strings[i]);
-         if (strings[i].empty() || m_attributes.insertColumn(strings[i]) == -1) {
-            // error adding column (e.g., duplicate column names)
-            return false;
-         }
-      }
-   }
+    bool dataImported = importData(data, indices);
 
-   // Quick mod - TV
-   unsigned int cols = strings.size();
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
 
-   bool pts = (xcol != -1 && ycol != -1);
-   bool lns = (x1col != -1 && y1col != -1 && x2col != -1 && y2col != -1);
-
-   if (!pts && !lns) {
-      return false;
-   }
-
-   // note, these have been ordered alphabetically by the attribute table, so we need to find out what they are now:
-   pvecint colmap;
-   prefvec<pqmap<std::string,size_t> > colcodes;
-   for (i = 0; i < strings.size(); i++) {
-      if (i != xcol && i != ycol && i != x1col && i != y1col && i != x2col && i != y2col) {
-         colmap.push_back( m_attributes.getColumnIndex(strings[i]) );
-      }
-   }
-
-   QtRegion region;
-   prefvec<Point2f> points;
-   prefvec<Line> lines;
-   Point2f p1, p2;
-
-   prefvec<pvecfloat> table;
-
-   while (!stream.eof()) {
-      std::getline(stream, inputline);
-      if (!inputline.empty()) {
-         auto strings = dXstring::split(inputline, csv ? ',' : '\t');
-         if (!strings.size()) {
-            continue;
-         }
-         // there was a check for the right number of columns here, but
-         // note my tokenize is removing a final blank column ocassionally so ignore oddly format cols (and hope they have at least fields required)
-         table.push_back( pvecfloat() );
-         for (size_t i = 0; i < cols; i++) {
-            if (i >= strings.size()) {
-               if (i == xcol || i == ycol || i == x1col || i == y1col) {
-                  return false;
-               }
-               else {
-                  table.tail().push_back( -1.0f);
-               }
-            }
-            else {
-               try {
-                  if (i == xcol || i == x1col)
-                     p1.x = stod(strings[i]);
-                  else if (i == ycol || i == y1col) 
-                     p1.y = stod(strings[i]);
-                  else if (i == x2col) 
-                     p2.x = stod(strings[i]);
-                  else if (i == y2col) 
-                     p2.y = stod(strings[i]);
-                  else {
-                     if (dXstring::isDouble(strings[i])) {
-                        table.tail().push_back( stof(strings[i]));
-                     }
-                     else {
-                        // the data column we're on
-                        // Quick mod - TV
-                        unsigned int datacol = table.tail().size();
-                        while (colcodes.size() <= datacol) {
-                           colcodes.push_back( pqmap<std::string,size_t>() ); // <- note due to numbering need one for each
-                        }
-                        if (colcodes[datacol].size() < 32) {
-                           size_t n = colcodes[datacol].searchindex(strings[i]);
-                           if (n == paftl::npos) {
-                              n = colcodes[datacol].add(strings[i],colcodes[datacol].size());
-                           }
-                           if (colcodes[datacol].size() == 32) {
-                              // Quick mod - TV
-                              // quit trying to code like this:
-                              for (unsigned int j = 0; j < table.size(); j++) {
-                                 table[j][datacol] = -1.0f;
-                              }
-                              table.tail().push_back( -1.0f );
-                           }
-                           else {
-                              table.tail().push_back( colcodes[datacol][n] );
-                           }
-                        }
-                        else {
-                           table.tail().push_back( -1.0f );
-                        }
-                     }
-                  }
-               }
-               catch (std::invalid_argument &) {
-                  return false;
-               }
-            }
-         }
-         if (pts) {
-            points.push_back(p1);
-            if (points.size() == 1) {
-               region = QtRegion(points.tail(),points.tail());
-            }
-            else {
-               region = runion(region,QtRegion(points.tail(),points.tail()));
-            }
-         }
-         else {
-            lines.push_back(Line(p1,p2));
-            if (lines.size() == 1) {
-               region = lines.tail();
-            }
-            else {
-               region = runion(region,lines.tail());
-            }
-         }
-      }
-   }
-
-   // need at least one point:
-   if (!(points.size() || lines.size())) {
-      return false;
-   }
-
-   if (pts) {
-      init(points.size(),region);
-      for (i = 0; i < points.size(); i++) {
-         makePointShape(points[i]);
-         for (int j = 0; j < m_attributes.getColumnCount(); j++) {
-            m_attributes.setValue(i,colmap[j],table[i][j]);
-         }
-      }
-   }
-   else {
-      init(lines.size(),region);
-      for (i = 0; i < lines.size(); i++) {
-         makeLineShape(lines[i]);
-         for (int j = 0; j < m_attributes.getColumnCount(); j++) {
-            m_attributes.setValue(i,colmap[j],table[i][j]);
-         }
-      }
-   }
-
-   // display an attribute:
-   invalidateDisplayedAttribute();
-   setDisplayedAttribute(-1);
-
-   return true;
+    return dataImported;
 }
 
+bool ShapeMap::importLines(const std::vector<Line> &lines,
+                           const depthmapX::Table &data)
+{
+    //assumes that lines and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& line: lines) {
+        indices.push_back(makeLineShape(line));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
+
+bool ShapeMap::importPolylines(const std::vector<depthmapX::Polyline> &polylines,
+                           const depthmapX::Table &data)
+{
+    //assumes that lines and data come in the same order
+
+    std::vector<int> indices;
+
+    for(auto& polyline: polylines) {
+        indices.push_back(makePolyShape(genshim::toPQVector(polyline.m_vertices), !polyline.m_closed));
+    }
+
+    bool dataImported = importData(data, indices);
+
+    invalidateDisplayedAttribute();
+    setDisplayedAttribute(-1);
+
+    return dataImported;
+}
+
+
+bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices)
+{
+    for (auto& column: data) {
+        std::string colName = column.first;
+        std::replace(colName.begin(), colName.end(), '_',' ');
+        dXstring::makeInitCaps(colName);
+
+        if (colName.empty()) continue;
+
+        int colIndex = m_attributes.insertColumn(colName);
+
+        if( colIndex == -1 ) {
+            // error adding column (e.g., duplicate column names)
+            continue;
+        }
+
+        std::unordered_map<std::string, size_t> colcodes;
+
+        for (size_t i = 0; i < column.second.size(); i++) {
+            std::string cellValue = column.second[i];
+            double value = 0;
+            if (dXstring::isDouble(cellValue)) {
+                value = stod(cellValue);
+            }
+            else {
+                std::unordered_map<std::string, size_t>::iterator cellAt = colcodes.find( cellValue );
+                if(cellAt == colcodes.end()) {
+
+                    // It seems that the original intention here was that if we are past 32 unique
+                    // values, we should stop trying to make the column categorical and fill the rest
+                    // of the values with -1.0f. It's not possible to test the original implementation
+                    // because the app crashes if we load a file with more than 32 unique values. When
+                    // and if we have a robust implementation of an attribute table that allows for
+                    // both categorical and plain string attributes this should be re-examined for a
+                    // better way to classify the column as either. Meanwhile after this threshold (32)
+                    // we set the whole column to -1 so that it does not give the impression it worked
+                    // when it's actually half-baked
+
+                    if(colcodes.size() >= 32) {
+                        for (size_t j = 0; j < column.second.size(); j++) {
+                            m_attributes.setValue(indices[j], colIndex, -1.0f);
+                        }
+                        continue;
+                    } else {
+                        value = colcodes.size();
+                        colcodes.insert(std::make_pair(cellValue, colcodes.size()));
+                    }
+                } else {
+                    value = cellAt->second;
+                }
+            }
+            m_attributes.setValue(indices[i], colIndex, value);
+        }
+    }
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -3276,7 +3081,7 @@ bool ShapeMap::linkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    // note: uses rowid not key
    int index2 = pointInPoly(p);
    if (index2 == -1) {
@@ -3361,7 +3166,7 @@ bool ShapeMap::unlinkShapes(const Point2f& p)
    if (m_selection_set.size() != 1) {
       return false;
    }
-   int index1 = m_selection_set[0];
+   int index1 = *m_selection_set.begin();
    int index2 = pointInPoly(p);
    if (index2 == -1) {
       // try looking for a polyline instead
@@ -3506,6 +3311,19 @@ Line ShapeMap::getNextLinkLine() const
    return Line();
 }
 
+std::vector<SimpleLine> ShapeMap::getAllLinkLines()
+{
+    std::vector<SimpleLine> linkLines;
+    for(size_t i = 0; i < m_links.size(); i++)
+    {
+        linkLines.push_back(SimpleLine(
+                                m_shapes.value(m_links[i].a).getCentroid(),
+                                m_shapes.value(m_links[i].b).getCentroid()
+                                ));
+    }
+    return linkLines;
+}
+
 // note: these functions would need slight work for arbitrary shape overlaps
 
 bool ShapeMap::findNextUnlinkPoint() const
@@ -3524,6 +3342,17 @@ Point2f ShapeMap::getNextUnlinkPoint() const
                                 m_shapes.value(m_unlinks[m_curunlinkpoint].b).getLine(), TOLERANCE_A);
    }
    return Point2f();
+}
+std::vector<Point2f> ShapeMap::getAllUnlinkPoints()
+{
+    std::vector<Point2f> unlinkPoints;
+    for(size_t i = 0; i < m_unlinks.size(); i++)
+    {
+        unlinkPoints.push_back(intersection_point(m_shapes.value(m_unlinks[i].a).getLine(),
+                                                  m_shapes.value(m_unlinks[i].b).getLine(), TOLERANCE_A));
+    }
+    return unlinkPoints;
+
 }
 
 void ShapeMap::outputUnlinkPoints( ofstream& stream, char delim )
@@ -3549,7 +3378,7 @@ bool ShapeMap::makeBSPtree() const
       return true;
    }
 
-   prefvec<TaggedLine> partitionlines;
+   std::vector<TaggedLine> partitionlines;
    for (size_t i = 0; i < m_shapes.size(); i++) {
       if (m_shapes[i].isLine()) {
          partitionlines.push_back(TaggedLine(m_shapes.value(i).getLine(),m_shapes.key(i)));
@@ -3566,7 +3395,7 @@ bool ShapeMap::makeBSPtree() const
       }
       m_bsp_root = new BSPNode();
 
-      m_bsp_root->make(NULL,0,partitionlines,NULL);
+      BSPTree::make(NULL,0,partitionlines,m_bsp_root);
       m_bsp_tree = true;
    }
 
@@ -4216,4 +4045,62 @@ void ShapeMap::ozlemSpecial7(ShapeMap& linemap)
 
    m_displayed_attribute = -2;
    setDisplayedAttribute(linerefcol);
+}
+
+std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
+    std::vector<SimpleLine> lines;
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        if (shape.isLine()) {
+            lines.push_back(SimpleLine(shape.getLine()));
+        }
+        else if (shape.isPolyLine() || shape.isPolygon()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                lines.push_back(SimpleLine(shape[n],shape[n+1]));
+            }
+            if (shape.isPolygon()) {
+                lines.push_back(SimpleLine(shape.tail(),shape.head()));
+            }
+        }
+    }
+    return lines;
+}
+
+std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
+    std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
+    const AttributeTable &attributeTable = getAttributeTable();
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        PafColor color(attributeTable.getDisplayColor(k));
+        if (shape.isLine()) {
+            colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
+        }
+        else if (shape.isPolyLine()) {
+            for (size_t n = 0; n < shape.size() - 1; n++) {
+                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape[n],shape[n+1]), color));
+            }
+        }
+    }
+    return colouredLines;
+}
+
+std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
+    std::map<std::vector<Point2f>, PafColor> colouredPolygons;
+    const AttributeTable &attributeTable = getAttributeTable();
+    pqmap<int,SalaShape>& allShapes = getAllShapes();
+    for (size_t k = 0; k < allShapes.size(); k++) {
+        SalaShape& shape = allShapes[k];
+        if (shape.isPolygon()) {
+            std::vector<Point2f> vertices;
+            for (size_t n = 0; n < shape.size(); n++) {
+                vertices.push_back(shape[n]);
+            }
+            vertices.push_back(shape.tail());
+            PafColor colour(attributeTable.getDisplayColor(k));
+            colouredPolygons.insert(std::make_pair(vertices, colour));
+        }
+    }
+    return colouredPolygons;
 }

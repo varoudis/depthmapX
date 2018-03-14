@@ -19,7 +19,6 @@
 // Point data
 
 #include <math.h>
-#include <genlib/paftl.h>
 #include <genlib/comm.h>  // for communicator
 
 #include <salalib/mgraph.h>
@@ -34,93 +33,8 @@
 #include <salalib/ngraph.h>
 
 #include "genlib/stringutils.h"
-/////////////////////////////////////////////////////////////////////////////////
+#include "genlib/containerutils.h"
 
-Point::~Point()
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-}
-
-float Point::getBinDistance(int i)
-{
-   return m_node->bindistance(i);
-}
-
-ifstream& Point::read(ifstream& stream, int version, int attr_count)
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-   stream.read( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // (note block NO LONGER used!)
-   stream.read( (char *) &m_block, sizeof(m_block) );
-   if (version < VERSION_BLOCKEDQUAD) {
-      m_block = 0;
-   }
-   stream.read( (char *) &m_misc, sizeof(m_misc) );
-   if (version >= VERSION_GRID_CONNECTIONS) {
-      stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-   }
-   if (version >= VERSION_NGRAPH_INTROD) {
-      stream.read( (char *) &m_merge, sizeof(m_merge) );
-      bool ngraph;
-      stream.read( (char *) &ngraph, sizeof(ngraph) );
-      if (ngraph) {
-         m_node = new Node;
-         m_node->read(stream, version);
-         if (version < VERSION_ATTRIBUTES_TABLE) {
-            // don't deal with this here, just get the attributes into memory
-            m_attributes = new AttrBody(-1,g_attr_header);
-            m_attributes->read( stream, attr_count );
-         }
-      }
-   }
-   if (version >= VERSION_POINT_LOCATIONS) {
-      stream.read((char *) &m_location, sizeof(m_location));
-   }
-   if (version < VERSION_SHAPE_MAPS) {
-      // old layer information
-      m_data_objects.read(stream);
-   }
-   if (version >= VERSION_BOUNDARYGRAPH && version < VERSION_NEWBOUNDARYGRAPH) {
-      // dummy pvecint to hold old format boundary nodes
-      pvecint old_boundary_nodes;
-      old_boundary_nodes.read(stream);
-   }
-   return stream;
-}
-
-ofstream& Point::write(ofstream& stream, int version)
-{
-   stream.write( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // note block is no longer used at all
-   stream.write( (char *) &m_block, sizeof(m_block) );
-   stream.write( (char *) &m_misc, sizeof(m_misc) );
-   stream.write( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-   stream.write( (char *) &m_merge, sizeof(m_merge) );
-   bool ngraph;
-   if (m_node) {
-      ngraph = true;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-      m_node->write(stream, version);
-   }
-   else {
-      ngraph = false;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-   }
-   stream.write((char *) &m_location, sizeof(m_location));
-   return stream;
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -145,7 +59,7 @@ int PointMaps::addNewMap(const std::string& name)
    return maps_vector.size() - 1; 
 }
 
-bool PointMaps::read(ifstream& stream, int version)
+bool PointMaps::read(istream& stream, int version)
 {
    stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
    int count;
@@ -431,7 +345,7 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(PixelRef(i,j),p)));
+                  depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
@@ -447,7 +361,7 @@ bool PointMap::clearPoints()
                m_points[i][j].set( Point::EMPTY, m_undocounter );
                if (!m_points[i][j].m_merge.empty()) {
                   PixelRef p = m_points[i][j].m_merge;
-                  m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(PixelRef(i,j),p)));
+                  depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
@@ -517,38 +431,6 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    return ref;
 }
 
-PixelRefList PointMap::getLayerPixels(int layer) 
-{
-   PixelRefList pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (obj != paftl::npos) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
-PixelRefList PointMap::getDataObjectPixels(int layer, int object) 
-{
-   PixelRefList pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (paftl::npos != -1 && m_points[i][j].m_data_objects[obj] == object) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
 // I've reverted to actually filling the lines, provided there's space to put a filled point in
 
 bool PointMap::fillLines()
@@ -582,7 +464,7 @@ bool PointMap::fillLines()
 
 void PointMap::fillLine(const Line& li)
 {
-   PixelRefList pixels = pixelateLine( li, 1 );
+   PixelRefVector pixels = pixelateLine( li, 1 );
    for (size_t j = 0; j < pixels.size(); j++) {
       if (getPoint(pixels[j]).empty()) {
          getPoint(pixels[j]).set( Point::FILLED, m_undocounter );
@@ -635,12 +517,16 @@ bool PointMap::blockLines()
          PixelRef curs = PixelRef( i, j );
          Point& pt = getPoint( curs );
          QtRegion viewport = regionate( curs, 1e-10 );
-         for (size_t k = pt.m_lines.size() - 1; k != paftl::npos; k--) {
-            if (!pt.m_lines.value(k).crop( viewport )) {
-               // the pixelation is fairly rough to make sure that no point is missed: this just
-               // clears up if any point has been added in error:
-               pt.m_lines.remove_at(k);
-            }
+         std::map<int, Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
+         for(; iter != end; ) {
+             if (!iter->second.crop( viewport )) {
+                 // the pixelation is fairly rough to make sure that no point is missed: this just
+                 // clears up if any point has been added in error:
+                 iter = pt.m_lines.erase(iter);
+                 end = pt.m_lines.end();
+             } else {
+                 ++iter;
+             }
          }
       }
    }
@@ -652,12 +538,12 @@ bool PointMap::blockLines()
 
 void PointMap::blockLine(int key, const Line& li)
 {
-   pvector<PixelRef> pixels = pixelateLineTouching(li,1e-10); 
+   std::vector<PixelRef> pixels = pixelateLineTouching(li,1e-10);
    // touching is generally better for ensuring lines pixelated completely, 
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
    {
-      getPoint(pixels[n]).m_lines.add(key,li);
+      getPoint(pixels[n]).m_lines.insert(std::make_pair(key,li));
       getPoint(pixels[n]).setBlock(true);
    }
 }
@@ -690,7 +576,7 @@ void PointMap::unblockLines(bool clearblockedflag)
             for (int i = 0; i < lineset.size(); i++) {
                Line line = lineset[i];
                // line.denormalScale( m_spacepix->m_region ); <- no longer required since standardised PointMap and SpacePixel
-               PixelRefList pixels = pixelateLine( line, 4 ); // pixelate at quadruple precision
+               PixelRefVector pixels = pixelateLine( line, 4 ); // pixelate at quadruple precision
                for (int j = 0; j < pixels.size(); j++) {
                   PixelRef actual = pixels[j] / 4;
                   // now which bits a filled:
@@ -891,7 +777,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    m_point_count++;
 
    // Now... start making lines:
-   pflipper<PixelRefList> surface;
+   pflipper<PixelRefVector> surface;
 
    surface.a().push_back( seedref );
 
@@ -906,7 +792,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    qtimer( atime, 0 );
 
    while (surface.a().size() > 0) {
-      PixelRef& currpix = surface.a().tail();
+      PixelRef& currpix = surface.a().back();
       int result = 0;
       result |= expand( currpix, currpix.up(), surface.b(), filltype );
       result |= expand( currpix, currpix.down(), surface.b(), filltype );
@@ -932,7 +818,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    return true;
 }
 
-int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefList& list, int filltype)
+int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype)
 {
    if (p2.x < 0 || p2.x >= m_cols || p2.y < 0 || p2.y >= m_rows) {
       // 1 = off edge
@@ -1031,12 +917,12 @@ void PointMap::outputNet(ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
-   pmap<PixelRef,PixelRefList> graph;
+   pmap<PixelRef,PixelRefVector> graph;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
          if (m_points[i][j].filled() && m_points[i][j].m_node) {
             PixelRef pix(i,j);
-            PixelRefList connections;
+            PixelRefVector connections;
             m_points[i][j].m_node->contents(connections);
             graph.add(pix,connections);
          }
@@ -1053,7 +939,7 @@ void PointMap::outputNet(ostream& netfile)
    }
    netfile << "*Edges" << endl;
    for (size_t k = 0; k < graph.size(); k++) {
-      PixelRefList& list = graph.value(k);
+      PixelRefVector& list = graph.value(k);
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = graph.searchindex(list[m]);
          if (n != paftl::npos && k < n) {
@@ -1096,7 +982,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
                 seenPix.push_back(pix);
                 for (int b = 0; b < 32; b++)
                 {
-                    PixelRefList hood;
+                    PixelRefVector hood;
                     m_points[i][j].m_node->bin(b).contents(hood);
                     for(size_t p = 0; p < hood.size(); p++)
                     {
@@ -1285,10 +1171,10 @@ bool PointMap::getPointSelected() const
    return false;
 }
 
-PafColor PointMap::getPointColor() const
+PafColor PointMap::getPointColor(PixelRef pixelRef) const
 {
    PafColor color;
-   int state = pointState( cur );
+   int state = pointState( pixelRef );
    if (state & Point::HIGHLIGHT) {
       return PafColor( SALA_HIGHLIGHTED_COLOR ); 
    }
@@ -1298,7 +1184,7 @@ PafColor PointMap::getPointColor() const
    else {
       if (state & Point::FILLED) {
          if (m_processed) {
-            return m_attributes.getDisplayColorByKey( cur );
+            return m_attributes.getDisplayColorByKey( pixelRef );
          }
          else if (state & Point::EDGE) {
             return PafColor( 0x0077BB77 );
@@ -1317,6 +1203,11 @@ PafColor PointMap::getPointColor() const
    return PafColor();   // <- note alpha channel set to transparent - will not be drawn
 }
 
+PafColor PointMap::getCurrentPointColor() const
+{
+    return getPointColor( cur );
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 
 // Selection stuff
@@ -1328,8 +1219,8 @@ bool PointMap::clearSel()
    if (m_selection == NO_SELECTION) {
       return false;
    }
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      getPoint(m_selection_set[i]).m_state &= ~Point::SELECTED;
+   for (auto& sel: m_selection_set) {
+      getPoint(sel).m_state &= ~Point::SELECTED;
    }
    m_selection_set.clear();
    m_selection = NO_SELECTION;
@@ -1365,7 +1256,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
       for (int j = s_bl.y; j <= s_tr.y; j++) {
          if ((m_points[i][j].m_state & mask) && (~m_points[i][j].m_state & Point::SELECTED)) {
             m_points[i][j].m_state |= Point::SELECTED;
-            m_selection_set.push_back( PixelRef(i,j) );
+            m_selection_set.insert( PixelRef(i,j) );
             if (add) {
                m_selection &= ~SINGLE_SELECTION;
                m_selection |= COMPOUND_SELECTION;
@@ -1386,7 +1277,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
    return true;
 }
 
-bool PointMap::setCurSel(const pvecint& selset, bool add)
+bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
 {
    // note: override cursel, can only be used with analysed pointdata:
    if (!add) {
@@ -1401,7 +1292,7 @@ bool PointMap::setCurSel(const pvecint& selset, bool add)
          if (row != -1) {
             m_points[pix.x][pix.y].m_state |= Point::SELECTED;
             if (m_attributes.selectRowByKey(pix)) {
-               m_selection_set.push_back(pix);
+               m_selection_set.insert(pix);
             }
          }
       }
@@ -1415,7 +1306,7 @@ bool PointMap::overrideSelPixel(PixelRef pix)
    m_selection = OVERRIDE_SELECTION;
    if (!(m_points[pix.x][pix.y].m_state & Point::SELECTED)) {
       m_points[pix.x][pix.y].m_state |= Point::SELECTED;
-      m_selection_set.push_back(pix);
+      m_selection_set.insert(pix);
    }
    return true;
 }
@@ -1571,14 +1462,10 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool PointMap::read(ifstream& stream, int version )
+bool PointMap::read(istream& stream, int version )
 {
-   if (version >= VERSION_POINT_MAP_NAMES) {
-      m_name = dXstring::readString(stream);
-   }
-   else {
-      m_name = "VGA Map";
-   }
+   m_name = dXstring::readString(stream);
+
 
    // NOTE: You MUST set m_spacepix manually!
    m_displayed_attribute = -1;
@@ -1592,17 +1479,6 @@ bool PointMap::read(ifstream& stream, int version )
    }
 
    stream.read( (char *) &m_spacing, sizeof(m_spacing) );
-
-   if (version < VERSION_STATE_RECORDED) {
-      if (version >= VERSION_SPARK_GRAPH_INTROD) {
-         bool redundant;
-         stream.read( (char *) &redundant, sizeof(redundant) );
-      }
-      else {
-         double redundant;
-         stream.read( (char *) &redundant, sizeof(redundant) );
-      }
-   }
 
    stream.read( (char *) &m_rows, sizeof(m_rows) );
    stream.read( (char *) &m_cols, sizeof(m_cols) );
@@ -1620,99 +1496,48 @@ bool PointMap::read(ifstream& stream, int version )
    int attr_count = -1, which_attributes = -1;
 
    int displayed_attribute;  // n.b., temp variable necessary to force recalc below
-   if (version >= VERSION_ATTRIBUTES_TABLE) {
-      // our data read
-      stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
-      m_attributes.read( stream, version );
-   }
-   else if (version >= VERSION_NGRAPH_INTROD) {
-      // ick, a very specific subset have this file format:
-      stream.read( (char *) &which_attributes, sizeof(which_attributes) );
-      stream.read( (char *) &attr_count, sizeof(int) );
-   }
+
+   // our data read
+   stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
+   m_attributes.read( stream, version );
 
    m_points = new Point *[m_cols];
    
    for (int j = 0; j < m_cols; j++) {
       m_points[j] = new Point [m_rows];
       // ...and read...
-      if (version >= VERSION_LAYERS_INTROD) {
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].read(stream,version,attr_count);
 
-            // check if occdistance of any pixel's bin is set, meaning that
-            // the isovist analysis was done
-            if(!m_hasIsovistAnalysis) {
-                for(int b = 0; b < 32; b++) {
-                   if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
-                       m_hasIsovistAnalysis = true;
-                       break;
-                   }
+      for (int k = 0; k < m_rows; k++) {
+         m_points[j][k].read(stream,version,attr_count);
+
+         // check if occdistance of any pixel's bin is set, meaning that
+         // the isovist analysis was done
+         if(!m_hasIsovistAnalysis) {
+             for(int b = 0; b < 32; b++) {
+                if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
+                    m_hasIsovistAnalysis = true;
+                    break;
                 }
-            }
+             }
          }
       }
-      else if (version >= VERSION_EXTRA_POINT_DATA_INTROD) {
-         // Hmm... more untidiness from a previous incarnation
-         OldPoint2 *oldpoints = new OldPoint2 [m_rows];
-         stream.read( (char *) oldpoints, sizeof(OldPoint2) * m_rows );
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].m_block = oldpoints[k].m_noderef;  // <- block is actually for something else!
-            m_points[j][k].m_state = oldpoints[k].m_state;
-            m_points[j][k].m_misc = oldpoints[k].m_misc;
-         }
-      }
-      else {
-         // Hmm... more untidiness from a previous incarnation
-         OldPoint1 *oldpoints = new OldPoint1 [m_rows];
-         stream.read( (char *) oldpoints, sizeof(OldPoint1) * m_rows );
-         for (int k = 0; k < m_rows; k++) {
-            m_points[j][k].m_block= oldpoints[k].m_noderef;  // <- block is actually for something else!
-            m_points[j][k].m_state = oldpoints[k].m_state;
-         }
-      }
+
 
       for (int k = 0; k < m_rows; k++) {
          // Old style point node reffing and also unselects selected nodes which would otherwise be difficult
-         if (version >= VERSION_QUICK_GRAPH_INTROD) {
-            // would soon be better simply to turn off the select flag....
-            m_points[j][k].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
-         }
-         else if (m_points[j][k].m_state == -1) {
-            m_points[j][k].m_state = Point::EMPTY;
-         }
-         else {
-            m_points[j][k].m_state = Point::FILLED;
-         }
+
+         // would soon be better simply to turn off the select flag....
+         m_points[j][k].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
+
          // Set the node pixel if it exists:
          if (m_points[j][k].m_node) {
             m_points[j][k].m_node->setPixel(PixelRef(j,k));
          }
-         // Set the point location if required:
-         if (version < VERSION_POINT_LOCATIONS) {
-            m_points[j][k].m_location = depixelate(PixelRef(j,k));
-         }
          // Add merge line if merged:
          if (!m_points[j][k].m_merge.empty()) {
-            m_merge_lines.add(PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
+             depthmapX::addIfNotExists(m_merge_lines, PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
          }
       }
-   }
-
-   // this is my attempt to enter these into the new attribute table:
-   if (version >= VERSION_NGRAPH_INTROD && version < VERSION_ATTRIBUTES_TABLE) {
-      if (which_attributes != GraphVertexList::NONE) {
-         displayed_attribute = 0;
-         convertAttributes(which_attributes);
-      }
-      else {
-         displayed_attribute = -1;
-      }
-   }
-
-   // and if the attribute tables are ready, calculate the direct grid connections:
-   if (version >= VERSION_NGRAPH_INTROD && version < VERSION_GRID_CONNECTIONS) {
-      addGridConnections();
    }
 
    m_selection = NO_SELECTION;
@@ -1721,10 +1546,8 @@ bool PointMap::read(ifstream& stream, int version )
    m_initialised = true;
    m_blockedlines = false;
 
-   if (version >= VERSION_POINT_MAPS) {
-      stream.read((char *) &m_processed, sizeof(m_processed));
-      stream.read((char *) &m_boundarygraph, sizeof(m_boundarygraph));
-   }
+   stream.read((char *) &m_processed, sizeof(m_processed));
+   stream.read((char *) &m_boundarygraph, sizeof(m_boundarygraph));
 
    // now, as soon as loaded, must recalculate our screen display:
    // note m_displayed_attribute should be -2 in order to force recalc...
@@ -1760,123 +1583,6 @@ bool PointMap::write( ofstream& stream, int version )
    stream.write((char *) &m_boundarygraph, sizeof(m_boundarygraph));
 
    return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// A horrible piece of code: this is to convert a file from the old format
-// AttrHeader / AttrBody to the new format Attributes Table
-
-// This code converts attributes for all versions
-// between VERSION_NGRAPH_INTROD and VERSION_ATTRIBUTES_TABLE
-
-void PointMap::convertAttributes(int which_attributes)
-{
-   if (which_attributes & GraphVertexList::BASIC) {
-      int connectivity_col = m_attributes.insertLockedColumn("Connectivity");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               // insert row...
-               int row = m_attributes.insertRow(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::NEIGHBOURHOOD_SIZE);
-               m_attributes.setValue(row, connectivity_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::LOCAL) {
-      int cluster_col = m_attributes.insertColumn("Visual Clustering Coefficient");
-      int control_col = m_attributes.insertColumn("Visual Control");
-      int controllability_col = m_attributes.insertColumn("Visual Controllability");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CLUSTER);
-               m_attributes.setValue(row, cluster_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_HILL);
-               m_attributes.setValue(row, control_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_TURN);
-               m_attributes.setValue(row, controllability_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::GLOBAL) {
-      int entropy_col = m_attributes.insertColumn("Visual Entropy");
-      int integ_hh_col = m_attributes.insertColumn("Visual Integration [HH]");
-      int integ_tk_col = m_attributes.insertColumn("Visual Integration [Tekl]");
-      int depth_col = m_attributes.insertColumn("Visual Mean Depth");
-      int count_col = m_attributes.insertColumn("Visual Node Count");
-      int rel_entropy_col = m_attributes.insertColumn("Visual Relativised Entropy");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::ENTROPY);
-               m_attributes.setValue(row, entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::REL_ENTROPY);
-               m_attributes.setValue(row, rel_entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_HILL);
-               m_attributes.setValue(row, integ_hh_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_TEKL);
-               m_attributes.setValue(row, integ_tk_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::MEAN_DEPTH);
-               m_attributes.setValue(row, depth_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::GRAPH_SIZE);
-               m_attributes.setValue(row, count_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::POINTDEPTH) {
-      int col = m_attributes.insertColumn("Visual Step Depth");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::POINT_DEPTH);
-               m_attributes.setValue(row, col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::METRIC) {
-      int mspa_col = m_attributes.insertColumn("Metric Mean Shortest-Path Angle");
-      int mspl_col = m_attributes.insertColumn("Metric Mean Shortest-Path Distance");
-      int dist_col = m_attributes.insertColumn("Metric Mean Straight-Line Distance");
-      int count_col = m_attributes.insertColumn("Metric Node Count");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               double val, total = m_points[i][j].getAttributes().getAttr(AttrHeader::METRIC_GRAPH_SIZE);
-               //
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_ANGLE) / total;
-               m_attributes.setValue(row, mspa_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_DEPTH) / total;
-               m_attributes.setValue(row, mspl_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_EUCLID_DIST) / total;
-               m_attributes.setValue(row, dist_col, float(val));
-               //
-               m_attributes.setValue(row, count_col, float(total));
-            }
-         }
-      }
-   }
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         if (m_points[i][j].m_attributes) {
-            delete m_points[i][j].m_attributes;
-            m_points[i][j].m_attributes = NULL;
-         }
-      }
-   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2402,7 +2108,7 @@ bool PointMap::dynamicSparkGraph2()
 
 bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
 {
-   static pvector<PixelRef> bins_b[32];
+   static std::vector<PixelRef> bins_b[32];
    static float far_bin_dists[32];
    for (int i = 0; i < 32; i++) {
       far_bin_dists[i] = 0.0f;
@@ -2462,19 +2168,18 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          viewport0.top_right.y = centre0.y;
          break;
       }
-      pqmap<int,Line> lines0;
-      for (size_t m = 0; m < getPoint(curs).m_lines.size(); m++)
+      std::map<int,Line> lines0;
+      for (const std::pair<int,Line>& line: getPoint(curs).m_lines)
       {
-         int key = getPoint(curs).m_lines.key(m);
-         Line l = getPoint(curs).m_lines.value(m);
+         Line l = line.second;
          if (l.crop(viewport0)) {
-            lines0.add(key,l);
+            lines0.insert(std::make_pair(line.first,l));
          }
       }
       sieve.block(lines0, q);
       sieve.collectgarbage();
 
-      pvector<PixelRef> addlist;
+      std::vector<PixelRef> addlist;
 
       for (depth = 1; sieve.hasGaps(); depth++) {
 
@@ -2536,7 +2241,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
    return true;
 }
 
-bool PointMap::sieve2(sparkSieve2& sieve, pvector<PixelRef>& addlist, int q, int depth, PixelRef curs)
+bool PointMap::sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs)
 {
    bool hasgaps = false;
    int firstind = 0;
@@ -2601,8 +2306,8 @@ bool PointMap::binDisplay(Communicator *comm)
       m_attributes.setValue( i, bindisplay_col, -1 );
    }
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      Point& p = getPoint(m_selection_set[k]);
+   for (auto& sel: m_selection_set) {
+      Point& p = getPoint(sel);
       // Code for colouring pretty bins:
       int count = 1;
       int dir = 0;
@@ -2665,7 +2370,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
 
             isovist.setData(m_attributes,row, simple_version);
             Node& node = getPoint(curs).getNode();
-            pvector<PixelRef> *occ = node.m_occlusion_bins;
+            std::vector<PixelRef> *occ = node.m_occlusion_bins;
             size_t k;
             for (k = 0; k < 32; k++) {
                occ[k].clear();
@@ -2773,7 +2478,7 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
          if ( getPoint( curs ).filled()) {
 
             if ((getPoint( curs ).contextfilled() && !curs.iseven()) ||
-                (options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1)) {
+                (options.gates_only)) {
                count++;
                continue;
             }
@@ -2791,13 +2496,13 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                int total_nodes = 0;
 
                pvecint distribution;
-               prefvec<PixelRefList> search_tree;
-               search_tree.push_back(PixelRefList());
+               prefvec<PixelRefVector> search_tree;
+               search_tree.push_back(PixelRefVector());
                search_tree.tail().push_back(curs);
 
                int level = 0;
                while (search_tree[level].size()) {
-                  search_tree.push_back(PixelRefList());
+                  search_tree.push_back(PixelRefVector());
                   distribution.push_back(0);
                   for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
                      Point& p = getPoint(search_tree[level][n]);
@@ -2897,9 +2602,13 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                int row = m_attributes.getRowid(curs);
 
                // This is much easier to do with a straight forward list:
-               PixelRefList neighbourhood;
-               PixelRefList totalneighbourhood;
+               PixelRefVector neighbourhood;
+               PixelRefVector totalneighbourhood;
                getPoint(curs).m_node->contents(neighbourhood);
+
+               // only required to match previous non-stl output. Without this
+               // the output differs by the last digit of the float
+               std::sort(neighbourhood.begin(), neighbourhood.end());
 
                int cluster = 0;
                float control = 0.0f;
@@ -2911,10 +2620,12 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
                      retpt.m_node->first();
                      while (!retpt.m_node->is_tail()) {
                         retro_size++;
-                        if (neighbourhood.searchindex(retpt.m_node->cursor()) != paftl::npos) {
+                        if (std::find(neighbourhood.begin(), neighbourhood.end(), retpt.m_node->cursor()) != neighbourhood.end()) {
                            intersect_size++;
                         }
-                        totalneighbourhood.add(retpt.m_node->cursor()); // <- note add does nothing if member already exists
+                        if (std::find(totalneighbourhood.begin(), totalneighbourhood.end(), retpt.m_node->cursor()) == totalneighbourhood.end()) {
+                           totalneighbourhood.push_back(retpt.m_node->cursor()); // <- note add does nothing if member already exists
+                        }
                         retpt.m_node->next();
                      }
                      control += 1.0f / float(retro_size);
@@ -2974,16 +2685,16 @@ bool PointMap::analyseVisualPointDepth(Communicator *comm)
       getPoint(pix).m_extent = pix;
    }
 
-   prefvec<PixelRefList> search_tree;
-   search_tree.push_back(PixelRefList());
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
+   prefvec<PixelRefVector> search_tree;
+   search_tree.push_back(PixelRefVector());
+   for (auto& sel: m_selection_set) {
       // need to convert from ints (m_selection_set) to pixelrefs for this op:
-      search_tree.tail().push_back(m_selection_set[j]);
+      search_tree.tail().push_back(sel);
    }
 
    int level = 0;
    while (search_tree[level].size()) {
-      search_tree.push_back(PixelRefList());
+      search_tree.push_back(PixelRefVector());
       for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
          Point& p = getPoint(search_tree[level][n]);
          if (p.filled() && p.m_misc != ~0) {
@@ -3065,7 +2776,7 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -3086,12 +2797,13 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
             // note that m_misc is used in a different manner to analyseGraph / PointDepth
             // here it marks the node as used in calculation only
 
-            pqvector<MetricTriple> search_list;
-            search_list.add(MetricTriple(0.0f,curs,NoPixel));
+            std::set<MetricTriple> search_list;
+            search_list.insert(MetricTriple(0.0f,curs,NoPixel));
             int level = 0;
             while (search_list.size()) {
-               MetricTriple here = search_list[0];
-               search_list.remove_at(0);
+               std::set<MetricTriple>::iterator it = search_list.begin();
+               MetricTriple here = *it;
+               search_list.erase(it);
                if (options.radius != -1.0 && (here.dist * m_spacing) > options.radius) {
                   break;
                }
@@ -3159,10 +2871,10 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
    }
 
    // in order to calculate Penn angle, the MetricPair becomes a metric triple...
-   pqvector<MetricTriple> search_list; // contains root point
+   std::set<MetricTriple> search_list; // contains root point
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      search_list.add(MetricTriple(0.0f,m_selection_set[k],NoPixel));
+   for (auto& sel: m_selection_set) {
+      search_list.insert(MetricTriple(0.0f,sel,NoPixel));
    }
 
    // note that m_misc is used in a different manner to analyseGraph / PointDepth
@@ -3170,8 +2882,9 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
    int count = 0;
    int level = 0;
    while (search_list.size()) {
-      MetricTriple here = search_list[0];
-      search_list.remove_at(0);
+      std::set<MetricTriple>::iterator it = search_list.begin();
+      MetricTriple here = *it;
+      search_list.erase(it);
       Point& p = getPoint(here.pixel);
       // nb, the filled check is necessary as diagonals seem to be stored with 'gaps' left in
       if (p.filled() && p.m_misc != ~0) {
@@ -3182,7 +2895,7 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
          m_attributes.setValue(row, path_angle_col, float(p.m_cumangle) );
          if (m_selection_set.size() == 1) {
             // Note: Euclidean distance is currently only calculated from a single point
-            m_attributes.setValue(row, dist_col, float(m_spacing * dist(here.pixel,m_selection_set[0])) );
+            m_attributes.setValue(row, dist_col, float(m_spacing * dist(here.pixel,*m_selection_set.begin())) );
          }
          if (!p.m_merge.empty()) {
             Point& p2 = getPoint(p.m_merge);
@@ -3193,7 +2906,7 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
                m_attributes.setValue(row, path_angle_col, float(p2.m_cumangle) );
                if (m_selection_set.size() == 1) {
                   // Note: Euclidean distance is currently only calculated from a single point
-                  m_attributes.setValue(row, dist_col, float(m_spacing * dist(p.m_merge,m_selection_set[0])) );
+                  m_attributes.setValue(row, dist_col, float(m_spacing * dist(p.m_merge,*m_selection_set.begin())) );
                }
                p2.m_node->extractMetric(search_list,this,MetricTriple(here.dist,p.m_merge,NoPixel));
                p2.m_misc = ~0;
@@ -3256,7 +2969,7 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -3275,13 +2988,14 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
             // note that m_misc is used in a different manner to analyseGraph / PointDepth
             // here it marks the node as used in calculation only
 
-            pqvector<AngularTriple> search_list;
-            search_list.add(AngularTriple(0.0f,curs,NoPixel));
+            std::set<AngularTriple> search_list;
+            search_list.insert(AngularTriple(0.0f,curs,NoPixel));
             getPoint(curs).m_cumangle = 0.0f;
             int level = 0;
             while (search_list.size()) {
-               AngularTriple here = search_list[0];
-               search_list.remove_at(0);
+               std::set<AngularTriple>::iterator it = search_list.begin();
+               AngularTriple here = *it;
+               search_list.erase(it);
                if (options.radius != -1.0 && here.angle > options.radius) {
                   break;
                }
@@ -3341,11 +3055,11 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
       getPoint(pix).m_cumangle = -1.0f;
    }
 
-   pqvector<AngularTriple> search_list; // contains root point
+   std::set<AngularTriple> search_list; // contains root point
 
-   for (size_t k = 0; k < m_selection_set.size(); k++) {
-      search_list.add(AngularTriple(0.0f,m_selection_set[k],NoPixel));
-      getPoint(m_selection_set[k]).m_cumangle = 0.0f;
+   for (auto& sel: m_selection_set) {
+      search_list.insert(AngularTriple(0.0f,sel,NoPixel));
+      getPoint(sel).m_cumangle = 0.0f;
    }
 
    // note that m_misc is used in a different manner to analyseGraph / PointDepth
@@ -3353,8 +3067,9 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
    int count = 0;
    int level = 0;
    while (search_list.size()) {
-      AngularTriple here = search_list[0];
-      search_list.remove_at(0);
+      std::set<AngularTriple>::iterator it = search_list.begin();
+      AngularTriple here = *it;
+      search_list.erase(it);
       Point& p = getPoint(here.pixel);
       // nb, the filled check is necessary as diagonals seem to be stored with 'gaps' left in
       if (p.filled() && p.m_misc != ~0) {
@@ -3413,7 +3128,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += 1;
                }
@@ -3454,7 +3169,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line li = Line(depixelate(x),depixelate(curs));
-               PixelRefList pixels = quickPixelateLine(x,curs);
+               PixelRefVector pixels = quickPixelateLine(x,curs);
                for (size_t k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += 1;
                   int index = m_attributes.getRowid(pixels[k]);
@@ -3501,7 +3216,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col) * 0.001;
                }
@@ -3529,7 +3244,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
             while (!p.m_node->is_tail()) {
                PixelRef x = p.m_node->cursor();
                Line l(depixelate(curs),depixelate(x));
-               PixelRefList pixels = pixelateLine(l,1);
+               PixelRefVector pixels = pixelateLine(l,1);
                for (int k = 1; k < pixels.size() - 1; k++) {
                   getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col2) * 0.001;
                }
@@ -3570,9 +3285,9 @@ bool PointMap::mergePoints(const Point2f& p)
    //
    PixelRef offset = pixelate(p) - PixelRef(tr.x,bl.y);
    //
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      PixelRef a = m_selection_set[i];
-      PixelRef b = ((PixelRef)m_selection_set[i]) + offset;
+   for (auto& sel: m_selection_set) {
+      PixelRef a = sel;
+      PixelRef b = ((PixelRef)sel) + offset;
       // check in limits:
       if (includes(b) && getPoint(b).filled()) {
          mergePixels(a,b);
@@ -3588,8 +3303,8 @@ bool PointMap::unmergePoints()
    if (!m_selection_set.size()) {
       return false;
    }
-   for (size_t i = 0; i < m_selection_set.size(); i++) {
-      PixelRef a = m_selection_set[i];
+   for (auto& sel: m_selection_set) {
+      PixelRef a = sel;
       mergePixels(a,a);
    }
    clearSel();
@@ -3601,7 +3316,7 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
    bool altered = false;
    if (a == b && !getPoint(a).m_merge.empty()) {
       PixelRef c = getPoint(a).m_merge;
-      m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(a,c)));
+      depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
       getPoint(c).m_merge = NoPixel;
       getPoint(c).m_state &= ~Point::MERGED;
       getPoint(a).m_merge = NoPixel;
@@ -3611,13 +3326,17 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
    if (a != b && getPoint(a).m_merge != b) {
       if (!getPoint(a).m_merge.empty()) {
          PixelRef c = getPoint(a).m_merge;
-         m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(a,c)));
+         auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(a,c));
+         if(it != m_merge_lines.end())
+             m_merge_lines.erase(it);
          getPoint(c).m_merge = NoPixel;
          getPoint(c).m_state &= ~Point::MERGED;
       }
       if (!getPoint(b).m_merge.empty()) {
          PixelRef c = getPoint(b).m_merge;
-         m_merge_lines.remove_at(m_merge_lines.searchindex(PixelRefPair(b,c)));
+         auto it = std::find(m_merge_lines.begin(), m_merge_lines.end(), PixelRefPair(b,c));
+         if(it != m_merge_lines.end())
+             m_merge_lines.erase(it);
          getPoint(c).m_merge = NoPixel;
          getPoint(c).m_state &= ~Point::MERGED;
       }
@@ -3625,7 +3344,7 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
       getPoint(a).m_state |= Point::MERGED;
       getPoint(b).m_merge = a;
       getPoint(b).m_state |= Point::MERGED;
-      m_merge_lines.add(PixelRefPair(a,b));
+      m_merge_lines.push_back(PixelRefPair(a,b));
       altered = true;
    }
 
@@ -3692,15 +3411,15 @@ bool PointMap::analyseGraph(Communicator *comm, Graph *graph)
             int total_depth = 0;
             int total_nodes = 0;
 
-            prefvec<PixelRefList> search_tree;
+            prefvec<PixelRefVector> search_tree;
 
-            search_tree.push_back(PixelRefList());
+            search_tree.push_back(PixelRefVector());
 
 //            global.extractUnseen(search_tree[0], *getPoint( curs ).m_spark_tree);
 
             int level = 0;
             while (search_tree[level].size()) {
-               search_tree.push_back(PixelRefList());
+               search_tree.push_back(PixelRefVector());
                for (int n = search_tree[level].size() - 1; n != paftl::npos; n--) {
                   Point& p = getPoint(search_tree[level][n]);
                   if (!p.emptyorblocked()) {
@@ -3748,7 +3467,7 @@ bool PointMap::analysePointDepth(Communicator *comm, Graph *graph)
    }
    analyser_tree.invert();
 
-   PixelRefList selset;
+   PixelRefVector selset;
 
    for (int i = 0; i < m_cols; i++) {
 
@@ -3768,12 +3487,12 @@ bool PointMap::analysePointDepth(Communicator *comm, Graph *graph)
       }
    }
 
-   prefvec<PixelRefList> search_tree;
+   prefvec<PixelRefVector> search_tree;
    search_tree.push_back(selset);
    
    int level = 0;
    while (search_tree[level].size()) {
-      search_tree.push_back(PixelRefList());
+      search_tree.push_back(PixelRefVector());
       for (int n = search_tree[level].size() - 1; n != paftl::npos; n--) {
          Point& p = getPoint(search_tree[level][n]);
          if (!p.emptyorblocked()) {

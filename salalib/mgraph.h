@@ -25,7 +25,7 @@
 #include <genlib/paftl.h>
 #include <genlib/p2dpoly.h>
 
-#include <salalib/vertex.h>      // mainly deprecated, but includes display params
+#include <salalib/displayparams.h>
 #include <salalib/fileproperties.h>
 #include <salalib/spacepix.h>
 #include <salalib/attributes.h>
@@ -36,8 +36,14 @@
 #include <salalib/axialmap.h>
 #include <salalib/datalayer.h>   // datalayers deprecated
 
+#include <mutex>
+
 // for agent engine interface
 #include <salalib/nagent.h>
+#include <salalib/importtypedefs.h>
+
+#include <vector>
+#include <memory>
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +62,6 @@ public:
 protected:
    int m_file_version;
    int m_state;
-   void *m_lock;
 public:
    // some display options now set at file level
    bool m_showgrid;
@@ -74,22 +79,21 @@ public:
       // note, if unsaved, m_file_version is -1
       return m_file_version;
    }
-   bool setLock(void *who) 
-   { 
-      if (m_lock == 0) {
-         m_lock = who;
-         return true;
-      }
-      return false;
+
+
+
+private:
+   std::recursive_mutex mLock;
+
+public:
+    std::unique_lock<std::recursive_mutex> getLock(){
+       return std::unique_lock<recursive_mutex>(mLock);
    }
-   bool releaseLock(void *who)
-   {
-      if (m_lock != who) {
-         return false;
-      }
-      m_lock = NULL;
-      return true;
-   }
+
+    std::unique_lock<std::recursive_mutex> getLockDeferred(){
+        return std::unique_lock<std::recursive_mutex>(mLock, std::defer_lock_t());
+    }
+
    //
    void copyLineData(const SuperSpacePixel& meta);
    void copyPointMap(const PointMap& meta);
@@ -102,15 +106,17 @@ public:
    //
    // quick loaders from input streams rather than files:
    bool importCat( istream& stream );
-   bool importDxf( istream& stream );
    // make a graph using the supplied seed and graph spacing:
    void fastGraph( const Point2f& seed, double spacing );
    //
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
-   int loadDxf( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
-   int importTxt( istream& stream, const std::string& layername, bool csv );
+   ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
+   void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
+   void updateParentRegions(ShapeMap &shapeMap);
+   int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
+   int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
    bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
@@ -336,21 +342,21 @@ public:
          return QtRegion();
    }
    // setSelSet expects a set of ref ids:
-   void setSelSet(const pvecint& selset, bool add = false)
+   void setSelSet(const std::vector<int>& selset, bool add = false)
    { if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          getDisplayedPointMap().setCurSel(selset,add);
       else if (m_view_class & VIEWAXIAL) 
          m_shape_graphs.getDisplayedMap().setCurSel(selset,add);
       else // if (m_view_class & VIEWDATA) 
          m_data_maps.getDisplayedMap().setCurSel(selset,add); }
-   pvecint& getSelSet()
+   std::set<int>& getSelSet()
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
          return m_data_maps.getDisplayedMap().getSelSet(); }
-   const pvecint& getSelSet() const
+   const std::set<int>& getSelSet() const
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
@@ -392,16 +398,16 @@ public:
    // a few read-write returns:
    enum { OK, WARN_BUGGY_VERSION, WARN_CONVERTED, NOT_A_GRAPH, DAMAGED_FILE, DISK_ERROR, NEWER_VERSION, DEPRECATED_VERSION };
    // likely to use communicator if too slow...
-   int read( const std::string& filename );
+   int readFromFile( const std::string& filename );
+   int readFromStream( istream &stream, const std::string& filename );
    int write( const std::string& filename, int version, bool currentlayer = false);
    //
+   std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   pqvector<AttrBody> *m_attr_conv_table;
-   int convertAttributes( ifstream& stream, int version );
    int convertVirtualMem( ifstream& stream, int version );
    //
-   streampos skipVirtualMem(ifstream& stream, int version);
-   streampos copyVirtualMem(ifstream& reader, ofstream& writer, int version);
+   streampos skipVirtualMem(istream &stream, int version);
+   streampos copyVirtualMem(istream& reader, ofstream& writer, int version);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

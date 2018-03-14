@@ -24,6 +24,8 @@
 #include <salalib/nagent.h>
 #include <salalib/ngraph.h>
 #include "genlib/stringutils.h"
+#include "genlib/containerutils.h"
+
 int thisrun = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +57,7 @@ int progcompare(const void *a, const void *b )
 
 //
 
-pvecpoint g_trails[MAX_TRAILS];
+pqvector<Point2f> g_trails[MAX_TRAILS];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1010,9 +1012,9 @@ Point2f Agent::onOcclusionLook(bool wholeisovist, int looktype)
          if (fardist != -1.0) {
             bool cont = true;
             if (looktype == AgentProgram::SEL_OCC_MEMORY) {
-               m_occ_memory.a().add(nigpix);
+               depthmapX::addIfNotExists(m_occ_memory.a(), nigpix);
                // the turn chance (pafrand() % 2) may have to be modified later...
-               if (!m_at_target && m_occ_memory.b().searchindex(nigpix) != paftl::npos) {
+               if (!m_at_target && std::find(m_occ_memory.b().begin(), m_occ_memory.b().end() ,nigpix) != m_occ_memory.b().end()) {
                   cont = false;
                }
             }

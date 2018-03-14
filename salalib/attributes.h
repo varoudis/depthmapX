@@ -18,7 +18,7 @@
 #ifndef __ATTRIBUTES_H__
 #define __ATTRIBUTES_H__
 
-#include "vertex.h"
+#include "salalib/mgraph_consts.h"
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable
@@ -202,7 +202,7 @@ public:
    void setLock(bool lock = true)
    { m_locked = lock; }
    //
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream, int version );
    friend bool operator == (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator < (const AttributeColumn& a, const AttributeColumn& b);
@@ -396,7 +396,7 @@ public:
    { return m_name; }
    //
    // read / write
-   bool read( ifstream& stream, int version );
+   bool read(istream &stream, int version );
    bool write( ofstream& stream, int version );
    //
    bool outputHeader( ostream& stream, char delim = '\t', bool updated_only = false ) const;

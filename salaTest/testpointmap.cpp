@@ -445,3 +445,100 @@ TEST_CASE("Test PointMap connections output", "")
     }
 
 }
+TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
+{
+    double spacing = 0.5;
+    Point2f offset(0,0); // seems that this is always set to 0,0
+    Point2f bottomLeft(0,0);
+    Point2f topRight(2,4);
+    int fill_type = 0; // = QDepthmapView::FULLFILL
+
+    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    spacePixel->m_region = QtRegion(bottomLeft, topRight);
+    PointMap pointMap("Test PointMap");
+    pointMap.setSpacePixel(spacePixel.get());
+    pointMap.setGrid(spacing, offset);
+    Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
+    Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
+                         gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
+    pointMap.makePoints(midPoint, fill_type);
+
+    std::vector<Line> mergeLines;
+
+    PixelRef bottomLeftPixel = pointMap.pixelate(bottomLeft);
+    PixelRef topRightPixel = pointMap.pixelate(topRight);
+
+    // make sure pixels are not already merged
+    REQUIRE(!pointMap.isPixelMerged(bottomLeftPixel));
+    REQUIRE(!pointMap.isPixelMerged(topRightPixel));
+
+    // merge
+    pointMap.mergePixels(bottomLeftPixel, topRightPixel);
+
+    // make sure pixels are merged
+    REQUIRE(pointMap.isPixelMerged(bottomLeftPixel));
+    REQUIRE(pointMap.isPixelMerged(topRightPixel));
+
+    SECTION ("Make sure we get the correct number of merged pixel pairs")
+    {
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs = pointMap.getMergedPixelPairs();
+        REQUIRE(pixelPairs.size() == 1);
+        REQUIRE(pixelPairs[0].first == bottomLeftPixel);
+        REQUIRE(pixelPairs[0].second == topRightPixel);
+    }
+
+    SECTION ("Overwrite the pixelpair by re-merging the first pixel of the pair")
+    {
+        PixelRef aboveBottomLeftPixel = pointMap.pixelate(Point2f(bottomLeft.x, bottomLeft.y + 1));
+
+        // merge
+        pointMap.mergePixels(aboveBottomLeftPixel, topRightPixel);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(aboveBottomLeftPixel));
+        REQUIRE(pointMap.isPixelMerged(topRightPixel));
+
+        // and previous pixel is not merged any more
+        REQUIRE(!pointMap.isPixelMerged(bottomLeftPixel));
+
+        // make sure we get the correct number of merged pixel pairs
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs = pointMap.getMergedPixelPairs();
+        REQUIRE(pixelPairs.size() == 1);
+        REQUIRE(pixelPairs[0].first == aboveBottomLeftPixel);
+        REQUIRE(pixelPairs[0].second == topRightPixel);
+    }
+
+    SECTION ("Overwrite the pixelpair by re-merging the second pixel of the pair")
+    {
+        PixelRef belowTopRightPixel = pointMap.pixelate(Point2f(topRight.x, topRight.y - 1));
+
+        // merge
+        pointMap.mergePixels(bottomLeftPixel, belowTopRightPixel);
+
+        // make sure pixels are merged
+        REQUIRE(pointMap.isPixelMerged(bottomLeftPixel));
+        REQUIRE(pointMap.isPixelMerged(belowTopRightPixel));
+
+        // and previous pixel is not merged any more
+        REQUIRE(!pointMap.isPixelMerged(topRightPixel));
+
+        // make sure we get the correct number of merged pixel pairs
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs2 = pointMap.getMergedPixelPairs();
+        REQUIRE(pixelPairs2.size() == 1);
+        REQUIRE(pixelPairs2[0].first == bottomLeftPixel);
+        REQUIRE(pixelPairs2[0].second == belowTopRightPixel);
+    }
+
+    SECTION ("Merge the same pixel twice to erase the pair")
+    {
+        pointMap.mergePixels(bottomLeftPixel, bottomLeftPixel);
+
+        // make sure no pixel is merged
+        REQUIRE(!pointMap.isPixelMerged(bottomLeftPixel));
+        REQUIRE(!pointMap.isPixelMerged(topRightPixel));
+
+        // make sure we get the correct number of merged pixel pairs
+        const std::vector<std::pair<PixelRef, PixelRef>> &pixelPairs3 = pointMap.getMergedPixelPairs();
+        REQUIRE(pixelPairs3.size() == 0);
+    }
+}

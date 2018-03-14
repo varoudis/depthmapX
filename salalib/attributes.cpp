@@ -303,19 +303,18 @@ void AttributeTable::setDisplayColumn(int col, bool override) const
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-bool AttributeTable::read( ifstream& stream, int version )
+bool AttributeTable::read( istream& stream, int version )
 {
-   if (version >= VERSION_MAP_LAYERS) {
-      m_layers.clear();
-      stream.read((char *)&m_available_layers,sizeof(int64));
-      stream.read((char *)&m_visible_layers,sizeof(int64));
-      int count;
-      stream.read((char *)&count,sizeof(int));
-      for (int i = 0; i < count; i++) {
-         int64 key;
-         stream.read((char *)&key,sizeof(key));
-         m_layers.add(key,dXstring::readString(stream));
-      }
+
+   m_layers.clear();
+   stream.read((char *)&m_available_layers,sizeof(int64));
+   stream.read((char *)&m_visible_layers,sizeof(int64));
+   int count;
+   stream.read((char *)&count,sizeof(int));
+   for (int i = 0; i < count; i++) {
+       int64 key;
+       stream.read((char *)&key,sizeof(key));
+       m_layers.add(key,dXstring::readString(stream));
    }
    int colcount;
    stream.read((char *)&colcount, sizeof(colcount));
@@ -330,31 +329,31 @@ bool AttributeTable::read( ifstream& stream, int version )
    for (int i = 0; i < rowcount; i++) {
       stream.read((char *)&rowkey, sizeof(rowkey));
       int index = add(rowkey,AttributeRow());
-      if (version >= VERSION_MAP_LAYERS) {
-         stream.read((char *)&(value(index).m_layers),sizeof(int64));
-      }
+
+      stream.read((char *)&(value(index).m_layers),sizeof(int64));
+
       value(index).read(stream);
    }
-   if (version >= VERSION_GATE_MAPS) {
-      // ref column display params
-      stream.read((char *)&m_display_params,sizeof(m_display_params));
-   }
+
+   // ref column display params
+   stream.read((char *)&m_display_params,sizeof(m_display_params));
+
    return true;
 }
 
 bool AttributeTable::write( ofstream& stream, int version )
 {
-   if (version >= VERSION_MAP_LAYERS) {
-      stream.write((char *)&m_available_layers,sizeof(int64));
-      stream.write((char *)&m_visible_layers,sizeof(int64));
-      int count = m_layers.size();
-      stream.write((char *)&count,sizeof(int));
-      for (size_t i = 0; i < m_layers.size(); i++) {
-         int64 key = m_layers.key(i);
-         stream.write((char *)&key,sizeof(key));
-         dXstring::writeString(stream ,m_layers.value(i));
-      }
+
+   stream.write((char *)&m_available_layers,sizeof(int64));
+   stream.write((char *)&m_visible_layers,sizeof(int64));
+   int count = m_layers.size();
+   stream.write((char *)&count,sizeof(int));
+   for (size_t i = 0; i < m_layers.size(); i++) {
+      int64 key = m_layers.key(i);
+      stream.write((char *)&key,sizeof(key));
+      dXstring::writeString(stream ,m_layers.value(i));
    }
+
    int colcount = m_columns.size();
    stream.write((char *)&colcount, sizeof(colcount));
    for (int j = 0; j < colcount; j++) {
@@ -365,9 +364,7 @@ bool AttributeTable::write( ofstream& stream, int version )
    for (int i = 0; i < rowcount; i++) {
       rowkey = key(i);
       stream.write((char *)&rowkey, sizeof(rowkey));
-      if (version >= VERSION_MAP_LAYERS) {
-         stream.write((char *)&(value(i).m_layers),sizeof(int64));
-      }
+      stream.write((char *)&(value(i).m_layers),sizeof(int64));
       value(i).write(stream);
    }
    // ref column display params
@@ -521,7 +518,7 @@ void AttributeColumn::reset()
    m_visible_tot = 0.0;
 }
 
-bool AttributeColumn::read( ifstream& stream, int version )
+bool AttributeColumn::read( istream& stream, int version )
 {
    m_updated = false;
    m_name = dXstring::readString(stream);
@@ -530,32 +527,16 @@ bool AttributeColumn::read( ifstream& stream, int version )
    stream.read((char *)&max, sizeof(max));
    m_min = min;
    m_max = max;
-   if (version >= VERSION_ATTRIBUTES_TABLE)  // m_tot has always been a double
-      stream.read((char *)&m_tot, sizeof(m_tot));
-   else
-      m_tot = 0.0;
+
+   stream.read((char *)&m_tot, sizeof(m_tot));
+
    stream.read((char *)&m_physical_col, sizeof(m_physical_col));
    stream.read((char *)&m_hidden, sizeof(m_hidden));
-   if (version >= VERSION_ATTRIBUTE_LOCKING) {
-      stream.read((char *)&m_locked, sizeof(m_locked));
-   }
-   else {
-      if (m_name == "Connectivity" || m_name == "Connectivity (Degree)" || m_name == "Axial Line Ref" || m_name == "Segment Length" || m_name == "Line Length") {
-         m_locked = true;
-      }
-      else {
-         m_locked = false;
-      }
-   }
-   if (version >= VERSION_STORE_COLOR) {
-      stream.read((char*)&m_display_params,sizeof(m_display_params));
-   }
-   if (version >= VERSION_STORE_FORMULA) {
-      m_formula = dXstring::readString(stream);
-   }
-   if (version >= VERSION_STORE_COLUMN_CREATOR && version < VERSION_FORGET_COLUMN_CREATOR) {
-      std::string dummy_creator = dXstring::readString(stream);
-   }
+
+   stream.read((char *)&m_locked, sizeof(m_locked));
+
+   stream.read((char*)&m_display_params,sizeof(m_display_params));
+   m_formula = dXstring::readString(stream);
    return true;
 }
 

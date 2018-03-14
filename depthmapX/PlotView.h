@@ -28,6 +28,7 @@
 #include "qpixmap.h"
 
 #include "GraphDoc.h"
+#include "genlib/linreg.h"
 
 #define MK_LBUTTON          0x0001
 #define MK_RBUTTON          0x0002

@@ -21,6 +21,8 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <vector>
+#include <string>
+#include <fstream>
 
 #ifdef _WIN32
 // Quick mod - TV
@@ -33,10 +35,10 @@
     const char *const g_default_file_set = "File set";
 
 struct FilePath {
-   string m_path;
-   string m_name;
-   string m_ext;
-   FilePath(const string& pathname)
+   std::string m_path;
+   std::string m_name;
+   std::string m_ext;
+   FilePath(const std::string& pathname)
    {
       size_t dot   = pathname.find_last_of('.');
 #ifdef _WIN32
@@ -44,10 +46,10 @@ struct FilePath {
 #else
       size_t slash = pathname.find_last_of('/'); // Other
 #endif
-      if (slash != string::npos) {
+      if (slash != std::string::npos) {
          m_path = pathname.substr(0,slash+1);
       }
-      if (dot != string::npos) {
+      if (dot != std::string::npos) {
          m_name = pathname.substr(slash+1,dot-slash-1);
          m_ext = pathname.substr(dot+1);
       }
@@ -70,12 +72,12 @@ protected:
    bool m_cancelled;
    bool m_delete_flag;
    // nb. converted to Win32 UTF-16 Unicode path (AT 31.01.11) Linux, MacOS use UTF-8 (AT 29.04.11)
-   string m_infilename;
-   ifstream *m_infile;
-   ifstream *m_infile2; // <- MapInfo MIF files come in two parts
-   ofstream *m_outfile;
+   std::string m_infilename;
+   std::ifstream *m_infile;
+   std::ifstream *m_infile2; // <- MapInfo MIF files come in two parts
+   std::ofstream *m_outfile;
    // nb. converted to Win32 UTF-16 Unicode path (AT 31.01.11) Linux, MacOS use UTF-8 (AT 29.04.11)
-   std::vector<string> m_fileset;   // <- sometimes you want to load a whole set of files
+   std::vector<std::string> m_fileset;   // <- sometimes you want to load a whole set of files
 public:
    Communicator()
    { m_infile = NULL; m_infile2 = NULL; m_outfile = NULL; m_cancelled = false; m_delete_flag = false; }
@@ -90,17 +92,17 @@ public:
    //
    void SetInfile( const char* filename )
    {
-      m_infile = new ifstream( filename );
+      m_infile = new std::ifstream( filename );
       FilePath fp(filename);
       m_infilename = fp.m_name;
    }
    void SetInfile2( const char* filename )
    {
-      m_infile2 = new ifstream( filename );
+      m_infile2 = new std::ifstream( filename );
    }
-   string GetInfileName()
+   std::string GetInfileName()
    {
-      return m_fileset.size() ? string(g_default_file_set) : m_infilename;
+      return m_fileset.size() ? std::string(g_default_file_set) : m_infilename;
    }
    std::string GetMBInfileName()
    {
@@ -116,34 +118,34 @@ public:
    size_t GetInfileSize()
    {
       if (m_infile) {
-         m_infile->seekg(0, ios::beg);
+         m_infile->seekg(0, std::ios::beg);
          size_t begin_pos = m_infile->tellg();
-         m_infile->seekg(0, ios::end);
+         m_infile->seekg(0, std::ios::end);
          size_t end_pos = m_infile->tellg();
-         m_infile->seekg(0, ios::beg);
+         m_infile->seekg(0, std::ios::beg);
          return size_t(end_pos - begin_pos);
       }
       return 0;
    }
    void SetOutfile( const char *filename )
-   { m_outfile = new ofstream( filename ); }
+   { m_outfile = new std::ofstream( filename ); }
    //
    bool IsCancelled() const
    { return m_cancelled; }
    void Cancel()
    { m_cancelled = true; }
    //
-   operator ofstream& ()
+   operator std::ofstream& ()
    { return *m_outfile; }
-   operator ifstream& ()
+   operator std::ifstream& ()
    { return *m_infile; }
-   ifstream& GetInfile2()
+   std::ifstream& GetInfile2()
    { return *m_infile2; }
    //
-   const std::vector<string>& GetFileSet() const
+   const std::vector<std::string>& GetFileSet() const
    { return m_fileset; }
    //
-   virtual void CommPostMessage(int m, int x, int y = 0) const = 0; // Override for specific operating system
+   virtual void CommPostMessage(int m, int x) const = 0; // Override for specific operating system
 };
 
 // this is a simple version of the Communicator which can be used for
@@ -162,10 +164,10 @@ protected:
 public:
 	ICommunicator() { m_delete_flag = true; } // note: an ICommunicator lets IComm know that it should delete it
 	virtual ~ICommunicator() {;}
-   virtual void CommPostMessage(int m, int x, int y = 0) const;
+   virtual void CommPostMessage(int m, int x) const;
 };
 
-inline void ICommunicator::CommPostMessage(int m, int x, int y) const
+inline void ICommunicator::CommPostMessage(int m, int x) const
 {
 	switch (m) {
 		case Communicator::NUM_STEPS:
@@ -181,7 +183,6 @@ inline void ICommunicator::CommPostMessage(int m, int x, int y) const
 			record = x;
 			break;
         default:
-            y = 0;
             break;
     }
 }

@@ -90,7 +90,7 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    AxialVertex av(vertexkey, m_vertex_possibles.key(vertexkey.m_ref_key), openspace);
 
    // n.b., at this point, vertex key m_a and m_b are unfixed
-   pvecpoint& pointlist = m_vertex_possibles.value(vertexkey.m_ref_key);
+   pqvector<Point2f>& pointlist = m_vertex_possibles.value(vertexkey.m_ref_key);
    if (pointlist.size() < 2) {
       return av;
    }
@@ -234,12 +234,12 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
       found[0][i] = -1;
       found[1][i] = -1;
    }
-   pvecpoint pointlookup;
+   pqvector<Point2f> pointlookup;
    // three pass operation: (1) stack the lines
    for (i = 0; i < lines.size(); i++) {
       if (found[0][i] == -1) {
          pointlookup.push_back(lines[i].start());
-         m_vertex_possibles.add(pointlookup.tail(),pvecpoint());
+         m_vertex_possibles.add(pointlookup.tail(),pqvector<Point2f>());
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
          for (size_t j = 0; j < connectionset[i].m_back_segconns.size(); j++) {
@@ -250,7 +250,7 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
       }
       if (found[1][i] == -1) {
          pointlookup.push_back(lines[i].end());
-         m_vertex_possibles.add(pointlookup.tail(),pvecpoint());
+         m_vertex_possibles.add(pointlookup.tail(),pqvector<Point2f>());
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
          for (size_t j = 0; j < connectionset[i].m_forward_segconns.size(); j++) {
@@ -284,7 +284,7 @@ void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefve
          addlist.push_back(i);
          while (addlist.size()) {
             m_vertex_polys[addlist.tail()] = current_poly;
-            pvecpoint& connections = m_vertex_possibles.value(addlist.tail());
+            pqvector<Point2f>& connections = m_vertex_possibles.value(addlist.tail());
             addlist.pop_back();
             for (size_t j = 0; j < connections.size(); j++) {
                size_t index = m_vertex_possibles.searchindex(connections[j]);
@@ -495,7 +495,7 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
 // not really used as yet, a feature to make all the polygons from the vertex
 // possibles list
 
-void AxialPolygons::makePolygons(prefvec<pvecpoint>& polygons)
+void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
 {
    prefvec<pvecint> handled_list;
    for (size_t j = 0; j < m_vertex_possibles.size(); j++) {
@@ -512,7 +512,7 @@ void AxialPolygons::makePolygons(prefvec<pvecpoint>& polygons)
          }
          handled_list[i].push_back(j);
          Point2f& key = m_vertex_possibles.key(i);
-         pvecpoint polygon;
+         pqvector<Point2f> polygon;
          polygon.push_back(key);
          Point2f curr = m_vertex_possibles.value(i).at(j);
          Point2f last = key;
@@ -611,7 +611,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {
@@ -1249,7 +1249,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {
@@ -1564,7 +1564,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    for (size_t i = 0; i < superspacepix.size(); i++) {
       for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
          if (superspacepix.at(i).at(j).isShown()) {
-            if (region.isNull()) {
+            if (region.atZero()) {
                region = superspacepix.at(i).at(j).getRegion();
             }
             else {
@@ -1826,15 +1826,11 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraphs::read( ifstream& stream, int version )
+bool ShapeGraphs::read( istream& stream, int version )
 {
    // base class read
-   if (version >= VERSION_AXIAL_SHAPES) {
-      ShapeMaps<ShapeGraph>::read(stream,version);
-   }
-   else {
-      readold(stream,version);
-   }
+
+   ShapeMaps<ShapeGraph>::read(stream,version);
 
    // these are additional essentially for all line axial maps
    // should probably be kept *with* the all line axial map...
@@ -1862,7 +1858,7 @@ bool ShapeGraphs::read( ifstream& stream, int version )
 }
 
 // for backward compatibility only:
-bool ShapeGraphs::readold( ifstream& stream, int version )
+bool ShapeGraphs::readold( istream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
    dXstring::readString(stream);
@@ -1991,7 +1987,7 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    AxialPolygons polygons;
    polygons.init(lines, m_region);
    
-   prefvec<pvecpoint> newpolygons;
+   prefvec<pqvector<Point2f>> newpolygons;
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;
@@ -2079,7 +2075,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
    }
 
    for (size_t i = 0; i < polyconnections.size(); i++) {
-      PixelRefList pixels = pixelateLine(polyconnections[i].line);
+      PixelRefVector pixels = pixelateLine(polyconnections[i].line);
       pvecint testedshapes;
       size_t connindex = radialdivisions.searchindex(polyconnections[i].key);
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
@@ -2142,7 +2138,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
 void ShapeGraph::cutLines(const prefvec<Line>& lines, pqmap<int,pvecint>& axcuts)
 {
    for (size_t i = 0; i < lines.size(); i ++) {
-      PixelRefList pixels = pixelateLine(lines[i]);
+      PixelRefVector pixels = pixelateLine(lines[i]);
       pvecint testedshapes;
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
@@ -2723,8 +2719,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
       covered[i] = false;
    }
    pflipper<pvecint> foundlist;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int lineindex = m_selection_set[j];
+   for(auto& lineindex: m_selection_set) {
       foundlist.a().push_back(lineindex);
       covered[lineindex] = true;
       m_attributes.setValue(lineindex,stepdepth_col,0.0f);
@@ -2755,54 +2750,29 @@ bool ShapeGraph::stepdepth(Communicator *comm)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraph::read( ifstream& stream, int version )
+bool ShapeGraph::read(istream &stream, int version )
 {
    m_attributes.clear();
    m_connectors.clear();
    m_selection = false;
    m_map_type = ShapeMap::EMPTYMAP;
 
-   // the old version used SpacePixel as base class
-   // actually easiest to read and translate, rather than try to use new method
-   if (version < VERSION_AXIAL_SHAPES) {
-      readold(stream, version);
+   bool segmentmap = false;
+   // note that keyvertexcount and keyvertices are different things! (length keyvertices not the same as keyvertexcount!)
+   stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
+   int size;
+   stream.read((char *)&size,sizeof(size));
+   for (int i = 0; i < size; i++) {
+      m_keyvertices.push_back(pvecint());
+      m_keyvertices[i].read(stream);
    }
-   else {
-      bool segmentmap = false;
-      if (version < VERSION_MAP_TYPES) {
-         // axial specific reads -- segment map flag and keyvertices (part of all line map functionality)
-         // note, now stored in the "map_type", and read / written with shape map
-         char segmentmapc = stream.get();
-         if (segmentmapc == '1') {
-            segmentmap = true;
-         }
-      }
-      // note that keyvertexcount and keyvertices are different things! (length keyvertices not the same as keyvertexcount!)
-      stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
-      int size;
-      stream.read((char *)&size,sizeof(size));
-      for (int i = 0; i < size; i++) {
-         m_keyvertices.push_back(pvecint());
-         m_keyvertices[i].read(stream);
-      }
-      // now base class read:
-      ShapeMap::read(stream,version);
-      //
-      // override shapemap map type designation if necessary:
-      if (version < VERSION_MAP_TYPES) {
-         if (segmentmap) {
-            m_map_type = ShapeMap::SEGMENTMAP;
-         }
-         else {
-            m_map_type = ShapeMap::AXIALMAP;
-         }
-      }
-   }
+   // now base class read:
+   ShapeMap::read(stream,version);
 
    return true;
 }
 
-bool ShapeGraph::readold( ifstream& stream, int version )
+bool ShapeGraph::readold( istream& stream, int version )
 {
    // read in from old base class
    SpacePixel linemap;
@@ -2821,22 +2791,21 @@ bool ShapeGraph::readold( ifstream& stream, int version )
 
    // continue old read:
    int pushmap = -1;
-   if (version >= VERSION_SEGMENT_MAPS) {
-      char segmentmapc = stream.get();
-      if (segmentmapc == '1') {
-         m_map_type = ShapeMap::SEGMENTMAP;
-      }
-      else {
-         m_map_type = ShapeMap::AXIALMAP;
-      }
+
+   char segmentmapc = stream.get();
+   if (segmentmapc == '1') {
+      m_map_type = ShapeMap::SEGMENTMAP;
    }
-   if (version >= VERSION_GATE_MAPS) {
-      char gatemapc = stream.get();
-      if (gatemapc == '1') {
-         m_map_type = ShapeMap::DATAMAP;
-      }
-      stream.read((char *)&pushmap,sizeof(pushmap));
+   else {
+      m_map_type = ShapeMap::AXIALMAP;
    }
+
+   char gatemapc = stream.get();
+   if (gatemapc == '1') {
+      m_map_type = ShapeMap::DATAMAP;
+   }
+   stream.read((char *)&pushmap,sizeof(pushmap));
+
 
    int displayed_attribute;  // n.b., temp variable necessary to force recalc below
    stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
@@ -2853,22 +2822,22 @@ bool ShapeGraph::readold( ifstream& stream, int version )
    }
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
-   if (version >= VERSION_AXIAL_LINKS) {
-      m_links.read(stream);
-      m_unlinks.read(stream);
-   }
+
+   m_links.read(stream);
+   m_unlinks.read(stream);
+
    // some miscellaneous extra data for mapinfo files
    if (m_mapinfodata) {
       delete m_mapinfodata;
       m_mapinfodata = NULL;
    }
-   if (version >= VERSION_MAPINFO_DATA) {
-      char x = stream.get();
-      if (x == 'm') {
-         m_mapinfodata = new MapInfoData;
-         m_mapinfodata->read(stream,version);
-      }
+
+   char x = stream.get();
+   if (x == 'm') {
+      m_mapinfodata = new MapInfoData;
+      m_mapinfodata->read(stream,version);
    }
+
 
    // now, as soon as loaded, must recalculate our screen display:
    // note m_displayed_attribute should be -2 in order to force recalc...
@@ -2974,7 +2943,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
    for (size_t i = 0; i < polygons.size(); i++) {
       // just use the points:
       if (polygons[i].isPoint()) {
-         pvecpoint closepoints;
+         pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygons[i].getPoint());
          pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
@@ -4148,8 +4117,8 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
 
    int opencount = 0;
-   for (size_t j = 0; j < m_selection_set.size(); j++) {
-      int row = m_attributes.getRowid(m_selection_set[j]);
+   for (auto& sel: m_selection_set) {
+      int row = m_attributes.getRowid(sel);
       if (row != -1) {
          bins[0].push_back(SegmentData(0,row,SegmentRef(),0,0.0,0));
          opencount++;
@@ -4251,7 +4220,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
       // we will use this later!
       m_test++;
       m_lines[i].test = m_test;
-      PixelRefList list = pixelateLine( m_lines[i].line );
+      PixelRefVector list = pixelateLine( m_lines[i].line );
       for (size_t a = 0; a < list.size(); a++) {
          for (size_t b = 0; b < m_pixel_lines[ list[a].x ][ list[a].y ].size(); b++) {
             int j = m_pixel_lines[ list[a].x ][ list[a].y ][b];

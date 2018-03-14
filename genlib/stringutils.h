@@ -38,6 +38,6 @@ namespace dXstring {
         return input.size() >= match.size() &&
                 equal(match.begin(), match.end(), input.begin());
     }
-
+    std::istream& safeGetline(std::istream& is, std::string& t);
 
 }

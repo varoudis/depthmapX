@@ -439,6 +439,7 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
    DxfPolyLine    poly_line;
    DxfLwPolyLine  lw_poly_line;
    DxfArc         arc;
+   DxfEllipse     ellipse;
    DxfCircle      circle;
    DxfSpline      spline;
    DxfInsert      insert;
@@ -463,6 +464,9 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
             }
             else if (token.data == "ARC") {
                subsection = ARC;
+            }
+            else if (token.data == "ELLIPSE") {
+               subsection = ELLIPSE;
             }
             else if (token.data == "CIRCLE") {
                subsection = CIRCLE;
@@ -565,6 +569,20 @@ void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block 
                subsection = ZEROTOKEN;
             }
             break;
+          case ELLIPSE:
+             stream >> token;
+             m_size += token.size;
+             if ( ellipse.parse( token, this ) ) {
+                DxfLayer *layer = block;
+                if (layer == NULL) {
+                   layer = ellipse.m_p_layer;
+                }
+                layer->m_ellipses.push_back( ellipse );
+                layer->merge(ellipse);
+                ellipse.clear(); // (Now reuse)
+                subsection = ZEROTOKEN;
+             }
+             break;
          case CIRCLE:
             stream >> token;
             m_size += token.size;
@@ -1002,7 +1020,9 @@ int DxfArc::numSegments(int segments) const
 DxfVertex DxfArc::getVertex(int i, int segments) const
 {
    DxfVertex v = m_centre;
-   double ang = 2.0 * DXF_PI * double(i)/double(segments);
+   double range = 2.0 * DXF_PI;
+   if(m_start != m_end) range = (m_end - m_start) * DXF_PI / 180.0;
+   double ang = range * double(i)/double(segments);
    if (m_start != m_end) {
       ang += 2.0 * DXF_PI * (m_start / 360.0);
    }
@@ -1014,6 +1034,144 @@ DxfVertex DxfArc::getVertex(int i, int segments) const
 }
 
 void DxfArc::reflect(double x, double y)
+{
+   if (x < 0) {
+      m_start = 180 - m_start;
+      m_end = 180 - m_end;
+   }
+   if (y < 0) {
+      m_start = 360 - m_start;
+      m_end = 360 - m_end;
+   }
+   while (m_start < 0) {
+      m_start += 360;
+   }
+   while (m_end < 0) {
+      m_end += 360;
+   }
+   if (x * y < 0) {
+      double temp;
+      temp = m_start;
+      m_start = m_end;
+      m_end = temp;
+   }
+}
+
+
+DxfEllipse::DxfEllipse(int tag) : DxfEntity( tag )
+{
+}
+
+void DxfEllipse::clear()
+{
+   m_start = 0.0;
+   m_end = 0.0;
+
+   DxfRegion::clear();
+   DxfEntity::clear();
+}
+
+bool DxfEllipse::parse( const DxfToken& token, DxfParser *parser )
+{
+   bool parsed = false;
+
+   switch (token.code) {
+      case 10:
+         m_centre.x = std::stod(token.data);
+         break;
+      case 20:
+         m_centre.y = std::stod(token.data);
+         break;
+      case 30:
+         m_centre.z = std::stod(token.data);
+         break;
+      case 11:
+         m_majorAxisEndPoint.x = std::stod(token.data);
+         break;
+      case 21:
+         m_majorAxisEndPoint.y = std::stod(token.data);
+         break;
+      case 31:
+         m_majorAxisEndPoint.z = std::stod(token.data);
+         break;
+      case 210:
+         m_extrusionDirection.x = std::stod(token.data);
+         break;
+      case 220:
+         m_extrusionDirection.y = std::stod(token.data);
+         break;
+      case 230:
+         m_extrusionDirection.z = std::stod(token.data);
+         break;
+      case 40:
+         m_minorMajorAxisRatio = std::stod(token.data);
+         break;
+      case 41:
+         m_start = std::stod(token.data);
+         break;
+      case 42:
+         m_end = std::stod(token.data);
+         break;
+      case 0:
+         {
+            // just loop round if m_start is bigger than m_end
+            if (m_start > m_end) {
+               m_end += 360;
+            }
+            // technically should check for ellipse limits for tighter bounding box,
+            // but easier to give circular bounding box
+            DxfVertex bounds;
+            double xdiff = fabs(m_majorAxisEndPoint.x);
+            double ydiff = fabs(m_majorAxisEndPoint.y);
+            bounds.x = m_centre.x - xdiff;
+            bounds.y = m_centre.y - ydiff;
+            bounds.z = m_centre.z;
+            add(bounds);  // <- add to region
+            bounds.x = m_centre.x + xdiff;
+            bounds.y = m_centre.y + ydiff;
+            bounds.z = m_centre.z;
+            add(bounds);  // <- add to region
+            parsed = true;
+         }
+         break;
+      default:
+         parsed = DxfEntity::parse( token, parser ); // base class parse
+         break;
+   }
+
+   return parsed;
+}
+
+int DxfEllipse::numSegments(int segments) const
+{
+   return ((m_start == m_end) ? segments : (int(m_end - m_start) * segments / (2 * DXF_PI)));
+}
+
+DxfVertex DxfEllipse::getVertex(int i, int segments) const
+{
+   DxfVertex v = m_centre;
+   double range = 2.0 * DXF_PI;
+   if(m_start != m_end) range = (m_end - m_start);
+   double ang = m_start + range * double(i)/double(segments);
+
+   double c = cos(ang);
+   double s = sin(ang);
+
+   double reverse = 1;
+   if(m_extrusionDirection.z < 0) reverse = -1;
+
+   double xnew = c * m_majorAxisEndPoint.x -
+           m_minorMajorAxisRatio * s * m_majorAxisEndPoint.y;
+   double ynew = c * m_majorAxisEndPoint.y +
+           reverse * m_minorMajorAxisRatio * s * m_majorAxisEndPoint.x;
+
+   v.x = m_centre.x + xnew;
+   v.y = m_centre.y + ynew;
+   v.z = m_centre.z;
+   return v;
+}
+
+void DxfEllipse::reflect(double x, double y)
 {
    if (x < 0) {
       m_start = 180 - m_start;
@@ -1331,6 +1489,11 @@ const DxfArc& DxfLayer::getArc( int i ) const
    return m_arcs[i];
 }
 
+const DxfEllipse& DxfLayer::getEllipse( int i ) const
+{
+   return m_ellipses[i];
+}
+
 const DxfCircle& DxfLayer::getCircle( int i ) const
 {
    return m_circles[i];
@@ -1359,6 +1522,11 @@ int DxfLayer::numPolyLines() const
 int DxfLayer::numArcs() const
 {
    return m_arcs.size();
+}
+
+int DxfLayer::numEllipses() const
+{
+   return m_ellipses.size();
 }
 
 int DxfLayer::numCircles() const
@@ -1425,6 +1593,16 @@ void DxfLayer::insert(DxfInsert& insert, DxfParser *parser)
          m_arcs.back().rotate(block.m_base_point,insert.m_rotation);
       m_arcs.back().translate(insert.m_translation);
       merge(m_arcs.back()); // <- merge bounding box
+   }
+   for (i = 0; i < block.m_ellipses.size(); i++) {
+      m_ellipses.push_back(block.m_ellipses[i]);
+      // rotate, translate, scale each line as specified in the insert
+      if (scale)
+         m_ellipses.back().scale(block.m_base_point,insert.m_scale);
+      if (rotate)
+         m_ellipses.back().rotate(block.m_base_point,insert.m_rotation);
+      m_ellipses.back().translate(insert.m_translation);
+      merge(m_ellipses.back()); // <- merge bounding box
    }
    for (i = 0; i < block.m_circles.size(); i++) {
       m_circles.push_back(block.m_circles[i]);

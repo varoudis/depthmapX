@@ -32,7 +32,7 @@ class AxialPolygons : public SpacePixel
 {
    friend class ShapeGraphs;
 protected:
-   pqmap<Point2f,pvecpoint> m_vertex_possibles;
+   pqmap<Point2f,pqvector<Point2f>> m_vertex_possibles;
    pvecint m_vertex_polys;
    pvecint **m_pixel_polys;
    pqvector<AxialVertex> m_handled_list;
@@ -51,7 +51,7 @@ public:
    // make axial lines from corner vertices, visible from openspace
    void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, prefvec<pvecint>& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
-   void makePolygons(prefvec<pvecpoint>& polygons);
+   void makePolygons(prefvec<pqvector<Point2f>>& polygons);
 };
 
 struct AxialVertexKey
@@ -213,8 +213,8 @@ public:
    void makeSegmentConnections(prefvec<Connector>& connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
-   virtual bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
+   virtual bool read( istream& stream, int version );
+   bool readold( istream& stream, int version );
    virtual bool write( ofstream& stream, int version );
    void writeAxialConnectionsAsDotGraph(ostream &stream);
    void writeAxialConnectionsAsPairsCSV(ostream &stream);
@@ -251,8 +251,8 @@ public:
    bool hasAllLineMap()
    { return m_all_line_map != -1; }
    //
-   bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
+   bool read(istream &stream, int version );
+   bool readold( istream& stream, int version );
    bool write( ofstream& stream, int version, bool displayedmaponly = false );
 };
 
