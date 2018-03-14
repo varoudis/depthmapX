@@ -134,7 +134,8 @@ void GLView::paintGL()
         loadDrawingGLObjects();
         m_visibleDrawingLines.updateGL(m_core);
 
-        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
+        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL
+                && m_pDoc.m_meta_graph->getDisplayedMapRef() != -1) {
             m_visibleShapeGraph.loadGLObjects(m_pDoc.m_meta_graph->getDisplayedShapeGraph());
             m_visibleShapeGraph.updateGL(m_core);
         }
