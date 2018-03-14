@@ -2698,8 +2698,11 @@ bool ShapeMap::write( ofstream& stream, int version )
 
    // write next object ref to be used:
    stream.write((char *) &m_obj_ref, sizeof(m_obj_ref));
-   int depr_int = 0;
-   stream.write((char *) &depr_int, sizeof(depr_int));
+
+   // left here for backwards-compatibility
+   // TODO: Remove at next iteration of the .graph file format
+   int largest_shape_ref = m_shapes.key(m_shapes.size()-1);
+   stream.write((char *) &largest_shape_ref, sizeof(largest_shape_ref));
 
    // write shape data
    int count = m_shapes.size();
