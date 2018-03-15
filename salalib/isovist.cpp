@@ -71,14 +71,14 @@ void Isovist::makeit(BSPNode *root, const Point2f& p, const QtRegion& region, do
    bool markedcentre = false;
    auto prev = m_blocks.begin();
    auto curr = m_blocks.begin();
-   for (size_t i = 0; i < m_blocks.size(); i++) {
+   for (;curr != m_blocks.end(); ++curr){
       if (!complete && !markedcentre && !parity && curr->startangle == startangle) {
          // centre
          m_poly.push_back(p);
          // perimeter! occlusivity!
          markedcentre = true;
       }
-      if (i != 0 && !approxeq(prev->endpoint, curr->startpoint, tolerance)) {
+      if (curr != m_blocks.begin() && !approxeq(prev->endpoint, curr->startpoint, tolerance)) {
          m_poly.push_back(curr->startpoint);
          // record perimeter information:
          double occluded = dist(prev->endpoint,curr->startpoint);
@@ -95,8 +95,7 @@ void Isovist::makeit(BSPNode *root, const Point2f& p, const QtRegion& region, do
       }
       m_poly.push_back(curr->endpoint);
       m_perimeter += dist(curr->startpoint,curr->endpoint);
-      std::advance(curr, 1);
-      if(i != 0) std::advance(prev, 1);
+      prev = curr;
    }
    // for some reason to do with ordering, if parity is true, the centre point must be last not first
    if (!complete && parity) {
