@@ -69,30 +69,33 @@ void Isovist::makeit(BSPNode *root, const Point2f& p, const QtRegion& region, do
    m_occlusion_points.clear();
 
    bool markedcentre = false;
-   for (size_t i = 0; i < m_blocks.size(); i++) {
-      if (!complete && !markedcentre && !parity && m_blocks[i].startangle == startangle) {
+   auto prev = m_blocks.begin();
+   auto curr = m_blocks.begin();
+   for (;curr != m_blocks.end(); ++curr){
+      if (!complete && !markedcentre && !parity && curr->startangle == startangle) {
          // centre
          m_poly.push_back(p);
          // perimeter! occlusivity!
          markedcentre = true;
       }
-      if (i != 0 && !approxeq(m_blocks[i-1].endpoint, m_blocks[i].startpoint, tolerance)) {
-         m_poly.push_back(m_blocks[i].startpoint);
+      if (curr != m_blocks.begin() && !approxeq(prev->endpoint, curr->startpoint, tolerance)) {
+         m_poly.push_back(curr->startpoint);
          // record perimeter information:
-         double occluded = dist(m_blocks[i-1].endpoint,m_blocks[i].startpoint);
+         double occluded = dist(prev->endpoint,curr->startpoint);
          m_perimeter += occluded;
          m_occluded_perimeter += occluded;
          // record the near *point* for use in agent analysis
          // (as the point will not move between isovists, so can record *which* occlusion this is, and spot novel ones)
-         if (dist(m_blocks[i-1].endpoint,m_centre) < dist(m_blocks[i].startpoint,m_centre)) {
-            m_occlusion_points.push_back(PointDist(m_blocks[i-1].endpoint,occluded));
+         if (dist(prev->endpoint,m_centre) < dist(curr->startpoint,m_centre)) {
+            m_occlusion_points.push_back(PointDist(prev->endpoint,occluded));
          }
          else {
-            m_occlusion_points.push_back(PointDist(m_blocks[i].startpoint,occluded));
+            m_occlusion_points.push_back(PointDist(curr->startpoint,occluded));
          }
       }
-      m_poly.push_back(m_blocks[i].endpoint);
-      m_perimeter += dist(m_blocks[i].startpoint,m_blocks[i].endpoint);
+      m_poly.push_back(curr->endpoint);
+      m_perimeter += dist(curr->startpoint,curr->endpoint);
+      prev = curr;
    }
    // for some reason to do with ordering, if parity is true, the centre point must be last not first
    if (!complete && parity) {
@@ -100,20 +103,20 @@ void Isovist::makeit(BSPNode *root, const Point2f& p, const QtRegion& region, do
       m_poly.push_back(p);
       // perimeter! occlusivity!
    }
-   if (m_blocks.size() && !approxeq(m_blocks.tail().endpoint, m_blocks.head().startpoint, tolerance)) {
-      m_poly.push_back(m_blocks.head().startpoint);
+   if (m_blocks.size() && !approxeq(m_blocks.rbegin()->endpoint, m_blocks.begin()->startpoint, tolerance)) {
+      m_poly.push_back(m_blocks.begin()->startpoint);
       // record perimeter information:
-      double occluded = dist(m_blocks.tail().endpoint,m_blocks.head().startpoint);
+      double occluded = dist(m_blocks.rbegin()->endpoint,m_blocks.begin()->startpoint);
       m_perimeter += occluded;
       m_occluded_perimeter += occluded;
       // record the near *point* for use in agent analysis
       // (as the point will not move between isovists, so can record *which* occlusion this is, and spot novel ones)
       if (occluded > 1.5) {
-         if (dist(m_blocks.tail().endpoint,m_centre) < dist(m_blocks.head().startpoint,m_centre)) {
-            m_occlusion_points.push_back(PointDist(m_blocks.tail().endpoint,occluded));
+         if (dist(m_blocks.rbegin()->endpoint,m_centre) < dist(m_blocks.begin()->startpoint,m_centre)) {
+            m_occlusion_points.push_back(PointDist(m_blocks.rbegin()->endpoint,occluded));
          }
          else {
-            m_occlusion_points.push_back(PointDist(m_blocks.head().startpoint,occluded));
+            m_occlusion_points.push_back(PointDist(m_blocks.begin()->startpoint,occluded));
          }
       }
    }
@@ -132,11 +135,11 @@ int Isovist::getClosestLine(BSPNode *root, const Point2f& p)
    int mintag = -1;
    double mindist = 0.0;
 
-   for (size_t i = 0; i < m_blocks.size(); i++) {
-      Line l(m_blocks[i].startpoint, m_blocks[i].endpoint);
+   for (auto& block: m_blocks) {
+      Line l(block.startpoint, block.endpoint);
       if (mintag == -1 || dist(p,l) < mindist) {
          mindist = dist(p,l);
-         mintag = m_blocks[i].tag;
+         mintag = block.tag;
       }
    }
 
@@ -239,7 +242,7 @@ void Isovist::addBlock(const Line& li, int tag, double startangle, double endang
          }
          Point2f pa = intersection_point(li,Line(m_centre,m_centre+pointfromangle(a)));
          Point2f pb = intersection_point(li,Line(m_centre,m_centre+pointfromangle(b)));
-         m_blocks.add(IsoSeg(a,b,pa,pb,tag));
+         m_blocks.insert(IsoSeg(a,b,pa,pb,tag));
       }
       else {
          finished = true;
