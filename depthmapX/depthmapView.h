@@ -155,6 +155,8 @@ private:
    prefvec<Point2f> m_point_handles;
    int m_active_point_handle;
 
+   int m_currentlyEditingShapeRef = -1;
+
    // polygon drawing utilities
    Point2f m_poly_start;
    int m_poly_points;
