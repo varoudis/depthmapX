@@ -546,22 +546,22 @@ int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
       PixelRef pix = selset[j];
       auto relation = relations.insert(std::make_pair(pix,ShapeRef::SHAPE_EDGE));
       if (pointmap.includes(pix.right()) && pointmap.getPoint(pix.right()).selected()) {
-         relation.second &= ~ShapeRef::SHAPE_R;
+         relation.first->second &= ~ShapeRef::SHAPE_R;
       }
       if (pointmap.includes(pix.up()) && pointmap.getPoint(pix.up()).selected()) {
-         relation.second &= ~ShapeRef::SHAPE_T;
+         relation.first->second &= ~ShapeRef::SHAPE_T;
       }
       if (pointmap.includes(pix.down()) && pointmap.getPoint(pix.down()).selected()) {
-         relation.second &= ~ShapeRef::SHAPE_B;
+         relation.first->second &= ~ShapeRef::SHAPE_B;
       }
       if (pointmap.includes(pix.left()) && pointmap.getPoint(pix.left()).selected()) {
-         relation.second &= ~ShapeRef::SHAPE_L;
+         relation.first->second &= ~ShapeRef::SHAPE_L;
       }
    }
    // now find pixel with SHAPE_B | SHAPE_L
    PixelRef minpix = NoPixel;
 
-   for (auto relation: relations) {
+   for (auto& relation: relations) {
       if ((relation.second & (ShapeRef::SHAPE_B | ShapeRef::SHAPE_L)) == (ShapeRef::SHAPE_B | ShapeRef::SHAPE_L)) {
          if ((minpix == NoPixel) || (relation.first < (int)minpix)) {
             minpix = relation.first;
@@ -571,8 +571,6 @@ int ShapeMap::makeShapeFromPointSet(const PointMap& pointmap)
    // now follow round anticlockwise...
    SalaShape poly(SalaShape::SHAPE_POLY | SalaShape::SHAPE_CLOSED);
    pointPixelBorder(pointmap,relations,poly,ShapeRef::SHAPE_L,minpix,minpix,true);
-
-   bool retvar = true;
 
    for (auto relation: relations) {
       if (relation.second != 0) {
@@ -720,7 +718,7 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
       m_attributes.setValue(rowid, conn_col, (float) connectivity );
       if (isAxialMap()) {
          leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
-         m_attributes.setValue(rowid, leng_col, (float) m_shapes.find(rowid)->second.getLength() );
+         m_attributes.setValue(rowid, leng_col, (float) depthmapX::getMapAtIndex(m_shapes, rowid)->second.getLength() );
       }
       //
       size_t k = 0;
@@ -1087,7 +1085,7 @@ void ShapeMap::undo()
          //
          if (event.m_geometry.isLine()) {
             int leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
-            m_attributes.setValue(rowid, leng_col, (float) m_shapes.find(rowid)->second.getLength() );
+            m_attributes.setValue(rowid, leng_col, (float) depthmapX::getMapAtIndex(m_shapes, rowid)->second.getLength() );
          }
          //
          // now go through our connections, and add ourself:
@@ -1742,6 +1740,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
    }
    // check not an open shape (cannot be inside)
    else if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == 0) {
+      shapeIter = m_shapes.find(shape.m_shape_ref);
       const SalaShape& poly = shapeIter->second;
       if (poly.m_region.contains_touch(p)) {
          // next simplest, on the outside border:
@@ -1900,7 +1899,7 @@ int ShapeMap::getClosestOpenGeom(const Point2f& p) const
       if (ref.m_tags & ShapeRef::SHAPE_OPEN) {
          double thisdist = -1.0;
          auto tempShapeIter = m_shapes.find(ref.m_shape_ref);
-         const SalaShape& poly = shapeIter->second;
+         const SalaShape& poly = tempShapeIter->second;
          switch (poly.m_type) {
          case SalaShape::SHAPE_POINT:
             thisdist = dist(p,poly.m_centroid);
@@ -2059,7 +2058,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
             else {
                // this is a non-poly, so check just the shape_ref:
                if (tested.searchindex(IntPair(shaperef.m_shape_ref,-1)) == paftl::npos) {
-                  SalaShape& poly = m_shapes.find(shaperef.m_shape_ref)->second;
+                  SalaShape& poly = m_shapes[shaperef.m_shape_ref];
                   // n.b. points cannot be intersected (and since we won't return to the pix, don't need to be added to the tested list
                   if (poly.isLine()) { 
                      if (intersect_region(li,poly.m_region)) {
@@ -2200,7 +2199,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
 // code to add intersections when shapes are added to the graph one by one:
 int ShapeMap::connectIntersected(int rowid, bool linegraph)
 {
-   int shaperef = depthmapX::getMapAtIndex(m_shapes, rowid)->first;
+   auto shaperefIter = depthmapX::getMapAtIndex(m_shapes, rowid);
    int conn_col = m_attributes.getOrInsertColumnIndex("Connectivity");
    m_attributes.setColumnLock(conn_col);
    int leng_col = -1;
@@ -2213,11 +2212,11 @@ int ShapeMap::connectIntersected(int rowid, bool linegraph)
       m_connectors.push_back( Connector() );
    }
    int connectivity = linegraph ? 
-      getLineConnections( shaperef, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
-      getShapeConnections( shaperef, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+      getLineConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
+      getShapeConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
    m_attributes.setValue(rowid, conn_col, (float) connectivity );
    if (linegraph) {
-      m_attributes.setValue(rowid, leng_col, (float) m_shapes.find(rowid)->second.getLength() );
+      m_attributes.setValue(rowid, leng_col, (float) shaperefIter->second.getLength() );
    }
    // now go through our connections, and add ourself:
    for (size_t k = 0; k < m_connectors[rowid].m_connections.size(); k++) {
@@ -2694,11 +2693,13 @@ bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
    for (int i = 0; i < m_attributes.getRowCount(); i++) {
       if (m_attributes.isVisible(i)) {
          stream << m_attributes.getRowKey(i);
+         auto shape = depthmapX::getMapAtIndex(m_shapes, i)->second;
          if ((m_map_type & LINEMAP) == 0) {
-            stream << delimiter << m_shapes.find(i)->second.m_centroid.x << delimiter << m_shapes.find(i)->second.m_centroid.y;
+            stream << delimiter << shape.m_centroid.x
+                   << delimiter << shape.m_centroid.y;
          }
          else {
-            const Line& li = m_shapes.find(i)->second.getLine();
+            const Line& li = shape.getLine();
             stream << delimiter << li.start().x << delimiter << li.start().y << delimiter << li.end().x << delimiter << li.end().y;
          }
          m_attributes.outputRow(i,stream,delimiter,updated_only);

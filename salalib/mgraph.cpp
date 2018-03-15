@@ -512,7 +512,7 @@ int MetaGraph::makeIsovist(Communicator *communicator, const Point2f& p, double 
       ShapeMap& map = m_data_maps.getMap(shapelayer);
       // false: closed polygon, true: isovist
       int polyref = map.makePolyShape(iso.getPolygon(),false);  
-      map.getAllShapes().find(polyref)->second.setCentroid(p);
+      map.getAllShapes()[polyref].setCentroid(p);
       map.overrideDisplayedAttribute(-2);
       map.setDisplayedAttribute(-1);
       setViewClass(SHOWSHAPETOP);
@@ -593,7 +593,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                }
                iso.makeit(m_bsp_root,start,SuperSpacePixel::m_region, angles.first, angles.second);
                int polyref = isovists->makePolyShape(iso.getPolygon(),false);  
-               isovists->getAllShapes().find(polyref)->second.setCentroid(start);
+               isovists->getAllShapes()[polyref].setCentroid(start);
                AttributeTable& table = isovists->getAttributeTable();
                int row = table.getRowid(polyref);
                iso.setData(table,row, simple_version);
@@ -1892,11 +1892,11 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
    int retvar = 1;
    // check for existence of data:
    std::map<int,int> conversion_lookup;
-   size_t i;
-   for (i = 0; i < size_t(datalayers.getLayerCount()); i++) {
+
+   for (size_t i = 0; i < size_t(datalayers.getLayerCount()); i++) {
       if (datalayers[i].getObjectCount()) {
          int x = m_data_maps.addMap(datalayers[i].getLayerName(),ShapeMap::DATAMAP);
-         conversion_lookup.insert(std::make_pair(i,x));
+         conversion_lookup[i] = x;
       }
    }
    // nothing to convert:
@@ -1904,8 +1904,9 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
       return 0;
    }
 
-   for (i = 0; i < conversion_lookup.size(); i++) {
-      ShapeMap& shapemap = m_data_maps.getMap(depthmapX::getMapAtIndex(conversion_lookup, i)->second);
+   int i = 0;
+   for (auto& iter: conversion_lookup) {
+      ShapeMap& shapemap = m_data_maps.getMap(iter.second);
       int j;
       // add shapes:
       pvecint row_lookup;
@@ -1941,6 +1942,7 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
       // set the displayed attribute ready for first draw:
       shapemap.overrideDisplayedAttribute(-2);
       shapemap.setDisplayedAttribute(-1);
+      i++;
    }
    // the horror is over:     
    return retvar;
@@ -2028,7 +2030,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(shapeMap.find(table_out.getRowKey(i))->second,gatelist);
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(shapeMap[table_out.getRowKey(i)],gatelist);
          }
          else if (desttype == VIEWDATA) {
             if (sourcelayer == destlayer) {
@@ -2036,7 +2038,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                return false;
             }
             auto dataMap = m_data_maps.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(dataMap.find(table_out.getRowKey(i))->second,gatelist);
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(dataMap[table_out.getRowKey(i)],gatelist);
          }
          double val = -1.0;
          int count = 0;
@@ -2102,11 +2104,11 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             gatelist.clear();
             if (desttype == VIEWDATA) {
                auto dataMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
-               m_data_maps.getMap(destlayer).shapeInPolyList(depthmapX::getMapAtIndex(dataMap, table_in.getRowKey(i))->second,gatelist);
+               m_data_maps.getMap(destlayer).shapeInPolyList(dataMap[table_in.getRowKey(i)],gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                 auto shapeMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
-               m_shape_graphs.getMap(destlayer).shapeInPolyList(depthmapX::getMapAtIndex(shapeMap, table_in.getRowKey(i))->second,gatelist);
+               m_shape_graphs.getMap(destlayer).shapeInPolyList(shapeMap[table_in.getRowKey(i)],gatelist);
             }
             double thisval = table_in.getValue(i,col_in);
             for (size_t j = 0; j < gatelist.size(); j++) {
@@ -2153,69 +2155,6 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
    return true;
 }
-
-// DEPRECATED CODE: REPLACED WITH THE FUNCTION ABOVE
-// Replaced 21-Aug-05
-
-/*
-if (m_view_class & VIEWAXIAL) {
-   return m_shape_graphs.pushValuesToLayer();
-}
-
-// note: only pushes to gates...
-DataLayer& layer = (DataLayer&) getLayer(DataLayers::GATES);
-
-int attr = PointMaps::getDisplayedPointMap().getDisplayedAttribute();
-const AttributeTable& table = PointMaps::getDisplayedPointMap().getAttributeTable();
-
-// give the layer col a nice name!
-int col = layer.addColumn( table.getColumnName(attr) );
-
-// I think this is the only way to store how many points are in the object:
-int *objpointcounts = new int [layer.getObjectCount()];
-for (int h = 0; h < layer.getObjectCount(); h++) {
-   objpointcounts[h] = 0;
-}
-
-// just doing here for now:
-PointMap& map = PointMaps::getDisplayedPointMap();
-for (int i = 0; i < map.m_cols; i++) {
-   for (int j = 0; j < map.m_rows; j++) {
-      if ( map.m_points[i][j].getState() & Point::FILLED ) {
-         int obj = map.m_points[i][j].getDataObject( getCurrentLayerRef() );
-         if (obj != -1) {
-            if (average_over_isovist) {
-               // doesn't include self for now...
-               double val = 0.0;
-               Node& n = map.m_points[i][j].getNode();
-               n.first();
-               while (!n.is_tail())
-               {
-                  val += table.getValue(table.getRowIndex(n.cursor()),attr);
-               }
-               layer[obj][col] += val / map.m_points[i][j].getNode().count();
-            }
-            else {
-               layer[obj][col] += table.getValue(table.getRowIndex(PixelRef(i,j)),attr);
-            }
-            objpointcounts[obj] += 1;
-         }
-      }
-   }
-}
-
-for (int k = 0; k < layer.getObjectCount(); k++)
-{
-   layer[k][col] /= double(objpointcounts[k]);
-}
-
-delete [] objpointcounts;
-
-// finally, tell layers that we'd like to view this next time:
-layer.setDisplayColumn(col+1); // (+1 for ref number)
-*/
-
-///////////////////////////////////////////////////////////////////////////////////
 
 // Agent functionality: some of it still kept here with the metagraph
 // (to allow push value to layer and back again)

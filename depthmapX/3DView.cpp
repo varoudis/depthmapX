@@ -206,7 +206,7 @@ void Q3DView::timerEvent(QTimerEvent *event)
                //
                // pretty coloured pixels
                PixelRef pix = m_agents[j].getNode();
-               auto iter = depthmapX::getMapAtIndex(m_pixels, pix);
+               auto iter = m_pixels.find(pix);
                if (iter != m_pixels.end()) {
                   if (iter->second.m_value < 10) {
                      iter->second.m_value += 1;

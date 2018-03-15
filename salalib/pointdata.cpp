@@ -929,16 +929,19 @@ void PointMap::outputNet(ostream& netfile)
    netfile << "*Vertices " << graph.size() << endl;
    double maxdim = __max(m_region.width(),m_region.height());
    Point2f offset = Point2f((maxdim - m_region.width())/(2.0*maxdim),(maxdim - m_region.height())/(2.0*maxdim));
-   for (size_t j = 0; j < graph.size(); j++) {
-      auto graphKey = depthmapX::getMapAtIndex(graph, j)->first;
+   size_t j = 0;
+   for (auto& iter: graph) {
+      auto graphKey = iter.first;
       Point2f p = depixelate(graphKey);
       p.x = offset.x + (p.x - m_region.bottom_left.x) / maxdim;
       p.y = 1.0 - (offset.y + (p.y - m_region.bottom_left.y) / maxdim);
       netfile << (j+1) << " \"" << graphKey << "\" " << p.x << " " << p.y << endl;
+      j++;
    }
    netfile << "*Edges" << endl;
-   for (size_t k = 0; k < graph.size(); k++) {
-      PixelRefVector& list = depthmapX::getMapAtIndex(graph, k)->second;
+   size_t k = 0;
+   for (auto& iter: graph) {
+      PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = depthmapX::findIndexFromKey(graph, list[m]);
          if (n != paftl::npos && k < n) {

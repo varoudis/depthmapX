@@ -59,7 +59,7 @@ namespace genshim
     }
 
     /**
-     * Convert a pmap to a std::map (preserving the order of elements)
+     * Convert a pmap to a std::map
      * This is expensive as it copies every single element
      */
     template<class K, class V> std::map<K, V> toSTLMap(pmap<K, V> &pm)

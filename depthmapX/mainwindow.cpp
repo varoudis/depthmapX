@@ -1569,7 +1569,7 @@ void MainWindow::MakeGraphTree()
             QTreeWidgetItem* hItem = m_indexWidget->addNewRootFolder(tr("Visibility Graphs"));
             hItem->setIcon(0, m_tree_icon[0]);
             ItemTreeEntry entry(0,-1,-1);
-            m_treegraphmap.insert(std::make_pair(hItem, entry));
+            m_treegraphmap[hItem] = entry;
             m_treeroots[0] = hItem;
         }
         QTreeWidgetItem* hItem = m_treeroots[0]->child(0);
@@ -1584,7 +1584,7 @@ void MainWindow::MakeGraphTree()
                     QTreeWidgetItem* hNewItem = m_indexWidget->addNewItem("Editable", 0);
                     hNewItem->setCheckState(0, Qt::Unchecked);
                     ItemTreeEntry newentry = ItemTreeEntry(0,(short)i,-2);
-                    m_treegraphmap.insert(std::make_pair(hNewItem, newentry));
+                    m_treegraphmap[hNewItem] = newentry;
                 }
             }
             else if (hItem->text(0) != name) hItem->setText(0, name);
@@ -1611,7 +1611,7 @@ void MainWindow::MakeGraphTree()
             QTreeWidgetItem* hItem = m_indexWidget->addNewRootFolder(tr("Shape Graphs"));
             hItem->setIcon(0, m_tree_icon[1]);
             ItemTreeEntry entry(1,-1,-1);
-            m_treegraphmap.insert(std::make_pair(hItem, entry));
+            m_treegraphmap[hItem] = entry;
             m_treeroots[1] = hItem;
         }
         QTreeWidgetItem* hItem = m_treeroots[1]->child(0);
@@ -1626,7 +1626,7 @@ void MainWindow::MakeGraphTree()
                     QTreeWidgetItem* hNewItem = m_indexWidget->addNewItem("Editable", 0);
                     hNewItem->setCheckState(0, Qt::Unchecked);
                     ItemTreeEntry newentry = ItemTreeEntry(1,(short)i,-2);
-                    m_treegraphmap.insert(std::make_pair(hNewItem, newentry));
+                    m_treegraphmap[hNewItem] = newentry;
                 }
             }
             else if (hItem->text(0) != name) hItem->setText(0, name);
@@ -1637,7 +1637,7 @@ void MainWindow::MakeGraphTree()
                 if (hNewItem == NULL) {
                     hNewItem = m_indexWidget->addNewItem(name, 0);
                     ItemTreeEntry entry(1,(short)i,j);
-                    m_treegraphmap.insert(std::make_pair(hNewItem,entry));
+                    m_treegraphmap[hNewItem] = entry;
                 }
                 else if (hNewItem->text(0) != name) hNewItem->setText(0, name);
                 hNewItem = hNewItem->child(1);
@@ -1665,7 +1665,7 @@ void MainWindow::MakeGraphTree()
             QTreeWidgetItem* hItem = m_indexWidget->addNewRootFolder(tr("Data Maps"));
             hItem->setIcon(0, m_tree_icon[2]);
             ItemTreeEntry entry(2,-1,-1);
-            m_treegraphmap.insert(std::make_pair(hItem, entry));
+            m_treegraphmap[hItem] = entry;
             m_treeroots[2] = hItem;
         }
         QTreeWidgetItem* hItem = m_treeroots[2]->child(0);
@@ -1676,12 +1676,12 @@ void MainWindow::MakeGraphTree()
                 hItem = m_indexWidget->addNewFolder(name, m_treeroots[2]);
                 hItem->setCheckState(0, Qt::Unchecked);
                 ItemTreeEntry entry(2,(short)i,-1);
-                m_treegraphmap.insert(std::make_pair(hItem, entry));
+                m_treegraphmap[hItem] = entry;
                 {
                     hItem = m_indexWidget->addNewItem(tr("Editable"), 0);
                     hItem->setCheckState(0, Qt::Unchecked);
                     ItemTreeEntry newentry = ItemTreeEntry(2,(short)i,-2);
-                    m_treegraphmap.insert(std::make_pair(hItem, newentry));
+                    m_treegraphmap[hItem] = newentry;
                 }
             }
             else if (hItem->text(0) != name) hItem->setText(0, name);
@@ -2289,12 +2289,12 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
    x_coord->clear();
    y_coord->clear();
 
-   int i = -1;
+   int i = 0;
    for (auto view_map_entry: m_view_map_entries) {
-      i++;
-      if (curr_j == view_map_entry.first) cur_sel = (int) i;
+      if (curr_j == view_map_entry.first) cur_sel = i;
       x_coord->addItem( QString(view_map_entry.second.c_str()) );
       y_coord->addItem( QString(view_map_entry.second.c_str()) );
+      i++;
    }
 
    t = ((QPlotView*)pDoc->m_view[QGraphDoc::VIEW_SCATTER])->curr_y;
