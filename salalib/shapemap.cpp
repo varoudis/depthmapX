@@ -361,7 +361,7 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    // note, shape constructor sets centroid, length etc
-   depthmapX::insertAndGetIndex(m_shapes, shape_ref, SalaShape(line));
+   int rowid = depthmapX::insertAndGetIndex(m_shapes, shape_ref, SalaShape(line));
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
@@ -402,7 +402,7 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
 
 int ShapeMap::getNextShapeKey() {
     if(m_shapes.size() == 0) return 0;
-    return m_shapes.key(m_shapes.size() - 1) + 1;
+    return m_shapes.rbegin()->first + 1;
 }
 
 int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
@@ -2642,7 +2642,7 @@ bool ShapeMap::write( ofstream& stream, int version )
 
    // left here for backwards-compatibility
    // TODO: Remove at next iteration of the .graph file format
-   int largest_shape_ref = m_shapes.key(m_shapes.size()-1);
+   int largest_shape_ref = m_shapes.rbegin()->first;
    stream.write((char *) &largest_shape_ref, sizeof(largest_shape_ref));
 
    // write shape data

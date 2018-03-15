@@ -387,7 +387,7 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.key(m_shapes.size()-1); }
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.rbegin()->first; }
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const
