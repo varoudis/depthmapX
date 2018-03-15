@@ -2788,13 +2788,13 @@ bool ShapeMap::importPoints(const std::vector<Point2f> &points,
 {
     //assumes that points and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& point: points) {
-        indices.push_back(makePointShape(point));
+        shape_refs.push_back(makePointShape(point));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2807,13 +2807,13 @@ bool ShapeMap::importPointsWithRefs(const std::map<int, Point2f> &points,
 {
     //assumes that points and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& point: points) {
-        indices.push_back(makePointShapeWithRef(point.second, point.first));
+        shape_refs.push_back(makePointShapeWithRef(point.second, point.first));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2826,13 +2826,13 @@ bool ShapeMap::importLines(const std::vector<Line> &lines,
 {
     //assumes that lines and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& line: lines) {
-        indices.push_back(makeLineShape(line));
+        shape_refs.push_back(makeLineShape(line));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2845,13 +2845,13 @@ bool ShapeMap::importLinesWithRefs(const std::map<int, Line> &lines,
 {
     //assumes that lines and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& line: lines) {
-        indices.push_back(makeLineShapeWithRef(line.second, line.first));
+        shape_refs.push_back(makeLineShapeWithRef(line.second, line.first));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2864,13 +2864,13 @@ bool ShapeMap::importPolylines(const std::vector<depthmapX::Polyline> &polylines
 {
     //assumes that lines and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& polyline: polylines) {
-        indices.push_back(makePolyShape(genshim::toPQVector(polyline.m_vertices), !polyline.m_closed));
+        shape_refs.push_back(makePolyShape(genshim::toPQVector(polyline.m_vertices), !polyline.m_closed));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2883,13 +2883,13 @@ bool ShapeMap::importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> 
 {
     //assumes that lines and data come in the same order
 
-    std::vector<int> indices;
+    std::vector<int> shape_refs;
 
     for(auto& polyline: polylines) {
-        indices.push_back(makePolyShapeWithRef(genshim::toPQVector(polyline.second.m_vertices), !polyline.second.m_closed, polyline.first));
+        shape_refs.push_back(makePolyShapeWithRef(genshim::toPQVector(polyline.second.m_vertices), !polyline.second.m_closed, polyline.first));
     }
 
-    bool dataImported = importData(data, indices);
+    bool dataImported = importData(data, shape_refs);
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(-1);
@@ -2897,7 +2897,7 @@ bool ShapeMap::importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> 
     return dataImported;
 }
 
-bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices)
+bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> shape_refs)
 {
     for (auto& column: data) {
         std::string colName = column.first;
@@ -2937,7 +2937,7 @@ bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices
 
                     if(colcodes.size() >= 32) {
                         for (size_t j = 0; j < column.second.size(); j++) {
-                            m_attributes.setValue(m_attributes.getRowid(indices[j]), colIndex, -1.0f);
+                            m_attributes.setValue(m_attributes.getRowid(shape_refs[j]), colIndex, -1.0f);
                         }
                         continue;
                     } else {
@@ -2948,7 +2948,7 @@ bool ShapeMap::importData(const depthmapX::Table &data, std::vector<int> indices
                     value = cellAt->second;
                 }
             }
-            m_attributes.setValue(m_attributes.getRowid(indices[i]), colIndex, value);
+            m_attributes.setValue(m_attributes.getRowid(shape_refs[i]), colIndex, value);
         }
     }
     return true;

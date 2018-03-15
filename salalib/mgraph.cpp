@@ -422,7 +422,7 @@ bool MetaGraph::makeShape(const Line& line)
 int MetaGraph::polyBegin(const Line& line)
 {
    if (!isEditableMap()) {
-      return false;
+      return -1;
    }
    ShapeMap& map = getEditableMap();
    return map.polyBegin(line);

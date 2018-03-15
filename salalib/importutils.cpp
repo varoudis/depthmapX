@@ -315,7 +315,7 @@ namespace depthmapX {
             double y1 = stod(y1col[i]);
             double x2 = stod(x2col[i]);
             double y2 = stod(y2col[i]);
-            double ref = stoi(refcol[i]);
+            int ref = stoi(refcol[i]);
             lines.insert(std::make_pair(ref, Line(Point2f(x1, y1), Point2f(x2, y2))));
         }
         return lines;

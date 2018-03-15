@@ -550,7 +550,7 @@ public:
    bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
    bool importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &lines, const depthmapX::Table &data);
 private:
-   bool importData(const depthmapX::Table &data, std::vector<int> indices);
+   bool importData(const depthmapX::Table &data, std::vector<int> shape_refs);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
