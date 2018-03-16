@@ -200,26 +200,6 @@ double MetaGraph::getLocationValue(const Point2f& point)
    return val;
 }
 
-void MetaGraph::copyLineData(const SuperSpacePixel& meta)
-{
-   m_state &= ~LINEDATA;
-
-   *(SuperSpacePixel *)this = meta;
-
-   setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
-
-   m_state |= LINEDATA;
-}
-
-void MetaGraph::copyPointMap(const PointMap& meta)
-{
-   m_state &= ~POINTMAPS;
-
-   *(PointMap *)this = meta;
-
-   m_state |= POINTMAPS;
-}
-
 bool MetaGraph::setGrid( double spacing, const Point2f& offset )
 {
    m_state &= ~POINTMAPS;
@@ -255,20 +235,6 @@ bool MetaGraph::makePoints( const Point2f& p, int fill_type , Communicator *comm
 //   m_state |= POINTS;
 
    return true;
-}
-
-bool MetaGraph::undoPoints()
-{
-   bool b_return = getDisplayedPointMap().undoPoints();
-/*   
-   if (PointMap::m_point_count == 0) {
-      m_state &= ~POINTS;
-   }
-   else {
-      m_state |= POINTS;
-   }
-*/
-   return b_return;
 }
 
 bool MetaGraph::clearPoints()
@@ -1643,128 +1609,6 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    return 1;
 }
 
-
-
-/*
-// DEPRECATED
-
-void MetaGraph::fastGraph( istream& stream, double spacing )
-{
-   // does the lot -- assumes a bounding polygon,
-   // and tries to find a location outside all other polygons to populate grid
-   prefvec<Poly> polygons;
-
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-   
-   // load the data from the file
-   loadCat( stream, NULL, &polygons );
-
-   // organise the data from the file
-   for (int i = 0; i < SuperSpacePixel::tail().size(); i++) {
-      SuperSpacePixel::tail().at(i).sortPixelLines();
-   }
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   setGrid( spacing );
-
-   // this is a silly way to do this, but there you go, randomly choose points until you get one
-   // that hits empty space...
-   srand(time(NULL));
-   int testhits, count = 0;
-   PixelRef testpixel;
-   Point2f testpoint;
-   do {
-      count++;
-      testhits = 0;
-      testpixel = PixelRef( rand() % PointMap::getCols(), rand() % PointMap::getRows() );
-      testpoint = PointMap::depixelate(testpixel);
-      for (int i = 0; i < polygons.size(); i++) {
-         try {
-            if (polygons[i].contains(testpoint)) {
-               testhits++;
-            }
-         }
-         catch (int) {
-            // polygons throw if on edge:
-            // break from this loop and continue do-while loop:
-            testhits = 0;
-            break;
-         }
-      }
-   } while (testhits != 1 && count < (PointMap::getCols() * PointMap::getRows()) );
-
-   if (testhits != 1) {
-      return; // give up, you must have tried just about every location by now...
-   }
-
-   PointMap::makePoints(testpoint, Point::FILLED);
-
-   m_state |= POINTS;
-
-   PointMap::sparkGraph2(NULL, 0);
-
-   m_state |= GRAPH | ANGULARGRAPH;
-
-   setViewClass(SHOWVGATOP);
-
-   // Testing: 
-   // write("dummy.graph");
-}
-*/
-
-bool MetaGraph::importCat(istream& filecontents)
-{
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-
-   // load the data from the file
-   if (!loadCat( filecontents, NULL )) {
-      return false;
-   }
-
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   return true;
-}
-
-// a second does the lot, especially for evolutionary graphs
-// essentially, hand the ecoevograph a new meta graph each time...
-// it'll do everything for you
-
-void MetaGraph::fastGraph( const Point2f& seed, double spacing )
-{
-   setGrid( spacing );
-
-   getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
-
-   m_state |= POINTMAPS;
-
-   getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
-
-   // historical tag - essentially stamps version, so kept:
-   m_state |= ANGULARGRAPH;
-
-   setViewClass(SHOWVGATOP);
-
-   // Testing: 
-   // write("dummy.graph");
-}
-
 ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::string name) {
 
     switch(mapType) {
@@ -1826,56 +1670,6 @@ void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
         SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
     }
 }
-
-int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
-                                     QtRegion region,
-                                     std::string name,
-                                     depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
-
-   m_data_maps.getDisplayedMap().init(lines.size(), region);
-   if (!m_data_maps.getDisplayedMap().importLines( lines, data )) {
-      m_data_maps.removeMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
-}
-
-int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
-                                      QtRegion region,
-                                      std::string name,
-                                      depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   int x = m_data_maps.addMap(name,ShapeMap::DATAMAP);
-
-   m_data_maps.getDisplayedMap().init(points.size(), region);
-   if (!m_data_maps.getDisplayedMap().importPoints( points, data )) {
-      m_data_maps.removeMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 // New layer interaction code
 
