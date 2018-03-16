@@ -55,8 +55,8 @@ class MetaGraph : public SuperSpacePixel, public FileProperties
 {
 public:
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
-   enum { NONE = 0x0000, /* GRAPH = 0x0001, Deprecated */ POINTMAPS = 0x0002, LINEDATA = 0x0004, 
-          FIXED = 0x0008 /* Deprecated */, ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, /* BOUNDARYGRAPH = 0x0080, Deprecated */ SHAPEGRAPHS = 0x0100,
+   enum { NONE = 0x0000, POINTMAPS = 0x0002, LINEDATA = 0x0004,
+          FIXED = 0x0008 /* Deprecated */, ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, SHAPEGRAPHS = 0x0100,
           PREWRITTEN = 0x1000, BUGGY = 0x8000 };
    enum { NOT_EDITABLE = 0, EDITABLE_OFF = 1, EDITABLE_ON = 2 };
 protected:
@@ -147,8 +147,6 @@ public:
    bool makePoints( const Point2f& p, int semifilled, Communicator *communicator = NULL);  // override of PointMap
    bool makeGraph( Communicator *communicator, int algorithm, double maxdist );
    bool analyseGraph(Communicator *communicator, Options options , bool simple_version); // <- options copied to keep thread safe
-   bool analyseAngular( Communicator *communicator, bool analyse_in_memory );
-   bool makeAxialLines( Communicator *communicator, bool analyse_in_memory );
    //
    // helpers for editing maps
    bool isEditableMap();
@@ -223,10 +221,7 @@ public:
    bool isAttributeLocked(int col);
    AttributeTable& getAttributeTable(int type = -1, int layer = -1);
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
-   //
-   void loadGraphAgent();
-   void unloadGraphAgent();
-   //
+
    int getLineFileCount() const
       { return (int) SuperSpacePixel::size(); }
 
@@ -236,11 +231,6 @@ public:
    int getLineLayerCount(int file) const
       { return (int) SuperSpacePixel::at(file).size(); }
 
-   //
-/*   SpacePixel& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
-   const SpacePixel& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }*/
    ShapeMap& getLineLayer(int file, int layer)
       { return SuperSpacePixel::at(file).at(layer); }
    const ShapeMap& getLineLayer(int file, int layer) const
