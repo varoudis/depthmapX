@@ -519,12 +519,16 @@ bool PointMap::blockLines()
          PixelRef curs = PixelRef( i, j );
          Point& pt = getPoint( curs );
          QtRegion viewport = regionate( curs, 1e-10 );
-         for (size_t k = pt.m_lines.size() - 1; k != paftl::npos; k--) {
-            if (!pt.m_lines.value(k).crop( viewport )) {
-               // the pixelation is fairly rough to make sure that no point is missed: this just
-               // clears up if any point has been added in error:
-               pt.m_lines.remove_at(k);
-            }
+         std::map<int, Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
+         for(; iter != end; ) {
+             if (!iter->second.crop( viewport )) {
+                 // the pixelation is fairly rough to make sure that no point is missed: this just
+                 // clears up if any point has been added in error:
+                 iter = pt.m_lines.erase(iter);
+                 end = pt.m_lines.end();
+             } else {
+                 ++iter;
+             }
          }
       }
    }
@@ -541,7 +545,7 @@ void PointMap::blockLine(int key, const Line& li)
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
    {
-      getPoint(pixels[n]).m_lines.add(key,li);
+      getPoint(pixels[n]).m_lines.insert(std::make_pair(key,li));
       getPoint(pixels[n]).setBlock(true);
    }
 }
@@ -915,31 +919,35 @@ void PointMap::outputNet(ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
-   pmap<PixelRef,PixelRefVector> graph;
+   std::map<PixelRef,PixelRefVector> graph;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
          if (m_points[i][j].filled() && m_points[i][j].m_node) {
             PixelRef pix(i,j);
             PixelRefVector connections;
             m_points[i][j].m_node->contents(connections);
-            graph.add(pix,connections);
+            graph.insert(std::make_pair(pix,connections));
          }
       }
    }
    netfile << "*Vertices " << graph.size() << endl;
    double maxdim = __max(m_region.width(),m_region.height());
    Point2f offset = Point2f((maxdim - m_region.width())/(2.0*maxdim),(maxdim - m_region.height())/(2.0*maxdim));
-   for (size_t j = 0; j < graph.size(); j++) {
-      Point2f p = depixelate(graph.key(j));
+   size_t j = 0;
+   for (auto& iter: graph) {
+      auto graphKey = iter.first;
+      Point2f p = depixelate(graphKey);
       p.x = offset.x + (p.x - m_region.bottom_left.x) / maxdim;
       p.y = 1.0 - (offset.y + (p.y - m_region.bottom_left.y) / maxdim);
-      netfile << (j+1) << " \"" << graph.key(j) << "\" " << p.x << " " << p.y << endl;
+      netfile << (j+1) << " \"" << graphKey << "\" " << p.x << " " << p.y << endl;
+      j++;
    }
    netfile << "*Edges" << endl;
-   for (size_t k = 0; k < graph.size(); k++) {
-      PixelRefVector& list = graph.value(k);
+   size_t k = 0;
+   for (auto& iter: graph) {
+      PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
-         size_t n = graph.searchindex(list[m]);
+         size_t n = depthmapX::findIndexFromKey(graph, list[m]);
          if (n != paftl::npos && k < n) {
             netfile << (k+1) << " " << (n+1) << " 1" << endl;
          }
@@ -2166,13 +2174,12 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          viewport0.top_right.y = centre0.y;
          break;
       }
-      pqmap<int,Line> lines0;
-      for (size_t m = 0; m < getPoint(curs).m_lines.size(); m++)
+      std::map<int,Line> lines0;
+      for (const std::pair<int,Line>& line: getPoint(curs).m_lines)
       {
-         int key = getPoint(curs).m_lines.key(m);
-         Line l = getPoint(curs).m_lines.value(m);
+         Line l = line.second;
          if (l.crop(viewport0)) {
-            lines0.add(key,l);
+            lines0.insert(std::make_pair(line.first,l));
          }
       }
       sieve.block(lines0, q);

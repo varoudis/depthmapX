@@ -100,15 +100,17 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    Point2f o = av.m_point - av.m_openspace;
 
    // using an anglemap means that there are now no anti-clockwise vertices...
-   pmap<double,int> anglemap;
+   // TODO: (CS) Double as key is problematic - books have been written about double equality...
+   std::map<double,int> anglemap;
    for (size_t i = 0; i < pointlist.size(); i++) {
-      anglemap.add( angle(openspace,av.m_point,pointlist[i]), i );
+      anglemap.insert(std::make_pair( angle(openspace,av.m_point,pointlist[i]), i ));
    }
 
-   av.m_ref_a = anglemap.head();
-   av.m_ref_a = anglemap.tail();
-   Point2f a = av.m_point - pointlist.at( anglemap.head() );
-   Point2f b = pointlist.at( anglemap.tail() ) - av.m_point;
+   av.m_ref_a = anglemap.begin()->second;
+   // TODO: is this supposed to be av.m_ref_b?
+   av.m_ref_a = anglemap.rbegin()->second;
+   Point2f a = av.m_point - pointlist.at( anglemap.begin()->second );
+   Point2f b = pointlist.at( anglemap.rbegin()->second ) - av.m_point;
    av.m_a = a;
    av.m_b = b;
    a.normalise();
@@ -125,7 +127,7 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    }
 
    // ADDED 4-Nov-04 -- In order to stop too many lines being generated, don't include
-   // points that do not change surface direction:  -- notice: will create problems with circles 
+   // points that do not change surface direction:  -- notice: will create problems with circles
    if (fabs(dot(a,b)) > 0.999) {
       return av;
    }
@@ -205,7 +207,7 @@ void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
    firstpass.makeSegmentMap(lines, connectionset, 1.0);
 
    // now we have a set of lines and a set of connections...
-   // ...for the second pass, a bit of retro fitting to my original code is 
+   // ...for the second pass, a bit of retro fitting to my original code is
    // required
    makeVertexPossibles(lines, connectionset);
 
@@ -389,7 +391,7 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
             allboundaries |= 0x08; seedref.y = m_rows - 1;
          }
          if (allboundaries == 0x0f) {
-            return NoVertex; 
+            return NoVertex;
          }
       }
    }
@@ -699,7 +701,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
                throw Communicator::CancelledException();
             }
             comm->CommPostMessage( Communicator::CURRENT_RECORD, count );
-         }         
+         }
       }
 
    }
@@ -739,13 +741,13 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
 
    // create the all line map layer...
    m_all_line_map = addMap("All-Line Map", ShapeMap::ALLLINEMAP);
-   
+
    ShapeGraph& alllinemap = at(m_all_line_map);
    // make sure it's cleared fully
    alllinemap.clearAll();
-   
-/*  
-   // temp: 
+
+/*
+   // temp:
    alllinemap.initLines(m_polygons.m_lines.size(),m_polygons.m_region.bottom_left,m_polygons.m_region.top_right,2);
    for (int k = 0; k < m_polygons.m_lines.size(); k++) {
       alllinemap.makeLineShape(m_polygons.m_lines[k].line);
@@ -759,7 +761,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       axiallines[k].crop(region); // <- should be cropped anyway, but causing an error
       alllinemap.makeLineShape(axiallines[k]);
    }
-   
+
    // n.b. make connections also initialises attributes
    // -> don't know what this was for: alllinemap.sortBins(m_poly_connections);
    alllinemap.makeConnections(preaxialdata);
@@ -848,13 +850,13 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
             }
          }
       }
-      std::advance(axIter, 1);
-      std::advance(axSeg, 1);
+      axIter++;
+      axSeg++;
    }
 
    // and a little more setting up: key vertex relationships
    prefvec<pvecint> keyvertexconns;
-   int *keyvertexcounts = new int [at(m_all_line_map).m_keyvertexcount]; 
+   int *keyvertexcounts = new int [at(m_all_line_map).m_keyvertexcount];
    for (int x = 0; x < at(m_all_line_map).m_keyvertexcount; x++) {
       keyvertexcounts[x] = 0;
    }
@@ -873,7 +875,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
       }
    }
 
-   // ok, after this fairly tedious set up, we are ready to go... 
+   // ok, after this fairly tedious set up, we are ready to go...
    // note axradialcuts aren't required anymore...
 
    AxialMinimiser minimiser(at(m_all_line_map), ax_seg_cuts.size(), radialsegs.size());
@@ -967,7 +969,7 @@ AxialMinimiser::AxialMinimiser(const ShapeGraph& alllinemap, int no_of_axsegcuts
 AxialMinimiser::~AxialMinimiser()
 {
    delete [] m_vital;
-   delete [] m_affected;   
+   delete [] m_affected;
    delete [] m_radialsegcounts;
    delete [] m_vps;
    delete [] m_removed;
@@ -1263,7 +1265,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
 
    QtRegion region;
    std::map<int,Line> lines;  // map required for tidy lines, otherwise acts like vector
-   pmap<int,int> layers;  // this is used to say which layer it originated from
+   std::map<int,int> layers;  // this is used to say which layer it originated from
 
    bool recordlayer = false;
 
@@ -1283,18 +1285,18 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
                 SalaShape& shape = refShape.second;
                if (shape.isLine()) {
                   lines.insert(std::make_pair(count,shape.getLine()));
-                  layers.add(count,j);
+                  layers.insert(std::make_pair(count,j));
                   count++;
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
                   for (size_t n = 0; n < shape.size() - 1; n++) {
                      lines.insert(std::make_pair(count,Line(shape[n],shape[n+1])));
-                     layers.add(count,j);
+                     layers.insert(std::make_pair(count,j));
                      count++;
                   }
                   if (shape.isPolygon()) {
                      lines.insert(std::make_pair(count,Line(shape.tail(),shape.head())));
-                     layers.add(count,j);
+                     layers.insert(std::make_pair(count,j));
                      count++;
                   }
                }
@@ -1365,7 +1367,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
       int k = -1;
       for (auto line: lines) {
          k++;
-         table.setValue(k,col,float(layers.search(line.first)));
+         table.setValue(k,col,float(layers.find(line.first)->second));
       }
    }
 
@@ -1375,7 +1377,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
    return mapref;
 }
 
-// create axial map directly from data maps 
+// create axial map directly from data maps
 // note that actually should be able to merge this code with the line layers, now both use similar code
 
 int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata)
@@ -1388,7 +1390,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    // add all visible layers to the set of polygon lines...
 
    std::map<int,Line> lines;
-   pmap<int,int> keys;
+   std::map<int,int> keys;
 
    //m_region = shapemap.getRegion();
    QtRegion region = shapemap.getRegion();
@@ -1401,13 +1403,13 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
       const SalaShape& poly = shape.second;
       if (poly.isLine()) {
          lines.insert(std::make_pair(count,poly.getLine()));
-         keys.add(count,key);
+         keys.insert(std::make_pair(count,key));
          count++;
       }
       else if (poly.isPolyLine()) {
          for (size_t j = 0; j < poly.size() - 1; j++) {
             lines.insert(std::make_pair(count,Line(poly[j],poly[j+1])));
-            keys.add(count,key);
+            keys.insert(std::make_pair(count,key));
             count++;
          }
       }
@@ -1434,7 +1436,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
    usermap.init(lines.size(),region);  // used to be double density
    for (size_t k = 0; k < lines.size(); k++) {
-      usermap.makeLineShape(lines[k]);
+      usermap.makeLineShapeWithRef(lines[k], keys[k]);
    }
 
    // n.b. make connections also initialises attributes
@@ -1447,13 +1449,13 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
       AttributeTable& output = usermap.getAttributeTable();
       for (int i = 0; i < input.getColumnCount(); i++) {
          std::string colname = input.getColumnName(i);
-         for (size_t k = 1; output.getColumnIndex(colname) != -1; k++) 
+         for (size_t k = 1; output.getColumnIndex(colname) != -1; k++)
             colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          int j = -1;
          for (auto line: lines) {
             j++;
-            int inrow = input.getRowid(keys.search(line.first));
+            int inrow = input.getRowid(keys.find(line.first)->second);
             output.setValue(j,outcol,input.getValue(inrow,i));
          }
       }
@@ -1487,7 +1489,7 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
    int mapref = addMap(name,ShapeMap::CONVEXMAP);
    ShapeGraph& usermap = tail();
    int conn_col = usermap.m_attributes.insertLockedColumn("Connectivity");
-   
+
    size_t count = 0;
    size_t i = 0;
    for (i = 0; i < superspacepix.size(); i++) {
@@ -1556,7 +1558,7 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name
       AttributeTable& output = usermap.getAttributeTable();
       for (int i = 0; i < input.getColumnCount(); i++) {
          std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++) 
+         for (int k = 1; output.getColumnIndex(colname) != -1; k++)
             colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          for (size_t j = 0; j < lookup.size(); j++) {
@@ -1585,7 +1587,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    }
 
    std::map<int,Line> lines;
-   pmap<int,int> layers;  // this is used to say which layer it originated from
+   std::map<int,int> layers;  // this is used to say which layer it originated from
    bool recordlayer = false;
 
    QtRegion region;
@@ -1607,18 +1609,18 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
                 SalaShape& shape = refShape.second;
                if (shape.isLine()) {
                   lines.insert(std::make_pair(count,shape.getLine()));
-                  layers.add(count,j);
+                  layers.insert(std::make_pair(count,j));
                   count++;
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
                   for (size_t n = 0; n < shape.size() - 1; n++) {
                      lines.insert(std::make_pair(count,Line(shape[n],shape[n+1])));
-                     layers.add(count,j);
+                     layers.insert(std::make_pair(count,j));
                      count++;
                   }
                   if (shape.isPolygon()) { // add closing line
                      lines.insert(std::make_pair(count,Line(shape.tail(),shape.head())));
-                     layers.add(count,j);
+                     layers.insert(std::make_pair(count,j));
                      count++;
                   }
                }
@@ -1640,7 +1642,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    if (lines.size() == 0) {
       return -1;
    }
-   
+
    /*
    // No longer required for ShapeMaps version:
    if (!m_length) {
@@ -1678,7 +1680,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
       int k = -1;
       for (auto line: lines) {
          k++;
-         table.setValue(k,col,float(layers.search(line.first)));
+         table.setValue(k,col,float(layers.find(line.first)->second));
       }
    }
 
@@ -1698,7 +1700,7 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    }
 
    std::map<int,Line> lines;
-   pmap<int,int> keys;
+   std::map<int,int> keys;
 
    // no longer requires m_region
    //m_region = shapemap.getRegion();
@@ -1712,13 +1714,13 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
       const SalaShape& poly = shape.second;
       if (poly.isLine()) {
          lines.insert(std::make_pair(count,poly.getLine()));
-         keys.add(count,key);
+         keys.insert(std::make_pair(count,key));
          count++;
       }
       else if (poly.isPolyLine()) {
          for (size_t j = 0; j < poly.size() - 1; j++) {
             lines.insert(std::make_pair(count,Line(poly[j],poly[j+1])));
-            keys.add(count,key);
+            keys.insert(std::make_pair(count,key));
             count++;
          }
       }
@@ -1753,8 +1755,11 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    }
 
    usermap.init(lines.size(),region);
-   for (auto line: lines) {
-      usermap.makeLineShape(line.second);
+
+   auto keyIter = keys.begin();
+   for (auto& line: lines) {
+      usermap.makeLineShapeWithRef(line.second, keyIter->second);
+      keyIter++;
    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits
@@ -1774,13 +1779,13 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
       //
       for (int i = 0; i < input.getColumnCount(); i++) {
          std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++) 
+         for (int k = 1; output.getColumnIndex(colname) != -1; k++)
             colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
          int outcol = output.insertColumn(colname);
          int j = -1;
          for (auto line: lines) {
             j++;
-            int inrow = input.getRowid(keys.search(line.first));
+            int inrow = input.getRowid(keys.find(line.first)->second);
             output.setValue(j,outcol,input.getValue(inrow,i));
          }
       }
@@ -1947,7 +1952,7 @@ static std::string makeRadiusText(int radius_type, double radius)
 
 ShapeGraph::ShapeGraph(const std::string& name, int type) : ShapeMap(name,type)
 {
-   m_keyvertexcount = 0; 
+   m_keyvertexcount = 0;
    m_hasgraph = true;
 }
 
@@ -2024,7 +2029,7 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    }
    AxialPolygons polygons;
    polygons.init(lines, m_region);
-   
+
    prefvec<pqvector<Point2f>> newpolygons;
    polygons.makePolygons(newpolygons);
 
@@ -2173,7 +2178,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
                throw Communicator::CancelledException();
             }
             comm->CommPostMessage( Communicator::CURRENT_RECORD, i );
-         }         
+         }
       }
    }
 }
@@ -2527,7 +2532,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                   depthcounts.tail() += 1;
                }
             }
-            if (!choice) 
+            if (!choice)
                foundlist.a().pop_back();
             else
                foundlist.a().remove_at(pos);
@@ -2680,7 +2685,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                throw Communicator::CancelledException();
             }
             comm->CommPostMessage( Communicator::CURRENT_RECORD, i );
-         }         
+         }
       }
    }
    delete [] covered;
@@ -2794,14 +2799,14 @@ bool ShapeGraph::readold( istream& stream, int version )
    // read in from old base class
    SpacePixel linemap;
    linemap.read(stream, version);
-   const pmap<int,LineTest>& lines = linemap.getAllLines();
+   const std::map<int,LineTest>& lines = linemap.getAllLines();
 
    m_name = linemap.getName();
 
    // now copy to new base class:
    init(lines.size(),linemap.getRegion());
-   for (size_t i = 0; i < lines.size(); i++) {
-      makeLineShape(lines[i].line);
+   for (auto line: lines) {
+      makeLineShape(line.second.line);
    }
    // n.b., we now have to reclear attributes!
    m_attributes.clear();
@@ -3014,54 +3019,58 @@ void ShapeGraph::makeNewSegMap()
 {
    // now make a connection set from the ends of lines:
    prefvec<Connector> connectionset;
-   pmap<int,Line> lineset;
+   std::map<int,Line> lineset;
    for (auto shape: m_shapes) {
       if (shape.second.isLine()) {
          connectionset.push_back(Connector());
-         lineset.add(shape.first,shape.second.getLine());
+         lineset[shape.first] = shape.second.getLine();
       }
    }
 
    double maxdim = __max(m_region.width(),m_region.height());
 
-   for (size_t seg_a = 0; seg_a < lineset.size(); seg_a++) {
+   int seg_a = -1;
+   for (auto seg_a_line: lineset) {
+       seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
-      PixelRef pix1 = pixelate(lineset[seg_a].t_start());
+      PixelRef pix1 = pixelate(seg_a_line.second.t_start());
       pqvector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
       for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
-         size_t seg_b = lineset.searchindex(shapes1[j1].m_shape_ref);
-         if (seg_b != paftl::npos && seg_a < seg_b) {
-            Point2f alpha = lineset[seg_a].vector();
-            Point2f beta  = lineset[seg_b].vector();
+         auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
+         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+         if (seg_b_iter != lineset.end() && seg_a < seg_b) {
+            Point2f alpha = seg_a_line.second.vector();
+            Point2f beta  = seg_b_iter->second.vector();
             alpha.normalise();
             beta.normalise();
-            if (approxeq(lineset[seg_a].t_start(),lineset[seg_b].t_start(),(maxdim*TOLERANCE_B))) {
+            if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
                connectionset[seg_a].m_back_segconns.add(SegmentRef(1,seg_b),x);
                connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_a),x);
             }
-            if (approxeq(lineset[seg_a].t_start(),lineset[seg_b].t_end(),(maxdim*TOLERANCE_B))) {
+            if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
                connectionset[seg_a].m_back_segconns.add(SegmentRef(-1,seg_b),x);
                connectionset[seg_b].m_forward_segconns.add(SegmentRef(1,seg_a),x);
             }
          }
       }
-      PixelRef pix2 = pixelate(m_shapes.find(seg_a)->second.getLine().t_end());
+      PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
       pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
       for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
-         size_t seg_b = lineset.searchindex(shapes2[j2].m_shape_ref);
-         if (seg_b != paftl::npos && seg_a < seg_b) {
-            Point2f alpha = lineset[seg_a].vector();
-            Point2f beta  = lineset[seg_b].vector();
+         auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
+         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+         if (seg_b_iter != lineset.end() && seg_a < seg_b) {
+            Point2f alpha = seg_a_line.second.vector();
+            Point2f beta  = seg_b_iter->second.vector();
             alpha.normalise();
             beta.normalise();
-            if (approxeq(lineset[seg_a].t_end(),lineset[seg_b].t_start(),(maxdim*TOLERANCE_B))) {
+            if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
                connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),x);
                connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),x);
             }
-            if (approxeq(lineset[seg_a].t_end(),lineset[seg_b].t_end(),(maxdim*TOLERANCE_B))) {
+            if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
                connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
                connectionset[seg_b].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
@@ -3077,14 +3086,14 @@ void ShapeGraph::makeNewSegMap()
 
 // Method 2: Making a segment map (in two stages)
 
-// One: take the original axial map and split it up 
+// One: take the original axial map and split it up
 // (note: you need to start from an axial map,
 //  but the map could have been created from a road-centre-line
-//  graph or equivalent -- reason is that you might want to 
+//  graph or equivalent -- reason is that you might want to
 //  preserve unlinks in your angular mapping)
 
 // A "linetest" is used in order to use the test component to
-// identify the original axial line this line segment is 
+// identify the original axial line this line segment is
 // associated with
 
 void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
@@ -3094,8 +3103,10 @@ void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& conn
 
    // this code relies on the polygon order being the same as the connections
 
+   auto iter = m_shapes.begin();
    for (size_t i = 0; i < m_connectors.size(); i++) {
-      auto shape = depthmapX::getMapAtIndex(m_shapes, i)->second;
+      auto shape = iter->second;
+      iter++;
       if (!shape.isLine()) {
          continue;
       }
@@ -3120,7 +3131,7 @@ void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& conn
       Point2f lastpoint = line.start();
       int seg_a = -1, seg_b = -1;
       double neardist;
-      // TOLERANCE_C is introduced as of 01.08.2008 although it is a fix to a bug first 
+      // TOLERANCE_C is introduced as of 01.08.2008 although it is a fix to a bug first
       // found in July 2006.  It has been set "high" deliberately (1e-6 = a millionth of the line height / width)
       // in order to catch small errors made by operators or floating point errors in other systems
       // when drawing, for example, three axial lines intersecting
@@ -3361,7 +3372,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       std::string total_col_text = std::string("Angular Total Depth") + radius_text;
       m_attributes.insertColumn(total_col_text.c_str());
    }
-   
+
    for (r = 0; r < radius.size(); r++) {
       std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
       std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
@@ -3457,7 +3468,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
                throw Communicator::CancelledException();
             }
             comm->CommPostMessage( Communicator::CURRENT_RECORD, i );
-         }         
+         }
       }
    }
    delete [] covered;
@@ -3524,11 +3535,11 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    //EF routeweight*
    std::string routeweight_col_text;
    if (routeweight_col != -1) {
-	   //we normalise the column values between 0 and 1 and reverse it so that high values can be treated as a 'low cost' - similar to the angular cost
-	  double max_value = m_attributes.getMaxValue(routeweight_col);
+       //we normalise the column values between 0 and 1 and reverse it so that high values can be treated as a 'low cost' - similar to the angular cost
+      double max_value = m_attributes.getMaxValue(routeweight_col);
      routeweight_col_text = m_attributes.getColumnName(routeweight_col);
-	  for (size_t i = 0; i < m_connectors.size(); i++) {
-		 routeweights.push_back(1.0-(m_attributes.getValue(i, routeweight_col)/max_value)); //scale and revert!
+      for (size_t i = 0; i < m_connectors.size(); i++) {
+         routeweights.push_back(1.0-(m_attributes.getValue(i, routeweight_col)/max_value)); //scale and revert!
       }
    }
    else { // Normal run // TV
@@ -3562,121 +3573,121 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    for (r = 0; r < radius_unconverted.size(); r++) {
       std::string radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
       int choice_col = -1, n_choice_col = -1, w_choice_col = -1, nw_choice_col = -1;
-      if (choice) {	
-			//EF routeweight *
-			if (routeweight_col != -1) {
+      if (choice) {
+            //EF routeweight *
+            if (routeweight_col != -1) {
                 std::string choice_col_text = tulip_text + " Choice [Route weight by " + routeweight_col_text + "]"+ radius_text;
-				m_attributes.insertColumn(choice_col_text.c_str());
-				if (weighting_col != -1) {					
+                m_attributes.insertColumn(choice_col_text.c_str());
+                if (weighting_col != -1) {
                     std::string w_choice_col_text = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
-					
-					m_attributes.insertColumn(w_choice_col_text.c_str());
-				}
-				//EFEF*
-				if (weighting_col2 != -1) {
+
+                    m_attributes.insertColumn(w_choice_col_text.c_str());
+                }
+                //EFEF*
+                if (weighting_col2 != -1) {
                     std::string w_choice_col_text2 = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]]" + radius_text;
-					
-					m_attributes.insertColumn(w_choice_col_text2.c_str());
-				}
-				//*EFEF
-			}
-			//*EF routeweight
+
+                    m_attributes.insertColumn(w_choice_col_text2.c_str());
+                }
+                //*EFEF
+            }
+            //*EF routeweight
             else { // Normal run // TV
                 std::string choice_col_text = tulip_text + " Choice" + radius_text;
-				m_attributes.insertColumn(choice_col_text.c_str());
-				if (weighting_col != -1) {
+                m_attributes.insertColumn(choice_col_text.c_str());
+                if (weighting_col != -1) {
                     std::string w_choice_col_text = tulip_text + " Choice [" + weighting_col_text + " Wgt]" + radius_text;
-					m_attributes.insertColumn(w_choice_col_text.c_str());
-				}
-				//EFEF*
-				if (weighting_col2 != -1) {
+                    m_attributes.insertColumn(w_choice_col_text.c_str());
+                }
+                //EFEF*
+                if (weighting_col2 != -1) {
                     std::string w_choice_col_text2 = tulip_text + " Choice [" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]" + radius_text;
-					m_attributes.insertColumn(w_choice_col_text2.c_str());
-				}
-				//*EFEF
-			}
+                    m_attributes.insertColumn(w_choice_col_text2.c_str());
+                }
+                //*EFEF
+            }
       }
 
-		//EF routeweight *
-		if (routeweight_col != -1) {
+        //EF routeweight *
+        if (routeweight_col != -1) {
          std::string integ_col_text = tulip_text + " Integration [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string w_integ_col_text = tulip_text + " Integration [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 
          std::string count_col_text = tulip_text + " Node Count [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string td_col_text = tulip_text + " Total Depth [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
-			// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
+            // '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
             std::string w_td_text = tulip_text + " Total Depth [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
             std::string total_weight_text = tulip_text + " Total " + weighting_col_text + " [Route weight by " + routeweight_col_text + "]" +radius_text;
 
          m_attributes.insertColumn(integ_col_text.c_str());
-			m_attributes.insertColumn(count_col_text.c_str());
-			m_attributes.insertColumn(td_col_text.c_str());
-			if (weighting_col != -1) {
+            m_attributes.insertColumn(count_col_text.c_str());
+            m_attributes.insertColumn(td_col_text.c_str());
+            if (weighting_col != -1) {
             m_attributes.insertColumn(w_integ_col_text.c_str());
-				m_attributes.insertColumn(w_td_text.c_str());         
-				m_attributes.insertColumn(total_weight_text.c_str());
-			}
-		}
-		//*EF routeweight
+                m_attributes.insertColumn(w_td_text.c_str());
+                m_attributes.insertColumn(total_weight_text.c_str());
+            }
+        }
+        //*EF routeweight
         else { // Normal run // TV
             std::string integ_col_text = tulip_text + " Integration" + radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string w_integ_col_text = tulip_text + " Integration [" + weighting_col_text + " Wgt]" + radius_text;
 
             std::string count_col_text = tulip_text + " Node Count" + radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string td_col_text = tulip_text + " Total Depth" + radius_text; // <- note, the fact this is a tulip is unnecessary
-			// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
+            // '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
             std::string w_td_text = tulip_text + " Total Depth [" + weighting_col_text + " Wgt]" + radius_text;
             std::string total_weight_text = tulip_text + " Total " + weighting_col_text + radius_text;
 
          m_attributes.insertColumn(integ_col_text.c_str());
-			m_attributes.insertColumn(count_col_text.c_str());
-			m_attributes.insertColumn(td_col_text.c_str());
-			if (weighting_col != -1) {         
+            m_attributes.insertColumn(count_col_text.c_str());
+            m_attributes.insertColumn(td_col_text.c_str());
+            if (weighting_col != -1) {
             m_attributes.insertColumn(w_integ_col_text.c_str());
-				m_attributes.insertColumn(w_td_text.c_str());         
-				m_attributes.insertColumn(total_weight_text.c_str());
-			}
-		}
+                m_attributes.insertColumn(w_td_text.c_str());
+                m_attributes.insertColumn(total_weight_text.c_str());
+            }
+        }
    }
    pvecint choice_col, w_choice_col, w_choice_col2, count_col, integ_col, w_integ_col, td_col, w_td_col, total_weight_col;
    // then look them up! eek....
    for (r = 0; r < radius_unconverted.size(); r++) {
       std::string radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
       if (choice) {
-			//EF routeweight *
-			if (routeweight_col != -1) {
+            //EF routeweight *
+            if (routeweight_col != -1) {
                 std::string choice_col_text = tulip_text + " Choice [Route weight by " + routeweight_col_text + "]"+ radius_text;
-				choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
-				if (weighting_col != -1) {
+                choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
+                if (weighting_col != -1) {
                     std::string w_choice_col_text = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
-					w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
-				}
-				//EFEF*
-				if (weighting_col2 != -1) {
+                    w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
+                }
+                //EFEF*
+                if (weighting_col2 != -1) {
                     std::string w_choice_col_text2 = tulip_text + " Choice [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]]" + radius_text;
-					w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
-				}
-				//*EFEF
-			}
-			//* EF routeweight
+                    w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
+                }
+                //*EFEF
+            }
+            //* EF routeweight
             else { // Normal run // TV
                 std::string choice_col_text = tulip_text + " Choice" + radius_text;
-				choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
-				if (weighting_col != -1) {
+                choice_col.push_back(m_attributes.getColumnIndex(choice_col_text.c_str()));
+                if (weighting_col != -1) {
                     std::string w_choice_col_text = tulip_text + " Choice [" + weighting_col_text + " Wgt]" + radius_text;
-					w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
-				}
-				//EFEF*
-				if (weighting_col2 != -1) {
+                    w_choice_col.push_back(m_attributes.getColumnIndex(w_choice_col_text.c_str()));
+                }
+                //EFEF*
+                if (weighting_col2 != -1) {
                     std::string w_choice_col_text2 = tulip_text + " Choice [" + weighting_col_text + "-" + weighting_col_text2 + " Wgt]" + radius_text;
-					w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
-				}
-				//*EFEF
-			}
-		 
+                    w_choice_col2.push_back(m_attributes.getColumnIndex(w_choice_col_text2.c_str()));
+                }
+                //*EFEF
+            }
+
       }
-		//EF routeweight *
-		if (routeweight_col != -1) {
+        //EF routeweight *
+        if (routeweight_col != -1) {
          std::string integ_col_text = tulip_text + " Integration [Route weight by " + routeweight_col_text + "]"+ radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string w_integ_col_text = tulip_text + " Integration [[Route weight by " + routeweight_col_text + "][" + weighting_col_text + " Wgt]]" + radius_text;
 
@@ -3686,16 +3697,16 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             std::string total_weight_col_text = tulip_text + " Total " + weighting_col_text + " [Route weight by " + routeweight_col_text + "]" +radius_text;
 
          integ_col.push_back(m_attributes.getColumnIndex(integ_col_text.c_str()));
-			count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
-			td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));      
-			if (weighting_col != -1) {
-				// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
+            count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
+            td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
+            if (weighting_col != -1) {
+                // '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
             w_integ_col.push_back(m_attributes.getColumnIndex(w_integ_col_text.c_str()));
-				w_td_col.push_back(m_attributes.getColumnIndex(w_td_text.c_str()));
-				total_weight_col.push_back(m_attributes.getColumnIndex(total_weight_col_text.c_str()));
-			}
-		}
-		//* EF routeweight
+                w_td_col.push_back(m_attributes.getColumnIndex(w_td_text.c_str()));
+                total_weight_col.push_back(m_attributes.getColumnIndex(total_weight_col_text.c_str()));
+            }
+        }
+        //* EF routeweight
         else { // Normal run // TV
             std::string integ_col_text = tulip_text + " Integration" + radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string w_integ_col_text = tulip_text + " Integration [" + weighting_col_text + " Wgt]" + radius_text;
@@ -3704,17 +3715,17 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             std::string td_col_text = tulip_text + " Total Depth" + radius_text; // <- note, the fact this is a tulip is unnecessary
             std::string w_td_text = tulip_text + " Total Depth [" + weighting_col_text + " Wgt]" + radius_text;
             std::string total_weight_col_text = tulip_text + " Total " + weighting_col_text + radius_text;
-      
+
          integ_col.push_back(m_attributes.getColumnIndex(integ_col_text.c_str()));
-			count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
-			td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));      
-			if (weighting_col != -1) {
-				// '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
+            count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
+            td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
+            if (weighting_col != -1) {
+                // '[' comes after 'R' in ASCII, so this column will come after Mean Depth R...
             w_integ_col.push_back(m_attributes.getColumnIndex(w_integ_col_text.c_str()));
-				w_td_col.push_back(m_attributes.getColumnIndex(w_td_text.c_str()));
-				total_weight_col.push_back(m_attributes.getColumnIndex(total_weight_col_text.c_str()));
-			}
-		}
+                w_td_col.push_back(m_attributes.getColumnIndex(w_td_text.c_str()));
+                total_weight_col.push_back(m_attributes.getColumnIndex(total_weight_col_text.c_str()));
+            }
+        }
    }
 
    tulip_bins /= 2;  // <- actually use semicircle of tulip bins
@@ -3761,7 +3772,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    for (size_t rowid = 0; rowid < m_connectors.size(); rowid++) {
 
       if (selection_only) {
-         // could use m_selection_set.searchindex(rowid) to find 
+         // could use m_selection_set.searchindex(rowid) to find
          // if this row is selected as m_selection_set is ordered for axial and segment maps, etc
          // BUT, actually quicker to check the tag in the attributes that shows it's selected
          if (!m_attributes.isSelected(rowid)) {
@@ -3783,9 +3794,9 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 
       double rootseglength = m_attributes.getValue(rowid,length_col);
       double rootweight = (weighting_col != -1) ? weights[rowid] : 0.0;
-		//EFEF
-		double rootweight2 = (weighting_col2 != -1) ? weights2[rowid] : 0.0;
-		//EFEF
+        //EFEF
+        double rootweight2 = (weighting_col2 != -1) ? weights2[rowid] : 0.0;
+        //EFEF
 
       // setup: direction 0 (both ways), segment i, previous -1, segdepth (step depth) 0, metricdepth 0.5 * rootseglength, bin 0
       bins[0].add(SegmentData(0,rowid,SegmentRef(),0,0.5*rootseglength,radiusmask));
@@ -3844,17 +3855,17 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                   rbin = rbinbase;
                   SegmentRef conn = line.m_forward_segconns.key(k);
                   if ((uncovered[conn.ref][(conn.dir == 1 ? 0 : 1)] & coverage) != 0) {
-							//EF routeweight*
-							if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
-													//note that the content of the routeweights array is scaled between 0 and 1 and is reversed 
-													// such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
-								extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);					 
-							}
-							//*EF routeweight
-							else {
-								extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5);
-							}
-							seglength = lengths[conn.ref];
+                            //EF routeweight*
+                            if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
+                                                    //note that the content of the routeweights array is scaled between 0 and 1 and is reversed
+                                                    // such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
+                                extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);
+                            }
+                            //*EF routeweight
+                            else {
+                                extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5);
+                            }
+                            seglength = lengths[conn.ref];
                      switch (radius_type) {
                      case Options::RADIUS_ANGULAR:
                         while (rbin != radiussize && radius[rbin] != -1 && depthlevel+extradepth > (int) radius[rbin]) {
@@ -3866,7 +3877,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                            rbin++;
                         }
                         break;
-                     case Options::RADIUS_STEPS: 
+                     case Options::RADIUS_STEPS:
                         if (rbin != radiussize && radius[rbin] != -1 && lineindex.segdepth >= (int) radius[rbin]) {
                            rbin++;
                         }
@@ -3885,16 +3896,16 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                   rbin = rbinbase;
                   SegmentRef conn = line.m_back_segconns.key(k);
                   if ((uncovered[conn.ref][(conn.dir == 1 ? 0 : 1)] & coverage) != 0) {
-							//EF routeweight*
-							if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
-													//note that the content of the routeweights array is scaled between 0 and 1 and is reversed 
-													// such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
-								extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);					 
-							}
-							//*EF routeweight
-							else {
-								extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5);
-							}
+                            //EF routeweight*
+                            if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
+                                                    //note that the content of the routeweights array is scaled between 0 and 1 and is reversed
+                                                    // such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
+                                extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);
+                            }
+                            //*EF routeweight
+                            else {
+                                extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5);
+                            }
                      seglength = lengths[conn.ref];
                      switch (radius_type) {
                      case Options::RADIUS_ANGULAR:
@@ -3907,7 +3918,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                            rbin++;
                         }
                         break;
-                     case Options::RADIUS_STEPS: 
+                     case Options::RADIUS_STEPS:
                         if (rbin != radiussize && radius[rbin] != -1 && lineindex.segdepth >= (int) radius[rbin]) {
                            rbin++;
                         }
@@ -3930,7 +3941,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
          double curs_total_weight = 0.0, curs_total_weighted_depth = 0.0;
          size_t j;
          for (j = 0; j < m_connectors.size(); j++) {
-            // find dir according 
+            // find dir according
             bool m0 = ((uncovered[j][0] >> k) & 0x1) == 0;
             bool m1 = ((uncovered[j][1] >> k) & 0x1) == 0;
             if ((m0 | m1) != 0) {
@@ -3957,9 +3968,9 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                   if (here.ref != rowid) {
                      int choicecount = 0;
                      double choiceweight = 0.0;
-							//EFEF*
-							double choiceweight2 = 0.0;
-							//*EFEF
+                            //EFEF*
+                            double choiceweight2 = 0.0;
+                            //*EFEF
                      while (here.ref != rowid) { // not rowid means not the current root for the path
                         int heredir = (here.dir == 1) ? 0 : 1;
                         // each node has the existing choicecount and choiceweight from previously encountered nodes added to it
@@ -3967,29 +3978,29 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                         // nb, weighted values calculated anyway to save time on 'if'
                         audittrail[here.ref][k][heredir].weighted_choice += choiceweight;
                         //EFEF*
-								audittrail[here.ref][k][heredir].weighted_choice2 += choiceweight2;
-								//*EFEF
-								// if the node hasn't been encountered before, the choicecount and choiceweight is 
+                                audittrail[here.ref][k][heredir].weighted_choice2 += choiceweight2;
+                                //*EFEF
+                                // if the node hasn't been encountered before, the choicecount and choiceweight is
                         // incremented for all remaining nodes to be encountered on the backwards route from it
                         if (!audittrail[here.ref][k][heredir].choicecovered) {
                            // this node has not been encountered before: this adds the choicecount and weight for this
                            // node, and flags it as visited
                            choicecount++;
                            choiceweight += weights[here.ref] * rootweight;
-									//EFEF*
-									choiceweight2 += weights2[here.ref] * rootweight;//rootweight!
-									//*EFEF
+                                    //EFEF*
+                                    choiceweight2 += weights2[here.ref] * rootweight;//rootweight!
+                                    //*EFEF
 
                            audittrail[here.ref][k][heredir].choicecovered = true;
                            // note, for weighted choice, the start and end points have choice added to them:
                            if (weighting_col != -1) {
                               audittrail[here.ref][k][heredir].weighted_choice += (weights[here.ref] * rootweight) / 2.0;
-										//EFEF*
-										if (weighting_col2 != -1) {
-											audittrail[here.ref][k][heredir].weighted_choice2 += (weights2[here.ref] * rootweight) / 2.0;  //rootweight!
-										}
-										//*EFEF
-									}
+                                        //EFEF*
+                                        if (weighting_col2 != -1) {
+                                            audittrail[here.ref][k][heredir].weighted_choice2 += (weights2[here.ref] * rootweight) / 2.0;  //rootweight!
+                                        }
+                                        //*EFEF
+                                    }
                         }
                         here = audittrail[here.ref][k][heredir].previous;
                      }
@@ -3997,12 +4008,12 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                      // (this is the summed weight for all starting nodes encountered in this path)
                      if (weighting_col != -1) {
                         audittrail[here.ref][k][(here.dir == 1) ? 0 : 1].weighted_choice += choiceweight / 2.0;
-								//EFEF*
-								if (weighting_col2 != -1) {
-									audittrail[here.ref][k][(here.dir == 1) ? 0 : 1].weighted_choice2 += choiceweight2 / 2.0;
-								}
-								//*EFEF
-							}
+                                //EFEF*
+                                if (weighting_col2 != -1) {
+                                    audittrail[here.ref][k][(here.dir == 1) ? 0 : 1].weighted_choice2 += choiceweight2 / 2.0;
+                                }
+                                //*EFEF
+                            }
                   }
                }
             }
@@ -4046,8 +4057,8 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       if (comm) {
          if (qtimer( atime, 500 )) {
             if (comm->IsCancelled()) {
-   				// interactive is usual Depthmap: throw an exception if cancelled
-	   			if (interactive) {
+                // interactive is usual Depthmap: throw an exception if cancelled
+                if (interactive) {
                   for (size_t i = 0; i < m_connectors.size(); i++) {
                      for (size_t j = 0; j < size_t(radiussize); j++) {
                         delete [] audittrail[i][j];
@@ -4066,7 +4077,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                }
             }
             comm->CommPostMessage( Communicator::CURRENT_RECORD, rowid );
-         }         
+         }
       }
    }
    if (choice) {
@@ -4077,12 +4088,12 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             double total_choice = audittrail[rowid][r][0].choice + audittrail[rowid][r][1].choice;
             double total_weighted_choice = audittrail[rowid][r][0].weighted_choice + audittrail[rowid][r][1].weighted_choice;
             //EFEF*
-				double total_weighted_choice2 = audittrail[rowid][r][0].weighted_choice2 + audittrail[rowid][r][1].weighted_choice2;
-				//*EFEF
-			
-				// normalised choice now excluded for two reasons:
+                double total_weighted_choice2 = audittrail[rowid][r][0].weighted_choice2 + audittrail[rowid][r][1].weighted_choice2;
+                //*EFEF
+
+                // normalised choice now excluded for two reasons:
             // a) not useful measure, b) in parallel calculations, cannot be calculated at this stage
-            // n.b., it is possible through the front end: the new choice takes into account bidirectional routes, 
+            // n.b., it is possible through the front end: the new choice takes into account bidirectional routes,
             // so it should be normalised according to (n-1)(n-2) (maximum possible through routes) not (n-1)(n-2)/2
             // the relativised segment length weighted choice equation was (total_seg_length*total_seg_length-seg_length*seg_length)/2
             // again, drop the divide by 2 for the new implementation
@@ -4091,12 +4102,12 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             m_attributes.setValue(rowid,choice_col[r],float(total_choice));
             if (weighting_col != -1) {
                m_attributes.setValue(rowid,w_choice_col[r],float(total_weighted_choice));
-					//EFEF*
-					if (weighting_col2 != -1) {
-						m_attributes.setValue(rowid,w_choice_col2[r],float(total_weighted_choice2));
-					}
-					//*EFEF
-				}
+                    //EFEF*
+                    if (weighting_col2 != -1) {
+                        m_attributes.setValue(rowid,w_choice_col2[r],float(total_weighted_choice2));
+                    }
+                    //*EFEF
+                }
          }
       }
    }
@@ -4159,7 +4170,7 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
       }
       SegmentData lineindex;
       if (bins[currentbin].size() > 1) {
-         // it is slightly slower to delete from an arbitrary place in the bin, 
+         // it is slightly slower to delete from an arbitrary place in the bin,
          // but it is necessary to use random paths to even out the number of times through equal paths
          int curr = pafrand() % bins[currentbin].size();
          lineindex = bins[currentbin][curr];

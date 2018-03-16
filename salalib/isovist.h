@@ -22,6 +22,7 @@
 #define __ISOVIST_H__
 
 #include "genlib/bsptree.h"
+#include <set>
 
 // this is very much like sparksieve:
 
@@ -62,7 +63,7 @@ class Isovist
 {
 protected:
    Point2f m_centre;
-   pqvector<IsoSeg> m_blocks;
+   std::set<IsoSeg> m_blocks;
    pqvector<IsoSeg> m_gaps;
    pqvector<Point2f> m_poly;
    prefvec<PointDist> m_occlusion_points;

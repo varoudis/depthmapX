@@ -149,7 +149,7 @@ namespace depthmapX {
     bool importTxt(ShapeMap &shapeMap, std::istream &stream, char delimiter = '\t') {
         Table table = csvToTable(stream, delimiter);
         std::vector<std::string> columns;
-        int xcol = -1, ycol = -1, x1col = -1, y1col = -1, x2col = -1, y2col = -1;
+        int xcol = -1, ycol = -1, x1col = -1, y1col = -1, x2col = -1, y2col = -1, refcol = -1;
         for(auto const& column: table) {
             if (column.first == "x" || column.first == "easting")
                 xcol = columns.size();
@@ -163,10 +163,31 @@ namespace depthmapX {
                 y1col = columns.size();
             else if (column.first == "y2")
                 y2col = columns.size();
+            else if (column.first == "Ref")
+                refcol = columns.size();
             columns.push_back(column.first);
         }
 
-        if (xcol != -1 && ycol != -1) {
+        if (xcol != -1 && ycol != -1 && refcol != -1) {
+            std::map<int, Point2f> points = extractPointsWithRefs(table[columns[xcol]], table[columns[ycol]], table[columns[refcol]]);
+            table.erase(table.find(columns[xcol]));
+            table.erase(table.find(columns[ycol]));
+            table.erase(table.find(columns[refcol]));
+
+            QtRegion region;
+
+            for(auto& point: points) {
+                if(region.atZero()) {
+                    region = point.second;
+                } else {
+                    region = runion(region, point.second);
+                }
+            }
+
+            shapeMap.init(points.size(),region);
+            shapeMap.importPointsWithRefs(points, table);
+
+        } else if (xcol != -1 && ycol != -1) {
             std::vector<Point2f> points = extractPoints(table[columns[xcol]], table[columns[ycol]]);
             table.erase(table.find(columns[xcol]));
             table.erase(table.find(columns[ycol]));
@@ -184,6 +205,30 @@ namespace depthmapX {
             shapeMap.init(points.size(),region);
             shapeMap.importPoints(points, table);
 
+        } else if (x1col != -1 && y1col != -1 && x2col != -1 && y2col != -1 && refcol != -1) {
+            std::map<int, Line> lines = extractLinesWithRef(table[columns[x1col]],
+                    table[columns[y1col]],
+                    table[columns[x2col]],
+                    table[columns[y2col]],
+                    table[columns[refcol]]);
+            table.erase(table.find(columns[x1col]));
+            table.erase(table.find(columns[y1col]));
+            table.erase(table.find(columns[x2col]));
+            table.erase(table.find(columns[y2col]));
+            table.erase(table.find(columns[refcol]));
+
+            QtRegion region;
+
+            for(auto& line: lines) {
+                if(region.atZero()) {
+                    region = line.second;
+                } else {
+                    region = runion(region, line.second);
+                }
+            }
+
+            shapeMap.init(lines.size(),region);
+            shapeMap.importLinesWithRefs(lines, table);
         } else if (x1col != -1 && y1col != -1 && x2col != -1 && y2col != -1) {
             std::vector<Line> lines = extractLines(table[columns[x1col]], table[columns[y1col]], table[columns[x2col]], table[columns[y2col]]);
             table.erase(table.find(columns[x1col]));
@@ -262,10 +307,30 @@ namespace depthmapX {
         }
         return lines;
     }
+
+    std::map<int, Line> extractLinesWithRef(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col, ColumnData &refcol) {
+        std::map<int, Line> lines;
+        for(size_t i = 0; i < x1col.size(); i++) {
+            double x1 = stod(x1col[i]);
+            double y1 = stod(y1col[i]);
+            double x2 = stod(x2col[i]);
+            double y2 = stod(y2col[i]);
+            int ref = stoi(refcol[i]);
+            lines.insert(std::make_pair(ref, Line(Point2f(x1, y1), Point2f(x2, y2))));
+        }
+        return lines;
+    }
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y) {
         std::vector<Point2f> points;
         for(size_t i = 0; i < x.size(); i++) {
             points.push_back(Point2f(stod(x[i]), stod(y[i])));
+        }
+        return points;
+    }
+    std::map<int, Point2f> extractPointsWithRefs(ColumnData &x, ColumnData &y, ColumnData &ref) {
+        std::map<int, Point2f> points;
+        for(size_t i = 0; i < x.size(); i++) {
+            points.insert(std::make_pair(stoi(ref[i]), Point2f(stod(x[i]), stod(y[i]))));
         }
         return points;
     }

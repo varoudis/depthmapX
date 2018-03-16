@@ -18,7 +18,7 @@
 
 #include "genlib/p2dpoly.h"
 #include "salalib/pixelref.h"
-#include "genlib/paftl.h"
+#include <map>
 
 class Node;
 
@@ -56,7 +56,7 @@ protected:
    // hmm... this is for my 3rd attempt at a quick line intersect algo:
    // every line that goes through the gridsquare -- memory intensive I know, but what can you do:
    // accuracy is imperative here!  Calculated pre-fillpoints / pre-makegraph, and (importantly) it works.
-   pqmap<int,Line> m_lines;
+   std::map<int,Line> m_lines;
    int m_processflag;
 public:
    Point()

@@ -299,8 +299,7 @@ public:
 	void OnToolsAxialLines();
 	void OnEditFixgrid();
 	void OnEditFixFill();
-	void OnToolsMPD();
-	void OnTestButton();
+    void OnToolsMPD();
 	void OnEvoAgent();
 	void OnBinDisplay();
 	void OnToolsMakeFewestLineMap();
@@ -326,13 +325,10 @@ public:
 	void OnViewScatterplot();
 	void OnWindowMap();
 	void OnViewTable();
-	void OnToolsAgentRun();
-	void OnRedtest();
-	void OnGreentest();
+    void OnToolsAgentRun();
 	void OnRenameColumn();
 	void OnEditQuery();
-	void OnColumnProperties();
-	void OnPinktest();
+    void OnColumnProperties();
 	void OnLayerNew();
 	void OnLayerDelete();
 	void OnLayerConvert();

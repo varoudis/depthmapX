@@ -134,7 +134,8 @@ void GLView::paintGL()
         loadDrawingGLObjects();
         m_visibleDrawingLines.updateGL(m_core);
 
-        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
+        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL
+                && m_pDoc.m_meta_graph->getDisplayedMapRef() != -1) {
             m_visibleShapeGraph.loadGLObjects(m_pDoc.m_meta_graph->getDisplayedShapeGraph());
             m_visibleShapeGraph.updateGL(m_core);
         }
@@ -340,19 +341,20 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         case MOUSE_MODE_POLYGON_TOOL | MOUSE_MODE_SECOND_POINT:
         {
             if (m_polyPoints == 0) {
-               m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
+               m_currentlyEditingShapeRef = m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
                m_polyStart = m_tempFirstPoint;
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 2;
             }
             else if (m_polyPoints > 2 && PixelDist(mousePoint, getScreenPoint(m_polyStart)) < 6) {
                // check to see if it's back to the original start point, if so, close off
-               m_pDoc.m_meta_graph->polyClose();
+               m_pDoc.m_meta_graph->polyClose(m_currentlyEditingShapeRef);
                m_polyPoints = 0;
+               m_currentlyEditingShapeRef = -1;
                m_mouseMode = MOUSE_MODE_POLYGON_TOOL;
             }
             else {
-               m_pDoc.m_meta_graph->polyAppend(worldPoint);
+               m_pDoc.m_meta_graph->polyAppend(m_currentlyEditingShapeRef, worldPoint);
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 1;
             }
@@ -379,7 +381,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
                         selectionCentre = m_pDoc.m_meta_graph->getDisplayedPointMap().depixelate(*selectedSet.begin());
                     } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
-                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes().find(*selectedSet.begin())->second.getCentroid();
+                        selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[*selectedSet.begin()].getCentroid();
                     }
                 }
                 m_tempFirstPoint = selectionCentre;
@@ -425,7 +427,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
                     }
                 } else if (m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
                     const auto& selectedSet = m_pDoc.m_meta_graph->getSelSet();
-                    Point2f selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes().find(*selectedSet.begin())->second.getCentroid();
+                    Point2f selectionCentre = m_pDoc.m_meta_graph->getDisplayedShapeGraph().getAllShapes()[*selectedSet.begin()].getCentroid();
                     m_tempFirstPoint = selectionCentre;
                     m_tempSecondPoint = selectionCentre;
                     m_mouseMode = MOUSE_MODE_UNJOIN | MOUSE_MODE_SECOND_POINT;

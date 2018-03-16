@@ -40,8 +40,8 @@ struct PixelVec
    //
    std::istream &read(std::istream &stream, int version, const char dir);
    std::istream &read(std::istream &stream, int version, const char dir, const PixelVec& context);
-   ofstream& write(ofstream& stream, const char dir);
-   ofstream& write(ofstream& stream, const char dir, const PixelVec& context);
+   std::ofstream& write(std::ofstream& stream, const char dir);
+   std::ofstream& write(std::ofstream& stream, const char dir, const PixelVec& context);
 };
 
 class Bin
@@ -94,9 +94,9 @@ public:
    PixelRef cursor() const;
    //
    std::istream &read(std::istream &stream, int version);
-   ofstream& write(ofstream& stream, int version);
+   std::ofstream& write(std::ofstream& stream, int version);
    //
-   friend ostream& operator << (ostream& stream, const Bin& bin);
+   friend std::ostream& operator << (std::ostream& stream, const Bin& bin);
 };
 
 class Node
@@ -158,9 +158,9 @@ public:
    PixelRef cursor() const;
    //
    std::istream &read(std::istream &stream, int version);
-   ofstream& write(ofstream& stream, int version);
+   std::ofstream& write(std::ofstream& stream, int version);
    //
-   friend ostream& operator << (ostream& stream, const Node& node);
+   friend std::ostream& operator << (std::ostream& stream, const Node& node);
 };
 
 // Two little helpers:
