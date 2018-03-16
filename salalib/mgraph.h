@@ -34,7 +34,6 @@
 #include <salalib/connector.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
-#include <salalib/datalayer.h>   // datalayers deprecated
 
 #include <mutex>
 
@@ -178,10 +177,7 @@ public:
    // note: not same categories
    bool convertPointsToShape();
    //bool convertBoundaryGraph( Communicator *communicator );
-   //
-   // some compatibility with older version horrors:
-   int convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap);
-   //
+
    int loadMifMap(Communicator *comm, istream& miffile, istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );
