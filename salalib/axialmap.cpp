@@ -3055,7 +3055,7 @@ void ShapeGraph::makeNewSegMap()
             }
          }
       }
-      PixelRef pix2 = pixelate(m_shapes.find(seg_a)->second.getLine().t_end());
+      PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
       pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
       for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
          auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
