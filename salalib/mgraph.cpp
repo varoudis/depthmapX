@@ -419,40 +419,40 @@ bool MetaGraph::makeShape(const Line& line)
    return (map.makeLineShape(line,true) != -1);
 }
 
-bool MetaGraph::polyBegin(const Line& line)
+int MetaGraph::polyBegin(const Line& line)
 {
    if (!isEditableMap()) {
-      return false;
+      return -1;
    }
    ShapeMap& map = getEditableMap();
-   return (map.polyBegin(line) != -1);
+   return map.polyBegin(line);
 }
 
-bool MetaGraph::polyAppend(const Point2f& point)
+bool MetaGraph::polyAppend(int shape_ref, const Point2f& point)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyAppend(point);
+   return map.polyAppend(shape_ref, point);
 }
 
-bool MetaGraph::polyClose() 
+bool MetaGraph::polyClose(int shape_ref)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyClose();
+   return map.polyClose(shape_ref);
 }
 
-bool MetaGraph::polyCancel()
+bool MetaGraph::polyCancel(int shape_ref)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyCancel();
+   return map.polyCancel(shape_ref);
 }
 
 bool MetaGraph::moveSelShape(const Line& line)

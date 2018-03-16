@@ -133,10 +133,10 @@ public:
    bool makeShape(const Line& line);
    bool moveSelShape(const Line& line);
    // onto polys as well:
-   bool polyBegin(const Line& line);
-   bool polyAppend(const Point2f& point);
-   bool polyClose();
-   bool polyCancel();
+   int polyBegin(const Line& line);
+   bool polyAppend(int shape_ref, const Point2f& point);
+   bool polyClose(int shape_ref);
+   bool polyCancel(int shape_ref);
    //
    int addShapeGraph(const std::string& name, int type);
    int addShapeMap(const std::string& name);

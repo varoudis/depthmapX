@@ -205,7 +205,6 @@ protected:
    bool m_hasgraph;
    // counters
    int m_obj_ref;
-   int m_shape_ref;
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
@@ -262,11 +261,15 @@ public:
    //
    //
    void init(int size, const QtRegion& r);
+   int getNextShapeKey();
    // convert a single point into a shape
+   int makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape = false);
    int makePointShape(const Point2f& point, bool tempshape = false);
    // or a single line into a shape
+   int makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui = false, bool tempshape = false);
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
+   int makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape = false);
    int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
@@ -287,9 +290,9 @@ public:
    //
    // some UI polygon creation tools:
    int polyBegin(const Line& line);
-   bool polyAppend(const Point2f& point);
-   bool polyClose();
-   bool polyCancel();
+   bool polyAppend(int shape_ref, const Point2f& point);
+   bool polyClose(int shape_ref);
+   bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
 protected:
    pqvector<Point2f> m_temppoints;
@@ -384,7 +387,7 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shape_ref; } 
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.rbegin()->first; }
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const
@@ -528,10 +531,13 @@ public:
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importLinesWithRefs(const std::map<int, Line> &lines, const depthmapX::Table &data);
    bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+   bool importPointsWithRefs(const std::map<int, Point2f> &points, const depthmapX::Table &data);
    bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
+   bool importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &lines, const depthmapX::Table &data);
 private:
-   bool importData(const depthmapX::Table &data, std::vector<int> indices);
+   bool importData(const depthmapX::Table &data, std::vector<int> shape_refs);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
