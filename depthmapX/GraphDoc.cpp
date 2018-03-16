@@ -2076,7 +2076,7 @@ void QGraphDoc::OnPushToLayer()
       int toplayerclass = (m_meta_graph->getViewClass() & MetaGraph::VIEWFRONT);
       std::string origin_layer;
       std::string origin_attribute;
-      pqmap<IntPair,std::string> names;
+      std::map<IntPair,std::string> names;
       // I'm just going to allow push from any layer to any other layer
       // (apart from VGA graphs, which cannot map onto themselves
       if (toplayerclass == MetaGraph::VIEWVGA) {
@@ -2107,20 +2107,20 @@ void QGraphDoc::OnPushToLayer()
       ShapeMaps<ShapeMap>& datamaps = m_meta_graph->getDataMaps();
       for (i = 0; i < datamaps.getMapCount(); i++) {
          if (toplayerclass != MetaGraph::VIEWDATA || i != datamaps.getDisplayedMapRef()) {
-            names.add(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps.getMap(i).getName());
+            names.insert(std::make_pair(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps.getMap(i).getName()));
          }
       }
       ShapeGraphs& shapegraphs = m_meta_graph->getShapeGraphs();
       for (i = 0; i < shapegraphs.getMapCount(); i++) {
          if (toplayerclass != MetaGraph::VIEWAXIAL || i != shapegraphs.getDisplayedMapRef()) {
-            names.add(IntPair(MetaGraph::VIEWAXIAL,int(i)),std::string("Shape Graphs: ") + shapegraphs.getMap(i).getName());
+            names.insert(std::make_pair(IntPair(MetaGraph::VIEWAXIAL,int(i)),std::string("Shape Graphs: ") + shapegraphs.getMap(i).getName()));
          }
       }
       for (i = 0; i < m_meta_graph->PointMaps::size(); i++) {
          // note 1: no VGA graph can push to another VGA graph (point onto point transforms)
          // note 2: I simply haven't written "axial" -> vga yet, not that it can't be possible (e.g., "axial" could actually be a convex map)
          if (toplayerclass != MetaGraph::VIEWVGA && toplayerclass != MetaGraph::VIEWAXIAL) {
-            names.add(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->PointMaps::at(i).getName());
+            names.insert(std::make_pair(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->PointMaps::at(i).getName()));
          }
       }
       CPushDialog dlg(names);
@@ -2130,7 +2130,7 @@ void QGraphDoc::OnPushToLayer()
          m_communicator = new CMSCommunicator;   // dummy value to prevent draw while this operation is in progress
          // now have to separate vga and axial layers again:
          int sel = dlg.m_layer_selection;
-         IntPair dest = names.key(sel);
+         IntPair dest = depthmapX::getMapAtIndex(names, sel)->first;
 //         CWaitCursor c;
          m_meta_graph->pushValuesToLayer(dest.a, dest.b, dlg.m_function, dlg.m_count_intersections);
          delete m_communicator;
@@ -2138,213 +2138,6 @@ void QGraphDoc::OnPushToLayer()
          SetUpdateFlag(NEW_TABLE);
       }
    }
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-void QGraphDoc::OnRedtest() 
-{
-   // OzlemSpecial2
-   // chop rays if they intersect other buildings,
-   // exclude them altogether if there is just a short gap between buildings
-
-   // OzlemSpecial3
-   // chop rays according to encountered feature codes
-
-   // expect this to be the rays:
-   int a = (int) m_meta_graph->getDataMaps().getMapRef("Axis Rays");
-
-   // expect this to be the buildings:
-   int b = 2;  // hmm -- just guess a number! (0 for OzlemSpecial2 and 2 for OzlemSpecial3 as designed to be run)
-
-   m_meta_graph->getDataMaps().getMap(a).ozlemSpecial3( m_meta_graph->getDataMaps().getMap(b) );
-
-   SetUpdateFlag(QGraphDoc::NEW_DATA);
-   SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_DATA );
-}
-
-void QGraphDoc::OnGreentest() 
-{
-   // OzlemSpecial5
-   // mark up buildings according to exposure types
-
-   // expect this to be the rays:
-   int a = (int) m_meta_graph->getDataMaps().getMapRef("Axis Rays");
-
-   // expect this to be the buildings:
-   int b = 0;  // hmm -- just guess a number! (0 for OzlemSpecial5)
-
-   m_meta_graph->getDataMaps().getMap(a).ozlemSpecial5( m_meta_graph->getDataMaps().getMap(b) );
-  
-//   m_meta_graph->getDisplayedDataMap().ozlemSpecial6();
-}
-
-void QGraphDoc::OnPinktest() 
-{
-   // note: expects 0 to be points, 1 to be lines
-   m_meta_graph->getDataMaps().getMap(0).ozlemSpecial7( m_meta_graph->getDataMaps().getMap(1) );
-}
-
-void QGraphDoc::OnTestButton() 
-{
-/*   AfxMessageBox(tr("test!"));
-   AttributeTable *tester = new AttributeTable();
-   for (int i = 0; i < 1000000; i++) {
-      tester->insertRow(i);
-   }
-   delete tester;
-   AfxMessageBox(tr("tested!"));
-*/
-
-   /*
-   if (saveDialog.DoModal() == IDOK) {
-      CWaitCursor;
-      QString outfile = saveDialog.GetPathName();
-      ofstream stream(outfile);
-      stream << "Building\tRoad1\tRoad2\tangle" << endl;
-      m_meta_graph->getDataMaps().at(1).ozlemSpecial( stream, m_meta_graph->getDataMaps().at(0));
-   }
-*/
-   /*
-   ifstream file("F:\\alasdair\\apps\\saladtester\\paths.txt");
-                                                                   // <<
-   m_evolved_paths.clear();
-   for (int i = 0; i < 19; i++) {
-      m_evolved_paths.push_back(pqvector<Point2f>());
-      for (int j = 0; j < 1200; j++) {
-         Point2f p;
-         file >> p.x >> p.y;
-         m_evolved_paths.tail().push_back(p);
-      }
-   }
-*/
-
-   /*
-   int counter = 0;
-
-   int seed = 1;
-   pafsrand(seed);
-   int nextrand;
-
-   int buckets[100];
-   for (int i = 0; i < 100; i++)
-   {
-      buckets[i] = 0;
-   }
-
-   do {
-      nextrand = pafrand();
-      buckets[nextrand % 100] += 1;
-   } while (++counter < PAF_RAND_MAX * 10);
-
-   ofstream data("data.txt");
-
-   for (int j = 0; j < 100; j++) {
-      data << buckets[j] << endl;
-   }
-
-   if (counter == PAF_RAND_MAX) {
-      AfxMessageBox(tr("blah!"));
-   }
-   else {
-      AfxMessageBox(tr("wah!"));
-   }
-*/
-   //m_meta_graph->highlightBorder();
-   //SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH);
-/*   if (m_agent_manager && m_agent_manager->isPaused()) {
-      Evoecomorph& evo = m_agent_manager->getEvoecomorph();
-      double val = evo.getLatestFitness();
-      char out[64];
-      printf(out,"%f",val);
-      AfxMessageBox(out);
-      m_agent_manager->unPause();
-   }*/
-/*
-   m_meta_graph->loadGraphAgent();
-   m_meta_graph->getLineLayer(0,0).setEditable(true);
-   */
-/*
-   for (int run = 0; run < 3; run++) {
-      int seed = run + 2;
-      int return_time = 600;
-      //
-      if (m_evoecomorph) {
-         delete m_evoecomorph;
-         m_evoecomorph = NULL;
-      }
-      pafsrand(seed);
-      m_evoecomorph = new Evoecomorph;
-      delete m_meta_graph;
-      m_meta_graph = new MetaGraph;
-      m_evoecomorph->init( *m_meta_graph, return_time );
-      for (int genset = 0; genset < 10; genset++) {
-         if (genset != 0) {
-            delete m_meta_graph;
-            m_meta_graph = new MetaGraph;
-            m_evoecomorph->next( *m_meta_graph );
-            //m_evoecomorph->blank( *m_meta_graph ); // this was set to blank, I don't know why
-         }
-         for (int i = 0; i < 500; i++) {
-            char blah2[128];
-            for (int j = 0; j < 300 + (return_time * 3) / 2; j++) { // moved down from 600 to 300 in line with changes to evoecomorph loading
-               m_evoecomorph->step(*m_meta_graph);
-            }
-            m_evoecomorph->evaluate(*m_meta_graph);
-            sprintf(blah2, "seed %d gen %d fit %f", seed, i + genset * 500, m_evoecomorph->m_fitness);
-            SetTitle(blah2);
-            delete m_meta_graph;
-            if (i < 499) {
-               m_meta_graph = new MetaGraph;
-               m_evoecomorph->next( *m_meta_graph );
-            }
-         }
-         m_meta_graph = new MetaGraph;
-         m_evoecomorph->best( *m_meta_graph );
-         for (int k = 0; k < 300 + (return_time * 3) / 2; k++) {  // moved down from 600 to 300
-            m_evoecomorph->step(*m_meta_graph);
-         }
-         m_evoecomorph->evaluate(*m_meta_graph);
-         char blah3[128];
-         char blah4[128];
-         sprintf(blah3, "dcc%d-seed%d-gen%d-noexit.graph", return_time, seed, i + genset * 500);
-         sprintf(blah4, "dcc%d-seed%d-gen%d-noexit.txt", return_time, seed, i + genset * 500);
-         ofstream summary(blah4);
-         char blah[256];
-         sprintf(blah, "Bad rooms %d, bad agents %d, avg diff %f, fitness %f",
-            m_evoecomorph->m_bad_rooms, m_evoecomorph->m_bad_agents, m_evoecomorph->m_avg_diff, m_evoecomorph->m_fitness);
-         summary << blah << endl;
-         m_meta_graph->write(blah3, METAGRAPH_VERSION);
-      }
-   }
-
-   SetUpdateFlag(QGraphDoc::NEW_DATA);
-   SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_DATA );
-
-   char blah[256];
-   sprintf(blah, "Bad rooms %d, bad agents %d, avg diff %f, fitness %f",
-      m_evoecomorph->m_bad_rooms, m_evoecomorph->m_bad_agents, m_evoecomorph->m_avg_diff, m_evoecomorph->m_fitness);
-
-   AfxMessageBox(blah);
-*/
-   /*
-   static int x = 0;
-   static bool widdywoo = false;
-
-   if (m_meta_graph && m_meta_graph->getState() & MetaGraph::GRAPH) {
-      // cross fingers and go for it!
-      if (!widdywoo) {
-         x = m_meta_graph->addLineDynamic(Line(Point2f(0.0,0.0),Point2f(10.0,10.0)));
-         widdywoo = true;
-      }
-      else {
-         m_meta_graph->removeLineDynamic(x);
-         widdywoo = false;
-      }
-
-      m_meta_graph->dynamicSparkGraph2();
-   }
-   */
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
