@@ -134,16 +134,10 @@ public:
    //
    bool isProcessed() const
    { return m_processed; }
-   bool isBoundaryGraph() const
-   { return m_boundarygraph; }
-   //
-   bool fillLines();
    void fillLine(const Line& li);
    bool blockLines();
    void blockLine(int key, const Line& li);
    void unblockLines(bool clearblockedflag = true);
-   void addLineDynamic(LineKey ref,const Line& line);
-   void removeLineDynamic(LineKey ref,const Line& line);
    bool fillPoint(const Point2f& p, bool add = true); // use add = false for remove point
    //bool blockPoint(const Point2f& p, bool add = true); // no longer used
    //
@@ -152,17 +146,11 @@ public:
    bool undoPoints();
    bool canUndo() const
       { return !m_processed && m_undocounter != 0; }
-   //
-   bool importPoints(istream& stream);
    void outputPoints( ostream& stream, char delim );
    void outputMergeLines(ostream& stream, char delim);
-   //
-   void makeConstants();
+
    int  tagState(bool settag, bool sparkgraph = false);
-   bool binMap( Communicator *comm );
-   bool sparkGraph( Communicator *comm );
    bool sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist );
-   bool dynamicSparkGraph2();
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
    bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
@@ -187,14 +175,7 @@ public:
    void outputNet( ostream& netfile );
    void outputConnections(ostream& myout);
    void outputBinSummaries(ostream& myout);
-   //
-   // scruffy little helper functions
-   int u(int i, int x, int s) const
-      { return i + (x * s); }
-   int v(int j, int y, int s) const
-      { return j + (y * s); }
-   int remaining(int i, int j, int x, int y, int q);
-   //
+
    Point& getPoint(const PixelRef& p) const
       { return m_points[p.x][p.y]; }
    const int& pointState( const PixelRef& p ) const
@@ -228,14 +209,9 @@ protected:
 public:
    bool isSelected() const                              // does a selection exist
       { return m_selection != NO_SELECTION; }
-   bool isPinned() const
-      { return m_pinned_selection; }
    bool clearSel(); // clear the current selection
    bool setCurSel( QtRegion& r, bool add = false ); // set current selection
    bool setCurSel(const std::vector<int> &selset, bool add = false );
-   bool overrideSelPixel(PixelRef pix);    // set a pixel to selected: careful!
-   //bool togglePin();
-   //bool convertSelToDataObject( MetaGraph& meta_graph );
    // Note: passed by ref, use with care in multi-threaded app
    std::set<int>& getSelSet()
       { return m_selection_set; }
@@ -243,8 +219,7 @@ public:
       { return m_selection_set; }
    //
    PixelRefVector getLayerPixels(int layer);
-   PixelRefVector getDataObjectPixels(int layer, int object);
-   //
+
    // Attribute functionality
 protected:
    // which attribute is currently displayed:
@@ -254,10 +229,6 @@ public:
       { return m_attributes.insertColumn(name); }
    void removeAttribute(int col)
       { m_attributes.removeColumn(col); }
-   void setAttribute(PixelRef pix, const std::string& name, float val)
-      { m_attributes.setValue(m_attributes.getRowid(pix),name,val); }
-   void incrementAttribute(PixelRef pix, const std::string& name)
-      { m_attributes.incrValue(m_attributes.getRowid(pix),name); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
    AttributeTable& getAttributeTable()
@@ -302,10 +273,7 @@ public:
         m_display_params = m_attributes.getDisplayParams(m_displayed_attribute);
      }
      return m_displayed_attribute; }
-   //
-   double getDisplayedAverage()
-      { return m_attributes.getAvgValue( m_displayed_attribute ); }
-   //
+
    double getLocationValue(const Point2f& point);
    //
    // Screen functionality
@@ -328,8 +296,6 @@ public:
    bool findNextPoint() const;
    Point2f getNextPointLocation() const
    { return getPoint(cur).m_location; }
-   Point& getNextPoint() const
-   { return getPoint(cur); }
    bool findNextRow() const;
    Line getNextRow() const;
    bool findNextPointRow() const;
@@ -437,115 +403,6 @@ inline bool operator > (const AngularTriple& mp1, const AngularTriple& mp2)
 { return (mp1.angle > mp2.angle) || (mp1.angle == mp2.angle && mp1.pixel > mp2.pixel); }
 inline bool operator != (const AngularTriple& mp1, const AngularTriple& mp2)
 { return (mp1.angle != mp2.angle) || (mp1.pixel != mp2.pixel); }
-
-//
-
-// A scruffy little helper class for the original makeGraph
-
-struct Grad {
-   int a;
-   int b;
-   float length;
-   float ratio;
-   Grad(int u = -1, int v = -1) 
-   { 
-      a = u; b = v; 
-      length = (float) sqrt(double(u * u) + double(v * v)); 
-      ratio = float(v) / float(u);  // v is sometimes 0, thus v/u
-   }
-   int x(int dir) const {
-      int w;
-      if (dir / 4 == 0)
-         w = a;
-      else
-         w = b;
-      if (dir % 2 == 0)
-         w *= -1;
-      return w;
-   }
-   int y(int dir) const {
-      int w;
-      if (dir / 4 == 0)
-         w = b;
-      else
-         w = a;
-      if ((dir / 2) % 2 == 0)
-         w *= -1;
-      return w;
-   }
-            // q quadrants:
-            //
-            //      \ 6 | 7 /
-            //      0 \ | / 1
-            //      - -   - -
-            //      2 / | \ 3
-            //      / 4 | 5 \
-            
-   int whichbin(int dir) const {
-      int w;
-      if (ratio == 0.0f) {                      // =  0 degrees (special case) 
-         switch (dir) {
-         case 0:
-            return 16;
-         case 1:
-            return 0;
-         case 4:
-            return 24;
-         case 6:
-            return 8;
-         }
-      }
-      if (ratio < 0.2679491924311227f) {        // < 15 degrees
-         w = 1;
-      }
-      else if (ratio < 0.5773502691896257f) {   // < 30 degrees
-         w = 2;
-      }
-      else if (ratio < 1.0f) {                  // < 45 degrees
-         w = 3;
-      }
-      else {                                    // = 45 degrees (special case)
-         switch (dir) {
-         case 0:
-            return 20;
-         case 1:
-            return 28;
-         case 2:
-            return 12;
-         case 3:
-            return 4;
-         }
-      }
-      switch (dir) {
-      case 0:
-         w = 16 + w;
-         break;
-      case 1:
-         w = 32 - w;
-         break;
-      case 2:
-         w = 16 - w;
-         break;
-      case 3:
-         w = 0 + w;
-         break;
-      case 4:
-         w = 24 - w;
-         break;
-      case 5:
-         w = 24 + w;
-         break;
-      case 6:
-         w = 8 + w;
-         break;
-      case 7:
-         w = 8 - w;
-         break;
-      }
-      return w;
-   }
-};
-
 
 // true grads are also similar to generated grads...
 // this scruffy helper function converts a true grad to a bin:
