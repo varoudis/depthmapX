@@ -1556,36 +1556,6 @@ void QGraphDoc::OnToolsAgentRun()
    m_thread.render(this);
 }
 
-// some evo agent code... not sure if this works or not!
-
-void QGraphDoc::OnEvoAgent() 
-{
-/*   if (!m_evoagent) {
-      m_evoagent = (CEvoAgent *) AfxBeginThread(RUNTIME_CLASS(CEvoAgent));
-      if (!m_evoagent) {
-         AfxMessageBox(tr("An error occurred trying to start the agent simulation module"));
-         return;
-      }
-      else {
-         CEvoAgentSetup dlg;
-         if (dlg.DoModal() == IDOK) {
-            m_evoagent->Init(this,dlg.m_evolveapply,dlg.m_filename,dlg.m_seed);
-            m_evoagent->PostThreadMessage(WM_DMP_RUN,0,0);
-         }
-         else {
-            m_evoagent->PostThreadMessage(WM_DMP_FINISHED_MESSAGE,0,0);
-            m_evoagent = NULL;
-         }
-      }
-   }
-   else {
-      // turn off pause (typically pauses after evaluation run)
-      m_evoagent->m_paused = false;
-      m_evoagent->PostThreadMessage(WM_DMP_RUN,0,0);
-   }
-   */
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 void QGraphDoc::OnEditUndo() 
@@ -1804,26 +1774,6 @@ void QGraphDoc::OnToolsTPD()
          m_communicator = new CMSCommunicator();
          CreateWaitDialog(tr("Calculating topological depth..."));
          m_communicator->SetFunction( CMSCommunicator::TOPOLOGICALPOINTDEPTH );
-
-         m_thread.render(this);
-      }
-   }
-}
-
-void QGraphDoc::OnBinDisplay() 
-{
-   if (m_communicator) {
-      QMessageBox::warning(this, tr("Warning"), tr("Please wait, another process is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-
-   if (m_meta_graph->viewingProcessedPoints()) {
-      if (m_meta_graph->isSelected()) {
-
-         // This is easy too... too easy... hmm... crossed-fingers, here goes:
-         m_communicator = new CMSCommunicator();
-         CreateWaitDialog(tr("Showing bins..."));
-         m_communicator->SetFunction( CMSCommunicator::BINDISPLAY );
 
          m_thread.render(this);
       }
@@ -2056,26 +2006,6 @@ bool QGraphDoc::OnCloseDocument(int index)
     return true;
 }
 
-void QGraphDoc::OnAddGate() 
-{
-   if (m_communicator) {
-      QMessageBox::warning(this, tr("Warning"), tr("Please wait, another process is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-   if (m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
-      // try the new thingy:
-      if (m_meta_graph->convertPointsToShape()) {
-         // redraw all as change of view is affected here:
-         // (also possibly even the sidebar menu:
-//         GetApp()->GetMainWnd()->PostMessage( WM_DMP_FOCUS_GRAPH, (WPARAM) this, QGraphDoc::CONTROLS_LOADGRAPH );
-         SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_DEPTHMAPVIEW_SETUP );
-      }
-      else {
-		  QMessageBox::warning(this, tr("Warning"), tr("There was an error trying to convert points to a shape.\nPlease check that you have selected a single polygon without holes.") );
-      }
-   }
-}
-
 void QGraphDoc::OnPushToLayer() 
 {
    if (m_meta_graph->viewingProcessed()) {
@@ -2145,8 +2075,6 @@ void QGraphDoc::OnPushToLayer()
       }
    }
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void QGraphDoc::OnAddColumn() 
 {
@@ -2500,67 +2428,6 @@ void QGraphDoc::OnFileProperties()
    }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-// a bit of testing
-
-void QGraphDoc::OnMagiMif() 
-{
-   if (m_meta_graph && !m_communicator) {
-      if (m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS) {
-
-         QFilePath path(m_opened_name);
-         QString defaultname = path.m_path + (path.m_name.isEmpty() ? "" : path.m_name) + tr("_polys");
-		 
-		 QFileDialog::Options options = 0;
-		 QString outfile = QFileDialog::getOpenFileName(
-								   0, tr("Save As"),
-								   defaultname,
-								   tr("MapInfo file (*.mif)"),
-								   0,
-								   options);
-         
-		 if(!outfile.isEmpty()){
-            QFilePath filepath(outfile);
-            QString ext = filepath.m_ext;         
-            if (ext == QString("MIF")) 
-            {
-               int thedot = outfile.indexOf('.');
-               QString outfile2 = outfile.left(thedot+1) + tr("mid");
-               
-               ofstream miffile(outfile.toLatin1());
-               if (miffile.fail() || miffile.bad()) {
-                  QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
-               }
-               
-               ofstream midfile(outfile2.toLatin1());
-               if (midfile.fail() || midfile.bad()) {
-	               QMessageBox::warning(this, tr("Warning"), tr("Sorry, unable to open associated .mid file for export"), QMessageBox::Ok, QMessageBox::Ok);
-               }             
-               m_meta_graph->getDisplayedShapeGraph().outputMifPolygons(miffile,midfile);
-            }
-         }
-      }
-   }
-}
-
-void QGraphDoc::OnBinDistances() 
-{
-   m_meta_graph->getDisplayedPointMap().binMap(NULL);
-}
-
-void QGraphDoc::OnShowBinDistances() 
-{
-   std::set<int> a = m_meta_graph->getDisplayedPointMap().getSelSet();
-   Point& p = m_meta_graph->getDisplayedPointMap().getPoint(*a.begin());
-   QString all;
-   for (int i = 0; i < 32; i++) {
-      QString blah = QString(tr("%2d: %f\n")).arg(i).arg(p.getBinDistance(i));
-      all += blah;
-   }
-   QMessageBox::information(this, tr("BinDistances"), all, QMessageBox::Ok, QMessageBox::Ok);
-}
-
 void QGraphDoc::OnViewShowGrid() 
 {
    if (m_meta_graph->m_showgrid) {
@@ -2589,19 +2456,6 @@ void QGraphDoc::OnViewSummary()
 {
    CAttributeSummary dlg(this);
    dlg.exec();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
-// Red button tests the rapid agent program:
-
-void QGraphDoc::OnRedButton() 
-{
-/*   AfxMessageBox(tr("Disabled: use main through vision calculator (with vga analysis) instead"));
-   // m_meta_graph->analyseThruVision();
-   //
-   SetUpdateFlag(QGraphDoc::NEW_DATA);
-   SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );*/
 }
 
 void QGraphDoc::OnToolsPointConvShapeMap() 

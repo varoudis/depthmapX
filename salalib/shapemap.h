@@ -343,8 +343,6 @@ public:
    void getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts);
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
-   // Find out which shapes are within a certain radius of a point:
-   int withinRadius(const Point2f& p, double radius, std::vector<int> &bufferset);
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
