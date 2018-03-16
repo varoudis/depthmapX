@@ -131,21 +131,24 @@ TEST_CASE("Complete proper MapInfo file", "")
     std::stringstream midstream(middata);
     REQUIRE(mapinfodata.import(mifstream, midstream, shapeMap) == MINFO_OK);
 
-    pqmap<int, SalaShape> shapes = shapeMap.getAllShapes();
+    std::map<int, SalaShape> shapes = shapeMap.getAllShapes();
+    auto shape0 = depthmapX::getMapAtIndex(shapes, 0)->second;
+    auto shape1 = depthmapX::getMapAtIndex(shapes, 1)->second;
+    auto shape2 = depthmapX::getMapAtIndex(shapes, 2)->second;
     REQUIRE(shapes.size() == 3);
-    REQUIRE(shapes[0].isLine());
-    REQUIRE(shapes[0].getLine().ax() == Approx(534014.29).epsilon(EPSILON));
-    REQUIRE(shapes[0].getLine().ay() == Approx(182533.33).epsilon(EPSILON));
-    REQUIRE(shapes[0].getLine().bx() == Approx(535008.52).epsilon(EPSILON));
-    REQUIRE(shapes[0].getLine().by() == Approx(182764.11).epsilon(EPSILON));
-    REQUIRE(shapes[1].isLine());
-    REQUIRE(shapes[1].getLine().ax() == Approx(533798.68).epsilon(EPSILON));
-    REQUIRE(shapes[1].getLine().ay() == Approx(183094.69).epsilon(EPSILON));
-    REQUIRE(shapes[1].getLine().bx() == Approx(534365.48).epsilon(EPSILON));
-    REQUIRE(shapes[1].getLine().by() == Approx(183159.01).epsilon(EPSILON));
-    REQUIRE(shapes[2].isPoint());
-    REQUIRE(shapes[2].getPoint().x == Approx(534014.29).epsilon(EPSILON));
-    REQUIRE(shapes[2].getPoint().y == Approx(182533.33).epsilon(EPSILON));
+    REQUIRE(shape0.isLine());
+    REQUIRE(shape0.getLine().ax() == Approx(534014.29).epsilon(EPSILON));
+    REQUIRE(shape0.getLine().ay() == Approx(182533.33).epsilon(EPSILON));
+    REQUIRE(shape0.getLine().bx() == Approx(535008.52).epsilon(EPSILON));
+    REQUIRE(shape0.getLine().by() == Approx(182764.11).epsilon(EPSILON));
+    REQUIRE(shape1.isLine());
+    REQUIRE(shape1.getLine().ax() == Approx(533798.68).epsilon(EPSILON));
+    REQUIRE(shape1.getLine().ay() == Approx(183094.69).epsilon(EPSILON));
+    REQUIRE(shape1.getLine().bx() == Approx(534365.48).epsilon(EPSILON));
+    REQUIRE(shape1.getLine().by() == Approx(183159.01).epsilon(EPSILON));
+    REQUIRE(shape2.isPoint());
+    REQUIRE(shape2.getPoint().x == Approx(534014.29).epsilon(EPSILON));
+    REQUIRE(shape2.getPoint().y == Approx(182533.33).epsilon(EPSILON));
 
     AttributeTable att = shapeMap.getAttributeTable();
     REQUIRE(att.getColumnCount() == 2);

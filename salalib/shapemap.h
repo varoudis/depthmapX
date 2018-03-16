@@ -26,6 +26,7 @@
 #include <string>
 #include "salalib/importtypedefs.h"
 #include "genlib/bsptree.h"
+#include "genlib/containerutils.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +214,7 @@ protected:
    mutable BSPNode *m_bsp_root;
    mutable bool m_bsp_tree;
    //
-   pqmap<int,SalaShape> m_shapes;
+   std::map<int,SalaShape> m_shapes;
    std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
    prefvec<SalaEvent> m_undobuffer;
@@ -247,14 +248,14 @@ public:
    // num shapes for this object (note, request by object rowid
    // -- on interrogation, this is what you will usually receive)
    const size_t getShapeCount(int rowid) const
-   { return m_shapes.value(rowid).size(); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.size(); }
    //
    int getIndex(int rowid) const
-   { return m_shapes.key(rowid); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->first; }
    //
    // add shape tools
    void makePolyPixels(int shaperef);
-   void shapePixelBorder(pmap<int,int>& relations, int shaperef, int side, PixelRef currpix, PixelRef minpix, bool first);
+   void shapePixelBorder(std::map<int,int>& relations, int shaperef, int side, PixelRef currpix, PixelRef minpix, bool first);
    // remove shape tools
    void removePolyPixels(int shaperef);
    //
@@ -296,13 +297,6 @@ public:
 protected:
    pqvector<Point2f> m_temppoints;
 public:
-   // add a shape (does not commit to poly pixels)
-   void shapeBegin();
-   void shapeVertex(const Point2f& p);
-   int shapeEnd(bool close);
-   // this simply adds all shapes to the poly pixels
-   void shapesCommit();
-   // 
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
    void undo();
@@ -311,7 +305,7 @@ public:
    Point2f pointOffset(const PointMap& pointmap, int currpix, int side);
    int moveDir(int side);
    //
-   void pointPixelBorder(const PointMap& pointmap, pmap<int,int>& relations, SalaShape& shape, int side, PixelRef currpix, PixelRef minpix, bool first);
+   void pointPixelBorder(const PointMap& pointmap, std::map<int, int> &relations, SalaShape& shape, int side, PixelRef currpix, PixelRef minpix, bool first);
    // quick find of topmost poly from a point (bit too inaccurate!)
    int quickPointInPoly(const Point2f& p) const;
    // slower point in topmost poly test:
@@ -393,7 +387,7 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.key(m_shapes.size()-1); }
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.rbegin()->first; }
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const
@@ -480,7 +474,7 @@ public:
    const PafColor getShapeColor() const
    { return m_attributes.getDisplayColor(m_display_shapes[m_current]); }
    bool getShapeSelected() const
-   { return m_shapes[m_display_shapes[m_current]].m_selected; }
+   { return depthmapX::getMapAtIndex(m_shapes, m_display_shapes[m_current])->second.m_selected; }
    //
    double getLocationValue(const Point2f& point) const;
 
@@ -494,9 +488,9 @@ public:
    { return __max(m_region.width(), m_region.height()) / (10 * log((double)10+m_shapes.size())); }
    //
    // dangerous: accessor for the shapes themselves:
-   const pqmap<int,SalaShape>& getAllShapes() const
+   const std::map<int,SalaShape>& getAllShapes() const
    { return m_shapes; }
-   pqmap<int,SalaShape>& getAllShapes()
+   std::map<int,SalaShape>& getAllShapes()
    { return m_shapes; }
    // required for PixelBase, have to implement your own version of pixelate
    PixelRef pixelate( const Point2f& p, bool constrain = true, int = 1) const;
@@ -533,13 +527,6 @@ public:
    std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
-   void ozlemSpecial(ShapeMap& output);
-   void ozlemSpecial2(ShapeMap& buildings);
-   void ozlemSpecial3(ShapeMap& all);
-   bool ozlemSpecial4(ValuePair& cut, IntPair& previous, int& state, AttributeTable& table, IntPair& lookupcols);
-   void ozlemSpecial5(ShapeMap& buildings);
-   void ozlemSpecial6();
-   void ozlemSpecial7(ShapeMap& linemap);
    std::vector<SimpleLine> getAllShapesAsLines();
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
