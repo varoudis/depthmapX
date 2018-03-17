@@ -24,28 +24,48 @@ QT_BEGIN_NAMESPACE
 class QEvent;
 class QTreeWidgetItem;
 
-class indexWidget : public QTreeWidget
+class IndexWidget : public QTreeWidget
 {
     Q_OBJECT
 
 public:
-    indexWidget(QWidget *parent = 0, bool custom = true);
-    ~indexWidget();
+    IndexWidget(QWidget *parent = 0);
+    ~IndexWidget();
+
+    QString m_mapColumn = "Map";
+    QString m_editableColumn = "Editable";
+
+    int columnIndex(QString columnName) {
+        return columnNames.indexOf(columnName);
+    }
+
+    void setItemVisibility(QTreeWidgetItem* item, Qt::CheckState checkState) {
+        item->setCheckState(columnIndex(m_mapColumn), checkState);
+    }
+    void setItemEditability(QTreeWidgetItem* item, Qt::CheckState checkState) {
+        item->setCheckState(columnIndex(m_editableColumn), checkState);
+    }
+    void setItemReadOnly(QTreeWidgetItem* item) {
+        item->setData(columnIndex(m_editableColumn), Qt::CheckStateRole, QVariant());
+    }
+    bool isItemSetVisible(QTreeWidgetItem* item) {
+        return item->checkState(columnIndex(m_mapColumn));
+    }
+    bool isItemSetEditable(QTreeWidgetItem* item) {
+        return item->checkState(columnIndex(m_editableColumn));
+    }
 
 signals:
     void requestShowLink(const QUrl& url);
 
 public slots:
-	void removeAllItem(QTreeWidgetItem *start);
-	QTreeWidgetItem* addNewRootFolder(const QString &title);
-    QTreeWidgetItem * addNewFolder(const QString &title, QTreeWidgetItem *parent = 0);
-    QTreeWidgetItem * addNewItem(const QString& title, const QString &url);
+    void removeAllItem(QTreeWidgetItem *start);
+    QTreeWidgetItem * addNewItem(const QString& title, QTreeWidgetItem *parent = NULL);
 
 private:
-    QTreeWidgetItem* itemIfNotDirectory();
-
-private:
-    bool m_custom;
+    QStringList columnNames = (QStringList()
+                               << m_mapColumn
+                               << m_editableColumn);
 };
 
 QT_END_NAMESPACE

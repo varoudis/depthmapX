@@ -29,26 +29,15 @@
 
 QT_BEGIN_NAMESPACE
 
-indexWidget::indexWidget(QWidget *parent, bool custom)
+IndexWidget::IndexWidget(QWidget *parent)
     : QTreeWidget(parent)
-    , m_custom(custom)
 {
-    if (m_custom) {
-        setColumnCount(3);
-        hideColumn(1);
-        QStringList columnNames(tr("Map"));
-        columnNames << tr("Folder");
-        columnNames << tr("Editable");
-        setHeaderLabels(columnNames);
-        header()->setSectionResizeMode(0, QHeaderView::Stretch);
-        header()->resizeSection(0, 200);
-        header()->resizeSection(1, 10);
-        header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-        header()->resizeSection(2, 10);
-        header()->setStretchLastSection(false);
-    } else {
-        header()->hide();
-    }
+    setColumnCount(2);
+    setHeaderLabels(columnNames);
+    header()->setSectionResizeMode(columnIndex(m_mapColumn), QHeaderView::Stretch);
+    header()->setSectionResizeMode(columnIndex(m_editableColumn), QHeaderView::ResizeToContents);
+    header()->resizeSection(columnIndex(m_editableColumn), 10);
+    header()->setStretchLastSection(false);
 
     installEventFilter(this);
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -57,16 +46,16 @@ indexWidget::indexWidget(QWidget *parent, bool custom)
         SLOT(OnSelchangingTree(QTreeWidgetItem*, int)));
 }
 
-indexWidget::~indexWidget()
+IndexWidget::~IndexWidget()
 {
     // nothing todo
 }
 
-void indexWidget::removeAllItem(QTreeWidgetItem *start)
+void IndexWidget::removeAllItem(QTreeWidgetItem *start)
 {
     int index;
     QTreeWidgetItem *currentItem = start;
-    if(currentItem) //while (currentItem) 
+    if(currentItem)
 	{
         QTreeWidgetItem *parent = currentItem->parent();
         if (parent) {
@@ -79,76 +68,20 @@ void indexWidget::removeAllItem(QTreeWidgetItem *start)
     }
 }
 
-QTreeWidgetItem* indexWidget::addNewRootFolder(const QString &title)
+QTreeWidgetItem * IndexWidget::addNewItem(const QString &title, QTreeWidgetItem* parent)
 {
-    QString folderName = title;
     QTreeWidgetItem *newItem = 0;
-    
-    QStringList columnStrings(folderName);
-    columnStrings << QLatin1String("Folder");
-    newItem = new QTreeWidgetItem(this, columnStrings);
 
-    setCurrentItem(newItem);
-	return newItem;
-}
-
-QTreeWidgetItem* indexWidget::addNewFolder(const QString &title, QTreeWidgetItem *parent)
-{
-    QString folderName = title;
-
-    QTreeWidgetItem *newItem = 0;
-    QTreeWidgetItem *treeItem = itemIfNotDirectory();
-    
-    QStringList columnStrings(folderName);
-    columnStrings << QLatin1String("Folder");
-	if(parent)
-	{
+    QStringList columnStrings(title);
+    if (parent != NULL) {
         newItem = new QTreeWidgetItem(parent, columnStrings);
-	}
-    else if (treeItem) {
-        newItem = new QTreeWidgetItem(columnStrings);
-        treeItem->addChild(newItem);
-    } 
-	else {
+    } else {
         newItem = new QTreeWidgetItem(this, columnStrings);
     }
 
     setCurrentItem(newItem);
     newItem->setFlags(newItem->flags() &~ (Qt::ItemIsEditable | Qt::ItemIsSelectable));
 	return newItem;
-}
-
-QTreeWidgetItem * indexWidget::addNewItem(const QString &title, const QString &url)
-{
-    QTreeWidgetItem *newItem = 0;
-    QTreeWidgetItem *treeItem = itemIfNotDirectory();
-
-    QStringList columnStrings(title);
-    if (treeItem) {
-        newItem = new QTreeWidgetItem(columnStrings);// << url);
-        treeItem->insertChild(0, newItem);
-    } else {
-        newItem = new QTreeWidgetItem(this, columnStrings);// << url);
-    }
-
-    setCurrentItem(newItem);
-    newItem->setFlags(newItem->flags() &~ (Qt::ItemIsEditable | Qt::ItemIsSelectable));
-	return newItem;
-
-	if(url == "") return NULL;
-}
-
-
-QTreeWidgetItem* indexWidget::itemIfNotDirectory()
-{
-    QTreeWidgetItem *currentItem = this->currentItem();
-
-    if (currentItem) {
-        QString data = currentItem->data(1, Qt::DisplayRole).toString();
-        if (data != QLatin1String("Folder"))
-            currentItem = currentItem->parent();
-    }
-	return currentItem;
 }
 
 
