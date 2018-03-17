@@ -153,6 +153,8 @@ private:
     Point2f m_tempFirstPoint;
     Point2f m_tempSecondPoint;
 
+    int m_currentlyEditingShapeRef = -1;
+
     Point2f m_polyStart;
     int m_polyPoints = 0;
 
