@@ -2862,8 +2862,8 @@ int MetaGraph::addNewPointMap(const std::string& name)
    bool duplicate = true;
    while (duplicate) {
       duplicate = false;
-      for (size_t i = 0; i < m_pointMaps.size(); i++) {
-         if (m_pointMaps.at(i).getName() == myname) {
+      for (auto& pointMap: m_pointMaps) {
+         if (pointMap.getName() == myname) {
             duplicate = true;
             myname = dXstring::formatString(counter++,name + " %d");
             break;

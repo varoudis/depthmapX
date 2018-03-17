@@ -92,7 +92,7 @@ public:
    int getDisplayedPointMapRef() const
    { return m_displayed_pointmap; }
    void redoPointMapBlockLines()   // (flags blockedlines, but also flags that you need to rebuild a bsp tree if you have one)
-   { for (size_t i = 0; i < m_pointMaps.size(); i++) { m_pointMaps.at(i).m_blockedlines = false; } }
+   { for (auto& pointMap: m_pointMaps) { pointMap.m_blockedlines = false; } }
    int addNewPointMap(const std::string& name = std::string("VGA Map"));
 
 private:
@@ -101,7 +101,7 @@ private:
    SuperSpacePixel *m_spacepix;
 
    void setSpacePixel(SuperSpacePixel *spacepix)
-   { m_spacepix = spacepix; for (size_t i = 0; i < m_pointMaps.size(); i++) m_pointMaps.at(i).setSpacePixel(spacepix); }
+   { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
    void removePointMap(int i)
    { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
 
