@@ -38,66 +38,6 @@
 
 /////////////////////////////////////////////////////////////////////////////////
 
-int PointMaps::addNewMap(const std::string& name)
-{
-   std::string myname = name;
-   int counter = 1;
-   bool duplicate = true;
-   while (duplicate) {
-      duplicate = false;
-      for (size_t i = 0; i < maps_vector.size(); i++) {
-         if (maps_vector.at(i).getName() == myname) {
-            duplicate = true;
-            myname = dXstring::formatString(counter++,name + " %d");
-            break;
-         }  
-      }
-   }
-   maps_vector.push_back(PointMap(myname)); 
-   maps_vector.back().setSpacePixel(m_spacepix); 
-   m_displayed_map = maps_vector.size() - 1; 
-   return maps_vector.size() - 1; 
-}
-
-bool PointMaps::read(istream& stream, int version)
-{
-   stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
-   int count;
-   stream.read((char *) &count, sizeof(count));
-   for (int i = 0; i < count; i++) {
-      maps_vector.push_back(PointMap());
-      maps_vector.back().setSpacePixel( (SuperSpacePixel *) this );
-      maps_vector.back().read( stream, version );
-   }
-   return true;
-}
-
-bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
-{
-   if (!displayedmaponly) {
-      stream.write((char *) &m_displayed_map, sizeof(m_displayed_map));
-      int count = maps_vector.size();
-      stream.write((char *) &count, sizeof(count));
-      for (int i = 0; i < count; i++) {
-         maps_vector.at(i).write( stream, version );
-      }
-   }
-   else {
-      int dummy;
-      // displayed map is 0:
-      dummy = 0;
-      stream.write((char *) &dummy, sizeof(dummy));
-      // count is 1
-      dummy = 1;
-      stream.write((char *) &dummy, sizeof(dummy));
-      //
-      maps_vector.at(m_displayed_map).write(stream, version);
-   }
-   return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////
-
 PointMap::PointMap(const std::string& name)
 {
    m_name = name;

@@ -51,7 +51,7 @@ class Communicator;
 
 // A meta graph is precisely what it says it is
 
-class MetaGraph : public SuperSpacePixel, public PointMaps, public FileProperties
+class MetaGraph : public SuperSpacePixel, public FileProperties
 {
 public:
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
@@ -81,10 +81,34 @@ public:
    }
 
 
+   std::vector<PointMap> getPointMaps()
+   { return m_pointMaps; }
+   PointMap& getDisplayedPointMap()
+   { return m_pointMaps[m_displayed_pointmap]; }
+   const PointMap& getDisplayedPointMap() const
+   { return m_pointMaps[m_displayed_pointmap]; }
+   void setDisplayedPointMapRef(int i)
+   { m_displayed_pointmap = i; }
+   int getDisplayedPointMapRef() const
+   { return m_displayed_pointmap; }
+   void redoPointMapBlockLines()   // (flags blockedlines, but also flags that you need to rebuild a bsp tree if you have one)
+   { for (size_t i = 0; i < m_pointMaps.size(); i++) { m_pointMaps.at(i).m_blockedlines = false; } }
+   int addNewPointMap(const std::string& name = std::string("VGA Map"));
 
 private:
-   std::recursive_mutex mLock;
+   std::vector<PointMap> m_pointMaps;
+   int m_displayed_pointmap;
+   SuperSpacePixel *m_spacepix;
 
+   void setSpacePixel(SuperSpacePixel *spacepix)
+   { m_spacepix = spacepix; for (size_t i = 0; i < m_pointMaps.size(); i++) m_pointMaps.at(i).setSpacePixel(spacepix); }
+   void removePointMap(int i)
+   { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
+
+   bool readPointMaps(istream &stream, int version );
+   bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
+
+   std::recursive_mutex mLock;
 public:
     std::unique_lock<std::recursive_mutex> getLock(){
        return std::unique_lock<recursive_mutex>(mLock);

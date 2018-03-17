@@ -190,9 +190,9 @@ namespace dm_runmethods
         }
 
         std::cout << "ok\nSetting up grid... " << std::flush;
-        if (!mGraph->PointMaps::maps_vector.size() || mGraph->getDisplayedPointMap().isProcessed()) {
+        if (mGraph->getPointMaps().empty() || mGraph->getDisplayedPointMap().isProcessed()) {
            // this can happen if there are no displayed maps -- so flag new map required:
-            mGraph->addNewMap();
+            mGraph->addNewPointMap();
         }
         DO_TIMED("Setting grid", mGraph->setGrid(gridSize, Point2f(0.0, 0.0)))
 

@@ -1039,7 +1039,7 @@ void QGraphDoc::OnEditGrid()
    }
    bool newmap = false;
 
-   if (!m_meta_graph->PointMaps::maps_vector.size() || m_meta_graph->getDisplayedPointMap().isProcessed()) {
+   if (m_meta_graph->getPointMaps().empty() || m_meta_graph->getDisplayedPointMap().isProcessed()) {
       // this can happen if there are no displayed maps -- so flag new map required:
       newmap = true;
    }
@@ -1052,7 +1052,7 @@ void QGraphDoc::OnEditGrid()
    if (QDialog::Accepted == dlg.exec())
    {
       if (newmap) {
-         m_meta_graph->PointMaps::addNewMap();
+         m_meta_graph->addNewPointMap();
       }
       m_meta_graph->setGrid( dlg.getSpacing(), Point2f(0.0f, 0.0f) );
       m_meta_graph->m_showgrid = true;
@@ -2116,11 +2116,11 @@ void QGraphDoc::OnPushToLayer()
             names.add(IntPair(MetaGraph::VIEWAXIAL,int(i)),std::string("Shape Graphs: ") + shapegraphs.getMap(i).getName());
          }
       }
-      for (i = 0; i < m_meta_graph->PointMaps::maps_vector.size(); i++) {
+      for (i = 0; i < m_meta_graph->getPointMaps().size(); i++) {
          // note 1: no VGA graph can push to another VGA graph (point onto point transforms)
          // note 2: I simply haven't written "axial" -> vga yet, not that it can't be possible (e.g., "axial" could actually be a convex map)
          if (toplayerclass != MetaGraph::VIEWVGA && toplayerclass != MetaGraph::VIEWAXIAL) {
-            names.add(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->PointMaps::maps_vector.at(i).getName());
+            names.add(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->getPointMaps()[i].getName());
          }
       }
       CPushDialog dlg(names);

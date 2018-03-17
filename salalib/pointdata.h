@@ -381,39 +381,6 @@ inline QtRegion PointMap::regionate( const PixelRef& p, double border ) const
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-class PointMaps
-{
-protected:
-   int m_displayed_map;
-   SuperSpacePixel *m_spacepix;
-public:
-   std::vector<PointMap> maps_vector;
-   PointMaps() { m_displayed_map = -1; m_spacepix = NULL; }
-   virtual ~PointMaps() {;}
-   //
-   void setDisplayedPointMapRef(int i) 
-   { m_displayed_map = i; }
-   PointMap& getDisplayedPointMap()
-   { return maps_vector.at(m_displayed_map); }
-   const PointMap& getDisplayedPointMap() const
-   { return maps_vector.at(m_displayed_map); }
-   int getDisplayedPointMapRef() const
-   { return m_displayed_map; }
-   int addNewMap(const std::string& name = std::string("VGA Map"));
-   void removeMap(int i) 
-   { if (m_displayed_map >= i) m_displayed_map--; maps_vector.erase(maps_vector.begin() + i); }
-   //
-   void setSpacePixel(SuperSpacePixel *spacepix)
-   { m_spacepix = spacepix; for (size_t i = 0; i < maps_vector.size(); i++) maps_vector.at(i).setSpacePixel(spacepix); }
-   void redoBlockLines()   // (flags blockedlines, but also flags that you need to rebuild a bsp tree if you have one)
-   { for (size_t i = 0; i < maps_vector.size(); i++) { maps_vector.at(i).m_blockedlines = false; } }
-   //
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
-};
-
-/////////////////////////////////////////////////////////////////////////////////////
-
 // A helper class for metric integration
 
 // to allow a dist / PixelRef pair for easy sorting
