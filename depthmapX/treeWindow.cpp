@@ -34,9 +34,18 @@ indexWidget::indexWidget(QWidget *parent, bool custom)
     , m_custom(custom)
 {
     if (m_custom) {
-        setColumnCount(2);
+        setColumnCount(3);
         hideColumn(1);
-        setHeaderLabel(tr("Bookmarks"));
+        QStringList columnNames(tr("Map"));
+        columnNames << tr("Folder");
+        columnNames << tr("Editable");
+        setHeaderLabels(columnNames);
+        header()->setSectionResizeMode(0, QHeaderView::Stretch);
+        header()->resizeSection(0, 200);
+        header()->resizeSection(1, 10);
+        header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+        header()->resizeSection(2, 10);
+        header()->setStretchLastSection(false);
     } else {
         header()->hide();
     }
