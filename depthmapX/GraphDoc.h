@@ -59,6 +59,7 @@ signals:
     void renderedImage(const QImage &image, double scaleFactor);
     void runtimeExceptionThrown(int type, std::string message);
     void showWarningMessage(QString title, QString message);
+    void closeWaitDialog();
 
 protected:
     void run();

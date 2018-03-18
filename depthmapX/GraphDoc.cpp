@@ -94,6 +94,7 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
     qRegisterMetaType< std::string >();
     connect(&m_thread, &RenderThread::runtimeExceptionThrown, this, &QGraphDoc::exceptionThrownInRenderThread);
     connect(&m_thread, &RenderThread::showWarningMessage, this, &QGraphDoc::messageFromRenderThread);
+    connect(&m_thread, &RenderThread::closeWaitDialog, this, &QGraphDoc::DestroyWaitDialog);
 }
 void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
     if(type == depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS) {

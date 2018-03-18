@@ -540,7 +540,7 @@ void RenderThread::run()
          break;
       }
 
-      pDoc->DestroyWaitDialog();
+      emit closeWaitDialog();
 	  msleep(100);
       delete pDoc->m_communicator;     // Ensure we delete *the* communicator
       pDoc->m_communicator = NULL;
