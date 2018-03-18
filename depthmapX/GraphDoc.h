@@ -58,6 +58,7 @@ public:
 signals:
     void renderedImage(const QImage &image, double scaleFactor);
     void runtimeExceptionThrown(int type, std::string message);
+    void showWarningMessage(QString title, QString message);
 
 protected:
     void run();
@@ -176,6 +177,7 @@ class QGraphDoc : public QWidget
 	Q_OBJECT
 private:
     void exceptionThrownInRenderThread(int type, std::string message);
+    void messageFromRenderThread(QString title, QString message);
 public:
    QGraphDoc(const QString &author, const QString &organisation);
    CMSCommunicator *m_communicator;

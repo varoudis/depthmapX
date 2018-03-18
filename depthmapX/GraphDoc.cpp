@@ -93,6 +93,7 @@ QGraphDoc::QGraphDoc(const QString &author, const QString &organisation)
 
     qRegisterMetaType< std::string >();
     connect(&m_thread, &RenderThread::runtimeExceptionThrown, this, &QGraphDoc::exceptionThrownInRenderThread);
+    connect(&m_thread, &RenderThread::showWarningMessage, this, &QGraphDoc::messageFromRenderThread);
 }
 void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
     if(type == depthmapX::PointMapExceptionType::NO_ISOVIST_ANALYSIS) {
@@ -104,6 +105,10 @@ void QGraphDoc::exceptionThrownInRenderThread(int type, std::string message) {
         QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()),
                              QMessageBox::Ok, QMessageBox::Ok);
     }
+}
+
+void QGraphDoc::messageFromRenderThread(QString title, QString message) {
+    QMessageBox::warning(this, title, message, QMessageBox::Ok, QMessageBox::Ok);
 }
 
 bool QGraphDoc::SetRedrawFlag(int viewtype, int flag, int reason, QWidget *originator) // (almost) thread safe
