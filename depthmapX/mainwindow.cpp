@@ -2810,7 +2810,8 @@ void MainWindow::updateToolbar()
     {
         importAct->setEnabled(true);
         saveAct->setEnabled(true);
-        addColumAct->setEnabled(true);
+        if(m_p->m_meta_graph->getDisplayedMapRef() != -1)
+            addColumAct->setEnabled(true);
         SelectButton->setEnabled(true);
         DragButton->setEnabled(true);
         RecentAct->setEnabled(true);
