@@ -599,8 +599,8 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                iso.setData(table,row, simple_version);
             }
             else {
-               for (size_t i = 0; i < path.size() - 1; i++) {
-                  Line li = Line(path[i],path[i+1]);
+               for (size_t i = 0; i < path.points.size() - 1; i++) {
+                  Line li = Line(path.points[i],path.points[i+1]);
                   Point2f start = li.t_start();
                   Point2f vec = li.vector();
                   if (fov < 2.0 * M_PI) {
@@ -658,13 +658,13 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
                   partitionlines.push_back(TaggedLine(shape.getLine(),k));
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     if (shape[n] != shape[n+1]) {
-                        partitionlines.push_back(TaggedLine(Line(shape[n],shape[n+1]),k));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     if (shape.points[n] != shape.points[n+1]) {
+                        partitionlines.push_back(TaggedLine(Line(shape.points[n],shape.points[n+1]),k));
                      }
                   }
-                  if (shape.isPolygon() && shape.head() != shape.tail()) {
-                     partitionlines.push_back(TaggedLine(Line(shape.tail(),shape.head()),k));
+                  if (shape.isPolygon() && shape.points.front() != shape.points.back()) {
+                     partitionlines.push_back(TaggedLine(Line(shape.points.back(),shape.points.front()),k));
                   }
                }
             }
@@ -1547,7 +1547,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    parsing = 0;
    first = true;
-   pqvector<Point2f> points;
+   std::vector<Point2f> points;
 
    while (!stream.eof()) {
 

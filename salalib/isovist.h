@@ -65,7 +65,7 @@ protected:
    Point2f m_centre;
    std::set<IsoSeg> m_blocks;
    pqvector<IsoSeg> m_gaps;
-   pqvector<Point2f> m_poly;
+   std::vector<Point2f> m_poly;
    prefvec<PointDist> m_occlusion_points;
    double m_perimeter;
    double m_occluded_perimeter;
@@ -73,7 +73,7 @@ protected:
    double m_min_radial;
 public:
    Isovist() {;}
-   const pqvector<Point2f>& getPolygon() const { return m_poly; }
+   const std::vector<Point2f>& getPolygon() const { return m_poly; }
    const prefvec<PointDist>& getOcclusionPoints() const { return m_occlusion_points; }
    const Point2f& getCentre() const { return m_centre; }
    //

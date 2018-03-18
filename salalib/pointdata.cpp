@@ -449,11 +449,11 @@ bool PointMap::fillLines()
                   fillLine(shape.getLine());
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     fillLine(Line(shape[n],shape[n+1]));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     fillLine(Line(shape.points[n],shape.points[n+1]));
                   }
                   if (shape.isPolygon()) {
-                     fillLine( Line(shape.tail(),shape.head()));
+                     fillLine( Line(shape.points.back(),shape.points.front()));
                   }
                }
             }
@@ -502,11 +502,11 @@ bool PointMap::blockLines()
                   blockLine(count++,shape.getLine());
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     blockLine(count++,Line(shape[n],shape[n+1]));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     blockLine(count++,Line(shape.points[n],shape.points[n+1]));
                   }
                   if (shape.isPolygon()) {
-                     blockLine(count++,Line(shape.tail(),shape.head()));
+                     blockLine(count++,Line(shape.points.back(),shape.points.front()));
                   }
                }
             }

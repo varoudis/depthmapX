@@ -75,9 +75,10 @@ struct SalaEdgeU : public EdgeU
 
 class PointMap;
 
-class SalaShape : public pqvector<Point2f>
+class SalaShape
 {
 public:
+   std::vector<Point2f> points;
    enum {SHAPE_POINT = 0x01, SHAPE_LINE = 0x02, SHAPE_POLY = 0x04, SHAPE_CIRCLE = 0x08, SHAPE_TYPE = 0x0f, SHAPE_CLOSED = 0x40, SHAPE_CCW = 0x80 };
    friend class ShapeMap;
 protected:
@@ -248,7 +249,7 @@ public:
    // num shapes for this object (note, request by object rowid
    // -- on interrogation, this is what you will usually receive)
    const size_t getShapeCount(int rowid) const
-   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.size(); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.points.size(); }
    //
    int getIndex(int rowid) const
    { return depthmapX::getMapAtIndex(m_shapes, rowid)->first; }
@@ -269,8 +270,8 @@ public:
    int makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui = false, bool tempshape = false);
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
-   int makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape = false);
-   int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
+   int makePolyShapeWithRef(const std::vector<Point2f> &points, bool open, int shape_ref, bool tempshape = false);
+   int makePolyShape(const std::vector<Point2f> &points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
    int makeShape(const SalaShape& shape, int override_shape_ref = -1);

@@ -34,7 +34,7 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
     shapeMap->makeLineShape(Line(line0Start, line0End));
     shapeMap->makeLineShape(Line(line1Start, line1End));
 
-    pqvector<Point2f> polyVertices;
+    std::vector<Point2f> polyVertices;
     polyVertices.push_back(Point2f(-1,-1));
     polyVertices.push_back(Point2f( 2,-1));
     polyVertices.push_back(Point2f( 0, 0));

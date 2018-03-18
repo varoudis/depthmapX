@@ -637,11 +637,11 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
                   lines.push_back(shape.getLine());
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     lines.push_back(Line(shape[n],shape[n+1]));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     lines.push_back(Line(shape.points[n],shape.points[n+1]));
                   }
                   if (shape.isPolygon()) {
-                     lines.push_back(Line(shape.tail(),shape.head()));
+                     lines.push_back(Line(shape.points.back(),shape.points.front()));
                   }
                }
             }
@@ -1289,13 +1289,13 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
                   count++;
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     lines.insert(std::make_pair(count,Line(shape[n],shape[n+1])));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     lines.insert(std::make_pair(count,Line(shape.points[n],shape.points[n+1])));
                      layers.insert(std::make_pair(count,j));
                      count++;
                   }
                   if (shape.isPolygon()) {
-                     lines.insert(std::make_pair(count,Line(shape.tail(),shape.head())));
+                     lines.insert(std::make_pair(count,Line(shape.points.back(),shape.points.front())));
                      layers.insert(std::make_pair(count,j));
                      count++;
                   }
@@ -1407,8 +1407,8 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
          count++;
       }
       else if (poly.isPolyLine()) {
-         for (size_t j = 0; j < poly.size() - 1; j++) {
-            lines.insert(std::make_pair(count,Line(poly[j],poly[j+1])));
+         for (size_t j = 0; j < poly.points.size() - 1; j++) {
+            lines.insert(std::make_pair(count,Line(poly.points[j],poly.points[j+1])));
             keys.insert(std::make_pair(count,key));
             count++;
          }
@@ -1613,13 +1613,13 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
                   count++;
                }
                else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     lines.insert(std::make_pair(count,Line(shape[n],shape[n+1])));
+                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
+                     lines.insert(std::make_pair(count,Line(shape.points[n],shape.points[n+1])));
                      layers.insert(std::make_pair(count,j));
                      count++;
                   }
                   if (shape.isPolygon()) { // add closing line
-                     lines.insert(std::make_pair(count,Line(shape.tail(),shape.head())));
+                     lines.insert(std::make_pair(count,Line(shape.points.back(),shape.points.front())));
                      layers.insert(std::make_pair(count,j));
                      count++;
                   }
@@ -1718,8 +1718,8 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
          count++;
       }
       else if (poly.isPolyLine()) {
-         for (size_t j = 0; j < poly.size() - 1; j++) {
-            lines.insert(std::make_pair(count,Line(poly[j],poly[j+1])));
+         for (size_t j = 0; j < poly.points.size() - 1; j++) {
+            lines.insert(std::make_pair(count,Line(poly.points[j],poly.points[j+1])));
             keys.insert(std::make_pair(count,key));
             count++;
          }
