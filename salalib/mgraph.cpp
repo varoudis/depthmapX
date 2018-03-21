@@ -599,8 +599,8 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                iso.setData(table,row, simple_version);
             }
             else {
-               for (size_t i = 0; i < path.points.size() - 1; i++) {
-                  Line li = Line(path.points[i],path.points[i+1]);
+               for (size_t i = 0; i < path.m_points.size() - 1; i++) {
+                  Line li = Line(path.m_points[i],path.m_points[i+1]);
                   Point2f start = li.t_start();
                   Point2f vec = li.vector();
                   if (fov < 2.0 * M_PI) {

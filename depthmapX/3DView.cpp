@@ -382,11 +382,11 @@ void Q3DView::ReloadLineData()
                      lines.push_back(shape.getLine());
                   }
                   else if (shape.isPolyLine() || shape.isPolygon()) {
-                     for (int n = 0; n < shape.points.size() - 1; n++) {
-                        lines.push_back(Line(shape.points[n],shape.points[n+1]));
+                     for (int n = 0; n < shape.m_points.size() - 1; n++) {
+                        lines.push_back(Line(shape.m_points[n],shape.m_points[n+1]));
                      }
                      if (shape.isPolygon()) {
-                        lines.push_back(Line(shape.points.back(),shape.points.front()));
+                        lines.push_back(Line(shape.m_points.back(),shape.m_points.front()));
                      }
                   }
                }

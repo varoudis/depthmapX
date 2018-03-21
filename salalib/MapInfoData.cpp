@@ -310,19 +310,19 @@ bool MapInfoData::exportFile(ostream& miffile, ostream& midfile, const ShapeMap&
          }
          else if (poly.isPolyLine()) {
             miffile << "PLINE" << endl;
-            miffile << "  " << poly.points.size() << endl;
-            for (auto& point: poly.points) {
+            miffile << "  " << poly.m_points.size() << endl;
+            for (auto& point: poly.m_points) {
                miffile << point.x << " " << point.y << endl;
             }
             miffile << "    PEN (1,2,0)" << endl; 
          }
          else if (poly.isPolygon()) {
             miffile << "REGION  1" << endl;
-            miffile << "  " << poly.points.size() + 1 << endl;
-            for (auto& point: poly.points) {
+            miffile << "  " << poly.m_points.size() + 1 << endl;
+            for (auto& point: poly.m_points) {
                miffile << point.x << " " << point.y << endl;
             }
-            miffile << poly.points[0].x << " " << poly.points[0].y << endl;
+            miffile << poly.m_points[0].x << " " << poly.m_points[0].y << endl;
             miffile << "    PEN (1,2,0)" << endl; 
             miffile << "    BRUSH (2,16777215,16777215)" << endl; 
             miffile << "    CENTER " << poly.getCentroid().x << " " << poly.getCentroid().y << endl;

@@ -78,7 +78,7 @@ class PointMap;
 class SalaShape
 {
 public:
-   std::vector<Point2f> points;
+   std::vector<Point2f> m_points;
    enum {SHAPE_POINT = 0x01, SHAPE_LINE = 0x02, SHAPE_POLY = 0x04, SHAPE_CIRCLE = 0x08, SHAPE_TYPE = 0x0f, SHAPE_CLOSED = 0x40, SHAPE_CCW = 0x80 };
    friend class ShapeMap;
 protected:
@@ -148,8 +148,8 @@ public:
           lines.push_back(getLine());
        }
        else if (isPolyLine()) {
-          for (size_t j = 0; j < points.size() - 1; j++) {
-             lines.push_back(Line(points[j], points[j+1]));
+          for (size_t j = 0; j < m_points.size() - 1; j++) {
+             lines.push_back(Line(m_points[j], m_points[j+1]));
           }
        }
        return lines;
@@ -262,7 +262,7 @@ public:
    // num shapes for this object (note, request by object rowid
    // -- on interrogation, this is what you will usually receive)
    const size_t getShapeCount(int rowid) const
-   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.points.size(); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.m_points.size(); }
    //
    int getIndex(int rowid) const
    { return depthmapX::getMapAtIndex(m_shapes, rowid)->first; }
