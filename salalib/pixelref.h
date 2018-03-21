@@ -167,3 +167,9 @@ inline bool operator > (const PixelRefPair& x, const PixelRefPair& y)
 {
    return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
 }
+
+struct hashPixelRef {
+  size_t operator()(const PixelRef &pixelRef) const{
+    return std::hash<int>()(int(pixelRef));
+  }
+};
