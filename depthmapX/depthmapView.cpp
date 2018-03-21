@@ -1517,7 +1517,7 @@ bool QDepthmapView::DrawShapes(QPainter *pDC, ShapeMap& map, bool muted, int spa
       const SalaShape& poly = map.getNextShape();
       QPoint *points = NULL;
       int drawable = 0;
-      if (!poly.isPoint() && !poly.isLine()) {
+      if (!poly.isPoint() && !poly.isLine() && !poly.m_points.empty()) {
          points = new QPoint [poly.m_points.size()];
          if (poly.m_points.size() > 0) drawable++;
          for (auto& point: poly.m_points) {
