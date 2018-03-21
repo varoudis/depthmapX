@@ -1270,10 +1270,10 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
                region = runion(region,superspacepix.at(i).at(j).getRegion());
             }
             std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            count += newLines.size();
             for (auto line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
+               count ++;
             }
             superspacepix.at(i).at(j).setShow(false);
          }
@@ -1572,10 +1572,10 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
                region = runion(region,superspacepix.at(i).at(j).getRegion());
             }
             std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            count += newLines.size();
-            for (auto line: newLines) {
+            for (auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
+               count++;
             }
             superspacepix.at(i).at(j).setShow(false);
          }
