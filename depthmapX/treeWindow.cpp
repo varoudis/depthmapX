@@ -34,9 +34,9 @@ IndexWidget::IndexWidget(QWidget *parent)
 {
     setColumnCount(2);
     setHeaderLabels(columnNames);
-    header()->setSectionResizeMode(columnIndex(m_mapColumn), QHeaderView::Stretch);
-    header()->setSectionResizeMode(columnIndex(m_editableColumn), QHeaderView::ResizeToContents);
-    header()->resizeSection(columnIndex(m_editableColumn), 10);
+    header()->setSectionResizeMode(Column::MAP, QHeaderView::Stretch);
+    header()->setSectionResizeMode(Column::EDITABLE, QHeaderView::ResizeToContents);
+    header()->resizeSection(Column::EDITABLE, 10);
     header()->setStretchLastSection(false);
 
     installEventFilter(this);

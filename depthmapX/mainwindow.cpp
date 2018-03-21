@@ -1299,7 +1299,7 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
         ItemTreeEntry entry = iter->second;
         bool remenu = false;
         if (entry.m_cat != -1) {
-            if (entry.m_subcat == -1 && col == m_indexWidget->columnIndex(m_indexWidget->m_mapColumn)) {
+            if (entry.m_subcat == -1 && m_indexWidget->isMapColumn(col)) {
                 switch (entry.m_type) {
                 case 0:
                     if (graph->getViewClass() & MetaGraph::VIEWVGA) {
@@ -1357,7 +1357,7 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
                 }
                 m_treeDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_TABLE );
             }
-            else if (entry.m_subcat == -1 && col == m_indexWidget->columnIndex(m_indexWidget->m_editableColumn)) {
+            else if (entry.m_subcat == -1 && m_indexWidget->isEditableColumn(col)) {
                 // hit editable box
                 if (entry.m_type == 1) {
                     int type = graph->getShapeGraphs().getMap(entry.m_cat).getMapType();

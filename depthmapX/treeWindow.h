@@ -27,6 +27,8 @@ class QTreeWidgetItem;
 class IndexWidget : public QTreeWidget
 {
     Q_OBJECT
+private:
+    enum Column {MAP = 0, EDITABLE = 1};
 
 public:
     IndexWidget(QWidget *parent = 0);
@@ -34,24 +36,26 @@ public:
     QString m_mapColumn = "Map";
     QString m_editableColumn = "Editable";
 
-    int columnIndex(QString columnName) {
-        return columnNames.indexOf(columnName);
-    }
-
     void setItemVisibility(QTreeWidgetItem* item, Qt::CheckState checkState) {
-        item->setCheckState(columnIndex(m_mapColumn), checkState);
+        item->setCheckState(Column::MAP, checkState);
     }
     void setItemEditability(QTreeWidgetItem* item, Qt::CheckState checkState) {
-        item->setCheckState(columnIndex(m_editableColumn), checkState);
+        item->setCheckState(Column::EDITABLE, checkState);
     }
     void setItemReadOnly(QTreeWidgetItem* item) {
-        item->setData(columnIndex(m_editableColumn), Qt::CheckStateRole, QVariant());
+        item->setData(Column::EDITABLE, Qt::CheckStateRole, QVariant());
     }
     bool isItemSetVisible(QTreeWidgetItem* item) {
-        return item->checkState(columnIndex(m_mapColumn));
+        return item->checkState(Column::MAP);
     }
     bool isItemSetEditable(QTreeWidgetItem* item) {
-        return item->checkState(columnIndex(m_editableColumn));
+        return item->checkState(Column::EDITABLE);
+    }
+    bool isMapColumn(int col) {
+        return col == Column::MAP;
+    }
+    bool isEditableColumn(int col) {
+        return col == Column::EDITABLE;
     }
 
 signals:
