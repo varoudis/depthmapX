@@ -497,10 +497,10 @@ struct SimpleLine
 public:
     SimpleLine(const Line& line)
     {
-        m_start.x = line.start().x;
-        m_start.y = line.start().y;
-        m_end.x = line.end().x;
-        m_end.y = line.end().y;
+        m_start.x = line.t_start().x;
+        m_start.y = line.t_start().y;
+        m_end.x = line.t_end().x;
+        m_end.y = line.t_end().y;
     }
     SimpleLine(const Point2f& a, const Point2f& b)
     {

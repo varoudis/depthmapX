@@ -64,7 +64,7 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
    }
 
    std::string textline;
-   prefvec<pqvector<Point2f>> pointsets;
+   std::vector<std::vector<Point2f>> pointsets;
    pvecint duplicates;
    pvecint types;
 
@@ -79,16 +79,16 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
       }
       if (dXstring::beginsWith<std::string>(textline,"point")) {
          auto tokens = dXstring::split(textline,' ',true);
-         pointsets.push_back(pqvector<Point2f>());
+         pointsets.push_back(std::vector<Point2f>());
          types.push_back(SalaShape::SHAPE_POINT);
-         pointsets.tail().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
+         pointsets.back().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
       }
       if (dXstring::beginsWith<std::string>(textline,"line")) {
          auto tokens = dXstring::split(textline,' ',true);
-         pointsets.push_back(pqvector<Point2f>());
+         pointsets.push_back(std::vector<Point2f>());
          types.push_back(SalaShape::SHAPE_LINE);
-         pointsets.tail().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
-         pointsets.tail().push_back(Point2f(stod(tokens[3]),stod(tokens[4])));
+         pointsets.back().push_back(Point2f(stod(tokens[1]),stod(tokens[2])));
+         pointsets.back().push_back(Point2f(stod(tokens[3]),stod(tokens[4])));
       }
       else if (dXstring::beginsWith<std::string>(textline,"pline") || dXstring::beginsWith<std::string>(textline,"region")) {
          int type = dXstring::beginsWith<std::string>(textline,"pline") ? SalaShape::SHAPE_POLY : (SalaShape::SHAPE_POLY | SalaShape::SHAPE_CLOSED);
@@ -118,13 +118,13 @@ int MapInfoData::import(istream& miffile, istream& midfile, ShapeMap& map)
                dXstring::ltrim(textline);
                count = stoi(textline);
             }
-            pointsets.push_back(pqvector<Point2f>());
+            pointsets.push_back(std::vector<Point2f>());
             types.push_back(type);
             for (int j = 0; j < count; j++) {
                dXstring::safeGetline(miffile, textline);
                dXstring::ltrim(textline);
                auto tokens = dXstring::split(textline,' ',true);
-               pointsets.tail().push_back(Point2f(stod(tokens[0]),stod(tokens[1])));
+               pointsets.back().push_back(Point2f(stod(tokens[0]),stod(tokens[1])));
             }
             if (i != 0) {
                // warn about extraneous pline data
@@ -310,19 +310,19 @@ bool MapInfoData::exportFile(ostream& miffile, ostream& midfile, const ShapeMap&
          }
          else if (poly.isPolyLine()) {
             miffile << "PLINE" << endl;
-            miffile << "  " << poly.size() << endl; 
-            for (size_t k = 0; k < poly.size(); k++) {
-               miffile << poly[k].x << " " << poly[k].y << endl;
+            miffile << "  " << poly.m_points.size() << endl;
+            for (auto& point: poly.m_points) {
+               miffile << point.x << " " << point.y << endl;
             }
             miffile << "    PEN (1,2,0)" << endl; 
          }
          else if (poly.isPolygon()) {
             miffile << "REGION  1" << endl;
-            miffile << "  " << poly.size() + 1 << endl; 
-            for (size_t k = 0; k < poly.size(); k++) {
-               miffile << poly[k].x << " " << poly[k].y << endl;
+            miffile << "  " << poly.m_points.size() + 1 << endl;
+            for (auto& point: poly.m_points) {
+               miffile << point.x << " " << point.y << endl;
             }
-            miffile << poly[0].x << " " << poly[0].y << endl;
+            miffile << poly.m_points[0].x << " " << poly.m_points[0].y << endl;
             miffile << "    PEN (1,2,0)" << endl; 
             miffile << "    BRUSH (2,16777215,16777215)" << endl; 
             miffile << "    CENTER " << poly.getCentroid().x << " " << poly.getCentroid().y << endl;

@@ -59,6 +59,20 @@ namespace genshim
     }
 
     /**
+     * Convert a std::vector to a pqvec (preserving the order of elements)
+     * This is expensive as it copies every single element
+     */
+    template<class T> std::vector<T> toSTLVector(pqvector<T> &pqvec)
+    {
+        std::vector<T> vec;
+        for(int i = 0; i < pqvec.size(); i++)
+        {
+            vec.push_back(pqvec[i]);
+        }
+        return vec;
+    }
+
+    /**
      * Convert a pmap to a std::map
      * This is expensive as it copies every single element
      */

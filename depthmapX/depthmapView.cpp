@@ -1320,12 +1320,12 @@ bool QDepthmapView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
          }
          else {
 		    size_t i;
-            for (i = 1; i < shape.size(); i++) 
+            for (i = 1; i < shape.m_points.size(); i++)
 			{
-               pDC->drawLine(PhysicalUnits(shape[i-1]), PhysicalUnits(shape[i]));
+               pDC->drawLine(PhysicalUnits(shape.m_points[i-1]), PhysicalUnits(shape.m_points[i]));
             }
             if (shape.isClosed()) {
-               pDC->drawLine(PhysicalUnits(shape[i-1]), PhysicalUnits(shape[0]));
+               pDC->drawLine(PhysicalUnits(shape.m_points[i-1]), PhysicalUnits(shape.m_points[0]));
             }
          }
       }
@@ -1517,11 +1517,12 @@ bool QDepthmapView::DrawShapes(QPainter *pDC, ShapeMap& map, bool muted, int spa
       const SalaShape& poly = map.getNextShape();
       QPoint *points = NULL;
       int drawable = 0;
-      if (!poly.isPoint() && !poly.isLine()) {
-         points = new QPoint [poly.size()];
-         for (size_t i = 0; i < poly.size(); i++) {
-            points[drawable] = PhysicalUnits(poly[i]);
-            if (i == 0 || points[drawable] != points[drawable-1]) {
+      if (!poly.isPoint() && !poly.isLine() && !poly.m_points.empty()) {
+         points = new QPoint [poly.m_points.size()];
+         if (poly.m_points.size() > 0) drawable++;
+         for (auto& point: poly.m_points) {
+            points[drawable] = PhysicalUnits(point);
+            if (points[drawable] != points[drawable-1]) {
                drawable++;
             }
          }
@@ -2004,11 +2005,11 @@ void QDepthmapView::OutputEPSLine(ofstream& stream, Line& line, int spacer, QtRe
 void QDepthmapView::OutputEPSPoly(ofstream& stream, const SalaShape& shape, int spacer, QtRegion& logicalviewport, QRect& rect)
 {
    bool starter = true;
-   Point2f lastpoint = shape[0];
-   int count = shape.isClosed() ? shape.size() + 1 : shape.size();
-   int size = shape.size();
+   Point2f lastpoint = shape.m_points[0];
+   int count = shape.isClosed() ? shape.m_points.size() + 1 : shape.m_points.size();
+   int size = shape.m_points.size();
    for (int i = 1; i < count; i++) {
-      Line line(lastpoint,shape[i%size]);
+      Line line(lastpoint,shape.m_points[i%size]);
       if (line.crop(logicalviewport)) {
          // note: use t_start and t_end so that this line moves in the correct direction
          QPoint start = PhysicalUnits(line.t_start());
@@ -2026,7 +2027,7 @@ void QDepthmapView::OutputEPSPoly(ofstream& stream, const SalaShape& shape, int 
          }
       }
       else {
-         lastpoint = shape[i];
+         lastpoint = shape.m_points[i];
          starter = true;
       }
    }
@@ -2679,9 +2680,11 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
       // open lines are fairly easy: simply chop lines as they enter and exit
       stream << "<polyline points=\"";
       bool starter = true, drawn = false;
-      Point2f lastpoint = shape.head();
-      for (size_t i = 1; i < shape.size(); i++) {
-         Line line(lastpoint,shape[i]);
+      Point2f lastpoint = shape.m_points.front();
+      auto iter = shape.m_points.begin();
+      iter++;
+      for (; iter != shape.m_points.end(); iter++) {
+         Line line(lastpoint, *iter);
          if (line.crop(logicalviewport)) {
             // note: use t_start and t_end so that this line moves in the correct direction
             QPoint start = SVGPhysicalUnits(line.t_start(),logicalviewport,h);
@@ -2692,7 +2695,7 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
                starter = false;
             }
             // 2.0 is about 0.1mm in a standard SVG output size
-            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  i == shape.size() - 1) { 
+            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  iter == shape.m_points.end() - 1) {
 				// also, always draw the very last point regardless of distance
                stream << end.x() << "," << end.y() << " ";
                drawn = true;
@@ -2703,7 +2706,7 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
             drawn = true;
          }
          if (drawn) {
-            lastpoint = shape[i];
+            lastpoint = *iter;
             drawn = false;
          }
       }
@@ -2716,10 +2719,12 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
       pqvector<SalaEdgeU> eus = shape.getClippingSet(logicalviewport);
       if (eus.size() == 0) {
          // this should be a shape that is entirely within the viewport:
-         QPoint last = SVGPhysicalUnits(shape[0],logicalviewport,h);
+         QPoint last = SVGPhysicalUnits(shape.m_points[0],logicalviewport,h);
          stream << last.x() << "," << last.y() << " ";
-         for (size_t i = 1; i < shape.size(); i++) {
-            QPoint next = SVGPhysicalUnits(shape[i],logicalviewport,h);
+         auto iter = shape.m_points.begin();
+         iter++;
+         for (; iter != shape.m_points.end(); iter++) {
+            QPoint next = SVGPhysicalUnits(*iter,logicalviewport,h);
             if (dist(Point2f(last.x(), last.y()), Point2f(next.x(), next.y())) >= 2.0f) {
                stream << next.x() << "," << next.y() << " ";
                last = next;
@@ -2740,10 +2745,10 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
             QPoint next;
             stream << last.x() << "," << last.y() << " ";
             for (size_t i = eus[entry].index + 1; i != eus[exit].index; i++) {
-               if (i >= shape.size()) {
+               if (i >= shape.m_points.size()) {
                   i = 0;
                }
-               next = SVGPhysicalUnits(shape[i],logicalviewport,h);
+               next = SVGPhysicalUnits(shape.m_points[i],logicalviewport,h);
                if (dist(Point2f(last.x(), last.y()), Point2f(next.x(), next.y())) >= 2.0f) {
                   stream << next.x() << "," << next.y() << " ";
                   last = next;

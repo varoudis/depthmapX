@@ -34,7 +34,7 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
     shapeMap->makeLineShape(Line(line0Start, line0End));
     shapeMap->makeLineShape(Line(line1Start, line1End));
 
-    pqvector<Point2f> polyVertices;
+    std::vector<Point2f> polyVertices;
     polyVertices.push_back(Point2f(-1,-1));
     polyVertices.push_back(Point2f( 2,-1));
     polyVertices.push_back(Point2f( 0, 0));
@@ -47,15 +47,15 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
 
         REQUIRE(lines.size() == 5);
 
-        REQUIRE(lines[0].start().x == Approx(min(line0Start.x, line0End.x)).epsilon(EPSILON));
-        REQUIRE(lines[0].start().y == Approx(min(line0Start.y, line0End.y)).epsilon(EPSILON));
-        REQUIRE(lines[0].end().x == Approx(max(line0Start.x, line0End.x)).epsilon(EPSILON));
-        REQUIRE(lines[0].end().y == Approx(max(line0Start.y, line0End.y)).epsilon(EPSILON));
+        REQUIRE(lines[0].start().x == Approx(line0Start.x).epsilon(EPSILON));
+        REQUIRE(lines[0].start().y == Approx(line0Start.y).epsilon(EPSILON));
+        REQUIRE(lines[0].end().x == Approx(line0End.x).epsilon(EPSILON));
+        REQUIRE(lines[0].end().y == Approx(line0End.y).epsilon(EPSILON));
 
-        REQUIRE(lines[1].start().x == Approx(min(line1Start.x, line1End.x)).epsilon(EPSILON));
-        REQUIRE(lines[1].start().y == Approx(min(line1Start.y, line1End.y)).epsilon(EPSILON));
-        REQUIRE(lines[1].end().x == Approx(max(line1Start.x, line1End.x)).epsilon(EPSILON));
-        REQUIRE(lines[1].end().y == Approx(max(line1Start.y, line1End.y)).epsilon(EPSILON));
+        REQUIRE(lines[1].start().x == Approx(line1Start.x).epsilon(EPSILON));
+        REQUIRE(lines[1].start().y == Approx(line1Start.y).epsilon(EPSILON));
+        REQUIRE(lines[1].end().x == Approx(line1End.x).epsilon(EPSILON));
+        REQUIRE(lines[1].end().y == Approx(line1End.y).epsilon(EPSILON));
 
         REQUIRE(lines[2].start().x == Approx(polyVertices[0].x).epsilon(EPSILON));
         REQUIRE(lines[2].start().y == Approx(polyVertices[0].y).epsilon(EPSILON));
@@ -87,10 +87,10 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         REQUIRE(colouredLines[0].second.greenf() == Approx(0.49804f).epsilon(EPSILON));
         REQUIRE(colouredLines[0].second.bluef() == Approx(0.49804f).epsilon(EPSILON));
 
-        REQUIRE(colouredLines[1].first.start().x == Approx(min(line1Start.x, line1End.x)).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].first.start().y == Approx(min(line1Start.y, line1End.y)).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].first.end().x == Approx(max(line1Start.x, line1End.x)).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].first.end().y == Approx(max(line1Start.y, line1End.y)).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].first.start().x == Approx(line1Start.x).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].first.start().y == Approx(line1Start.y).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].first.end().x == Approx(line1End.x).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].first.end().y == Approx(line1End.y).epsilon(EPSILON));
         REQUIRE(colouredLines[1].second.redf() == Approx(0.49804f).epsilon(EPSILON));
         REQUIRE(colouredLines[1].second.greenf() == Approx(0.49804f).epsilon(EPSILON));
         REQUIRE(colouredLines[1].second.bluef() == Approx(0.49804f).epsilon(EPSILON));

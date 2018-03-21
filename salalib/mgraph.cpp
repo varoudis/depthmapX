@@ -599,8 +599,8 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                iso.setData(table,row, simple_version);
             }
             else {
-               for (size_t i = 0; i < path.size() - 1; i++) {
-                  Line li = Line(path[i],path[i+1]);
+               for (size_t i = 0; i < path.m_points.size() - 1; i++) {
+                  Line li = Line(path.m_points[i],path.m_points[i+1]);
                   Point2f start = li.t_start();
                   Point2f vec = li.vector();
                   if (fov < 2.0 * M_PI) {
@@ -650,23 +650,15 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
              int k = -1;
              for (auto refShape: refShapes) {
                  k++;
-                 SalaShape& shape = refShape.second;
-               // I'm not sure what the tagging was meant for any more, 
-               // tagging at the moment tags the *polygon* it was original attached to
-               // must check it is not a zero length line:
-               if (shape.isLine() && shape.getLine().length() > 0.0) {
-                  partitionlines.push_back(TaggedLine(shape.getLine(),k));
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.size() - 1; n++) {
-                     if (shape[n] != shape[n+1]) {
-                        partitionlines.push_back(TaggedLine(Line(shape[n],shape[n+1]),k));
+                 std::vector<Line> newLines = refShape.second.getAsLines();
+                 // I'm not sure what the tagging was meant for any more,
+                 // tagging at the moment tags the *polygon* it was original attached to
+                 // must check it is not a zero length line:
+                 for(Line& line: newLines) {
+                     if(line.length() > 0.0) {
+                         partitionlines.push_back(TaggedLine(line,k));
                      }
-                  }
-                  if (shape.isPolygon() && shape.head() != shape.tail()) {
-                     partitionlines.push_back(TaggedLine(Line(shape.tail(),shape.head()),k));
-                  }
-               }
+                 }
             }
          }
       }
@@ -1547,7 +1539,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
 
    parsing = 0;
    first = true;
-   pqvector<Point2f> points;
+   std::vector<Point2f> points;
 
    while (!stream.eof()) {
 

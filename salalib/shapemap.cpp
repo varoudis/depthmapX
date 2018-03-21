@@ -63,7 +63,9 @@ bool SalaShape::read(istream& stream, int version)
    stream.read((char *)&m_area,sizeof(m_area));
    stream.read((char *)&m_perimeter,sizeof(m_perimeter));
 
-   pqvector<Point2f>::read(stream);
+   pqvector<Point2f> pqv;
+   pqv.read(stream);
+   m_points = genshim::toSTLVector<Point2f>(pqv);
 
    return true;
 }
@@ -75,7 +77,7 @@ bool SalaShape::write(ofstream& stream)
    stream.write((char *)&m_centroid,sizeof(m_centroid));
    stream.write((char *)&m_area,sizeof(m_area));
    stream.write((char *)&m_perimeter,sizeof(m_perimeter));
-   pqvector<Point2f>::write(stream);
+   genshim::toPQVector(m_points).write(stream);
    return true;
 }
 
@@ -84,9 +86,9 @@ void SalaShape::setCentroidAreaPerim()
    m_area = 0.0;
    m_perimeter = 0.0;
    m_centroid = Point2f(0,0);
-   for (size_t i = 0; i < size(); i++) {
-      Point2f& p1 = at(i);
-      Point2f& p2 = at((i+1)%size());
+   for (size_t i = 0; i < m_points.size(); i++) {
+      Point2f& p1 = m_points[i];
+      Point2f& p2 = m_points[(i+1)%m_points.size()];
       double a_i = (p1.x * p2.y - p2.x * p1.y) / 2.0;
       m_area += a_i;
       a_i /= 6.0;
@@ -103,7 +105,7 @@ void SalaShape::setCentroidAreaPerim()
    m_area = fabs(m_area);
    if (isOpen()) {
       // take off the automatically collected final side
-      Point2f side = tail() - head();
+      Point2f side = m_points.back() - m_points.front();
       m_perimeter -= side.length();
    }
 }
@@ -118,8 +120,8 @@ void SalaShape::setCentroid(const Point2f& p)
 double SalaShape::getAngDev() const
 {
    double dev = 0.0;
-   for (size_t i = 1; i < size() - 1; i++) {
-      double ang = angle(at(i-1),at(i),at(i+1));
+   for (size_t i = 1; i < m_points.size() - 1; i++) {
+      double ang = angle(m_points[i-1],m_points[i],m_points[i+1]);
       
       // Quick mod - TV
 #if defined(_WIN32)      
@@ -410,7 +412,7 @@ int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
     return makeLineShapeWithRef(line, getNextShapeKey(), through_ui, tempshape);
 }
 
-int ShapeMap::makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape)
+int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open, int shape_ref, bool tempshape)
 {
    bool bounds_good = true;
 
@@ -452,7 +454,7 @@ int ShapeMap::makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, i
       m_shapes.insert(std::make_pair(shape_ref,SalaShape(SalaShape::SHAPE_POLY | SalaShape::SHAPE_CLOSED)));
    }
    for (i = 0; i < len; i++) {
-      m_shapes.rbegin()->second.push_back(points[i]);
+      m_shapes.rbegin()->second.m_points.push_back(points[i]);
    }
 
    if (bounds_good) {
@@ -476,7 +478,7 @@ int ShapeMap::makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, i
    return shape_ref;
 }
 
-int ShapeMap::makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape)
+int ShapeMap::makePolyShape(const std::vector<Point2f>& points, bool open, bool tempshape)
 {
     return makePolyShapeWithRef(points, open, getNextShapeKey(), tempshape);
 }
@@ -648,7 +650,7 @@ bool ShapeMap::convertPointsToPolys(double poly_radius, bool selected_only)
             else if (k == 6) { poly_p.x = p.x;                            poly_p.y = p.y - poly_radius; } 
             else if (k == 7) { poly_p.x = p.x + poly_radius * M_ROOT_1_2; poly_p.y = p.y - poly_radius * M_ROOT_1_2; } 
             region.encompass(poly_p);
-            m_shapes.find(i)->second.push_back(poly_p);
+            m_shapes.find(i)->second.m_points.push_back(poly_p);
          }
          m_shapes.find(i)->second.setCentroidAreaPerim();
       }
@@ -872,11 +874,11 @@ bool ShapeMap::polyAppend(int shape_ref, const Point2f& point)
    if (shape.m_type == SalaShape::SHAPE_LINE) {
       // convert it to a poly line:
       shape.m_type = SalaShape::SHAPE_POLY;
-      shape.push_back(shape.m_region.t_start());
-      shape.push_back(shape.m_region.t_end());
+      shape.m_points.push_back(shape.m_region.t_start());
+      shape.m_points.push_back(shape.m_region.t_end());
    }
    // add new point:
-   shape.push_back(point);
+   shape.m_points.push_back(point);
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
@@ -1125,9 +1127,9 @@ void ShapeMap::makePolyPixels(int polyref)
    SalaShape& poly = m_shapes.find(polyref)->second;
    if (poly.isClosed()) {
       std::map<int,int> relations;
-      for (size_t k = 0; k < poly.size(); k++) {
-         int nextk = (k + 1) % poly.size();
-         Line li(poly[k],poly[nextk]);
+      for (size_t k = 0; k < poly.m_points.size(); k++) {
+         int nextk = (k + 1) % poly.m_points.size();
+         Line li(poly.m_points[k],poly.m_points[nextk]);
          if (k == 0) {
             poly.m_region = li;
          }
@@ -1232,9 +1234,9 @@ void ShapeMap::makePolyPixels(int polyref)
          }
          break;
       case SalaShape::SHAPE_POLY:
-         for (size_t k = 0; k < poly.size() - 1; k++) {
+         for (size_t k = 0; k < poly.m_points.size() - 1; k++) {
             int nextk = (k + 1);
-            Line li(poly[k],poly[nextk]);
+            Line li(poly.m_points[k],poly.m_points[nextk]);
             if (k == 0) {
                poly.m_region = li;
             }
@@ -1293,7 +1295,7 @@ void ShapeMap::pointPixelBorder(const PointMap& pointmap, std::map<int,int>& rel
    }
    auto relation = relations.find(currpix);
    if (relation->second & side) {
-      poly.push_back(pointmap.depixelate(currpix)+pointOffset(pointmap,currpix,side));
+      poly.m_points.push_back(pointmap.depixelate(currpix)+pointOffset(pointmap,currpix,side));
       relation->second &= ~side;   // <- clear to check all have been done later
       side <<= 1;
       if (side > ShapeRef::SHAPE_T) {
@@ -1358,9 +1360,9 @@ void ShapeMap::removePolyPixels(int polyref)
          }
          break;
       case SalaShape::SHAPE_POLY:
-         for (size_t k = 0; k < poly.size() - 1; k++) {
+         for (size_t k = 0; k < poly.m_points.size() - 1; k++) {
             size_t nextk = (k + 1);
-            Line li(poly[k],poly[nextk]);
+            Line li(poly.m_points[k],poly.m_points[nextk]);
             PixelRefVector list = pixelateLine(li);
             for (size_t i = 0; i < list.size(); i++) {
                size_t pos = m_pixel_shapes[list[i].x][list[i].y].searchindex(polyref);
@@ -1551,7 +1553,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
                case SalaShape::SHAPE_POLY:
                   {
                      for (int k = 0; k < shape.m_polyrefs.size(); k++) {
-                        Line lineb = Line(poly[shape.m_polyrefs[k]],poly[((shape.m_polyrefs[k]+1)%poly.size())]);
+                        Line lineb = Line(poly.m_points[shape.m_polyrefs[k]],poly.m_points[((shape.m_polyrefs[k]+1)%poly.m_points.size())]);
                         if (intersect_region(li,lineb)) {
                            if (intersect_line(li,lineb,tolerance)) {
                               shapeindexlist.add(std::distance(m_shapes.begin(), shapeIter));
@@ -1627,7 +1629,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
-                                 Line line = Line(poly[shaperef.m_polyrefs[k]],poly[((shaperef.m_polyrefs[k]+1)%poly.size())]);
+                                 Line line = Line(poly.m_points[shaperef.m_polyrefs[k]],poly.m_points[((shaperef.m_polyrefs[k]+1)%poly.m_points.size())]);
                                  if (intersect_region(line,polyb.getLine())) {
                                     if (intersect_line(line,polyb.getLine(),tolerance)) {
                                        testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
@@ -1639,15 +1641,15 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                            }
                         }
                         else if (polyb.isPolyLine()) {
-                           if (testPointInPoly(polyb[shaperefb.m_polyrefs[0]],shaperef) != -1)  {
+                           if (testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1)  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
                               shapeindexlist.add(indexb);
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
                                  for (int kk = 0; kk < shaperefb.m_polyrefs.size(); kk++) {
-                                    Line line = Line(poly[shaperef.m_polyrefs[k]],poly[((shaperef.m_polyrefs[k]+1)%poly.size())]);
-                                    Line lineb = Line(polyb[shaperefb.m_polyrefs[kk]],polyb[((shaperefb.m_polyrefs[kk]+1)%polyb.size())]);
+                                    Line line = Line(poly.m_points[shaperef.m_polyrefs[k]],poly.m_points[((shaperef.m_polyrefs[k]+1)%poly.m_points.size())]);
+                                    Line lineb = Line(polyb.m_points[shaperefb.m_polyrefs[kk]],polyb.m_points[((shaperefb.m_polyrefs[kk]+1)%polyb.m_points.size())]);
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           if (testedlist.add(shaperefb.m_shape_ref) != -1) {
@@ -1665,8 +1667,8 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                            // first test one entirely inside the other
                            // any point at all will suffice to check this: however, we need to check that the polyref point *itself* is within the 
                            // pixel, not just part of the line associated with it...
-                           if ((pixelate(polyb[shaperefb.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(polyb[shaperefb.m_polyrefs[0]],shaperef) != -1) ||
-                               (pixelate(poly[shaperef.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(poly[shaperef.m_polyrefs[0]],shaperefb) != -1))  {
+                           if ((pixelate(polyb.m_points[shaperefb.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1) ||
+                               (pixelate(poly.m_points[shaperef.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(poly.m_points[shaperef.m_polyrefs[0]],shaperefb) != -1))  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
                               shapeindexlist.add(indexb);
                            }
@@ -1675,8 +1677,8 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                               bool breakit = false;
                               for (int k = 0; k < shaperef.m_polyrefs.size() && !breakit; k++) {
                                  for (int kk = 0; kk < shaperefb.m_polyrefs.size(); kk++) {
-                                    Line line = Line(poly[shaperef.m_polyrefs[k]],poly[((shaperef.m_polyrefs[k]+1)%poly.size())]);
-                                    Line lineb = Line(polyb[shaperefb.m_polyrefs[kk]],polyb[((shaperefb.m_polyrefs[kk]+1)%polyb.size())]);
+                                    Line line = Line(poly.m_points[shaperef.m_polyrefs[k]],poly.m_points[((shaperef.m_polyrefs[k]+1)%poly.m_points.size())]);
+                                    Line lineb = Line(polyb.m_points[shaperefb.m_polyrefs[kk]],polyb.m_points[((shaperefb.m_polyrefs[kk]+1)%polyb.m_points.size())]);
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
@@ -1715,14 +1717,14 @@ void ShapeMap::shapeInPolyList(const SalaShape& shape, pvecint& shapeindexlist) 
       lineInPolyList(shape.getLine(),shapeindexlist);
    }
    else if (shape.isPolyLine()) {
-      for (size_t i = 1; i < shape.size() - 1; i++) {
-         Line li(shape[i], shape[i-1]);
+      for (size_t i = 1; i < shape.m_points.size() - 1; i++) {
+         Line li(shape.m_points[i], shape.m_points[i-1]);
          lineInPolyList(li,shapeindexlist);
       }
    }
    else {
       // first *add* the poly temporarily (note this may grow pixel set):
-      int ref = makePolyShape(shape, false, true); // false is closed poly, true is temporary shape
+      int ref = makePolyShape(shape.m_points, false, true); // false is closed poly, true is temporary shape
       // do test:
       polyInPolyList(ref, shapeindexlist);
       // clean up:
@@ -1761,7 +1763,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
                   parity = +1;
                }
                for (int j = 0; j < shape.m_polyrefs.size(); j++) {
-                  Line lineb = Line(poly[shape.m_polyrefs[j]],poly[((shape.m_polyrefs[j]+1)%poly.size())]);
+                  Line lineb = Line(poly.m_points[shape.m_polyrefs[j]],poly.m_points[((shape.m_polyrefs[j]+1)%poly.m_points.size())]);
                   if (lineb.bottom_left.y <= p.y && lineb.top_right.y >= p.y) {
                      // crosses or touches... but we need to check
                      // touching exception:
@@ -1793,7 +1795,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
                   parity = +1;
                }
                for (int j = 0; j < shape.m_polyrefs.size(); j++) {
-                  Line lineb = Line(poly[shape.m_polyrefs[j]],poly[((shape.m_polyrefs[j]+1)%poly.size())]);
+                  Line lineb = Line(poly.m_points[shape.m_polyrefs[j]],poly.m_points[((shape.m_polyrefs[j]+1)%poly.m_points.size())]);
                   if (lineb.bottom_left.x <= p.x && lineb.top_right.x >= p.x) {
                      // crosses or touches... but we need to check
                      // touching exception:
@@ -1849,7 +1851,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
             int counter = 0;
             int parity = -1;
             for (j = 0; j < testnodes.size(); j++) {
-               Line lineb = Line(poly[testnodes[j]],poly[((testnodes[j]+1)%poly.size())]);
+               Line lineb = Line(poly.m_points[testnodes[j]],poly.m_points[((testnodes[j]+1)%poly.m_points.size())]);
                if (lineb.bottom_left.x <= p.x && lineb.top_right.x >= p.x) {
                   // crosses or touches... but we need to check
                   // touching exception:
@@ -1912,7 +1914,7 @@ int ShapeMap::getClosestOpenGeom(const Point2f& p) const
             break;
          case SalaShape::SHAPE_POLY: case SalaShape::SHAPE_POLY | SalaShape::SHAPE_CCW: // note CCW should never have happened, but it has
             for (int j = 0; j < ref.m_polyrefs.size(); j++) {
-               Line line(poly[ref.m_polyrefs[j]],poly[ref.m_polyrefs[j]+1]);
+               Line line(poly.m_points[ref.m_polyrefs[j]],poly.m_points[ref.m_polyrefs[j]+1]);
                double tempthisdist = dist(p,line);
                if (tempthisdist != -1 && (thisdist == -1 || tempthisdist < thisdist)) {
                   thisdist = tempthisdist;
@@ -1967,15 +1969,15 @@ Point2f ShapeMap::getClosestVertex(const Point2f& p) const
             break;
          default: // either a poly line or a polygon
             for (int j = 0; j < ref.m_polyrefs.size(); j++) {
-               double d1 = dist(p,poly[ref.m_polyrefs[j]]);
+               double d1 = dist(p,poly.m_points[ref.m_polyrefs[j]]);
                // note this can be used for both open / closed with the % poly.size()
-               double d2 = dist(p,poly[(ref.m_polyrefs[j]+1)%poly.size()]);
+               double d2 = dist(p,poly.m_points[(ref.m_polyrefs[j]+1)%poly.m_points.size()]);
                if (thisdist == -1 || d1 < thisdist) {
-                  thisvertex = poly[ref.m_polyrefs[j]];
+                  thisvertex = poly.m_points[ref.m_polyrefs[j]];
                   thisdist = d1;
                }
                if (d2 < thisdist) {
-                  thisvertex = poly[(ref.m_polyrefs[j]+1)%poly.size()];
+                  thisvertex = poly.m_points[(ref.m_polyrefs[j]+1)%poly.m_points.size()];
                   thisdist = d2;
                }
             }
@@ -2044,9 +2046,9 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
                      
                      // Quick mod - TV
 #if defined(_WIN32)                     
-                     Line& li2 = Line(poly[x],poly[(x+1)%poly.size()]);
+                     Line& li2 = Line(poly.points[x],poly[(x+1)%poly.points.size()]);
 #else
-		     Line li2(poly[x], poly[(x+1) % poly.size()]);
+             Line li2(poly.m_points[x], poly.m_points[(x+1) % poly.m_points.size()]);
 #endif                     
                      if (intersect_region(li,li2)) {
                         // note: in this case m_region is stored as a line:
@@ -2174,7 +2176,7 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
                      auto shapeIter = m_shapes.find(shaperef.m_shape_ref);
                      size_t shapeindex = std::distance(m_shapes.begin(), shapeIter);
                      SalaShape& poly = shapeIter->second;
-                     Line li( poly[q], poly[(q+1)%poly.size()] );
+                     Line li( poly.m_points[q], poly.m_points[(q+1)%poly.m_points.size()] );
                      if (dist(pt,li) < radius) {
                          depthmapX::addIfNotExists(bufferset, int(shapeindex));
                      }
@@ -2313,8 +2315,8 @@ int ShapeMap::getShapeConnections(int shaperef, pvecint& connections, double tol
       }
       else if (shape.isPolyLine()) {
          // this is the worst for efficiency: potential for many possible retries of the same shape:
-         for (size_t i = 1; i < shape.size() - 1; i++) {
-            Line li(shape[i-1], shape[i]);
+         for (size_t i = 1; i < shape.m_points.size() - 1; i++) {
+            Line li(shape.m_points[i-1], shape.m_points[i]);
             lineInPolyList(li,connections,shaperef,tolerance);
          }
       }
@@ -2801,7 +2803,7 @@ bool ShapeMap::importPolylines(const std::vector<depthmapX::Polyline> &polylines
     std::vector<int> shape_refs;
 
     for(auto& polyline: polylines) {
-        shape_refs.push_back(makePolyShape(genshim::toPQVector(polyline.m_vertices), !polyline.m_closed));
+        shape_refs.push_back(makePolyShape(polyline.m_vertices, !polyline.m_closed));
     }
 
     bool dataImported = importData(data, shape_refs);
@@ -2820,7 +2822,7 @@ bool ShapeMap::importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> 
     std::vector<int> shape_refs;
 
     for(auto& polyline: polylines) {
-        shape_refs.push_back(makePolyShapeWithRef(genshim::toPQVector(polyline.second.m_vertices), !polyline.second.m_closed, polyline.first));
+        shape_refs.push_back(makePolyShapeWithRef(polyline.second.m_vertices, !polyline.second.m_closed, polyline.first));
     }
 
     bool dataImported = importData(data, shape_refs);
@@ -2976,18 +2978,18 @@ const SalaShape& ShapeMap::getNextShape() const
 pqvector<SalaEdgeU> SalaShape::getClippingSet(QtRegion& clipframe) const
 {
    pqvector<SalaEdgeU> edgeset;
-   bool last_inside = (clipframe.contains_touch(at(0))) ? true : false;
+   bool last_inside = (clipframe.contains_touch(m_points[0])) ? true : false;
    bool found_inside = last_inside;
-   for (size_t i = 1; i < size(); i++) {
-      bool next_inside = (clipframe.contains_touch(at(i))) ? true : false;
+   for (size_t i = 1; i < m_points.size(); i++) {
+      bool next_inside = (clipframe.contains_touch(m_points[i])) ? true : false;
       found_inside |= next_inside;
       if (last_inside != next_inside) {
          if (last_inside) {
-            EdgeU eu = clipframe.getCutEdgeU(at(i-1),at(i));
+            EdgeU eu = clipframe.getCutEdgeU(m_points[i-1],m_points[i]);
             edgeset.push_back(SalaEdgeU(i,false,eu));
          }
          else {
-            EdgeU eu = clipframe.getCutEdgeU(at(i),at(i-1));
+            EdgeU eu = clipframe.getCutEdgeU(m_points[i],m_points[i-1]);
             edgeset.push_back(SalaEdgeU(i-1,true,eu));
          }
       }
@@ -3483,11 +3485,11 @@ std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
             lines.push_back(SimpleLine(shape.getLine()));
         }
         else if (shape.isPolyLine() || shape.isPolygon()) {
-            for (size_t n = 0; n < shape.size() - 1; n++) {
-                lines.push_back(SimpleLine(shape[n],shape[n+1]));
+            for (size_t n = 0; n < shape.m_points.size() - 1; n++) {
+                lines.push_back(SimpleLine(shape.m_points[n],shape.m_points[n+1]));
             }
             if (shape.isPolygon()) {
-                lines.push_back(SimpleLine(shape.tail(),shape.head()));
+                lines.push_back(SimpleLine(shape.m_points.back(),shape.m_points.front()));
             }
         }
     }
@@ -3507,8 +3509,8 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
             colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.getLine()), color));
         }
         else if (shape.isPolyLine()) {
-            for (size_t n = 0; n < shape.size() - 1; n++) {
-                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape[n],shape[n+1]), color));
+            for (size_t n = 0; n < shape.m_points.size() - 1; n++) {
+                colouredLines.push_back(std::pair<SimpleLine, PafColor> (SimpleLine(shape.m_points[n],shape.m_points[n+1]), color));
             }
         }
     }
@@ -3525,10 +3527,10 @@ std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
         SalaShape& shape = refShape.second;
         if (shape.isPolygon()) {
             std::vector<Point2f> vertices;
-            for (size_t n = 0; n < shape.size(); n++) {
-                vertices.push_back(shape[n]);
+            for (size_t n = 0; n < shape.m_points.size(); n++) {
+                vertices.push_back(shape.m_points[n]);
             }
-            vertices.push_back(shape.tail());
+            vertices.push_back(shape.m_points.back());
             PafColor colour(attributeTable.getDisplayColor(k));
             colouredPolygons.insert(std::make_pair(vertices, colour));
         }
