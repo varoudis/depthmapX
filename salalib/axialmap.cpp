@@ -1075,7 +1075,7 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
             size_t removeindex = ii;
             // now check removing it won't break any topological loops
             bool presumedvital = false;
-            auto axSegCut = depthmapX::getMapAtIndex(axsegcuts, removeindex)->second;
+            auto& axSegCut = depthmapX::getMapAtIndex(axsegcuts, removeindex)->second;
             for (size_t k = 0; k < axSegCut.size(); k++) {
                if (m_radialsegcounts[axSegCut[k]] <= 1) {
                   presumedvital = true;
@@ -1156,7 +1156,7 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       }
       //
       bool presumedvital = false;
-      auto axSegCut = depthmapX::getMapAtIndex(axsegcuts, j)->second;
+      auto &axSegCut = depthmapX::getMapAtIndex(axsegcuts, j)->second;
       for (k = 0; k < axSegCut.size(); k++) {
          if (m_radialsegcounts[axSegCut[k]] <= 1) {
             presumedvital = true;
@@ -4324,23 +4324,25 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
    sortPixelLines();
 
    // and chop duplicate lines:
-
-   iter = lines.begin(), end = lines.end();
+   std::vector<int> removelist;
    int i = -1;
-   for(; iter != end; ) {
-       i++;
-       PixelRef start = pixelate(iter->second.start());
-       for (size_t j = 0; j < m_pixel_lines[start.x][start.y].size(); j++) {
-          int k = m_pixel_lines[start.x][start.y][j];
-          if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
-             if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
-                iter = lines.erase(iter);
-                break;
-             }
-          }
-       }
-       ++iter;
+   for (auto line: lines) {
+      i++;
+      PixelRef start = pixelate(line.second.start());
+      for (size_t j = 0; j < m_pixel_lines[start.x][start.y].size(); j++) {
+         int k = m_pixel_lines[start.x][start.y][j];
+         if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
+            if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
+               removelist.push_back(line.first);
+               break;
+            }
+         }
+      }
    }
+   for(int remove: removelist) {
+       lines.erase(remove);
+   }
+   removelist.clear(); // always clear this list, it's reused}
 }
 
 /////////////////////////////////////////////////////

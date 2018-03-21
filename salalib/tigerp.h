@@ -38,12 +38,13 @@ public:
    TigerCategory() {;}
 };
 
-class TigerMap : public pqmap<std::string,TigerCategory>
+class TigerMap
 {
 protected:
    QtRegion m_region;
    bool m_init;
 public:
+   std::map<std::string,TigerCategory> m_categories;
    TigerMap() { m_init = false;}
 
    void parse(const std::vector<std::string> &fileset, Communicator *communicator);
