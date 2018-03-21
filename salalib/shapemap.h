@@ -25,7 +25,8 @@
 #include <vector>
 #include <string>
 #include "salalib/importtypedefs.h"
-#include "genlib/bspnode.h"
+#include "genlib/bsptree.h"
+#include "genlib/containerutils.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +205,6 @@ protected:
    bool m_hasgraph;
    // counters
    int m_obj_ref;
-   int m_shape_ref;
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
@@ -214,8 +214,8 @@ protected:
    mutable BSPNode *m_bsp_root;
    mutable bool m_bsp_tree;
    //
-   pqmap<int,SalaShape> m_shapes;
-   pqmap<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
+   std::map<int,SalaShape> m_shapes;
+   std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
    prefvec<SalaEvent> m_undobuffer;
    //
@@ -248,24 +248,28 @@ public:
    // num shapes for this object (note, request by object rowid
    // -- on interrogation, this is what you will usually receive)
    const size_t getShapeCount(int rowid) const
-   { return m_shapes.value(rowid).size(); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->second.size(); }
    //
    int getIndex(int rowid) const
-   { return m_shapes.key(rowid); }
+   { return depthmapX::getMapAtIndex(m_shapes, rowid)->first; }
    //
    // add shape tools
    void makePolyPixels(int shaperef);
-   void shapePixelBorder(pmap<int,int>& relations, int shaperef, int side, PixelRef currpix, PixelRef minpix, bool first);
+   void shapePixelBorder(std::map<int,int>& relations, int shaperef, int side, PixelRef currpix, PixelRef minpix, bool first);
    // remove shape tools
    void removePolyPixels(int shaperef);
    //
    //
    void init(int size, const QtRegion& r);
+   int getNextShapeKey();
    // convert a single point into a shape
+   int makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape = false);
    int makePointShape(const Point2f& point, bool tempshape = false);
    // or a single line into a shape
+   int makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui = false, bool tempshape = false);
    int makeLineShape(const Line& line, bool through_ui = false, bool tempshape = false);
    // or a polygon into a shape
+   int makePolyShapeWithRef(const pqvector<Point2f>& points, bool open, int shape_ref, bool tempshape = false);
    int makePolyShape(const pqvector<Point2f>& points, bool open, bool tempshape = false);
 public:
    // or make a shape from a shape
@@ -286,20 +290,13 @@ public:
    //
    // some UI polygon creation tools:
    int polyBegin(const Line& line);
-   bool polyAppend(const Point2f& point);
-   bool polyClose();
-   bool polyCancel();
+   bool polyAppend(int shape_ref, const Point2f& point);
+   bool polyClose(int shape_ref);
+   bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
 protected:
    pqvector<Point2f> m_temppoints;
 public:
-   // add a shape (does not commit to poly pixels)
-   void shapeBegin();
-   void shapeVertex(const Point2f& p);
-   int shapeEnd(bool close);
-   // this simply adds all shapes to the poly pixels
-   void shapesCommit();
-   // 
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
    void undo();
@@ -308,7 +305,7 @@ public:
    Point2f pointOffset(const PointMap& pointmap, int currpix, int side);
    int moveDir(int side);
    //
-   void pointPixelBorder(const PointMap& pointmap, pmap<int,int>& relations, SalaShape& shape, int side, PixelRef currpix, PixelRef minpix, bool first);
+   void pointPixelBorder(const PointMap& pointmap, std::map<int, int> &relations, SalaShape& shape, int side, PixelRef currpix, PixelRef minpix, bool first);
    // quick find of topmost poly from a point (bit too inaccurate!)
    int quickPointInPoly(const Point2f& p) const;
    // slower point in topmost poly test:
@@ -390,7 +387,7 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shape_ref; } 
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.rbegin()->first; }
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const
@@ -477,7 +474,7 @@ public:
    const PafColor getShapeColor() const
    { return m_attributes.getDisplayColor(m_display_shapes[m_current]); }
    bool getShapeSelected() const
-   { return m_shapes[m_display_shapes[m_current]].m_selected; }
+   { return depthmapX::getMapAtIndex(m_shapes, m_display_shapes[m_current])->second.m_selected; }
    //
    double getLocationValue(const Point2f& point) const;
 
@@ -491,9 +488,9 @@ public:
    { return __max(m_region.width(), m_region.height()) / (10 * log((double)10+m_shapes.size())); }
    //
    // dangerous: accessor for the shapes themselves:
-   const pqmap<int,SalaShape>& getAllShapes() const
+   const std::map<int,SalaShape>& getAllShapes() const
    { return m_shapes; }
-   pqmap<int,SalaShape>& getAllShapes()
+   std::map<int,SalaShape>& getAllShapes()
    { return m_shapes; }
    // required for PixelBase, have to implement your own version of pixelate
    PixelRef pixelate( const Point2f& p, bool constrain = true, int = 1) const;
@@ -530,21 +527,17 @@ public:
    std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
-   void ozlemSpecial(ShapeMap& output);
-   void ozlemSpecial2(ShapeMap& buildings);
-   void ozlemSpecial3(ShapeMap& all);
-   bool ozlemSpecial4(ValuePair& cut, IntPair& previous, int& state, AttributeTable& table, IntPair& lookupcols);
-   void ozlemSpecial5(ShapeMap& buildings);
-   void ozlemSpecial6();
-   void ozlemSpecial7(ShapeMap& linemap);
    std::vector<SimpleLine> getAllShapesAsLines();
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
+   bool importLinesWithRefs(const std::map<int, Line> &lines, const depthmapX::Table &data);
    bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
+   bool importPointsWithRefs(const std::map<int, Point2f> &points, const depthmapX::Table &data);
    bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
+   bool importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &lines, const depthmapX::Table &data);
 private:
-   bool importData(const depthmapX::Table &data, std::vector<int> indices);
+   bool importData(const depthmapX::Table &data, std::vector<int> shape_refs);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

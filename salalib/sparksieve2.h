@@ -25,6 +25,7 @@
 #include "genlib/p2dpoly.h"
 #include "genlib/paftl.h"
 #include <list>
+#include <map>
 
 class sparkSieve2
 {
@@ -50,8 +51,8 @@ public:
 public:
    sparkSieve2( const Point2f& centre, double maxdist = -1.0 );
    ~sparkSieve2();
-   bool testblock( const Point2f& point, const pqmap<int,Line>& lines, double tolerance );
-   void block( const pqmap<int,Line>& lines, int q );
+   bool testblock(const Point2f& point, const std::map<int, Line> &lines, double tolerance );
+   void block(const std::map<int, Line> &lines, int q );
    void collectgarbage();
    double tanify( const Point2f& point, int q );
    //

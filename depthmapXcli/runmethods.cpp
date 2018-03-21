@@ -190,9 +190,9 @@ namespace dm_runmethods
         }
 
         std::cout << "ok\nSetting up grid... " << std::flush;
-        if (!mGraph->PointMaps::size() || mGraph->getDisplayedPointMap().isProcessed()) {
+        if (mGraph->getPointMaps().empty() || mGraph->getDisplayedPointMap().isProcessed()) {
            // this can happen if there are no displayed maps -- so flag new map required:
-            mGraph->addNewMap();
+            mGraph->addNewPointMap();
         }
         DO_TIMED("Setting grid", mGraph->setGrid(gridSize, Point2f(0.0, 0.0)))
 
@@ -457,4 +457,37 @@ namespace dm_runmethods
         }
     }
 
+    void runStepDepth(
+            const CommandLineParser &clp,
+            const std::vector<Point2f> &stepDepthPoints,
+            IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
+
+        std::cout << "ok\nSelecting cells... " << std::flush;
+
+        for( auto & point : stepDepthPoints ) {
+            auto graphRegion = mGraph->getRegion();
+            if (!graphRegion.contains(point))
+            {
+                throw depthmapX::RuntimeException("Point outside of target region");
+            }
+            QtRegion r(point, point);
+            mGraph->setCurSel(r, true);
+        }
+
+        std::cout << "ok\nCalculating step-depth... " << std::flush;
+
+        Options options;
+        options.global = 0;
+        options.point_depth_selection = 1;
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        DO_TIMED("Calculating step-depth", mGraph->analyseGraph( comm.get(), options, false))
+
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
+    }
 }

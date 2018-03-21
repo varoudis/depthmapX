@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include "depthmapX/mainwindowfactory.h"
+#include "version.h"
+#include "settingsimpl.h"
 #include <QApplication>
 #include <QFileOpenEvent>
 #include <QtDebug>
@@ -23,13 +26,12 @@ class CoreApplication : public QApplication
 {
 private:
     QString mFileToLoad;
+    std::unique_ptr<MainWindow> mMainWindow;
 public:
     CoreApplication(int &argc, char **argv)
         : QApplication(argc, argv)
     {
     }
-
-    const QString& fileToLoad() const { return mFileToLoad;}
 
     bool event(QEvent *event)
     {
@@ -39,8 +41,11 @@ public:
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
             mFileToLoad = openEvent->file();
+            mMainWindow->loadFile(openEvent->file());
         }
 
         return QApplication::event(event);
     }
+
+    int exec();
 };

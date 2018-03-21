@@ -36,136 +36,6 @@
 #include "genlib/containerutils.h"
 #include <unordered_set>
 
-/////////////////////////////////////////////////////////////////////////////////
-
-Point::~Point()
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-}
-
-float Point::getBinDistance(int i)
-{
-   return m_node->bindistance(i);
-}
-
-istream& Point::read(istream& stream, int version, int attr_count)
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-      delete m_attributes;
-      m_attributes = NULL;
-   }
-   stream.read( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // (note block NO LONGER used!)
-   stream.read( (char *) &m_block, sizeof(m_block) );
-
-   stream.read( (char *) &m_misc, sizeof(m_misc) );
-
-   stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-
-
-   stream.read( (char *) &m_merge, sizeof(m_merge) );
-   bool ngraph;
-   stream.read( (char *) &ngraph, sizeof(ngraph) );
-   if (ngraph) {
-       m_node = new Node;
-       m_node->read(stream, version);
-   }
-
-   stream.read((char *) &m_location, sizeof(m_location));
-
-   return stream;
-}
-
-ofstream& Point::write(ofstream& stream, int version)
-{
-   stream.write( (char *) &m_state, sizeof(m_state) );
-   // block is the same size as m_noderef used to be for ease of replacement:
-   // note block is no longer used at all
-   stream.write( (char *) &m_block, sizeof(m_block) );
-   stream.write( (char *) &m_misc, sizeof(m_misc) );
-   stream.write( (char *) &m_grid_connections, sizeof(m_grid_connections) );
-   stream.write( (char *) &m_merge, sizeof(m_merge) );
-   bool ngraph;
-   if (m_node) {
-      ngraph = true;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-      m_node->write(stream, version);
-   }
-   else {
-      ngraph = false;
-      stream.write( (char *) &ngraph, sizeof(ngraph) );
-   }
-   stream.write((char *) &m_location, sizeof(m_location));
-   return stream;
-}
-
-/////////////////////////////////////////////////////////////////////////////////
-
-int PointMaps::addNewMap(const std::string& name)
-{
-   std::string myname = name;
-   int counter = 1;
-   bool duplicate = true;
-   while (duplicate) {
-      duplicate = false;
-      for (size_t i = 0; i < size(); i++) {
-         if (at(i).getName() == myname) {
-            duplicate = true;
-            myname = dXstring::formatString(counter++,name + " %d");
-            break;
-         }  
-      }
-   }
-   push_back(PointMap(myname)); 
-   tail().setSpacePixel(m_spacepix); 
-   m_displayed_map = size() - 1; 
-   return size() - 1; 
-}
-
-bool PointMaps::read(istream& stream, int version)
-{
-   stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
-   int count;
-   stream.read((char *) &count, sizeof(count));
-   for (int i = 0; i < count; i++) {
-      push_back(PointMap());
-      tail().setSpacePixel( (SuperSpacePixel *) this );
-      tail().read( stream, version );
-   }
-   return true;
-}
-
-bool PointMaps::write(ofstream& stream, int version, bool displayedmaponly)
-{
-   if (!displayedmaponly) {
-      stream.write((char *) &m_displayed_map, sizeof(m_displayed_map));
-      int count = size();
-      stream.write((char *) &count, sizeof(count));
-      for (int i = 0; i < count; i++) {
-         at(i).write( stream, version );
-      }
-   }
-   else {
-      int dummy;
-      // displayed map is 0:
-      dummy = 0;
-      stream.write((char *) &dummy, sizeof(dummy));
-      // count is 1
-      dummy = 1;
-      stream.write((char *) &dummy, sizeof(dummy));
-      //
-      at(m_displayed_map).write(stream, version);
-   }
-   return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -502,38 +372,6 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    return ref;
 }
 
-PixelRefVector PointMap::getLayerPixels(int layer) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (obj != paftl::npos) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
-PixelRefVector PointMap::getDataObjectPixels(int layer, int object) 
-{
-   PixelRefVector pixels;
-
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         size_t obj = m_points[i][j].m_data_objects.searchindex(layer);
-         if (paftl::npos != -1 && m_points[i][j].m_data_objects[obj] == object) {
-            pixels.push_back( PixelRef(i,j) );
-         }
-      }
-   }
-
-   return pixels;
-}
-
 // I've reverted to actually filling the lines, provided there's space to put a filled point in
 
 bool PointMap::fillLines()
@@ -545,8 +383,9 @@ bool PointMap::fillLines()
    for (size_t file = 0; file < m_spacepix->size(); file++) {
       for (size_t layer = 0; layer < m_spacepix->at(file).size(); layer++) {
          if (m_spacepix->at(file).at(layer).isShown()) {
-            for (size_t k = 0; k < m_spacepix->at(file).at(layer).getAllShapes().size(); k++) {
-               SalaShape& shape = m_spacepix->at(file).at(layer).getAllShapes().at(k);
+            auto refShapes = m_spacepix->at(file).at(layer).getAllShapes();
+            for (auto refShape: refShapes) {
+               SalaShape& shape = refShape.second;
                if (shape.isLine()) {
                   fillLine(shape.getLine());
                }
@@ -597,8 +436,9 @@ bool PointMap::blockLines()
       for (size_t j = 0; j < m_spacepix->at(i).size(); j++) {
          // chooses the first editable layer it can find:
          if (m_spacepix->at(i).at(j).isShown()) {
-            for (size_t k = 0; k < m_spacepix->at(i).at(j).getAllShapes().size(); k++) {
-               SalaShape& shape = m_spacepix->at(i).at(j).getAllShapes().at(k);
+             auto refShapes = m_spacepix->at(i).at(j).getAllShapes();
+             for (auto refShape: refShapes) {
+                 SalaShape& shape = refShape.second;
                if (shape.isLine()) {
                   blockLine(count++,shape.getLine());
                }
@@ -620,12 +460,16 @@ bool PointMap::blockLines()
          PixelRef curs = PixelRef( i, j );
          Point& pt = getPoint( curs );
          QtRegion viewport = regionate( curs, 1e-10 );
-         for (size_t k = pt.m_lines.size() - 1; k != paftl::npos; k--) {
-            if (!pt.m_lines.value(k).crop( viewport )) {
-               // the pixelation is fairly rough to make sure that no point is missed: this just
-               // clears up if any point has been added in error:
-               pt.m_lines.remove_at(k);
-            }
+         std::map<int, Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
+         for(; iter != end; ) {
+             if (!iter->second.crop( viewport )) {
+                 // the pixelation is fairly rough to make sure that no point is missed: this just
+                 // clears up if any point has been added in error:
+                 iter = pt.m_lines.erase(iter);
+                 end = pt.m_lines.end();
+             } else {
+                 ++iter;
+             }
          }
       }
    }
@@ -642,7 +486,7 @@ void PointMap::blockLine(int key, const Line& li)
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
    {
-      getPoint(pixels[n]).m_lines.add(key,li);
+      getPoint(pixels[n]).m_lines.insert(std::make_pair(key,li));
       getPoint(pixels[n]).setBlock(true);
    }
 }
@@ -1016,31 +860,35 @@ void PointMap::outputNet(ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
-   pmap<PixelRef,PixelRefVector> graph;
+   std::map<PixelRef,PixelRefVector> graph;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
          if (m_points[i][j].filled() && m_points[i][j].m_node) {
             PixelRef pix(i,j);
             PixelRefVector connections;
             m_points[i][j].m_node->contents(connections);
-            graph.add(pix,connections);
+            graph.insert(std::make_pair(pix,connections));
          }
       }
    }
    netfile << "*Vertices " << graph.size() << endl;
    double maxdim = __max(m_region.width(),m_region.height());
    Point2f offset = Point2f((maxdim - m_region.width())/(2.0*maxdim),(maxdim - m_region.height())/(2.0*maxdim));
-   for (size_t j = 0; j < graph.size(); j++) {
-      Point2f p = depixelate(graph.key(j));
+   size_t j = 0;
+   for (auto& iter: graph) {
+      auto graphKey = iter.first;
+      Point2f p = depixelate(graphKey);
       p.x = offset.x + (p.x - m_region.bottom_left.x) / maxdim;
       p.y = 1.0 - (offset.y + (p.y - m_region.bottom_left.y) / maxdim);
-      netfile << (j+1) << " \"" << graph.key(j) << "\" " << p.x << " " << p.y << endl;
+      netfile << (j+1) << " \"" << graphKey << "\" " << p.x << " " << p.y << endl;
+      j++;
    }
    netfile << "*Edges" << endl;
-   for (size_t k = 0; k < graph.size(); k++) {
-      PixelRefVector& list = graph.value(k);
+   size_t k = 0;
+   for (auto& iter: graph) {
+      PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
-         size_t n = graph.searchindex(list[m]);
+         size_t n = depthmapX::findIndexFromKey(graph, list[m]);
          if (n != paftl::npos && k < n) {
             netfile << (k+1) << " " << (n+1) << " 1" << endl;
          }
@@ -1710,123 +1558,6 @@ bool PointMap::write( ofstream& stream, int version )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// A horrible piece of code: this is to convert a file from the old format
-// AttrHeader / AttrBody to the new format Attributes Table
-
-// This code converts attributes for all versions
-// between VERSION_NGRAPH_INTROD and VERSION_ATTRIBUTES_TABLE
-
-void PointMap::convertAttributes(int which_attributes)
-{
-   if (which_attributes & GraphVertexList::BASIC) {
-      int connectivity_col = m_attributes.insertLockedColumn("Connectivity");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               // insert row...
-               int row = m_attributes.insertRow(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::NEIGHBOURHOOD_SIZE);
-               m_attributes.setValue(row, connectivity_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::LOCAL) {
-      int cluster_col = m_attributes.insertColumn("Visual Clustering Coefficient");
-      int control_col = m_attributes.insertColumn("Visual Control");
-      int controllability_col = m_attributes.insertColumn("Visual Controllability");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CLUSTER);
-               m_attributes.setValue(row, cluster_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_HILL);
-               m_attributes.setValue(row, control_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::CONTROL_TURN);
-               m_attributes.setValue(row, controllability_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::GLOBAL) {
-      int entropy_col = m_attributes.insertColumn("Visual Entropy");
-      int integ_hh_col = m_attributes.insertColumn("Visual Integration [HH]");
-      int integ_tk_col = m_attributes.insertColumn("Visual Integration [Tekl]");
-      int depth_col = m_attributes.insertColumn("Visual Mean Depth");
-      int count_col = m_attributes.insertColumn("Visual Node Count");
-      int rel_entropy_col = m_attributes.insertColumn("Visual Relativised Entropy");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::ENTROPY);
-               m_attributes.setValue(row, entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::REL_ENTROPY);
-               m_attributes.setValue(row, rel_entropy_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_HILL);
-               m_attributes.setValue(row, integ_hh_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::INTEGRATION_TEKL);
-               m_attributes.setValue(row, integ_tk_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::MEAN_DEPTH);
-               m_attributes.setValue(row, depth_col, val);
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::GRAPH_SIZE);
-               m_attributes.setValue(row, count_col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::POINTDEPTH) {
-      int col = m_attributes.insertColumn("Visual Step Depth");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               float val;
-               val = (float) m_points[i][j].getAttributes().getAttr(AttrHeader::POINT_DEPTH);
-               m_attributes.setValue(row, col, val);
-            }
-         }
-      }
-   }
-   if (which_attributes & GraphVertexList::METRIC) {
-      int mspa_col = m_attributes.insertColumn("Metric Mean Shortest-Path Angle");
-      int mspl_col = m_attributes.insertColumn("Metric Mean Shortest-Path Distance");
-      int dist_col = m_attributes.insertColumn("Metric Mean Straight-Line Distance");
-      int count_col = m_attributes.insertColumn("Metric Node Count");
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_attributes) {
-               int row = m_attributes.getRowid(PixelRef(i,j));
-               double val, total = m_points[i][j].getAttributes().getAttr(AttrHeader::METRIC_GRAPH_SIZE);
-               //
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_ANGLE) / total;
-               m_attributes.setValue(row, mspa_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_METRIC_DEPTH) / total;
-               m_attributes.setValue(row, mspl_col, float(val));
-               val = m_points[i][j].getAttributes().getAttr(AttrHeader::TOTAL_EUCLID_DIST) / total;
-               m_attributes.setValue(row, dist_col, float(val));
-               //
-               m_attributes.setValue(row, count_col, float(total));
-            }
-         }
-      }
-   }
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         if (m_points[i][j].m_attributes) {
-            delete m_points[i][j].m_attributes;
-            m_points[i][j].m_attributes = NULL;
-         }
-      }
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 // Now what this class is actually for: making a visibility graph!
 
 // Visibility graph construction constants
@@ -2408,13 +2139,12 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          viewport0.top_right.y = centre0.y;
          break;
       }
-      pqmap<int,Line> lines0;
-      for (size_t m = 0; m < getPoint(curs).m_lines.size(); m++)
+      std::map<int,Line> lines0;
+      for (const std::pair<int,Line>& line: getPoint(curs).m_lines)
       {
-         int key = getPoint(curs).m_lines.key(m);
-         Line l = getPoint(curs).m_lines.value(m);
+         Line l = line.second;
          if (l.crop(viewport0)) {
-            lines0.add(key,l);
+            lines0.insert(std::make_pair(line.first,l));
          }
       }
       sieve.block(lines0, q);
@@ -2719,7 +2449,7 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
          if ( getPoint( curs ).filled()) {
 
             if ((getPoint( curs ).contextfilled() && !curs.iseven()) ||
-                (options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1)) {
+                (options.gates_only)) {
                count++;
                continue;
             }
@@ -3017,7 +2747,7 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -3210,7 +2940,7 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
 
          if ( getPoint( curs ).filled() ) {
 
-            if ( options.gates_only && getPoint(curs).getDataObject(DataLayers::GATES) == -1) {
+            if ( options.gates_only) {
                count++;
                continue;
             }
@@ -3596,9 +3326,9 @@ bool PointMap::mergePixels(PixelRef a, PixelRef b)
 
 void PointMap::mergeFromShapeMap(const ShapeMap& shapemap)
 {
-   const pqmap<int,SalaShape>& polygons = shapemap.getAllShapes();
-   for (size_t i = 0; i < polygons.size(); i++) {
-      const SalaShape& poly = polygons[i];
+   const std::map<int,SalaShape>& polygons = shapemap.getAllShapes();
+   for (auto polygon: polygons) {
+      const SalaShape& poly = polygon.second;
       if (poly.isLine()) {
          PixelRef a = pixelate(poly.getLine().start());
          PixelRef b = pixelate(poly.getLine().end());

@@ -25,7 +25,7 @@
 #include <genlib/paftl.h>
 #include <genlib/p2dpoly.h>
 
-#include <salalib/vertex.h>      // mainly deprecated, but includes display params
+#include <salalib/displayparams.h>
 #include <salalib/fileproperties.h>
 #include <salalib/spacepix.h>
 #include <salalib/attributes.h>
@@ -35,6 +35,8 @@
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
 #include <salalib/datalayer.h>   // datalayers deprecated
+
+#include <mutex>
 
 // for agent engine interface
 #include <salalib/nagent.h>
@@ -49,7 +51,7 @@ class Communicator;
 
 // A meta graph is precisely what it says it is
 
-class MetaGraph : public SuperSpacePixel, public PointMaps, public FileProperties
+class MetaGraph : public SuperSpacePixel, public FileProperties
 {
 public:
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
@@ -60,7 +62,6 @@ public:
 protected:
    int m_file_version;
    int m_state;
-   void *m_lock;
 public:
    // some display options now set at file level
    bool m_showgrid;
@@ -78,22 +79,45 @@ public:
       // note, if unsaved, m_file_version is -1
       return m_file_version;
    }
-   bool setLock(void *who) 
-   { 
-      if (m_lock == 0) {
-         m_lock = who;
-         return true;
-      }
-      return false;
+
+
+   std::vector<PointMap> getPointMaps()
+   { return m_pointMaps; }
+   PointMap& getDisplayedPointMap()
+   { return m_pointMaps[m_displayed_pointmap]; }
+   const PointMap& getDisplayedPointMap() const
+   { return m_pointMaps[m_displayed_pointmap]; }
+   void setDisplayedPointMapRef(int i)
+   { m_displayed_pointmap = i; }
+   int getDisplayedPointMapRef() const
+   { return m_displayed_pointmap; }
+   void redoPointMapBlockLines()   // (flags blockedlines, but also flags that you need to rebuild a bsp tree if you have one)
+   { for (auto& pointMap: m_pointMaps) { pointMap.m_blockedlines = false; } }
+   int addNewPointMap(const std::string& name = std::string("VGA Map"));
+
+private:
+   std::vector<PointMap> m_pointMaps;
+   int m_displayed_pointmap;
+   SuperSpacePixel *m_spacepix;
+
+   void setSpacePixel(SuperSpacePixel *spacepix)
+   { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
+   void removePointMap(int i)
+   { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
+
+   bool readPointMaps(istream &stream, int version );
+   bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
+
+   std::recursive_mutex mLock;
+public:
+    std::unique_lock<std::recursive_mutex> getLock(){
+       return std::unique_lock<recursive_mutex>(mLock);
    }
-   bool releaseLock(void *who)
-   {
-      if (m_lock != who) {
-         return false;
-      }
-      m_lock = NULL;
-      return true;
-   }
+
+    std::unique_lock<std::recursive_mutex> getLockDeferred(){
+        return std::unique_lock<std::recursive_mutex>(mLock, std::defer_lock_t());
+    }
+
    //
    void copyLineData(const SuperSpacePixel& meta);
    void copyPointMap(const PointMap& meta);
@@ -133,10 +157,10 @@ public:
    bool makeShape(const Line& line);
    bool moveSelShape(const Line& line);
    // onto polys as well:
-   bool polyBegin(const Line& line);
-   bool polyAppend(const Point2f& point);
-   bool polyClose();
-   bool polyCancel();
+   int polyBegin(const Line& line);
+   bool polyAppend(int shape_ref, const Point2f& point);
+   bool polyClose(int shape_ref);
+   bool polyCancel(int shape_ref);
    //
    int addShapeGraph(const std::string& name, int type);
    int addShapeMap(const std::string& name);
@@ -157,7 +181,6 @@ public:
    //
    // some compatibility with older version horrors:
    int convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap);
-   void convertShapeGraphToShapeMap(const ShapeGraph& axialmap);
    //
    int loadMifMap(Communicator *comm, istream& miffile, istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
@@ -404,8 +427,6 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   pqvector<AttrBody> *m_attr_conv_table;
-   int convertAttributes( ifstream& stream, int version );
    int convertVirtualMem( ifstream& stream, int version );
    //
    streampos skipVirtualMem(istream &stream, int version);

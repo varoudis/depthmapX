@@ -5,7 +5,8 @@ DEFINES    += _DEPTHMAP
 TEMPLATE   = app
 TARGET     = depthmapX
 ICON       = icons/depthmapX.icns
-SOURCES    = main.cpp
+SOURCES    = main.cpp \
+    coreapplication.cpp
 
 win32:RC_ICONS += icons/depthmapX.ico
 
@@ -25,4 +26,13 @@ win32:LIBS += -lOpenGl32 -lglu32 -lgdi32
 HEADERS += \
     coreapplication.h
 
+mac {
+    QMAKE_INFO_PLIST = resources/Info.plist
+    BUNDLE_RESOURCES.files = icons/graph.icns
+    BUNDLE_RESOURCES.path = Contents/Resources
+    QMAKE_BUNDLE_DATA += BUNDLE_RESOURCES
+}
+
+FORMS += \
+    ../depthmapX/UI/ColourScaleDlg.ui
 

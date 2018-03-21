@@ -58,6 +58,8 @@ public:
 signals:
     void renderedImage(const QImage &image, double scaleFactor);
     void runtimeExceptionThrown(int type, std::string message);
+    void showWarningMessage(QString title, QString message);
+    void closeWaitDialog();
 
 protected:
     void run();
@@ -84,7 +86,7 @@ public:
    void ProcPostMessage(int m, int x, int y);
    CMSCommunicator();
    virtual ~CMSCommunicator();
-   virtual void CommPostMessage(int m, int x, int y) const;  // Inline below CWaitDialog
+   virtual void CommPostMessage(int m, int x) const;  // Inline below CWaitDialog
 
    void * parent_doc;
 
@@ -176,6 +178,7 @@ class QGraphDoc : public QWidget
 	Q_OBJECT
 private:
     void exceptionThrownInRenderThread(int type, std::string message);
+    void messageFromRenderThread(QString title, QString message);
 public:
    QGraphDoc(const QString &author, const QString &organisation);
    CMSCommunicator *m_communicator;
@@ -250,7 +253,7 @@ public:
    int m_step;
    int m_num_records;
    QTime m_timer;
-   void ProcPostMessage(int m, int x, int y);
+   void ProcPostMessage(int m, int x);
    void UpdateMainframestatus();
 
 public slots:
@@ -299,8 +302,7 @@ public:
 	void OnToolsAxialLines();
 	void OnEditFixgrid();
 	void OnEditFixFill();
-	void OnToolsMPD();
-	void OnTestButton();
+    void OnToolsMPD();
 	void OnEvoAgent();
 	void OnBinDisplay();
 	void OnToolsMakeFewestLineMap();
@@ -326,13 +328,10 @@ public:
 	void OnViewScatterplot();
 	void OnWindowMap();
 	void OnViewTable();
-	void OnToolsAgentRun();
-	void OnRedtest();
-	void OnGreentest();
+    void OnToolsAgentRun();
 	void OnRenameColumn();
 	void OnEditQuery();
-	void OnColumnProperties();
-	void OnPinktest();
+    void OnColumnProperties();
 	void OnLayerNew();
 	void OnLayerDelete();
 	void OnLayerConvert();

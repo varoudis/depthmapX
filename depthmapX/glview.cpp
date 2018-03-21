@@ -19,6 +19,7 @@
 #include "depthmapX/depthmapView.h"
 #include "salalib/linkutils.h"
 #include "salalib/geometrygenerators.h"
+#include "mainwindow.h"
 #include <QMouseEvent>
 #include <QCoreApplication>
 
@@ -133,7 +134,8 @@ void GLView::paintGL()
         loadDrawingGLObjects();
         m_visibleDrawingLines.updateGL(m_core);
 
-        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
+        if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL
+                && m_pDoc.m_meta_graph->getDisplayedMapRef() != -1) {
             m_visibleShapeGraph.loadGLObjects(m_pDoc.m_meta_graph->getDisplayedShapeGraph());
             m_visibleShapeGraph.updateGL(m_core);
         }
@@ -204,9 +206,8 @@ void GLView::loadAxes() {
 }
 
 void GLView::loadDrawingGLObjects() {
-    m_pDoc.m_meta_graph->setLock(this);
+    auto lock = m_pDoc.m_meta_graph->getLock();
     m_visibleDrawingLines.loadLineData(m_pDoc.m_meta_graph->getVisibleDrawingLines(), m_foreground);
-    m_pDoc.m_meta_graph->releaseLock(this);
 }
 
 void GLView::resizeGL(int w, int h)
@@ -253,6 +254,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             // typical selection
             Qt::KeyboardModifiers keyMods = QApplication::keyboardModifiers();
             m_pDoc.m_meta_graph->setCurSel( r, keyMods & Qt::ShiftModifier );
+            ((MainWindow *) m_pDoc.m_mainFrame)->updateToolbar();
             break;
         }
         case MOUSE_MODE_ZOOM_IN:
@@ -339,19 +341,20 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         case MOUSE_MODE_POLYGON_TOOL | MOUSE_MODE_SECOND_POINT:
         {
             if (m_polyPoints == 0) {
-               m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
+               m_currentlyEditingShapeRef = m_pDoc.m_meta_graph->polyBegin(Line(m_tempFirstPoint,worldPoint));
                m_polyStart = m_tempFirstPoint;
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 2;
             }
             else if (m_polyPoints > 2 && PixelDist(mousePoint, getScreenPoint(m_polyStart)) < 6) {
                // check to see if it's back to the original start point, if so, close off
-               m_pDoc.m_meta_graph->polyClose();
+               m_pDoc.m_meta_graph->polyClose(m_currentlyEditingShapeRef);
                m_polyPoints = 0;
+               m_currentlyEditingShapeRef = -1;
                m_mouseMode = MOUSE_MODE_POLYGON_TOOL;
             }
             else {
-               m_pDoc.m_meta_graph->polyAppend(worldPoint);
+               m_pDoc.m_meta_graph->polyAppend(m_currentlyEditingShapeRef, worldPoint);
                m_tempFirstPoint = m_tempSecondPoint;
                m_polyPoints += 1;
             }
@@ -473,13 +476,15 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     int dx = event->x() - m_mouseLastPos.x();
     int dy = event->y() - m_mouseLastPos.y();
 
+    Point2f worldPoint = getWorldPoint(event->pos());
+
     if (event->buttons() & Qt::RightButton
             || (event->buttons() & Qt::LeftButton && m_mouseMode == MOUSE_MODE_PAN)) {
         panBy(dx, dy);
         m_wasPanning = true;
     } else if (event->buttons() & Qt::LeftButton) {
         Point2f lastWorldPoint = getWorldPoint(m_mouseLastPos);
-        Point2f worldPoint = getWorldPoint(event->pos());
+
         if(m_mouseDragRect.isNull()) {
             m_mouseDragRect.setX(lastWorldPoint.x);
             m_mouseDragRect.setY(lastWorldPoint.y);
@@ -490,10 +495,12 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     }
     if((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT)
     {
-        m_tempSecondPoint = getWorldPoint(event->pos());
+        m_tempSecondPoint = worldPoint;
         update();
     }
     m_mouseLastPos = event->pos();
+    m_pDoc.m_position = worldPoint;
+    m_pDoc.UpdateMainframestatus();
 }
 
 void GLView::wheelEvent(QWheelEvent *event)

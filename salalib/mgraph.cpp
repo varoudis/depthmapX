@@ -46,14 +46,8 @@
 MetaGraph::MetaGraph()
 { 
    m_state = 0; 
-   m_lock = NULL;
    m_view_class = VIEWNONE;
    m_file_version = -1; // <- if unsaved, file version is -1
-
-   // Standard layers no longer added: the gates layer will be initialised with the first push to layer,
-   // or when made from axial lines.
-
-   m_attr_conv_table = NULL;
 
    // whether or not showing text / grid saved with file:
    m_showtext = false;
@@ -212,7 +206,7 @@ void MetaGraph::copyLineData(const SuperSpacePixel& meta)
 
    *(SuperSpacePixel *)this = meta;
 
-   PointMaps::setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
+   setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
 
    m_state |= LINEDATA;
 }
@@ -315,7 +309,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
    bool retvar = false;
 
    if (options.point_depth_selection) {
-      if (m_view_class & VIEWVGA && !PointMaps::getDisplayedPointMap().isSelected()) {
+      if (m_view_class & VIEWVGA && !getDisplayedPointMap().isSelected()) {
          return false;
       }
       else if (m_view_class & VIEWAXIAL && !m_shape_graphs.getDisplayedMap().isSelected()) {
@@ -327,7 +321,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       retvar = true;
       if (options.point_depth_selection == 1) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().analyseVisualPointDepth( communicator );
+            getDisplayedPointMap().analyseVisualPointDepth( communicator );
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!m_shape_graphs.getDisplayedMap().isSegmentMap()) {
@@ -342,36 +336,36 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       }
       else if (options.point_depth_selection == 2) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().analyseMetricPointDepth( communicator );
+            getDisplayedPointMap().analyseMetricPointDepth( communicator );
          }
          else if (m_view_class & VIEWAXIAL && m_shape_graphs.getDisplayedMap().isSegmentMap()) {
             m_shape_graphs.getDisplayedMap().analyseTopoMetPD( communicator, 1 ); // 1 is metric step depth
          }
       }
       else if (options.point_depth_selection == 3) {
-         PointMaps::getDisplayedPointMap().analyseAngularPointDepth( communicator );
+         getDisplayedPointMap().analyseAngularPointDepth( communicator );
       }
       else if (options.point_depth_selection == 4) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().binDisplay( communicator );
+            getDisplayedPointMap().binDisplay( communicator );
          }
          else if (m_view_class & VIEWAXIAL && m_shape_graphs.getDisplayedMap().isSegmentMap()) {
             m_shape_graphs.getDisplayedMap().analyseTopoMetPD( communicator, 0 ); // 0 is topological step depth
          }
       }
       else if (options.output_type == Options::OUTPUT_ISOVIST) {
-         PointMaps::getDisplayedPointMap().analyseIsovist( communicator, *this, simple_version );
+         getDisplayedPointMap().analyseIsovist( communicator, *this, simple_version );
       }
       else if (options.output_type == Options::OUTPUT_VISUAL) {
-         PointMaps::getDisplayedPointMap().analyseVisual( communicator, options, simple_version );
+         getDisplayedPointMap().analyseVisual( communicator, options, simple_version );
          // REPLACES:
          // Graph::calculate_depth_matrix( communicator, options, output_graph );
       }
       else if (options.output_type == Options::OUTPUT_METRIC) {
-         PointMaps::getDisplayedPointMap().analyseMetric( communicator, options );
+         getDisplayedPointMap().analyseMetric( communicator, options );
       }
       else if (options.output_type == Options::OUTPUT_ANGULAR) {
-         PointMaps::getDisplayedPointMap().analyseAngular( communicator, options );
+         getDisplayedPointMap().analyseAngular( communicator, options );
       }
       else if (options.output_type == Options::OUTPUT_THRU_VISION) {
          retvar = analyseThruVision( communicator, options.gatelayer );
@@ -425,40 +419,40 @@ bool MetaGraph::makeShape(const Line& line)
    return (map.makeLineShape(line,true) != -1);
 }
 
-bool MetaGraph::polyBegin(const Line& line)
+int MetaGraph::polyBegin(const Line& line)
 {
    if (!isEditableMap()) {
-      return false;
+      return -1;
    }
    ShapeMap& map = getEditableMap();
-   return (map.polyBegin(line) != -1);
+   return map.polyBegin(line);
 }
 
-bool MetaGraph::polyAppend(const Point2f& point)
+bool MetaGraph::polyAppend(int shape_ref, const Point2f& point)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyAppend(point);
+   return map.polyAppend(shape_ref, point);
 }
 
-bool MetaGraph::polyClose() 
+bool MetaGraph::polyClose(int shape_ref)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyClose();
+   return map.polyClose(shape_ref);
 }
 
-bool MetaGraph::polyCancel()
+bool MetaGraph::polyCancel(int shape_ref)
 {
    if (!isEditableMap()) {
       return false;
    }
    ShapeMap& map = getEditableMap();
-   return map.polyCancel();
+   return map.polyCancel(shape_ref);
 }
 
 bool MetaGraph::moveSelShape(const Line& line)
@@ -518,7 +512,7 @@ int MetaGraph::makeIsovist(Communicator *communicator, const Point2f& p, double 
       ShapeMap& map = m_data_maps.getMap(shapelayer);
       // false: closed polygon, true: isovist
       int polyref = map.makePolyShape(iso.getPolygon(),false);  
-      map.getAllShapes().search(polyref).setCentroid(p);
+      map.getAllShapes()[polyref].setCentroid(p);
       map.overrideDisplayedAttribute(-2);
       map.setDisplayedAttribute(-1);
       setViewClass(SHOWSHAPETOP);
@@ -569,10 +563,10 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
 
    bool first = true;
    if (makeBSPtree(communicator)) {
-      std::set<int>& selset = map->getSelSet();
-      pqmap<int,SalaShape>& shapes = map->getAllShapes();
+      std::set<int> selset = map->getSelSet();
+      std::map<int,SalaShape>& shapes = map->getAllShapes();
       for (auto& sel: selset) {
-         SalaShape& path = shapes.value(sel);
+         const SalaShape& path = depthmapX::getMapAtIndex(shapes, sel)->second;
          if (path.isLine() || path.isPolyLine()) {
             if (first) {
                retvar = 1;
@@ -599,7 +593,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                }
                iso.makeit(m_bsp_root,start,SuperSpacePixel::m_region, angles.first, angles.second);
                int polyref = isovists->makePolyShape(iso.getPolygon(),false);  
-               isovists->getAllShapes().search(polyref).setCentroid(start);
+               isovists->getAllShapes()[polyref].setCentroid(start);
                AttributeTable& table = isovists->getAttributeTable();
                int row = table.getRowid(polyref);
                iso.setData(table,row, simple_version);
@@ -614,7 +608,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                   }
                   iso.makeit(m_bsp_root,start,SuperSpacePixel::m_region, angles.first, angles.second);
                   int polyref = isovists->makePolyShape(iso.getPolygon(),false);  
-                  isovists->getAllShapes().search(polyref).setCentroid(start);
+                  isovists->getAllShapes().find(polyref)->second.setCentroid(start);
                   AttributeTable& table = isovists->getAttributeTable();
                   int row = table.getRowid(polyref);
                   iso.setData(table,row, simple_version);
@@ -647,13 +641,16 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       return true;
    }
 
-   prefvec<TaggedLine> partitionlines;
+   std::vector<TaggedLine> partitionlines;
    for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
       for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
          // chooses the first editable layer it can find:
          if (SuperSpacePixel::at(i).at(j).isShown()) {
-            for (size_t k = 0; k < SuperSpacePixel::at(i).at(j).getAllShapes().size(); k++) {
-               SalaShape& shape = SuperSpacePixel::at(i).at(j).getAllShapes().at(k);
+             auto refShapes = SuperSpacePixel::at(i).at(j).getAllShapes();
+             int k = -1;
+             for (auto refShape: refShapes) {
+                 k++;
+                 SalaShape& shape = refShape.second;
                // I'm not sure what the tagging was meant for any more, 
                // tagging at the moment tags the *polygon* it was original attached to
                // must check it is not a zero length line:
@@ -695,7 +692,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       qtimer( atime, 0 );
 
       try {
-         m_bsp_root->make(communicator,atime,partitionlines,NULL);
+         BSPTree::make(communicator,atime,partitionlines,m_bsp_root);
          m_bsp_tree = true;
       } 
       catch (Communicator::CancelledException) {
@@ -738,8 +735,8 @@ void MetaGraph::removeDisplayedMap()
    int ref = getDisplayedMapRef();
    switch (m_view_class & VIEWFRONT) {
    case VIEWVGA:
-      PointMaps::removeMap(ref);
-      if (PointMaps::size() == 0) {
+      removePointMap(ref);
+      if (m_pointMaps.empty()) {
          setViewClass(SHOWHIDEVGA);
          m_state &= ~POINTMAPS;
       }
@@ -960,8 +957,9 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
          for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
             for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
                if (SuperSpacePixel::at(i).at(j).isShown()) {
-                  for (size_t k = 0; k < SuperSpacePixel::at(i).at(j).getAllShapes().size(); k++) {
-                     int key = destmap.makeShape(SuperSpacePixel::at(i).at(j).getAllShapes().at(k));
+                  auto refShapes = SuperSpacePixel::at(i).at(j).getAllShapes();
+                  for (auto refShape: refShapes) {
+                     int key = destmap.makeShape(refShape.second);
                      table.setValue(table.getRowid(key),layercol,float(j+1));
                      count++;
                   }
@@ -1632,21 +1630,21 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    SuperSpacePixel::tail().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
 
    // for each category
-   for (size_t i = 0; i < map.size(); i++) {
-
-      SuperSpacePixel::tail().push_back(ShapeMap(map.key(i)));
-      SuperSpacePixel::tail().at(i).init(map.value(i).size(), map.getRegion() );
+   for (auto val: map.m_categories) {
+      ShapeMap shapeMap = ShapeMap(val.first);
+      shapeMap.init(val.second.size(), map.getRegion() );
 
       // for each chains in category:
-      for (size_t j = 0; j < map.value(i).size(); j++) {
+      for (size_t j = 0; j < val.second.size(); j++) {
          // for each node pair in each category
-         for (size_t k = 0; k < map.value(i).at(j).size(); k++) {
-            SuperSpacePixel::tail().at(i).makeLineShape( map.value(i).at(j).at(k) );   
+         for (size_t k = 0; k < val.second.at(j).size(); k++) {
+            shapeMap.makeLineShape( val.second.at(j).at(k) );
          }
       }
 
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
+      shapeMap.setDisplayedAttribute(-2);
+      shapeMap.setDisplayedAttribute(-1);
+      SuperSpacePixel::tail().push_back(shapeMap);
    
    }
 
@@ -1760,11 +1758,11 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
 {
    setGrid( spacing );
 
-   PointMaps::getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
+   getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
 
    m_state |= POINTMAPS;
 
-   PointMaps::getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
+   getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
 
    // historical tag - essentially stamps version, so kept:
    m_state |= ANGULARGRAPH;
@@ -1893,12 +1891,12 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 {
    int retvar = 1;
    // check for existence of data:
-   pmap<int,int> conversion_lookup;
-   size_t i;
-   for (i = 0; i < size_t(datalayers.getLayerCount()); i++) {
+   std::map<int,int> conversion_lookup;
+
+   for (size_t i = 0; i < size_t(datalayers.getLayerCount()); i++) {
       if (datalayers[i].getObjectCount()) {
          int x = m_data_maps.addMap(datalayers[i].getLayerName(),ShapeMap::DATAMAP);
-         conversion_lookup.add(i,x);
+         conversion_lookup[i] = x;
       }
    }
    // nothing to convert:
@@ -1906,28 +1904,16 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
       return 0;
    }
 
-   for (i = 0; i < conversion_lookup.size(); i++) {
-      ShapeMap& shapemap = m_data_maps.getMap(conversion_lookup.value(i));
-      int layer_ref = datalayers.getLayerRef(conversion_lookup.key(i));
-      pvecint *shape_pixel_lists = new pvecint [datalayers[i].getObjectCount()];
+   int i = 0;
+   for (auto& iter: conversion_lookup) {
+      ShapeMap& shapemap = m_data_maps.getMap(iter.second);
       int j;
-      for (j = 0; j < pointmap.getAttributeTable().getRowCount(); j++) {
-         PixelRef pix = pointmap.getAttributeTable().getRowKey(j);
-         int z = pointmap.getPoint(pix).getDataObject(layer_ref);
-         if (z != -1) {
-            shape_pixel_lists[z].push_back(pix);
-         }
-      }
       // add shapes:
       pvecint row_lookup;
       for (j = 0; j < datalayers[i].getObjectCount(); j++) {
-         for (size_t k = 0; k < shape_pixel_lists[j].size(); k++) {
-            pointmap.overrideSelPixel(shape_pixel_lists[j][k]);
-         }
          row_lookup.push_back(shapemap.makeShapeFromPointSet(pointmap));
          pointmap.clearSel();
       }
-      delete [] shape_pixel_lists;
       // now add attributes:
       AttributeTable& table = shapemap.getAttributeTable();
       // add columns, note, we'll have to add and then have lookups because not necessarily in alphabetical order:
@@ -1956,54 +1942,11 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
       // set the displayed attribute ready for first draw:
       shapemap.overrideDisplayedAttribute(-2);
       shapemap.setDisplayedAttribute(-1);
+      i++;
    }
    // the horror is over:     
    return retvar;
 }
-
-// similar (but much, much easier than above -- relies on order of index order of
-// axial lines being the same as as the created poly index order and both attribute 
-// tables -- should be since the map is in indexed order, as is its attribute table)
-
-// DEPRECATED: only need to switch map type flag
-
-void MetaGraph::convertShapeGraphToShapeMap(const ShapeGraph& axialmap)
-{
-   int x = m_data_maps.addMap("Axial Gates",ShapeMap::DATAMAP);
-   ShapeMap& shapemap = m_data_maps.getMap(x);
-
-   // use the dangermouse all polygon grabber:
-   const pqmap<int,SalaShape>& polys = axialmap.getAllShapes();
-   shapemap.init(axialmap.getShapeCount(),axialmap.getRegion());
-   size_t i;
-   for (i = 0; i < axialmap.getShapeCount(); i++) {
-      if (polys[i].isLine()) {   // it ought to be since we're starting with an axial map!
-         shapemap.makeLineShape(polys[i].getLine());
-      }
-   }
-
-   // now convert attributes and we're done!
-   const AttributeTable& table_in = axialmap.getAttributeTable();
-   AttributeTable& table_out = shapemap.getAttributeTable();
-
-   for (i = 0; i < size_t(table_in.getColumnCount()); i++) {
-      table_out.insertColumn(table_in.getColumnName(i));
-   }
-   
-   int counter = 0;
-   for (i = 0; i < size_t(table_in.getRowCount()); i++) {
-      if (polys[i].isLine()) {   // check needs to be maintained so indices match
-         for (int j = 0; j < table_in.getColumnCount(); j++) {
-            table_out.setValue(counter,j,table_in.getValue(i,j));
-         }
-         counter++;  // in case 'i' skips over a few non-line objects
-      }
-   }
-
-   shapemap.overrideDisplayedAttribute(-2);
-   shapemap.setDisplayedAttribute(-1);
-}
-
 
 // the tidy(ish) version: still needs to be at top level and switch between layers
 
@@ -2083,17 +2026,19 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          gatelist.clear();
          if (desttype == VIEWVGA) {
-            m_data_maps.getMap(sourcelayer).pointInPolyList(PointMaps::at(destlayer).getPoint(table_out.getRowKey(i)).m_location,gatelist);
+            m_data_maps.getMap(sourcelayer).pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
          }
          else if (desttype == VIEWAXIAL) {
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(m_shape_graphs.getMap(destlayer).getAllShapes().search(table_out.getRowKey(i)),gatelist);
+            auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(shapeMap[table_out.getRowKey(i)],gatelist);
          }
          else if (desttype == VIEWDATA) {
             if (sourcelayer == destlayer) {
                // error: pushing to same map
                return false;
             }
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(m_data_maps.getMap(destlayer).getAllShapes().search(table_out.getRowKey(i)),gatelist);
+            auto dataMap = m_data_maps.getMap(destlayer).getAllShapes();
+            m_data_maps.getMap(sourcelayer).shapeInPolyList(dataMap[table_out.getRowKey(i)],gatelist);
          }
          double val = -1.0;
          int count = 0;
@@ -2131,11 +2076,11 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
             gatelist.clear();
             if (desttype == VIEWDATA) {
-               m_data_maps.getMap(destlayer).pointInPolyList(PointMaps::at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_data_maps.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                // note, "axial" could be convex map, and hence this would be a valid operation
-               m_shape_graphs.getMap(destlayer).pointInPolyList(PointMaps::at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_shape_graphs.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             double thisval = table_in.getValue(i,col_in);
             for (size_t j = 0; j < gatelist.size(); j++) {
@@ -2158,10 +2103,12 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
             gatelist.clear();
             if (desttype == VIEWDATA) {
-               m_data_maps.getMap(destlayer).shapeInPolyList(m_shape_graphs.getMap(sourcelayer).getAllShapes().search(table_in.getRowKey(i)),gatelist);
+               auto dataMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
+               m_data_maps.getMap(destlayer).shapeInPolyList(dataMap[table_in.getRowKey(i)],gatelist);
             }
             else if (desttype == VIEWAXIAL) {
-               m_shape_graphs.getMap(destlayer).shapeInPolyList(m_shape_graphs.getMap(sourcelayer).getAllShapes().search(table_in.getRowKey(i)),gatelist);
+                auto shapeMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
+               m_shape_graphs.getMap(destlayer).shapeInPolyList(shapeMap[table_in.getRowKey(i)],gatelist);
             }
             double thisval = table_in.getValue(i,col_in);
             for (size_t j = 0; j < gatelist.size(); j++) {
@@ -2193,8 +2140,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
    // display new data in the relevant layer
    if (desttype == VIEWVGA) {
-      PointMaps::at(destlayer).overrideDisplayedAttribute(-2);
-      PointMaps::at(destlayer).setDisplayedAttribute(col_out);
+      m_pointMaps[destlayer].overrideDisplayedAttribute(-2);
+      m_pointMaps[destlayer].setDisplayedAttribute(col_out);
    }
    else if (desttype == VIEWAXIAL) {
       m_shape_graphs.getMap(destlayer).overrideDisplayedAttribute(-2);
@@ -2208,69 +2155,6 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
    return true;
 }
-
-// DEPRECATED CODE: REPLACED WITH THE FUNCTION ABOVE
-// Replaced 21-Aug-05
-
-/*
-if (m_view_class & VIEWAXIAL) {
-   return m_shape_graphs.pushValuesToLayer();
-}
-
-// note: only pushes to gates...
-DataLayer& layer = (DataLayer&) getLayer(DataLayers::GATES);
-
-int attr = PointMaps::getDisplayedPointMap().getDisplayedAttribute();
-const AttributeTable& table = PointMaps::getDisplayedPointMap().getAttributeTable();
-
-// give the layer col a nice name!
-int col = layer.addColumn( table.getColumnName(attr) );
-
-// I think this is the only way to store how many points are in the object:
-int *objpointcounts = new int [layer.getObjectCount()];
-for (int h = 0; h < layer.getObjectCount(); h++) {
-   objpointcounts[h] = 0;
-}
-
-// just doing here for now:
-PointMap& map = PointMaps::getDisplayedPointMap();
-for (int i = 0; i < map.m_cols; i++) {
-   for (int j = 0; j < map.m_rows; j++) {
-      if ( map.m_points[i][j].getState() & Point::FILLED ) {
-         int obj = map.m_points[i][j].getDataObject( getCurrentLayerRef() );
-         if (obj != -1) {
-            if (average_over_isovist) {
-               // doesn't include self for now...
-               double val = 0.0;
-               Node& n = map.m_points[i][j].getNode();
-               n.first();
-               while (!n.is_tail())
-               {
-                  val += table.getValue(table.getRowIndex(n.cursor()),attr);
-               }
-               layer[obj][col] += val / map.m_points[i][j].getNode().count();
-            }
-            else {
-               layer[obj][col] += table.getValue(table.getRowIndex(PixelRef(i,j)),attr);
-            }
-            objpointcounts[obj] += 1;
-         }
-      }
-   }
-}
-
-for (int k = 0; k < layer.getObjectCount(); k++)
-{
-   layer[k][col] /= double(objpointcounts[k]);
-}
-
-delete [] objpointcounts;
-
-// finally, tell layers that we'd like to view this next time:
-layer.setDisplayColumn(col+1); // (+1 for ref number)
-*/
-
-///////////////////////////////////////////////////////////////////////////////////
 
 // Agent functionality: some of it still kept here with the metagraph
 // (to allow push value to layer and back again)
@@ -2357,7 +2241,7 @@ int MetaGraph::getDisplayedMapRef() const
    int ref = -1;
    switch (m_view_class & VIEWFRONT) {
    case VIEWVGA:
-      ref = PointMaps::getDisplayedPointMapRef();
+      ref = getDisplayedPointMapRef();
       break;
    case VIEWAXIAL:
       ref = m_shape_graphs.getDisplayedMapRef();
@@ -2534,7 +2418,7 @@ AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
    }
    switch (type & VIEWFRONT) {
    case VIEWVGA:
-      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(PointMaps::at(layer).getAttributeTable());
+      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = (layer == -1) ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2554,7 +2438,7 @@ const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
    }
    switch (type) {
    case VIEWVGA:
-      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(PointMaps::at(layer).getAttributeTable());
+      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = layer == -1 ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2588,7 +2472,7 @@ int MetaGraph::addLineDynamic(const Line& l)
       return linekey;
    }
 
-   PointMaps::getDisplayedPointMap().blockLines();
+   getDisplayedPointMap().blockLines();
 
    for (int i = 0; i < getLineFileCount(); i++) {
       for (int j = 0; j < getLineLayerCount(i); j++) {
@@ -2606,7 +2490,7 @@ int MetaGraph::addLineDynamic(const Line& l)
       // update the pointdata... nb.  The graph isn't affected until you rebuild graph
       // (as you might be playing with more than one line at a time it seems sensible to 
       // wait until you're ready to go with all of them)
-      PointMaps::getDisplayedPointMap().addLineDynamic(linekey,l);
+      getDisplayedPointMap().addLineDynamic(linekey,l);
    }
 
    return linekey;
@@ -2622,7 +2506,7 @@ bool MetaGraph::removeLineDynamic(LineKey linekey)
    }
 
    // first *before adding or removing the line* ensure existing lines are blocked
-   PointMaps::getDisplayedPointMap().blockLines();
+   getDisplayedPointMap().blockLines();
 
    if (linekey != -1) {  // <- this will be typical value when unset
       SpacePixel& spacepix = SuperSpacePixel::at(linekey.file).at(linekey.layer);
@@ -2634,7 +2518,7 @@ bool MetaGraph::removeLineDynamic(LineKey linekey)
          // (as you might be playing with more than one line at a time it seems sensible to 
          // wait until you're ready to go with all of them)
          // Note: the line itself is used to find the affected pixels
-         PointMaps::getDisplayedPointMap().removeLineDynamic(linekey,line);
+         getDisplayedPointMap().removeLineDynamic(linekey,line);
       }
    }
 
@@ -2778,9 +2662,8 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       }
    }
    if (type == 'p') {
-      PointMaps::read( stream, version );
-
-      PointMaps::setSpacePixel( (SuperSpacePixel *) this );
+      readPointMaps( stream, version );
+      setSpacePixel( (SuperSpacePixel *) this );
       temp_state |= POINTMAPS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2788,7 +2671,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
    }
    if (type == 'g') {
       // record on state of actual point map:
-      PointMaps::tail().m_processed = true;
+      m_pointMaps.back().m_processed = true;
 
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2808,7 +2691,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       // now replace with shape maps, but only if layer exists:
       temp_state &= ~DATAMAPS;
       // converter requires a point map to work on:
-      if (PointMaps::size()) {
+      if (m_pointMaps.size()) {
          // returns 0 if there are actually no objects in the shapemaps to convert,
          int conv_ok = convertDataLayersToShapeMap(dl,getDisplayedPointMap());
          if (conv_ok == 1) {
@@ -2897,7 +2780,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       if (m_view_class & MetaGraph::VIEWVGA) {
          type = 'p';
          stream.write(&type, 1);
-         PointMaps::write( stream, version, true );
+         writePointMaps( stream, version, true );
       }
       else if (m_view_class & MetaGraph::VIEWAXIAL) {
          type = 'x';
@@ -2919,7 +2802,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       if (oldstate & POINTMAPS) {
          type = 'p';
          stream.write(&type, 1);
-         PointMaps::write( stream, version );
+         writePointMaps( stream, version );
       }
       if (oldstate & SHAPEGRAPHS) {
          type = 'x';
@@ -2939,137 +2822,6 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
    return OK;
 }
 
-int MetaGraph::convertAttributes( ifstream& stream, int version )
-{
-   int ret = 1;
-
-   // This is adapted from original ArVertexList code:
-
-   int attr_count, which_attributes;
-   stream.read( (char *) &which_attributes, sizeof(int) );
-   stream.read( (char *) &attr_count, sizeof(int) );
-
-   int size;
-   stream.read( (char *) &size, sizeof(int) );
-   
-   if (m_attr_conv_table)
-      delete m_attr_conv_table;
-   m_attr_conv_table = new pqvector<AttrBody>;
-   pqvector<AttrBody>& attrs = *m_attr_conv_table;
-
-   size_t i;
-   for (i = 0; i < size_t(size); i++) {
-      AttrBody attr(-1, g_attr_header);
-      attr.read(stream, attr_count);   // <- only write in saved attributes
-      if (attr.ref != -1) {
-         attrs.add( attr );
-      }
-   }
-
-   for (size_t ii = 0; ii < attrs.size(); ii++) {
-      // Check these are numbered 0 to n, and set the pos to be used later:
-      if (attrs[ii].ref != ii) {
-         ret = 0;
-         break;
-      }
-      attrs[ii].pos = -1;
-   }
-
-   if (ret == 0) {
-      delete m_attr_conv_table;
-      m_attr_conv_table = NULL;
-      return 0;
-   }
-
-   for (i = 0; i < PointMaps::size(); i++) {
-      PointMap& map = PointMaps::at(i);
-      for (int j = 0; j < map.m_cols; j++) {
-         for (int k = 0; k < map.m_rows; k++) {
-            // Note: block used to be the noderef
-            if (map.m_points[j][k].filled() && map.m_points[j][k].m_block != -1) {
-               AttrBody test(-1,g_attr_header);
-               test.ref = map.m_points[j][k].m_block;
-               size_t pos = attrs.searchindex(test);
-               if (pos != paftl::npos) {
-                  map.m_points[j][k].setAttributes(attrs[pos]);
-                  attrs[pos].pos = (int) PixelRef(j,k);  // <- note this can be used to convert the virtual mem quickly
-               }
-               else {
-                  // oops
-                  ret = 0;
-               }
-            }
-         }
-      }
-   }
-   return ret;
-}
-
-#include <salalib/ngraph.h>  // for conversion
-
-int MetaGraph::convertVirtualMem( ifstream& stream, int version )
-{
-   if (!m_attr_conv_table) {
-      return 0;
-   }
-   if (~m_state & ANGULARGRAPH) {
-      // can't convert non-angular graphs:
-      if (m_attr_conv_table)
-         delete m_attr_conv_table;
-      m_attr_conv_table = NULL;
-      return DEPRECATED_VERSION;
-   }
-
-   // The attr conv table can help us quickly convert:
-   pqvector<AttrBody>& attrs = *m_attr_conv_table;
-
-   pvecint nodes;
-   pvecint bins;
-
-   PixelRefVector bins_b[32];
-   static float far_bin_dists[32];
-   for (int ii = 0; ii < 32; ii++) {
-      far_bin_dists[ii] = 0.0f;
-   }
-
-   char header[3];
-   stream.read( header, 3 );                             // 'grf'
-   stream.read( (char *) &version, sizeof( version ) );  // version
-   char type;
-   stream.read( (char *) &type, sizeof( type ) );        // 'v'
-
-   int size;
-   stream.read( (char *) &size, sizeof( size ) );
-
-   PointMap& map = PointMaps::tail();
-   for (int i = 0; i < size; i++) {
-      nodes.read(stream);
-      bins.read(stream);
-      if (attrs[i].pos != -1) {
-         PixelRef curs = (PixelRef) attrs[i].pos;
-         
-         for (int j = 0; j < 32; j++) {
-            for (int k = loword(bins[j]); k < hiword(bins[j]); k++) {
-               int next = attrs[nodes[k]].pos;
-               if (next != -1) {
-                  bins_b[j].push_back( (PixelRef) next );
-               }
-            }
-         }
-
-         Point& pt = map.getPoint( curs );
-         pt.m_node = new Node;
-         pt.m_node->make( curs, bins_b, far_bin_dists, 0x00FF );
-      }
-      nodes.clear();
-      bins.clear();
-   }
-
-   delete m_attr_conv_table;
-   m_attr_conv_table = NULL;
-
-   return WARN_CONVERTED;
-}
 
 streampos MetaGraph::skipVirtualMem(istream& stream, int version)
 {
@@ -3101,4 +2853,62 @@ std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
         }
     }
     return lines;
+}
+
+int MetaGraph::addNewPointMap(const std::string& name)
+{
+   std::string myname = name;
+   int counter = 1;
+   bool duplicate = true;
+   while (duplicate) {
+      duplicate = false;
+      for (auto& pointMap: m_pointMaps) {
+         if (pointMap.getName() == myname) {
+            duplicate = true;
+            myname = dXstring::formatString(counter++,name + " %d");
+            break;
+         }
+      }
+   }
+   m_pointMaps.push_back(PointMap(myname));
+   m_pointMaps.back().setSpacePixel(m_spacepix);
+   m_displayed_pointmap = m_pointMaps.size() - 1;
+   return m_pointMaps.size() - 1;
+}
+
+bool MetaGraph::readPointMaps(istream& stream, int version)
+{
+   stream.read((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
+   int count;
+   stream.read((char *) &count, sizeof(count));
+   for (int i = 0; i < count; i++) {
+      m_pointMaps.push_back(PointMap());
+      m_pointMaps.back().setSpacePixel( (SuperSpacePixel *) this );
+      m_pointMaps.back().read( stream, version );
+   }
+   return true;
+}
+
+bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmaponly)
+{
+   if (!displayedmaponly) {
+      stream.write((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
+      int count = m_pointMaps.size();
+      stream.write((char *) &count, sizeof(count));
+      for (auto& pointmap: m_pointMaps) {
+         pointmap.write( stream, version );
+      }
+   }
+   else {
+      int dummy;
+      // displayed map is 0:
+      dummy = 0;
+      stream.write((char *) &dummy, sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *) &dummy, sizeof(dummy));
+      //
+      m_pointMaps[m_displayed_pointmap].write(stream, version);
+   }
+   return true;
 }

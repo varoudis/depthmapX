@@ -86,6 +86,7 @@ public:
     void showContextMenu(QPoint &point);
     void UpdateStatus(QString s1, QString s2, QString s3);
     void updateGLWindows(bool datasetChanged, bool recentreView);
+    void loadFile(QString fileName);
 
 protected:
     QGraphDoc* m_treeDoc;
@@ -248,11 +249,11 @@ private:
 //////////////////////////////////////////////////////
 //	treeContorl
     QVector<QIcon> m_tree_icon;
-    pqmap<int, std::string> m_view_map_entries;
+    std::map<int, std::string> m_view_map_entries;
 
     pvector<bool> m_attribute_locked;
-    pmap<QTreeWidgetItem*, ItemTreeEntry> m_treegraphmap;
-    pmap<QTreeWidgetItem*, ItemTreeEntry> m_treedrawingmap;
+    std::map<QTreeWidgetItem*, ItemTreeEntry> m_treegraphmap;
+    std::map<QTreeWidgetItem*, ItemTreeEntry> m_treedrawingmap;
     QTreeWidgetItem* m_topgraph;
     QTreeWidgetItem* m_backgraph;
     QTreeWidgetItem* m_treeroots[5];

@@ -23,170 +23,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 #include "genlib/pafmath.h"
 #include "genlib/p2dpoly.h"
-#include "salalib/vertex.h"
 
 #include "genlib/stringutils.h"
+#include "salalib/pixelref.h"
+#include "salalib/pafcolor.h"
+#include "genlib/paftl.h"
+#include <map>
 
 class SalaShape;
-
-class PixelRef
-{
-public:
-   short x;
-   short y;
-   PixelRef( short ax = -1, short ay = -1 )
-      { x = ax; y = ay; }
-   PixelRef( int i )
-      { x = short(i >> 16); y = short(i & 0xffff); }
-   bool empty()
-      { return x == -1 && y == -1; }
-   PixelRef up() const
-      { return PixelRef(x, y + 1); }
-   PixelRef left() const
-      { return PixelRef(x - 1, y); }
-   PixelRef right() const
-      { return PixelRef(x + 1, y); }
-   PixelRef down() const
-      { return PixelRef(x, y - 1); }
-   short& operator [] (int i)
-      { return (i == XAXIS) ? x : y; }
-   bool within( const PixelRef bl, const PixelRef tr ) const 
-      { return (x >= bl.x && x <= tr.x && y >= bl.y && y <= tr.y); }
-   bool encloses( PixelRef testpoint ) const
-      { return (testpoint.x >= 0 && testpoint.x < x && testpoint.y >= 0 && testpoint.y < y);}
-   // directions for the ngraph:
-   enum {NODIR = 0x00, HORIZONTAL = 0x01, VERTICAL = 0x02, POSDIAGONAL = 0x04, NEGDIAGONAL = 0x08, DIAGONAL = 0x0c, NEGHORIZONTAL = 0x10, NEGVERTICAL = 0x20};
-   short& row(char dir)
-      { return (dir & VERTICAL) ? x : y; }
-   short& col(char dir)
-      { return (dir & VERTICAL) ? y : x; }
-   const short& row(char dir) const
-      { return (dir & VERTICAL) ? x : y; }
-   const short& col(char dir) const
-      { return (dir & VERTICAL) ? y : x; }
-   PixelRef& move(char dir)
-      { switch (dir) 
-        { 
-           case POSDIAGONAL: x++; y++; break;
-           case NEGDIAGONAL: x++; y--; break;
-           case HORIZONTAL: x++; break;
-           case VERTICAL: y++; break;
-           case NEGHORIZONTAL: x--; break;
-           case NEGVERTICAL: y--; break;
-        }
-        return *this; }
-   bool isodd() 
-   { return x % 2 == 1 && y % 2 == 1; }
-   bool iseven() 
-   { return x % 2 == 0 && y % 2 == 0; }
-   friend bool operator == (const PixelRef a, const PixelRef b);
-   friend bool operator != (const PixelRef a, const PixelRef b);
-   friend bool operator < (const PixelRef a, const PixelRef b);
-   friend bool operator > (const PixelRef a, const PixelRef b);
-   friend PixelRef operator + (const PixelRef a, const PixelRef b);
-   friend PixelRef operator - (const PixelRef a, const PixelRef b);
-   friend PixelRef operator / (const PixelRef a, const int factor);
-   friend double dist(const PixelRef a, const PixelRef b);
-   friend double angle(const PixelRef a, const PixelRef b, const PixelRef c);
-   operator int() const
-   { return ((int(x) << 16) + (int(y) & 0xffff)); }
-};
-
-struct hashPixelRef {
-  size_t operator()(const PixelRef &pixelRef) const{
-    return std::hash<int>()(int(pixelRef));
-  }
-};
-
-
-const PixelRef NoPixel( -1, -1 );
-
-inline bool operator == (const PixelRef a, const PixelRef b)
-{
-   return (a.x == b.x) && (a.y == b.y);
-}
-inline bool operator != (const PixelRef a, const PixelRef b)
-{
-   return (a.x != b.x) || (a.y != b.y);
-}
-inline bool operator < (const PixelRef a, const PixelRef b)
-{
-   return (a.x < b.x) || (a.x == b.x && a.y < b.y);
-}
-inline bool operator > (const PixelRef a, const PixelRef b)
-{
-   return (a.x > b.x) || (a.x == b.x && a.y > b.y);
-}
-inline PixelRef operator + (const PixelRef a, const PixelRef b)
-{
-   return PixelRef(a.x + b.x, a.y + b.y);
-}
-inline PixelRef operator - (const PixelRef a, const PixelRef b)
-{
-   return PixelRef(a.x - b.x, a.y - b.y);
-}
-inline PixelRef operator / (const PixelRef a, const int factor)
-{
-   return PixelRef(a.x / factor, a.y / factor);
-}
-
-inline double dist(const PixelRef a, const PixelRef b)
-{
-   return sqrt(sqr(a.x - b.x) + sqr(a.y - b.y));
-}
-
-inline double angle(const PixelRef a, const PixelRef b, const PixelRef c)
-{
-   if (c == NoPixel) {
-      return 0.0;
-   }
-   else {
-      // n.b. 1e-12 required for floating point error
-      return acos( double((a.x - b.x) * (b.x - c.x) + (a.y - b.y) * (b.y - c.y)) / 
-                   (sqrt(sqr(a.x - b.x) + sqr(a.y - b.y)) * sqrt(sqr(b.x - c.x) + sqr(b.y - c.y)) + 1e-12) ); 
-   }
-}
-
-// Now sizeof(PixelRef) == sizeof(int) better stored directly:
-typedef std::vector<PixelRef> PixelRefVector;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-struct PixelRefPair
-{
-   PixelRef a;
-   PixelRef b;
-   PixelRefPair(const PixelRef x = NoPixel, const PixelRef y = NoPixel) 
-   { 
-      a =  x < y ? x : y;
-      b =  x < y ? y : x;
-   }
-   friend bool operator == (const PixelRefPair& x, const PixelRefPair& y);
-   friend bool operator != (const PixelRefPair& x, const PixelRefPair& y);
-   friend bool operator <  (const PixelRefPair& x, const PixelRefPair& y);
-   friend bool operator >  (const PixelRefPair& x, const PixelRefPair& y);
-
-};
-
-// note: these are made with a is always less than b
-inline bool operator == (const PixelRefPair& x, const PixelRefPair& y)
-{
-   return (x.a == y.a && x.b == y.b);
-}
-inline bool operator != (const PixelRefPair& x, const PixelRefPair& y)
-{
-   return (x.a != y.a || x.b != y.b);
-}
-inline bool operator < (const PixelRefPair& x, const PixelRefPair& y)
-{
-   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
-}
-inline bool operator > (const PixelRefPair& x, const PixelRefPair& y)
-{
-   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 class PixelBase
 {
@@ -282,7 +126,7 @@ protected:
 //   double m_pixel_width;
    //
    int m_ref;
-   pmap<int,LineTest> m_lines;
+   std::map<int,LineTest> m_lines;
    //
    // for screen drawing
    mutable int *m_display_lines;
@@ -336,7 +180,7 @@ public:
    QtRegion& getRegion() const
       { return (QtRegion&) m_region; }
    //
-   const pmap<int,LineTest>& getAllLines() const // Danger! Use solely to look at the raw line data
+   const std::map<int,LineTest>& getAllLines() const // Danger! Use solely to look at the raw line data
       { return m_lines; }
    //
    // For easy layer manipulation:
@@ -437,8 +281,8 @@ public:
       { for (size_t i = 0; i < prefvec<T>::size(); i++) if (prefvec<T>::at(i).isShown()) return true; return false; }
    //
 public:
-   bool read(istream &stream, int version, bool drawinglayer = true );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version, bool drawinglayer = true );
+   bool write( std::ofstream& stream, int version );
 };
 
 template <class T> 
