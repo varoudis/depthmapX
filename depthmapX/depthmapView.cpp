@@ -2695,7 +2695,7 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
                starter = false;
             }
             // 2.0 is about 0.1mm in a standard SVG output size
-            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  *iter == shape.m_points.back()) {
+            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  iter == shape.m_points.end() - 1) {
 				// also, always draw the very last point regardless of distance
                stream << end.x() << "," << end.y() << " ";
                drawn = true;
