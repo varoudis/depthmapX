@@ -630,20 +630,9 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
             else {
                region = runion(region,superspacepix.at(i).at(j).getRegion());
             }
-            auto refShapes = superspacepix.at(i).at(j).getAllShapes();
-            for (auto refShape: refShapes) {
-                SalaShape& shape = refShape.second;
-               if (shape.isLine()) {
-                  lines.push_back(shape.getLine());
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     lines.push_back(Line(shape.points[n],shape.points[n+1]));
-                  }
-                  if (shape.isPolygon()) {
-                     lines.push_back(Line(shape.points.back(),shape.points.front()));
-                  }
-               }
+            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            for (auto line: newLines) {
+               lines.push_back(Line(line.start(), line.end()));
             }
          }
       }
@@ -1280,26 +1269,11 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
             else {
                region = runion(region,superspacepix.at(i).at(j).getRegion());
             }
-            auto refShapes = superspacepix.at(i).at(j).getAllShapes();
-            for (auto refShape: refShapes) {
-                SalaShape& shape = refShape.second;
-               if (shape.isLine()) {
-                  lines.insert(std::make_pair(count,shape.getLine()));
-                  layers.insert(std::make_pair(count,j));
-                  count++;
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     lines.insert(std::make_pair(count,Line(shape.points[n],shape.points[n+1])));
-                     layers.insert(std::make_pair(count,j));
-                     count++;
-                  }
-                  if (shape.isPolygon()) {
-                     lines.insert(std::make_pair(count,Line(shape.points.back(),shape.points.front())));
-                     layers.insert(std::make_pair(count,j));
-                     count++;
-                  }
-               }
+            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            count += newLines.size();
+            for (auto line: newLines) {
+               lines.insert(std::make_pair(count, Line(line.start(), line.end())));
+               layers.insert(std::make_pair(count,j));
             }
             superspacepix.at(i).at(j).setShow(false);
          }
@@ -1400,18 +1374,12 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    int count = 0;
    for (auto shape: shapemap.getAllShapes()) {
       int key = shape.first;
-      const SalaShape& poly = shape.second;
-      if (poly.isLine()) {
-         lines.insert(std::make_pair(count,poly.getLine()));
+
+      std::vector<Line> shapeLines = shape.second.getAsLines();
+      for(Line line: shapeLines) {
+         lines.insert(std::make_pair(count,line));
          keys.insert(std::make_pair(count,key));
          count++;
-      }
-      else if (poly.isPolyLine()) {
-         for (size_t j = 0; j < poly.points.size() - 1; j++) {
-            lines.insert(std::make_pair(count,Line(poly.points[j],poly.points[j+1])));
-            keys.insert(std::make_pair(count,key));
-            count++;
-         }
       }
    }
    if (lines.size() == 0) {
@@ -1603,27 +1571,11 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
             else {
                region = runion(region,superspacepix.at(i).at(j).getRegion());
             }
-
-            auto refShapes = superspacepix.at(i).at(j).getAllShapes();
-            for (auto refShape: refShapes) {
-                SalaShape& shape = refShape.second;
-               if (shape.isLine()) {
-                  lines.insert(std::make_pair(count,shape.getLine()));
-                  layers.insert(std::make_pair(count,j));
-                  count++;
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     lines.insert(std::make_pair(count,Line(shape.points[n],shape.points[n+1])));
-                     layers.insert(std::make_pair(count,j));
-                     count++;
-                  }
-                  if (shape.isPolygon()) { // add closing line
-                     lines.insert(std::make_pair(count,Line(shape.points.back(),shape.points.front())));
-                     layers.insert(std::make_pair(count,j));
-                     count++;
-                  }
-               }
+            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            count += newLines.size();
+            for (auto line: newLines) {
+               lines.insert(std::make_pair(count, Line(line.start(), line.end())));
+               layers.insert(std::make_pair(count,j));
             }
             superspacepix.at(i).at(j).setShow(false);
          }
@@ -1711,18 +1663,11 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    int count = 0;
    for (auto shape: shapemap.getAllShapes()) {
       int key = shape.first;
-      const SalaShape& poly = shape.second;
-      if (poly.isLine()) {
-         lines.insert(std::make_pair(count,poly.getLine()));
+      std::vector<Line> shapeLines = shape.second.getAsLines();
+      for(Line line: shapeLines) {
+         lines.insert(std::make_pair(count,line));
          keys.insert(std::make_pair(count,key));
          count++;
-      }
-      else if (poly.isPolyLine()) {
-         for (size_t j = 0; j < poly.points.size() - 1; j++) {
-            lines.insert(std::make_pair(count,Line(poly.points[j],poly.points[j+1])));
-            keys.insert(std::make_pair(count,key));
-            count++;
-         }
       }
    }
    if (lines.size() == 0) {

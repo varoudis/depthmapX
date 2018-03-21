@@ -1519,9 +1519,10 @@ bool QDepthmapView::DrawShapes(QPainter *pDC, ShapeMap& map, bool muted, int spa
       int drawable = 0;
       if (!poly.isPoint() && !poly.isLine()) {
          points = new QPoint [poly.points.size()];
-         for (size_t i = 0; i < poly.points.size(); i++) {
-            points[drawable] = PhysicalUnits(poly.points[i]);
-            if (i == 0 || points[drawable] != points[drawable-1]) {
+         if (poly.points.size() > 0) drawable++;
+         for (auto& point: poly.points) {
+            points[drawable] = PhysicalUnits(point);
+            if (points[drawable] != points[drawable-1]) {
                drawable++;
             }
          }
@@ -2680,8 +2681,10 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
       stream << "<polyline points=\"";
       bool starter = true, drawn = false;
       Point2f lastpoint = shape.points.front();
-      for (size_t i = 1; i < shape.points.size(); i++) {
-         Line line(lastpoint,shape.points[i]);
+      auto iter = shape.points.begin();
+      iter++;
+      for (; iter != shape.points.end(); iter++) {
+         Line line(lastpoint, *iter);
          if (line.crop(logicalviewport)) {
             // note: use t_start and t_end so that this line moves in the correct direction
             QPoint start = SVGPhysicalUnits(line.t_start(),logicalviewport,h);
@@ -2692,7 +2695,7 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
                starter = false;
             }
             // 2.0 is about 0.1mm in a standard SVG output size
-            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  i == shape.points.size() - 1) {
+            if (dist(Point2f(start.x(), start.y()), Point2f(end.x(), end.y())) >= 2.0f ||  *iter == shape.points.back()) {
 				// also, always draw the very last point regardless of distance
                stream << end.x() << "," << end.y() << " ";
                drawn = true;
@@ -2703,7 +2706,7 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
             drawn = true;
          }
          if (drawn) {
-            lastpoint = shape.points[i];
+            lastpoint = *iter;
             drawn = false;
          }
       }
@@ -2718,8 +2721,10 @@ void QDepthmapView::OutputSVGPoly(ofstream& stream, const SalaShape& shape, QtRe
          // this should be a shape that is entirely within the viewport:
          QPoint last = SVGPhysicalUnits(shape.points[0],logicalviewport,h);
          stream << last.x() << "," << last.y() << " ";
-         for (size_t i = 1; i < shape.points.size(); i++) {
-            QPoint next = SVGPhysicalUnits(shape.points[i],logicalviewport,h);
+         auto iter = shape.points.begin();
+         iter++;
+         for (; iter != shape.points.end(); iter++) {
+            QPoint next = SVGPhysicalUnits(*iter,logicalviewport,h);
             if (dist(Point2f(last.x(), last.y()), Point2f(next.x(), next.y())) >= 2.0f) {
                stream << next.x() << "," << next.y() << " ";
                last = next;

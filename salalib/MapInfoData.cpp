@@ -311,16 +311,16 @@ bool MapInfoData::exportFile(ostream& miffile, ostream& midfile, const ShapeMap&
          else if (poly.isPolyLine()) {
             miffile << "PLINE" << endl;
             miffile << "  " << poly.points.size() << endl;
-            for (size_t k = 0; k < poly.points.size(); k++) {
-               miffile << poly.points[k].x << " " << poly.points[k].y << endl;
+            for (auto& point: poly.points) {
+               miffile << point.x << " " << point.y << endl;
             }
             miffile << "    PEN (1,2,0)" << endl; 
          }
          else if (poly.isPolygon()) {
             miffile << "REGION  1" << endl;
             miffile << "  " << poly.points.size() + 1 << endl;
-            for (size_t k = 0; k < poly.points.size(); k++) {
-               miffile << poly.points[k].x << " " << poly.points[k].y << endl;
+            for (auto& point: poly.points) {
+               miffile << point.x << " " << point.y << endl;
             }
             miffile << poly.points[0].x << " " << poly.points[0].y << endl;
             miffile << "    PEN (1,2,0)" << endl; 

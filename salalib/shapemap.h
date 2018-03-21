@@ -141,6 +141,19 @@ public:
    //
    bool read(istream &stream, int version);
    bool write(ofstream& stream);
+
+   std::vector<Line> getAsLines() {
+       std::vector<Line> lines;
+       if (isLine()) {
+          lines.push_back(getLine());
+       }
+       else if (isPolyLine()) {
+          for (size_t j = 0; j < points.size() - 1; j++) {
+             lines.push_back(Line(points[j], points[j+1]));
+          }
+       }
+       return lines;
+   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

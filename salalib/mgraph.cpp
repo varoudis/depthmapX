@@ -650,23 +650,15 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
              int k = -1;
              for (auto refShape: refShapes) {
                  k++;
-                 SalaShape& shape = refShape.second;
-               // I'm not sure what the tagging was meant for any more, 
-               // tagging at the moment tags the *polygon* it was original attached to
-               // must check it is not a zero length line:
-               if (shape.isLine() && shape.getLine().length() > 0.0) {
-                  partitionlines.push_back(TaggedLine(shape.getLine(),k));
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     if (shape.points[n] != shape.points[n+1]) {
-                        partitionlines.push_back(TaggedLine(Line(shape.points[n],shape.points[n+1]),k));
+                 std::vector<Line> newLines = refShape.second.getAsLines();
+                 // I'm not sure what the tagging was meant for any more,
+                 // tagging at the moment tags the *polygon* it was original attached to
+                 // must check it is not a zero length line:
+                 for(Line& line: newLines) {
+                     if(line.length() > 0.0) {
+                         partitionlines.push_back(TaggedLine(line,k));
                      }
-                  }
-                  if (shape.isPolygon() && shape.points.front() != shape.points.back()) {
-                     partitionlines.push_back(TaggedLine(Line(shape.points.back(),shape.points.front()),k));
-                  }
-               }
+                 }
             }
          }
       }

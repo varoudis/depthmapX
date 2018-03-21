@@ -442,21 +442,10 @@ bool PointMap::fillLines()
    for (size_t file = 0; file < m_spacepix->size(); file++) {
       for (size_t layer = 0; layer < m_spacepix->at(file).size(); layer++) {
          if (m_spacepix->at(file).at(layer).isShown()) {
-            auto refShapes = m_spacepix->at(file).at(layer).getAllShapes();
-            for (auto refShape: refShapes) {
-               SalaShape& shape = refShape.second;
-               if (shape.isLine()) {
-                  fillLine(shape.getLine());
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     fillLine(Line(shape.points[n],shape.points[n+1]));
-                  }
-                  if (shape.isPolygon()) {
-                     fillLine( Line(shape.points.back(),shape.points.front()));
-                  }
-               }
-            }
+             std::vector<SimpleLine> newLines = m_spacepix->at(file).at(layer).getAllShapesAsLines();
+             for (auto line: newLines) {
+                fillLine(Line(line.start(), line.end()));
+             }
          }
       }
    }
@@ -495,21 +484,10 @@ bool PointMap::blockLines()
       for (size_t j = 0; j < m_spacepix->at(i).size(); j++) {
          // chooses the first editable layer it can find:
          if (m_spacepix->at(i).at(j).isShown()) {
-             auto refShapes = m_spacepix->at(i).at(j).getAllShapes();
-             for (auto refShape: refShapes) {
-                 SalaShape& shape = refShape.second;
-               if (shape.isLine()) {
-                  blockLine(count++,shape.getLine());
-               }
-               else if (shape.isPolyLine() || shape.isPolygon()) {
-                  for (size_t n = 0; n < shape.points.size() - 1; n++) {
-                     blockLine(count++,Line(shape.points[n],shape.points[n+1]));
-                  }
-                  if (shape.isPolygon()) {
-                     blockLine(count++,Line(shape.points.back(),shape.points.front()));
-                  }
-               }
-            }
+             std::vector<SimpleLine> newLines = m_spacepix->at(i).at(j).getAllShapesAsLines();
+             for (auto line: newLines) {
+                blockLine(count++, Line(line.start(), line.end()));
+             }
          }
       }
    }
