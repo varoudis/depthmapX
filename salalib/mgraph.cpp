@@ -736,7 +736,7 @@ void MetaGraph::removeDisplayedMap()
    switch (m_view_class & VIEWFRONT) {
    case VIEWVGA:
       removePointMap(ref);
-      if (m_pointMaps.size() == 0) {
+      if (m_pointMaps.empty()) {
          setViewClass(SHOWHIDEVGA);
          m_state &= ~POINTMAPS;
       }
@@ -2026,7 +2026,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          gatelist.clear();
          if (desttype == VIEWVGA) {
-            m_data_maps.getMap(sourcelayer).pointInPolyList(m_pointMaps.at(destlayer).getPoint(table_out.getRowKey(i)).m_location,gatelist);
+            m_data_maps.getMap(sourcelayer).pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
@@ -2076,11 +2076,11 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
             gatelist.clear();
             if (desttype == VIEWDATA) {
-               m_data_maps.getMap(destlayer).pointInPolyList(m_pointMaps.at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_data_maps.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                // note, "axial" could be convex map, and hence this would be a valid operation
-               m_shape_graphs.getMap(destlayer).pointInPolyList(m_pointMaps.at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_shape_graphs.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             double thisval = table_in.getValue(i,col_in);
             for (size_t j = 0; j < gatelist.size(); j++) {
@@ -2140,8 +2140,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
    // display new data in the relevant layer
    if (desttype == VIEWVGA) {
-      m_pointMaps.at(destlayer).overrideDisplayedAttribute(-2);
-      m_pointMaps.at(destlayer).setDisplayedAttribute(col_out);
+      m_pointMaps[destlayer].overrideDisplayedAttribute(-2);
+      m_pointMaps[destlayer].setDisplayedAttribute(col_out);
    }
    else if (desttype == VIEWAXIAL) {
       m_shape_graphs.getMap(destlayer).overrideDisplayedAttribute(-2);
@@ -2418,7 +2418,7 @@ AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
    }
    switch (type & VIEWFRONT) {
    case VIEWVGA:
-      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps.at(layer).getAttributeTable());
+      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = (layer == -1) ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2438,7 +2438,7 @@ const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
    }
    switch (type) {
    case VIEWVGA:
-      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps.at(layer).getAttributeTable());
+      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = layer == -1 ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2895,8 +2895,8 @@ bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmapo
       stream.write((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
       int count = m_pointMaps.size();
       stream.write((char *) &count, sizeof(count));
-      for (int i = 0; i < count; i++) {
-         m_pointMaps.at(i).write( stream, version );
+      for (auto& pointmap: m_pointMaps) {
+         pointmap.write( stream, version );
       }
    }
    else {
@@ -2908,7 +2908,7 @@ bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmapo
       dummy = 1;
       stream.write((char *) &dummy, sizeof(dummy));
       //
-      m_pointMaps.at(m_displayed_pointmap).write(stream, version);
+      m_pointMaps[m_displayed_pointmap].write(stream, version);
    }
    return true;
 }
