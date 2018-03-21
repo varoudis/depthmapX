@@ -1400,12 +1400,12 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
             if (entry.m_subcat != -1) {
                 if (graph->getLineLayer(entry.m_cat,entry.m_subcat).isShown()) {
                     graph->getLineLayer(entry.m_cat,entry.m_subcat).setShow(false);
-                    graph->PointMaps::redoBlockLines();
+                    graph->redoPointMapBlockLines();
                     graph->resetBSPtree();
                 }
                 else {
                     graph->getLineLayer(entry.m_cat,entry.m_subcat).setShow(true);
-                    graph->PointMaps::redoBlockLines();
+                    graph->redoPointMapBlockLines();
                     graph->resetBSPtree();
                 }
             }
@@ -1470,7 +1470,7 @@ void MainWindow::SetGraphTreeChecks()
                 int editable = MetaGraph::NOT_EDITABLE;
                 switch (entry.m_type) {
                     case 0:
-                        if (graph->PointMaps::at(entry.m_cat).isProcessed()) {
+                        if (graph->getPointMaps()[entry.m_cat].isProcessed()) {
                             editable = MetaGraph::NOT_EDITABLE;
                         }
                         else {
@@ -1572,13 +1572,15 @@ void MainWindow::MakeGraphTree()
             m_treegraphmap[hItem] = entry;
             m_treeroots[0] = hItem;
         }
-        for (size_t i = 0; i < m_treeDoc->m_meta_graph->PointMaps::size(); i++) {
-            QString name = QString(m_treeDoc->m_meta_graph->PointMaps::at(i).getName().c_str());
+        int i = 0;
+        for (auto& pointmap: m_treeDoc->m_meta_graph->getPointMaps()) {
+            QString name = QString(pointmap.getName().c_str());
             QTreeWidgetItem* hItem = m_indexWidget->addNewItem(name, m_treeroots[0]);
             m_indexWidget->setItemVisibility(hItem, Qt::Unchecked);
             m_indexWidget->setItemEditability(hItem, Qt::Unchecked);
             ItemTreeEntry entry(0,(short)i,-1);
             m_treegraphmap.insert(std::make_pair(hItem,entry));
+            i++;
         }
     }
     else if (m_treeroots[0]) {
@@ -2755,7 +2757,8 @@ void MainWindow::updateToolbar()
     {
         importAct->setEnabled(true);
         saveAct->setEnabled(true);
-        addColumAct->setEnabled(true);
+        if(m_p->m_meta_graph->getDisplayedMapRef() != -1)
+            addColumAct->setEnabled(true);
         SelectButton->setEnabled(true);
         DragButton->setEnabled(true);
         RecentAct->setEnabled(true);

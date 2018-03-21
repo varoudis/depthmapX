@@ -206,7 +206,7 @@ void MetaGraph::copyLineData(const SuperSpacePixel& meta)
 
    *(SuperSpacePixel *)this = meta;
 
-   PointMaps::setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
+   setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
 
    m_state |= LINEDATA;
 }
@@ -309,7 +309,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
    bool retvar = false;
 
    if (options.point_depth_selection) {
-      if (m_view_class & VIEWVGA && !PointMaps::getDisplayedPointMap().isSelected()) {
+      if (m_view_class & VIEWVGA && !getDisplayedPointMap().isSelected()) {
          return false;
       }
       else if (m_view_class & VIEWAXIAL && !m_shape_graphs.getDisplayedMap().isSelected()) {
@@ -321,7 +321,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       retvar = true;
       if (options.point_depth_selection == 1) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().analyseVisualPointDepth( communicator );
+            getDisplayedPointMap().analyseVisualPointDepth( communicator );
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!m_shape_graphs.getDisplayedMap().isSegmentMap()) {
@@ -336,36 +336,36 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       }
       else if (options.point_depth_selection == 2) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().analyseMetricPointDepth( communicator );
+            getDisplayedPointMap().analyseMetricPointDepth( communicator );
          }
          else if (m_view_class & VIEWAXIAL && m_shape_graphs.getDisplayedMap().isSegmentMap()) {
             m_shape_graphs.getDisplayedMap().analyseTopoMetPD( communicator, 1 ); // 1 is metric step depth
          }
       }
       else if (options.point_depth_selection == 3) {
-         PointMaps::getDisplayedPointMap().analyseAngularPointDepth( communicator );
+         getDisplayedPointMap().analyseAngularPointDepth( communicator );
       }
       else if (options.point_depth_selection == 4) {
          if (m_view_class & VIEWVGA) {
-            PointMaps::getDisplayedPointMap().binDisplay( communicator );
+            getDisplayedPointMap().binDisplay( communicator );
          }
          else if (m_view_class & VIEWAXIAL && m_shape_graphs.getDisplayedMap().isSegmentMap()) {
             m_shape_graphs.getDisplayedMap().analyseTopoMetPD( communicator, 0 ); // 0 is topological step depth
          }
       }
       else if (options.output_type == Options::OUTPUT_ISOVIST) {
-         PointMaps::getDisplayedPointMap().analyseIsovist( communicator, *this, simple_version );
+         getDisplayedPointMap().analyseIsovist( communicator, *this, simple_version );
       }
       else if (options.output_type == Options::OUTPUT_VISUAL) {
-         PointMaps::getDisplayedPointMap().analyseVisual( communicator, options, simple_version );
+         getDisplayedPointMap().analyseVisual( communicator, options, simple_version );
          // REPLACES:
          // Graph::calculate_depth_matrix( communicator, options, output_graph );
       }
       else if (options.output_type == Options::OUTPUT_METRIC) {
-         PointMaps::getDisplayedPointMap().analyseMetric( communicator, options );
+         getDisplayedPointMap().analyseMetric( communicator, options );
       }
       else if (options.output_type == Options::OUTPUT_ANGULAR) {
-         PointMaps::getDisplayedPointMap().analyseAngular( communicator, options );
+         getDisplayedPointMap().analyseAngular( communicator, options );
       }
       else if (options.output_type == Options::OUTPUT_THRU_VISION) {
          retvar = analyseThruVision( communicator, options.gatelayer );
@@ -735,8 +735,8 @@ void MetaGraph::removeDisplayedMap()
    int ref = getDisplayedMapRef();
    switch (m_view_class & VIEWFRONT) {
    case VIEWVGA:
-      PointMaps::removeMap(ref);
-      if (PointMaps::size() == 0) {
+      removePointMap(ref);
+      if (m_pointMaps.empty()) {
          setViewClass(SHOWHIDEVGA);
          m_state &= ~POINTMAPS;
       }
@@ -1630,21 +1630,21 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    SuperSpacePixel::tail().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
 
    // for each category
-   for (size_t i = 0; i < map.size(); i++) {
-
-      SuperSpacePixel::tail().push_back(ShapeMap(map.key(i)));
-      SuperSpacePixel::tail().at(i).init(map.value(i).size(), map.getRegion() );
+   for (auto val: map.m_categories) {
+      ShapeMap shapeMap = ShapeMap(val.first);
+      shapeMap.init(val.second.size(), map.getRegion() );
 
       // for each chains in category:
-      for (size_t j = 0; j < map.value(i).size(); j++) {
+      for (size_t j = 0; j < val.second.size(); j++) {
          // for each node pair in each category
-         for (size_t k = 0; k < map.value(i).at(j).size(); k++) {
-            SuperSpacePixel::tail().at(i).makeLineShape( map.value(i).at(j).at(k) );   
+         for (size_t k = 0; k < val.second.at(j).size(); k++) {
+            shapeMap.makeLineShape( val.second.at(j).at(k) );
          }
       }
 
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
+      shapeMap.setDisplayedAttribute(-2);
+      shapeMap.setDisplayedAttribute(-1);
+      SuperSpacePixel::tail().push_back(shapeMap);
    
    }
 
@@ -1758,11 +1758,11 @@ void MetaGraph::fastGraph( const Point2f& seed, double spacing )
 {
    setGrid( spacing );
 
-   PointMaps::getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
+   getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
 
    m_state |= POINTMAPS;
 
-   PointMaps::getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
+   getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
 
    // historical tag - essentially stamps version, so kept:
    m_state |= ANGULARGRAPH;
@@ -2026,7 +2026,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          gatelist.clear();
          if (desttype == VIEWVGA) {
-            m_data_maps.getMap(sourcelayer).pointInPolyList(PointMaps::at(destlayer).getPoint(table_out.getRowKey(i)).m_location,gatelist);
+            m_data_maps.getMap(sourcelayer).pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
@@ -2076,11 +2076,11 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
             gatelist.clear();
             if (desttype == VIEWDATA) {
-               m_data_maps.getMap(destlayer).pointInPolyList(PointMaps::at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_data_maps.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                // note, "axial" could be convex map, and hence this would be a valid operation
-               m_shape_graphs.getMap(destlayer).pointInPolyList(PointMaps::at(sourcelayer).getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_shape_graphs.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             double thisval = table_in.getValue(i,col_in);
             for (size_t j = 0; j < gatelist.size(); j++) {
@@ -2140,8 +2140,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
    // display new data in the relevant layer
    if (desttype == VIEWVGA) {
-      PointMaps::at(destlayer).overrideDisplayedAttribute(-2);
-      PointMaps::at(destlayer).setDisplayedAttribute(col_out);
+      m_pointMaps[destlayer].overrideDisplayedAttribute(-2);
+      m_pointMaps[destlayer].setDisplayedAttribute(col_out);
    }
    else if (desttype == VIEWAXIAL) {
       m_shape_graphs.getMap(destlayer).overrideDisplayedAttribute(-2);
@@ -2241,7 +2241,7 @@ int MetaGraph::getDisplayedMapRef() const
    int ref = -1;
    switch (m_view_class & VIEWFRONT) {
    case VIEWVGA:
-      ref = PointMaps::getDisplayedPointMapRef();
+      ref = getDisplayedPointMapRef();
       break;
    case VIEWAXIAL:
       ref = m_shape_graphs.getDisplayedMapRef();
@@ -2418,7 +2418,7 @@ AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
    }
    switch (type & VIEWFRONT) {
    case VIEWVGA:
-      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(PointMaps::at(layer).getAttributeTable());
+      tab = (layer == -1) ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = (layer == -1) ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2438,7 +2438,7 @@ const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
    }
    switch (type) {
    case VIEWVGA:
-      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(PointMaps::at(layer).getAttributeTable());
+      tab = layer == -1 ? &(getDisplayedPointMap().getAttributeTable()) : &(m_pointMaps[layer].getAttributeTable());
       break;
    case VIEWAXIAL:
       tab = layer == -1 ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
@@ -2472,7 +2472,7 @@ int MetaGraph::addLineDynamic(const Line& l)
       return linekey;
    }
 
-   PointMaps::getDisplayedPointMap().blockLines();
+   getDisplayedPointMap().blockLines();
 
    for (int i = 0; i < getLineFileCount(); i++) {
       for (int j = 0; j < getLineLayerCount(i); j++) {
@@ -2490,7 +2490,7 @@ int MetaGraph::addLineDynamic(const Line& l)
       // update the pointdata... nb.  The graph isn't affected until you rebuild graph
       // (as you might be playing with more than one line at a time it seems sensible to 
       // wait until you're ready to go with all of them)
-      PointMaps::getDisplayedPointMap().addLineDynamic(linekey,l);
+      getDisplayedPointMap().addLineDynamic(linekey,l);
    }
 
    return linekey;
@@ -2506,7 +2506,7 @@ bool MetaGraph::removeLineDynamic(LineKey linekey)
    }
 
    // first *before adding or removing the line* ensure existing lines are blocked
-   PointMaps::getDisplayedPointMap().blockLines();
+   getDisplayedPointMap().blockLines();
 
    if (linekey != -1) {  // <- this will be typical value when unset
       SpacePixel& spacepix = SuperSpacePixel::at(linekey.file).at(linekey.layer);
@@ -2518,7 +2518,7 @@ bool MetaGraph::removeLineDynamic(LineKey linekey)
          // (as you might be playing with more than one line at a time it seems sensible to 
          // wait until you're ready to go with all of them)
          // Note: the line itself is used to find the affected pixels
-         PointMaps::getDisplayedPointMap().removeLineDynamic(linekey,line);
+         getDisplayedPointMap().removeLineDynamic(linekey,line);
       }
    }
 
@@ -2662,9 +2662,8 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       }
    }
    if (type == 'p') {
-      PointMaps::read( stream, version );
-
-      PointMaps::setSpacePixel( (SuperSpacePixel *) this );
+      readPointMaps( stream, version );
+      setSpacePixel( (SuperSpacePixel *) this );
       temp_state |= POINTMAPS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2672,7 +2671,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
    }
    if (type == 'g') {
       // record on state of actual point map:
-      PointMaps::tail().m_processed = true;
+      m_pointMaps.back().m_processed = true;
 
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2692,7 +2691,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       // now replace with shape maps, but only if layer exists:
       temp_state &= ~DATAMAPS;
       // converter requires a point map to work on:
-      if (PointMaps::size()) {
+      if (m_pointMaps.size()) {
          // returns 0 if there are actually no objects in the shapemaps to convert,
          int conv_ok = convertDataLayersToShapeMap(dl,getDisplayedPointMap());
          if (conv_ok == 1) {
@@ -2781,7 +2780,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       if (m_view_class & MetaGraph::VIEWVGA) {
          type = 'p';
          stream.write(&type, 1);
-         PointMaps::write( stream, version, true );
+         writePointMaps( stream, version, true );
       }
       else if (m_view_class & MetaGraph::VIEWAXIAL) {
          type = 'x';
@@ -2803,7 +2802,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       if (oldstate & POINTMAPS) {
          type = 'p';
          stream.write(&type, 1);
-         PointMaps::write( stream, version );
+         writePointMaps( stream, version );
       }
       if (oldstate & SHAPEGRAPHS) {
          type = 'x';
@@ -2822,6 +2821,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
    m_state = oldstate;
    return OK;
 }
+
 
 streampos MetaGraph::skipVirtualMem(istream& stream, int version)
 {
@@ -2853,4 +2853,62 @@ std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
         }
     }
     return lines;
+}
+
+int MetaGraph::addNewPointMap(const std::string& name)
+{
+   std::string myname = name;
+   int counter = 1;
+   bool duplicate = true;
+   while (duplicate) {
+      duplicate = false;
+      for (auto& pointMap: m_pointMaps) {
+         if (pointMap.getName() == myname) {
+            duplicate = true;
+            myname = dXstring::formatString(counter++,name + " %d");
+            break;
+         }
+      }
+   }
+   m_pointMaps.push_back(PointMap(myname));
+   m_pointMaps.back().setSpacePixel(m_spacepix);
+   m_displayed_pointmap = m_pointMaps.size() - 1;
+   return m_pointMaps.size() - 1;
+}
+
+bool MetaGraph::readPointMaps(istream& stream, int version)
+{
+   stream.read((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
+   int count;
+   stream.read((char *) &count, sizeof(count));
+   for (int i = 0; i < count; i++) {
+      m_pointMaps.push_back(PointMap());
+      m_pointMaps.back().setSpacePixel( (SuperSpacePixel *) this );
+      m_pointMaps.back().read( stream, version );
+   }
+   return true;
+}
+
+bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmaponly)
+{
+   if (!displayedmaponly) {
+      stream.write((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
+      int count = m_pointMaps.size();
+      stream.write((char *) &count, sizeof(count));
+      for (auto& pointmap: m_pointMaps) {
+         pointmap.write( stream, version );
+      }
+   }
+   else {
+      int dummy;
+      // displayed map is 0:
+      dummy = 0;
+      stream.write((char *) &dummy, sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *) &dummy, sizeof(dummy));
+      //
+      m_pointMaps[m_displayed_pointmap].write(stream, version);
+   }
+   return true;
 }
