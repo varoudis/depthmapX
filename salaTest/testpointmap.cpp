@@ -373,6 +373,26 @@ TEST_CASE("Test PointMap connections output", "")
 
     REQUIRE(graphMade);
 
+    SECTION("PointMap::outputLinksAsCSV") {
+        std::stringstream stream;
+        pointMap.mergePixels(65537, 131074);
+        pointMap.mergePixels(131073, 65538);
+        pointMap.outputLinksAsCSV(stream);
+
+        REQUIRE(stream.good());
+        char line[1000];
+        std::vector<std::string> lines;
+        while( !stream.eof())
+        {
+            stream.getline(line, 1000);
+            lines.push_back(line);
+        }
+        std::vector<std::string> expected{ "RefFrom,RefTo",
+                                           "65537,131074",
+                                           "65538,131073"};
+        REQUIRE(lines == expected);
+    }
+
     SECTION("PointMap::outputConnectionsAsCSV") {
         std::stringstream stream;
         pointMap.outputConnectionsAsCSV(stream);

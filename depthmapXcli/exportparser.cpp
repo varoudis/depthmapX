@@ -45,6 +45,10 @@ void ExportParser::parse(int argc, char *argv[])
             {
                 _exportMode = ExportMode::POINTMAP_CONNECTIONS_CSV;
             }
+            else if ( std::strcmp(argv[i], "pointmap-links-csv") == 0 )
+            {
+                _exportMode = ExportMode::POINTMAP_LINKS_CSV;
+            }
             else
             {
                 throw CommandLineException(std::string("Invalid EXPORT mode: ") + argv[i]);

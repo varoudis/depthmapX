@@ -46,4 +46,11 @@ TEST_CASE("ExportParser Success", "Read successfully")
         parser.parse(ah.argc(), ah.argv());
         REQUIRE(parser.getExportMode() == ExportParser::POINTMAP_DATA_CSV);
     }
+
+    SECTION("Correctly parse mode pointmap-links-csv")
+    {
+        ArgumentHolder ah{"prog", "-em", "pointmap-links-csv"};
+        parser.parse(ah.argc(), ah.argv());
+        REQUIRE(parser.getExportMode() == ExportParser::POINTMAP_LINKS_CSV);
+    }
 }

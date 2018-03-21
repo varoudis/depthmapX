@@ -444,6 +444,12 @@ namespace dm_runmethods
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
                 break;
             }
+            case ExportParser::POINTMAP_LINKS_CSV:
+            {
+                ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
+                break;
+            }
             default:
             {
                 throw depthmapX::SetupCheckException("Error, unsupported export mode");
