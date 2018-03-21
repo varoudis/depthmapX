@@ -30,7 +30,6 @@ class IndexWidget : public QTreeWidget
 
 public:
     IndexWidget(QWidget *parent = 0);
-    ~IndexWidget();
 
     QString m_mapColumn = "Map";
     QString m_editableColumn = "Editable";

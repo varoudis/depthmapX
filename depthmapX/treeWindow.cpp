@@ -46,11 +46,6 @@ IndexWidget::IndexWidget(QWidget *parent)
         SLOT(OnSelchangingTree(QTreeWidgetItem*, int)));
 }
 
-IndexWidget::~IndexWidget()
-{
-    // nothing todo
-}
-
 void IndexWidget::removeAllItem(QTreeWidgetItem *start)
 {
     int index;
