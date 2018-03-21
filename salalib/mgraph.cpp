@@ -1630,22 +1630,21 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    SuperSpacePixel::tail().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
 
    // for each category
-   int i = -1;
-   for (auto val: map) {
-      i++;
-      SuperSpacePixel::tail().push_back(ShapeMap(val.first));
-      SuperSpacePixel::tail().at(i).init(val.second.size(), map.getRegion() );
+   for (auto val: map.m_categories) {
+      ShapeMap shapeMap = ShapeMap(val.first);
+      shapeMap.init(val.second.size(), map.getRegion() );
 
       // for each chains in category:
       for (size_t j = 0; j < val.second.size(); j++) {
          // for each node pair in each category
          for (size_t k = 0; k < val.second.at(j).size(); k++) {
-            SuperSpacePixel::tail().at(i).makeLineShape( val.second.at(j).at(k) );
+            shapeMap.makeLineShape( val.second.at(j).at(k) );
          }
       }
 
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-      SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
+      shapeMap.setDisplayedAttribute(-2);
+      shapeMap.setDisplayedAttribute(-1);
+      SuperSpacePixel::tail().push_back(shapeMap);
    
    }
 
