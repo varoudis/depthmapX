@@ -279,7 +279,7 @@ protected:
    bool *m_vital;
    int *m_radialsegcounts;
    int *m_keyvertexcounts;
-   prefvec<Connector> m_axialconns; // <- uses a copy of axial lines as it will remove connections
+   std::vector<Connector> m_axialconns; // <- uses a copy of axial lines as it will remove connections
 public:
    AxialMinimiser(const ShapeGraph& alllinemap, int no_of_axsegcuts, int no_of_radialsegs);
    ~AxialMinimiser();
