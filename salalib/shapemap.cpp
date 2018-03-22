@@ -685,8 +685,8 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
    if (!undoing) {
       // set undo counter, but only if this is not an undo itself:
       m_undobuffer.push_back(SalaEvent(SalaEvent::SALA_MOVED,shaperef));
-      m_undobuffer.tail().m_geometry = shapeIter->second;
-      m_undobuffer.tail().m_geometry.m_selected = false; // <- this m_selected really shouldn't be used -- should use attributes, but for some reason it is!
+      m_undobuffer.back().m_geometry = shapeIter->second;
+      m_undobuffer.back().m_geometry.m_selected = false; // <- this m_selected really shouldn't be used -- should use attributes, but for some reason it is!
    }
 
    if (!(m_region.contains_touch(line.start()) && m_region.contains_touch(line.end()))) {
@@ -968,8 +968,8 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
 
    if (!undoing) { // <- if not currently undoing another event, then add to the undo buffer:
       m_undobuffer.push_back(SalaEvent(SalaEvent::SALA_DELETED,shaperef));
-      m_undobuffer.tail().m_geometry = shapeIter->second;
-      m_undobuffer.tail().m_geometry.m_selected = false; // <- this m_selected really shouldn't be used -- should use attributes, but for some reason it is!
+      m_undobuffer.back().m_geometry = shapeIter->second;
+      m_undobuffer.back().m_geometry.m_selected = false; // <- this m_selected really shouldn't be used -- should use attributes, but for some reason it is!
    }
 
    if (shapeIter != m_shapes.end()) {
@@ -1040,7 +1040,7 @@ void ShapeMap::undo()
       return;
    }
 
-   SalaEvent& event = m_undobuffer.tail();
+   SalaEvent& event = m_undobuffer.back();
 
    if (event.m_action == SalaEvent::SALA_CREATED) {
    

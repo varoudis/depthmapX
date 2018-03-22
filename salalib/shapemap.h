@@ -231,7 +231,7 @@ protected:
    std::map<int,SalaShape> m_shapes;
    std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
-   prefvec<SalaEvent> m_undobuffer;
+   std::vector<SalaEvent> m_undobuffer;
    //
    AttributeTable m_attributes;
    //
