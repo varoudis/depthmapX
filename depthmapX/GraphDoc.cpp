@@ -216,7 +216,7 @@ void QGraphDoc::OnLayerNew()
       ShapeMap *map;
       if (dlg.m_layer_type == 0) {
           int ref = m_meta_graph->addShapeMap(dlg.m_name.toStdString());
-         map = &(m_meta_graph->getDataMaps().getMap(ref));
+         map = &(m_meta_graph->getDataMaps()[ref]);
       }
       else if (dlg.m_layer_type == 1) {
          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
@@ -1500,8 +1500,8 @@ void QGraphDoc::OnToolsAgentRun()
    dlg.m_record_trails = eng.m_record_trails;
    dlg.m_trail_count = eng.m_trail_count;
    dlg.m_names.push_back("<None>");
-   for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
-       dlg.m_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
+   for (size_t i = 0; i < m_meta_graph->getDataMaps().size(); i++) {
+       dlg.m_names.push_back(m_meta_graph->getDataMaps()[i].getName());
    }
    dlg.m_gatelayer = eng.m_gatelayer;
 
@@ -1684,8 +1684,8 @@ void QGraphDoc::OnVGAOptions()
    COptionsDlg dlg;
 
    dlg.m_layer_names.push_back("<None>");
-   for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
-       dlg.m_layer_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
+   for (size_t i = 0; i < m_meta_graph->getDataMaps().size(); i++) {
+       dlg.m_layer_names.push_back(m_meta_graph->getDataMaps()[i].getName());
    }
 
    dlg.exec();
@@ -1702,8 +1702,8 @@ void QGraphDoc::OnToolsRun()
    COptionsDlg dlg;
 
    dlg.m_layer_names.push_back("<None>");
-   for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
-       dlg.m_layer_names.push_back(m_meta_graph->getDataMaps().getMap(i).getName());
+   for (size_t i = 0; i < m_meta_graph->getDataMaps().size(); i++) {
+       dlg.m_layer_names.push_back(m_meta_graph->getDataMaps()[i].getName());
    }
 
    if (QDialog::Accepted != dlg.exec()) {
@@ -2110,10 +2110,10 @@ void QGraphDoc::OnPushToLayer()
       }
       // layers to push to:
       size_t i;
-      ShapeMaps<ShapeMap>& datamaps = m_meta_graph->getDataMaps();
-      for (i = 0; i < datamaps.getMapCount(); i++) {
-         if (toplayerclass != MetaGraph::VIEWDATA || i != datamaps.getDisplayedMapRef()) {
-            names.insert(std::make_pair(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps.getMap(i).getName()));
+      std::vector<ShapeMap>& datamaps = m_meta_graph->getDataMaps();
+      for (i = 0; i < datamaps.size(); i++) {
+         if (toplayerclass != MetaGraph::VIEWDATA || i != m_meta_graph->getDisplayedDataMapRef()) {
+            names.insert(std::make_pair(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps[i].getName()));
          }
       }
       ShapeGraphs& shapegraphs = m_meta_graph->getShapeGraphs();
@@ -2616,14 +2616,14 @@ void QGraphDoc::OnToolsPointConvShapeMap()
 // this is unlink from a set of points!
 void QGraphDoc::OnToolsAxialConvShapeMap() 
 {
-   if (m_meta_graph->getDataMaps().getMapCount() == 0) {
+   if (m_meta_graph->getDataMaps().empty()) {
 	   QMessageBox::warning(this, tr("Warning"), tr("No data source layers for unlink points"), QMessageBox::Ok, QMessageBox::Ok);
       return;
    }
 
    std::vector<std::string> names;
-   for (size_t i = 0; i < m_meta_graph->getDataMaps().getMapCount(); i++) {
-      names.push_back(std::string("Data Maps: ") + m_meta_graph->getDataMaps().getMap(i).getName());
+   for (size_t i = 0; i < m_meta_graph->getDataMaps().size(); i++) {
+      names.push_back(std::string("Data Maps: ") + m_meta_graph->getDataMaps()[i].getName());
    }
 
    // choose shape map...
@@ -2632,7 +2632,7 @@ void QGraphDoc::OnToolsAxialConvShapeMap()
 
    if (dlg.exec()) {
       //CWaitCursor wait;
-      m_meta_graph->getDisplayedShapeGraph().unlinkFromShapeMap(m_meta_graph->getDataMaps().getMap(dlg.m_layer));
+      m_meta_graph->getDisplayedShapeGraph().unlinkFromShapeMap(m_meta_graph->getDataMaps()[dlg.m_layer]);
       m_meta_graph->setViewClass(MetaGraph::SHOWAXIALTOP);
       SetUpdateFlag(QGraphDoc::NEW_TABLE);
       SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_DATA);
