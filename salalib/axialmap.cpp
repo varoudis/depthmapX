@@ -2074,9 +2074,8 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
-         pqvector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
-         for (size_t k = 0; k < shapes.size(); k++) {
-            ShapeRef& shape = shapes[k];
+         std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
+         for (ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
             }
@@ -2913,7 +2912,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygon.second.getPoint());
-         pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
+         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
          size_t j;
          for (j = 0; j < pix_shapes.size(); j++) {
             for (size_t k = j + 1; k < pix_shapes.size(); k++) {
@@ -2979,7 +2978,7 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      pqvector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
       for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
          auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
          size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
@@ -3001,7 +3000,7 @@ void ShapeGraph::makeNewSegMap()
          }
       }
       PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
       for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
          auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
          size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
