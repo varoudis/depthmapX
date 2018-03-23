@@ -81,7 +81,7 @@ public:
    }
 
 
-   std::vector<PointMap> getPointMaps()
+   std::vector<PointMap>& getPointMaps()
    { return m_pointMaps; }
    PointMap& getDisplayedPointMap()
    { return m_pointMaps[m_displayed_pointmap]; }
