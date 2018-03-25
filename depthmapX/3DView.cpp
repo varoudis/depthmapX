@@ -365,17 +365,17 @@ void Q3DView::ReloadLineData()
       SuperSpacePixel& superspacepix = *(pDoc->m_meta_graph);
 
       prefvec<Line> lines;
-      for (int i = 0; i < superspacepix.size(); i++) {
-         for (int j = 0; j < superspacepix.at(i).size(); j++) {
-            if (superspacepix.at(i).at(j).isShown()) {
+      for (auto& pixelGroup: superspacepix.m_spacePixels) {
+         for (auto& pixel: pixelGroup.m_spacePixels) {
+            if (pixel.isShown()) {
                if (m_region.atZero()) {
-                  m_region = superspacepix.at(i).at(j).getRegion();
+                  m_region = pixel.getRegion();
                }
                else {
-                  m_region = runion(m_region,superspacepix.at(i).at(j).getRegion());
+                  m_region = runion(m_region, pixel.getRegion());
                }
 
-               auto refShapes = superspacepix.at(i).at(j).getAllShapes();
+               auto refShapes = pixel.getAllShapes();
                for (auto refShape: refShapes) {
                   SalaShape& shape = refShape.second;
                   if (shape.isLine()) {

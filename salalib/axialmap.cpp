@@ -621,16 +621,16 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    prefvec<Line> lines;
 
    // add all visible layers to the set of polygon lines...
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
             for (auto line: newLines) {
                lines.push_back(Line(line.start(), line.end()));
             }
@@ -1260,26 +1260,28 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (auto& pixelGroup: superspacepix.m_spacePixels) {
+      int j = 0;
+      for (auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
             for (auto line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count ++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
@@ -1460,10 +1462,11 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
 
    size_t count = 0;
    size_t i = 0;
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
-             auto refShapes = superspacepix.at(i).at(j).getAllShapes();
+
+   for (auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
+             auto refShapes = pixel.getAllShapes();
              for (auto refShape: refShapes) {
                  SalaShape& shape = refShape.second;
                if (shape.isPolygon()) {
@@ -1481,9 +1484,9 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
       return -1;
    }
 
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         superspacepix.at(i).at(j).setShow(false);
+   for (auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (auto& pixel: pixelGroup.m_spacePixels) {
+         pixel.setShow(false);
       }
    }
 
@@ -1562,26 +1565,28 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (auto& pixelGroup: superspacepix.m_spacePixels) {
+       int j = 0;
+      for (auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
             for (auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
