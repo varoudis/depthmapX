@@ -148,9 +148,6 @@ ShapeMap::ShapeMap(const std::string& name, int type) : m_attributes(name)
 
    // shape and object counters
    m_obj_ref = -1;
-   // pixel map
-   m_pixel_shapes = NULL;
-   //
    // -1 is the shape ref column (which will be shown by default)
    m_displayed_attribute = -1; 
    m_display_shapes = NULL;
@@ -181,13 +178,6 @@ ShapeMap::~ShapeMap()
       delete m_bsp_root;
       m_bsp_root = NULL;
    }
-   if (m_pixel_shapes) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_pixel_shapes[i];
-      }
-      delete [] m_pixel_shapes;
-      m_pixel_shapes = NULL;
-   }
    if (m_display_shapes) {
       delete [] m_display_shapes;
       m_display_shapes = NULL;
@@ -204,13 +194,7 @@ ShapeMap::~ShapeMap()
 
 void ShapeMap::init(int size, const QtRegion &r)
 {
-   if (m_pixel_shapes) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_pixel_shapes[i];
-      }
-      delete [] m_pixel_shapes;
-      m_pixel_shapes = NULL;
-   }
+   m_pixel_shapes.clear();
    if (m_display_shapes) {
       delete [] m_display_shapes;
       m_display_shapes = NULL;
@@ -226,10 +210,7 @@ void ShapeMap::init(int size, const QtRegion &r)
    // calculate geom data:
    m_tolerance = __max(m_region.width(), m_region.height()) * TOLERANCE_A;
    //
-   m_pixel_shapes = new std::vector<ShapeRef> *[m_cols];
-   for (int i = 0; i < m_cols; i++) {
-      m_pixel_shapes[i] = new std::vector<ShapeRef>[m_rows];
-   }
+   m_pixel_shapes = std::vector<std::vector<ShapeRef> >(m_cols*m_rows);
 }
 
 // this makes an exact copy, keep the reference numbers and so on:
@@ -285,13 +266,7 @@ void ShapeMap::clearAll()
       delete m_bsp_root;
       m_bsp_root = NULL;
    }
-   if (m_pixel_shapes) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_pixel_shapes[i];
-      }
-      delete [] m_pixel_shapes;
-      m_pixel_shapes = NULL;
-   }
+   m_pixel_shapes.clear();
    if (m_display_shapes) {
       delete [] m_display_shapes;
       m_display_shapes = NULL;
@@ -1142,7 +1117,7 @@ void ShapeMap::makePolyPixels(int polyref)
          // end debug
          for (size_t i = 0; i < pixels.size(); i++) {
             PixelRef pix = pixels[i];
-            std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x][pix.y];
+            std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x + pix.y*m_cols];
             auto it = std::find(pixShapes.begin(), pixShapes.end(), ShapeRef(polyref));
             if(it == pixShapes.end()) {
                 pixShapes.push_back(ShapeRef(polyref));
@@ -1158,27 +1133,27 @@ void ShapeMap::makePolyPixels(int polyref)
          PixelRef pix = relation.first;
          PixelRef nextpix;
          nextpix = pix.right();
-         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x][nextpix.y].begin(),
-                                            m_pixel_shapes[nextpix.x][nextpix.y].end(),
-                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x][nextpix.y].end()) {
+         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x + nextpix.y*m_cols].begin(),
+                                            m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end(),
+                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end()) {
             relation.second &= ~ShapeRef::SHAPE_R;
          }
          nextpix = pix.up();
-         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x][nextpix.y].begin(),
-                                            m_pixel_shapes[nextpix.x][nextpix.y].end(),
-                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x][nextpix.y].end()) {
+         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x + nextpix.y*m_cols].begin(),
+                                            m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end(),
+                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end()) {
             relation.second &= ~ShapeRef::SHAPE_T;
          }
          nextpix = pix.down();
-         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x][nextpix.y].begin(),
-                                            m_pixel_shapes[nextpix.x][nextpix.y].end(),
-                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x][nextpix.y].end()) {
+         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x + nextpix.y*m_cols].begin(),
+                                            m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end(),
+                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end()) {
             relation.second &= ~ShapeRef::SHAPE_B;
          }
          nextpix = pix.left();
-         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x][nextpix.y].begin(),
-                                            m_pixel_shapes[nextpix.x][nextpix.y].end(),
-                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x][nextpix.y].end()) {
+         if (includes(nextpix) && std::find(m_pixel_shapes[nextpix.x + nextpix.y*m_cols].begin(),
+                                            m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end(),
+                                            ShapeRef(polyref)) != m_pixel_shapes[nextpix.x + nextpix.y*m_cols].end()) {
             relation.second &= ~ShapeRef::SHAPE_L;
          }
          if ((relation.second & (ShapeRef::SHAPE_B | ShapeRef::SHAPE_L)) == (ShapeRef::SHAPE_B | ShapeRef::SHAPE_L)) {
@@ -1193,10 +1168,10 @@ void ShapeMap::makePolyPixels(int polyref)
 
       for (auto relation: relations) {
          PixelRef pix = relation.first;
-         auto iter = std::find(m_pixel_shapes[pix.x][pix.y].begin(),
-                               m_pixel_shapes[pix.x][pix.y].end(),
+         auto iter = std::find(m_pixel_shapes[pix.x + pix.y*m_cols].begin(),
+                               m_pixel_shapes[pix.x + pix.y*m_cols].end(),
                                ShapeRef(polyref));
-         if(iter == m_pixel_shapes[pix.x][pix.y].end())
+         if(iter == m_pixel_shapes[pix.x + pix.y*m_cols].end())
              throw new depthmapX::RuntimeException("Poly reference not found");
          unsigned char& tags = iter->m_tags;
          if (tags == 0x00) {
@@ -1217,7 +1192,7 @@ void ShapeMap::makePolyPixels(int polyref)
                }
                // returns -1 if cannot add due to already existing:
                lastWasNotFound = false;
-               auto& pixelShapes = m_pixel_shapes[nextpix.x][nextpix.y];
+               auto& pixelShapes = m_pixel_shapes[nextpix.x + nextpix.y*m_cols];
                auto pos = std::find(pixelShapes.begin(),
                                pixelShapes.end(),
                                ShapeRef(polyref));
@@ -1238,7 +1213,7 @@ void ShapeMap::makePolyPixels(int polyref)
       case SalaShape::SHAPE_POINT:
          {
             PixelRef pix = pixelate(poly.m_centroid);
-            std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x][pix.y];
+            std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x + pix.y*m_cols];
             auto it = std::find(pixShapes.begin(), pixShapes.end(), ShapeRef(polyref));
             if(it == pixShapes.end()) {
                 pixShapes.push_back(ShapeRef(polyref,ShapeRef::SHAPE_OPEN));
@@ -1250,7 +1225,7 @@ void ShapeMap::makePolyPixels(int polyref)
             PixelRefVector pixels = pixelateLine(poly.m_region);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
-               std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x][pix.y];
+               std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x + pix.y*m_cols];
                auto it = std::find(pixShapes.begin(), pixShapes.end(), ShapeRef(polyref));
                if(it == pixShapes.end()) {
                    pixShapes.push_back(ShapeRef(polyref,ShapeRef::SHAPE_OPEN));
@@ -1271,7 +1246,7 @@ void ShapeMap::makePolyPixels(int polyref)
             PixelRefVector pixels = pixelateLine(li);
             for (size_t i = 0; i < pixels.size(); i++) {
                PixelRef pix = pixels[i];
-               std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x][pix.y];
+               std::vector<ShapeRef> &pixShapes = m_pixel_shapes[pix.x + pix.y*m_cols];
                auto it = std::find(pixShapes.begin(), pixShapes.end(), ShapeRef(polyref));
                if(it == pixShapes.end()) {
                    pixShapes.push_back(ShapeRef(polyref, ShapeRef::SHAPE_OPEN));
@@ -1295,10 +1270,10 @@ void ShapeMap::shapePixelBorder(std::map<int,int>& relations, int polyref, int s
    }
    auto relation = relations.find(currpix);
    if (relation->second & side) {
-       auto iter = std::find(m_pixel_shapes[currpix.x][currpix.y].begin(),
-                             m_pixel_shapes[currpix.x][currpix.y].end(),
+       auto iter = std::find(m_pixel_shapes[currpix.x + currpix.y*m_cols].begin(),
+                             m_pixel_shapes[currpix.x + currpix.y*m_cols].end(),
                              ShapeRef(polyref));
-       if(iter == m_pixel_shapes[currpix.x][currpix.y].end())
+       if(iter == m_pixel_shapes[currpix.x + currpix.y*m_cols].end())
            throw new depthmapX::RuntimeException("Poly reference not found");
        iter->m_tags |= side;
       relation->second &= ~side;   // <- clear to check all have been done later
@@ -1360,7 +1335,7 @@ void ShapeMap::removePolyPixels(int polyref)
       PixelRef maxpix = pixelate(poly.m_region.top_right);
       for (int x = minpix.x; x <= maxpix.x; x++) {
          for (int y = minpix.y; y <= maxpix.y; y++) {
-             depthmapX::findAndErase(m_pixel_shapes[x][y], ShapeRef(polyref));
+             depthmapX::findAndErase(m_pixel_shapes[x + y*m_cols], ShapeRef(polyref));
          }
       }
    }
@@ -1371,14 +1346,14 @@ void ShapeMap::removePolyPixels(int polyref)
       case SalaShape::SHAPE_POINT:
          {
             PixelRef pix = pixelate(poly.m_centroid);
-            depthmapX::findAndErase(m_pixel_shapes[pix.x][pix.y], ShapeRef(polyref));
+            depthmapX::findAndErase(m_pixel_shapes[pix.x + pix.y*m_cols], ShapeRef(polyref));
          }
          break;
       case SalaShape::SHAPE_LINE:
          {
             PixelRefVector list = pixelateLine(poly.m_region);
             for (size_t i = 0; i < list.size(); i++) {
-                depthmapX::findAndErase(m_pixel_shapes[list[i].x][list[i].y], ShapeRef(polyref));
+                depthmapX::findAndErase(m_pixel_shapes[list[i].x + list[i].y*m_cols], ShapeRef(polyref));
             }
          }
          break;
@@ -1388,7 +1363,7 @@ void ShapeMap::removePolyPixels(int polyref)
             Line li(poly.m_points[k],poly.m_points[nextk]);
             PixelRefVector list = pixelateLine(li);
             for (size_t i = 0; i < list.size(); i++) {
-                depthmapX::findAndErase(m_pixel_shapes[list[i].x][list[i].y], ShapeRef(polyref));
+                depthmapX::findAndErase(m_pixel_shapes[list[i].x + list[i].y*m_cols], ShapeRef(polyref));
             }
          }
          break;
@@ -1451,7 +1426,7 @@ int ShapeMap::quickPointInPoly(const Point2f& p) const
       return -1;
    }
    PixelRef pix = pixelate(p);
-   std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
+   const std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
    int drawlast = -1;
    int draworder = -1;
    for (size_t i = 0; i < shapes.size(); i++) {
@@ -1474,7 +1449,7 @@ int ShapeMap::pointInPoly(const Point2f& p) const
    pvecint testedshapes;
    pvecint testnodes;
    PixelRef pix = pixelate(p);
-   std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
+   const std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
    int drawlast = -1;
    int draworder = -1;
    for (size_t i = 0; i < shapes.size(); i++) {
@@ -1500,7 +1475,7 @@ int ShapeMap::pointInPoly(const Point2f& p) const
 bool ShapeMap::pointInPoly(const Point2f& p, int polyref) const
 {
    PixelRef pix = pixelate(p);
-   std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
+   const std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
    auto iter = std::find(shapes.begin(),
                          shapes.end(),
                          ShapeRef(polyref));
@@ -1519,7 +1494,7 @@ void ShapeMap::pointInPolyList(const Point2f& p, pvecint& shapeindexlist) const
    }
    pvecint testedshapes;
    PixelRef pix = pixelate(p);
-   std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
+   const std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
    for (size_t i = 0; i < shapes.size(); i++) {
       const ShapeRef& shape = shapes[i]; 
       if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
@@ -1555,7 +1530,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
    for (size_t i = 0; i < list.size(); i++) {
       PixelRef pix = list[i];
       if (includes(pix)) {
-         std::vector<ShapeRef>& shapes = m_pixel_shapes[pix.x][pix.y];
+         const std::vector<ShapeRef>& shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
          for (size_t j = 0; j < shapes.size(); j++) {
             const ShapeRef& shape = shapes[j]; 
             // slow to do this as it can repeat -- really need to use a linetest like structure to avoid retest of 
@@ -1609,11 +1584,11 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
       int x;
       for (x = minpix.x; x <= maxpix.x; x++) {
          for (int y = minpix.y; y <= maxpix.y; y++) {
-            auto iter = std::find(m_pixel_shapes[x][y].begin(),
-                                  m_pixel_shapes[x][y].end(),
+            auto iter = std::find(m_pixel_shapes[x + y*m_cols].begin(),
+                                  m_pixel_shapes[x + y*m_cols].end(),
                                   ShapeRef(polyref));
-            if (iter != m_pixel_shapes[x][y].end()) {
-               std::vector<ShapeRef>& shaperefs = m_pixel_shapes[x][y];
+            if (iter != m_pixel_shapes[x + y*m_cols].end()) {
+               const std::vector<ShapeRef>& shaperefs = m_pixel_shapes[x + y*m_cols];
                // this has us in it, now looked through everything else:
                for (auto& jter: shaperefs) {
                   if (*iter != jter && ((iter->m_tags & ShapeRef::SHAPE_CENTRE) || (jter.m_tags & ShapeRef::SHAPE_CENTRE))) {
@@ -1628,12 +1603,12 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
       // that was the easy bit... now, pass 2, for non centre things:
       for (x = minpix.x; x <= maxpix.x; x++) {
          for (int y = minpix.y; y <= maxpix.y; y++) {
-            auto iter = std::find(m_pixel_shapes[x][y].begin(),
-                                  m_pixel_shapes[x][y].end(),
+            auto iter = std::find(m_pixel_shapes[x + y*m_cols].begin(),
+                                  m_pixel_shapes[x + y*m_cols].end(),
                                   ShapeRef(polyref));
-            if (iter != m_pixel_shapes[x][y].end()) {
-               ShapeRef& shaperef = *iter;
-               std::vector<ShapeRef>& shaperefs = m_pixel_shapes[x][y];
+            if (iter != m_pixel_shapes[x + y*m_cols].end()) {
+               const ShapeRef& shaperef = *iter;
+               const std::vector<ShapeRef>& shaperefs = m_pixel_shapes[x + y*m_cols];
                if ((shaperef.m_tags & ShapeRef::SHAPE_CENTRE) == 0) {
                   // this has us in it, now looked through everything else:
                    for (auto& shaperefb: shaperefs) {
@@ -1855,7 +1830,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
                testnodes.add(shape.m_polyrefs[j]);
             }
             PixelRef pix2 = pixelate(p);
-            std::vector<ShapeRef> &pixelShapes = m_pixel_shapes[pix2.x][pix2.y];
+            const std::vector<ShapeRef> &pixelShapes = m_pixel_shapes[pix2.x + pix2.y*m_cols];
             // bit of code duplication like this, but easier on params to this function:
             pix2.move(PixelRef::NEGVERTICAL); // move pix2 down, search for this shape...
             auto iter = std::find(pixelShapes.begin(),
@@ -1928,7 +1903,7 @@ int ShapeMap::getClosestOpenGeom(const Point2f& p) const
 
    auto shapeIter = m_shapes.end();
    double mindist = -1;
-   for (auto& ref: m_pixel_shapes[pix.x][pix.y]) {
+   for (auto& ref: m_pixel_shapes[pix.x + pix.y*m_cols]) {
       if (ref.m_tags & ShapeRef::SHAPE_OPEN) {
          double thisdist = -1.0;
          auto tempShapeIter = m_shapes.find(ref.m_shape_ref);
@@ -1970,8 +1945,8 @@ Point2f ShapeMap::getClosestVertex(const Point2f& p) const
    PixelRef pix = pixelate(p);
 
    double mindist = -1.0;
-   for (size_t i = 0; i < m_pixel_shapes[pix.x][pix.y].size(); i++) {
-      ShapeRef& ref = m_pixel_shapes[pix.x][pix.y][i];
+   for (size_t i = 0; i < m_pixel_shapes[pix.x + pix.y*m_cols].size(); i++) {
+      const ShapeRef& ref = m_pixel_shapes[pix.x + pix.y*m_cols][i];
       double thisdist = -1.0;
       Point2f thisvertex;
       const SalaShape& poly = m_shapes.find(ref.m_shape_ref)->second;
@@ -2062,8 +2037,8 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
       if (includes(pix)) { // <- note, for some reason, this pixel may be off edge (line crop problem?)
-         for (size_t j = 0; j < m_pixel_shapes[pix.x][pix.y].size(); j++) {
-            ShapeRef& shaperef = m_pixel_shapes[pix.x][pix.y][j];
+         for (size_t j = 0; j < m_pixel_shapes[pix.x + pix.y*m_cols].size(); j++) {
+            ShapeRef& shaperef = m_pixel_shapes[pix.x + pix.y*m_cols][j];
             if (!shaperef.m_polyrefs.isEmpty()) {
                int len = shaperef.m_polyrefs.size(); 
                for (int k = 0; k < len; k++) {
@@ -2178,8 +2153,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
    pvector<IntPair> tested;
    for (int i = bl.x; i <= tr.x; i++) {
       for (int j = bl.y; j <= tr.y; j++) {
-         for (size_t k = 0; k < m_pixel_shapes[i][j].size(); k++) {
-            ShapeRef& shaperef = m_pixel_shapes[i][j][k];
+         for (size_t k = 0; k < m_pixel_shapes[i + j*m_cols].size(); k++) {
+            ShapeRef& shaperef = m_pixel_shapes[i + j*m_cols][k];
             int len = shaperef.m_polyrefs.size();
             if (len == 0) {
                // this is a non-poly, so check just the shape_ref:
@@ -2217,8 +2192,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
    // finally, do a quick point in poly test for any polygons in the centre pixel
    // only need to check the shape ref as everything else will have been picked up above
    PixelRef centre = pixelate(pt);
-   for (size_t k = 0; k < m_pixel_shapes[centre.x][centre.y].size(); k++) {
-      ShapeRef& shaperef = m_pixel_shapes[centre.x][centre.y][k];
+   for (size_t k = 0; k < m_pixel_shapes[centre.x + centre.y*m_cols].size(); k++) {
+      ShapeRef& shaperef = m_pixel_shapes[centre.x + centre.y*m_cols][k];
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
           int shapeindex = depthmapX::findIndexFromKey(m_shapes, (int) shaperef.m_shape_ref);
           depthmapX::addIfNotExists(bufferset, shapeindex);
@@ -2289,7 +2264,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
-      std::vector<ShapeRef>& shapes = m_pixel_shapes[ list[i].x ][ list[i].y ];
+      std::vector<ShapeRef>& shapes = m_pixel_shapes[ list[i].x + list[i].y*m_cols];
       for (size_t j = 0; j < shapes.size(); j++) {
          ShapeRef& shape = shapes[j];
          if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
@@ -2425,9 +2400,9 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       PixelRef tr = pixelate(r.top_right);
       for (int i = bl.x; i <= tr.x; i++) {
          for (int j = bl.y; j <= tr.y; j++) {
-            for (size_t k = 0; k < m_pixel_shapes[i][j].size(); k++) {
+            for (size_t k = 0; k < m_pixel_shapes[i + j*m_cols].size(); k++) {
                // relies on indices of shapes and attributes being aligned
-               auto shapeIter = m_shapes.find(m_pixel_shapes[i][j][k].m_shape_ref);
+               auto shapeIter = m_shapes.find(m_pixel_shapes[i + j*m_cols][k].m_shape_ref);
                size_t x = std::distance(m_shapes.begin(), shapeIter);
                if (x != paftl::npos && intersect_region(r,shapeIter->second.m_region)) {
                   shapeIter->second.m_selected = true;
@@ -2545,13 +2520,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    m_bsp_root = NULL;
 
    // clear old:
-   if (m_pixel_shapes) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_pixel_shapes[i];
-      }
-      delete [] m_pixel_shapes;
-      m_pixel_shapes = NULL;
-   }
+   m_pixel_shapes.clear();
    if (m_display_shapes) {
       delete [] m_display_shapes;
       m_display_shapes = NULL;
@@ -2611,11 +2580,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    stream.read((char *)&m_displayed_attribute,sizeof(m_displayed_attribute));
 
    // prepare pixel map:
-   m_pixel_shapes = new std::vector<ShapeRef> *[m_cols];
-   int i;
-   for (i = 0; i < m_cols; i++) {
-      m_pixel_shapes[i] = new std::vector<ShapeRef>[m_rows];
-   }
+   m_pixel_shapes = std::vector<std::vector<ShapeRef> >(m_cols*m_rows);
    // Now add the pixel shapes pixel map:
    // pixelate all polys in the pixel structure:
    for (auto shape: m_shapes) {
@@ -2960,9 +2925,9 @@ void ShapeMap::makeViewportShapes( const QtRegion& viewport ) const
 
    for (int i = bl.x; i <= tr.x; i++) {
       for (int j = bl.y; j <= tr.y; j++) {
-         for (size_t k = 0; k < m_pixel_shapes[i][j].size(); k++) {
+         for (size_t k = 0; k < m_pixel_shapes[i + j*m_cols].size(); k++) {
             // copy the index to the correct draworder position (draworder is formatted on display attribute)
-            int x = m_attributes.getRowid(m_pixel_shapes[i][j][k].m_shape_ref);
+            int x = m_attributes.getRowid(m_pixel_shapes[i + j*m_cols][k].m_shape_ref);
             if (m_attributes.isVisible(x)) {
                m_display_shapes[m_attributes.getDisplayPos(x)] = x;
             }
