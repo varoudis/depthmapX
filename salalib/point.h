@@ -20,8 +20,7 @@
 #include "salalib/pixelref.h"
 #include "salalib/ngraph.h"
 #include <map>
-
-//class Node;
+#include <memory>
 
 class Point {
    friend class Bin;
