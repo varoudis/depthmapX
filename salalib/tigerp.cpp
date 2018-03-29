@@ -1,5 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,22 +20,17 @@
 
 // Quick Tiger line parser (type 1 records)
 
+#include "salalib/tigerp.h"
+#include "genlib/comm.h"
 #include <iostream>
 #include <fstream>
 
-using namespace std;
-
-#include <genlib/paftl.h>
-#include <genlib/comm.h>
-
-#include <salalib/mgraph.h>
-#include "tigerp.h"
 
 // at some point will need to extend to parsing record type 2 (chains) as well as record type 1 (node to node)
 
 // Thank you US Census Bureau -- this is a great easy flat file format:
 
-void TigerMap::parse(const std::vector<string>& fileset, Communicator *comm)
+void TigerMap::parse(const std::vector<std::string>& fileset, Communicator *comm)
 {
 
    // Quick mod - TV
@@ -47,7 +43,7 @@ void TigerMap::parse(const std::vector<string>& fileset, Communicator *comm)
    qtimer( time, 0 );
      
    for (size_t i = 0; i < fileset.size(); i++) {
-      ifstream stream(fileset[i].c_str());
+      std::ifstream stream(fileset[i].c_str());
       while (!stream.eof())
       {
          std::string line;
@@ -65,8 +61,8 @@ void TigerMap::parse(const std::vector<string>& fileset, Communicator *comm)
                Point2f p1(double(long1)/1e6,double(lat1)/1e6);
                Point2f p2(double(long2)/1e6,double(lat2)/1e6);
                Line li(p1,p2);
-               iter->second.push_back(TigerChain());
-               iter->second.tail().push_back(li);
+               iter->second.chains.push_back(TigerChain());
+               iter->second.chains.back().lines.push_back(li);
                if (!m_init) {
                   m_region = li;
                   m_init = true;
