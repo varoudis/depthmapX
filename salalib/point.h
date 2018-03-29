@@ -18,9 +18,9 @@
 
 #include "genlib/p2dpoly.h"
 #include "salalib/pixelref.h"
+#include "salalib/ngraph.h"
 #include <map>
-
-class Node;
+#include <memory>
 
 class Point {
    friend class Bin;
@@ -44,7 +44,7 @@ protected:
    int m_state;
    int m_misc; // <- undocounter / point seen register / agent reference number, etc
    char m_grid_connections; // this is a standard set of grid connections, with bits set for E,NE,N,NW,W,SW,S,SE
-   Node *m_node;            // graph links
+   std::unique_ptr<Node> m_node;            // graph links
    Point2f m_location;      // note: this is large, but it helps allow loading of non-standard grid points,
                             // whilst allowing them to be displayed as a visibility graph, also speeds up time to
                             // display
@@ -65,7 +65,6 @@ public:
       { throw 1; }
    Point(const Point& p)
       { throw 1; }
-   ~Point();
    //
    bool empty() const
       { return (m_state & EMPTY) == EMPTY; }
