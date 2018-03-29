@@ -273,34 +273,42 @@ void Bin::make(const PixelRefVector& pixels, char dir)
          std::vector<PixelVec> pixel_vecs;
          // Reorder the pixels:
          if (m_dir == PixelRef::HORIZONTAL) {
-            std::vector<PixelRefH> pixels_h;
+            std::set<PixelRefH> pixels_h;
             for (size_t i = 0; i < pixels.size(); i++) {
-               depthmapX::addIfNotExists(pixels_h, PixelRefH(pixels[i]));
+               pixels_h.insert(PixelRefH(pixels[i]));
             }
             // this looks like a simple bubble sort
-            pixel_vecs.push_back(PixelVec(pixels_h[0],pixels_h[0]));
-            for (size_t j = 1; j < pixels_h.size(); j++) {
-               if (pixels_h[j-1].y != pixels_h[j].y || pixels_h[j-1].x + 1 != pixels_h[j].x) {
-                  pixel_vecs.back().m_end = pixels_h[j-1];
-                  pixel_vecs.push_back(PixelVec(pixels_h[j],pixels_h[j]));
+            auto curr = pixels_h.begin();
+            pixel_vecs.push_back(PixelVec(*curr, *curr));
+            ++curr;
+            auto prev = pixels_h.begin();
+            for (;curr != pixels_h.end(); ++curr) {
+               if (prev->y != curr->y || prev->x + 1 != curr->x) {
+                  pixel_vecs.back().m_end = *prev;
+                  pixel_vecs.push_back(PixelVec(*curr, *curr));
                }
+               prev = curr;
             }
-            pixel_vecs.back().m_end = pixels_h.back();
+            pixel_vecs.back().m_end = *pixels_h.rbegin();
          }
          if (m_dir == PixelRef::VERTICAL) {
-            std::vector<PixelRefV> pixels_v;
+            std::set<PixelRefV> pixels_v;
             for (size_t i = 0; i < pixels.size(); i++) {
-               depthmapX::addIfNotExists(pixels_v, PixelRefV(pixels[i]));
+               pixels_v.insert(PixelRefV(pixels[i]));
             }
             // this looks like a simple bubble sort
-            pixel_vecs.push_back(PixelVec(pixels_v[0],pixels_v[0]));
-            for (size_t j = 1; j < pixels_v.size(); j++) {
-               if (pixels_v[j-1].x != pixels_v[j].x || pixels_v[j-1].y + 1 != pixels_v[j].y) {
-                  pixel_vecs.back().m_end = pixels_v[j-1];
-                  pixel_vecs.push_back(PixelVec(pixels_v[j],pixels_v[j]));
+            auto curr = pixels_v.begin();
+            pixel_vecs.push_back(PixelVec(*curr, *curr));
+            ++curr;
+            auto prev = pixels_v.begin();
+            for (;curr != pixels_v.end(); ++curr) {
+               if (prev->x != curr->x || prev->y + 1 != curr->y) {
+                  pixel_vecs.back().m_end = *prev;
+                  pixel_vecs.push_back(PixelVec(*curr, *curr));
                }
+               prev = curr;
             }
-            pixel_vecs.back().m_end = pixels_v.back();
+            pixel_vecs.back().m_end = *pixels_v.rbegin();
          }
 
          // Now compact the representation:
