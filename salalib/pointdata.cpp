@@ -76,14 +76,6 @@ PointMap::~PointMap()
 {
    if (m_points) {
       // Trying to clear out the memory quicker -> predelete nodes and bins
-      for (int j = 0; j < m_cols; j++) {
-         for (int k = 0; k < m_rows; k++) {
-            if (m_points[j][k].m_node) {
-               delete m_points[j][k].m_node;
-               m_points[j][k].m_node = NULL;
-            }
-         }
-      }
       for (int i = 0; i < m_cols; i++) {
          delete [] m_points[i];
       }
@@ -1656,7 +1648,7 @@ bool PointMap::binMap( Communicator *comm )
          if ( getPoint( curs ).getState() & Point::FILLED ) {
 
             if (!getPoint(curs).m_node) {
-               getPoint( curs ).m_node = new Node;
+               getPoint( curs ).m_node = std::unique_ptr<Node>(new Node());
                m_attributes.insertRow( curs );
             }
 
@@ -1967,7 +1959,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
    
          if ( getPoint( curs ).getState() & Point::FILLED ) {
 
-            getPoint( curs ).m_node = new Node;
+            getPoint( curs ).m_node = std::unique_ptr<Node>(new Node());
             m_attributes.insertRow( curs );
 
             sparkPixel2(curs,1,maxdist); // make flag of 1 suggests make this node, don't set reciprocral process flags on those you can see
@@ -1982,14 +1974,6 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
                      // (well, actually, no it hasn't!)
                      // Should clear all nodes and attributes here:
                      // Clear nodes
-                     for (int ii = 0; ii < m_cols; ii++) {
-                        for (int jj = 0; jj < m_rows; jj++) {
-                           if (m_points[ii][jj].m_node) {
-                              delete m_points[ii][jj].m_node;
-                              m_points[ii][jj].m_node = NULL;
-                           }
-                        }
-                     }
                      // Clear attributes
                      m_attributes.clear();
                      m_displayed_attribute = -2;
