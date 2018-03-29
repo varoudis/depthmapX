@@ -47,7 +47,7 @@ void TigerMap::parse(const std::vector<std::string>& fileset, Communicator *comm
       while (!stream.eof())
       {
          std::string line;
-         stream >> line;
+         std::getline(stream, line);
 
          if (line.length()) {
             // grab major code:

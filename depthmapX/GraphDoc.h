@@ -124,14 +124,14 @@ public:
    //
    void SetFileSet(QStringList strings)
    { 
-/*	   m_fileset.clear();
-	   comm_string strs;
+       m_fileset.clear();
+       std::string strs;
        for (int i = 0; i < strings.size(); i++)
 	   {
 		   strs.clear();
            for(int j=0; j<strings[i].size(); j++) strs.push_back(strings[i].toLatin1().data()[j]);
            m_fileset.push_back(strs);
-       }*/
+       }
    }
 
 
