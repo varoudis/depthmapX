@@ -1624,13 +1624,13 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    // for each category
    for (auto val: map.m_categories) {
       ShapeMap shapeMap = ShapeMap(val.first);
-      shapeMap.init(val.second.size(), map.getRegion() );
+      shapeMap.init(val.second.chains.size(), map.getRegion() );
 
       // for each chains in category:
-      for (size_t j = 0; j < val.second.size(); j++) {
+      for (size_t j = 0; j < val.second.chains.size(); j++) {
          // for each node pair in each category
-         for (size_t k = 0; k < val.second.at(j).size(); k++) {
-            shapeMap.makeLineShape( val.second.at(j).at(k) );
+         for (size_t k = 0; k < val.second.chains[j].lines.size(); k++) {
+            shapeMap.makeLineShape( val.second.chains[j].lines[k] );
          }
       }
 
