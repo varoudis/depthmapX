@@ -483,12 +483,15 @@ void QGraphDoc::OnFileImport()
             }
             else if (ext == tr("NTF")) {
                m_communicator->SetOption( MetaGraph::NTF | graph_option );
+               m_communicator->SetFileSet( infiles );
             }
             else if (ext == tr("GML")) {
                m_communicator->SetOption( MetaGraph::GML | graph_option );
+               m_communicator->SetFileSet( infiles );
             }
             else if (ext == tr("RT1")) {
                m_communicator->SetOption( MetaGraph::RT1 | graph_option );
+               m_communicator->SetFileSet( infiles );
             }
          }
          else {
