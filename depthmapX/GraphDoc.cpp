@@ -1067,22 +1067,6 @@ void QGraphDoc::OnEditGrid()
    }
 }
 
-void QGraphDoc::OnEditFixgrid() 
-{
-}
-
-void QGraphDoc::OnEditFixFill() 
-{
-   // only used in Developer mode
-   if (m_communicator) {
-	  QMessageBox::warning(this, tr("Notice"), tr("Please wait, another task is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-   m_meta_graph->getDisplayedPointMap().fillLines();
-
-   SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_DATA);
-}
-
 // AV TV // semifilled
 void QGraphDoc::OnFillPoints( const Point2f& p, int fill_type ) // semifilled = 0 (intention to use semifilled steps for part filled)
 {
@@ -2542,11 +2526,6 @@ void QGraphDoc::OnMagiMif()
          }
       }
    }
-}
-
-void QGraphDoc::OnBinDistances() 
-{
-   m_meta_graph->getDisplayedPointMap().binMap(NULL);
 }
 
 void QGraphDoc::OnShowBinDistances() 

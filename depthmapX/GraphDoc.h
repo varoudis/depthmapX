@@ -295,9 +295,7 @@ public:
 	void OnAddGate();
 	void OnPushToLayer();
 	void OnEditGrid();
-	void OnToolsAxialLines();
-	void OnEditFixgrid();
-	void OnEditFixFill();
+    void OnToolsAxialLines();
     void OnToolsMPD();
 	void OnEvoAgent();
 	void OnBinDisplay();
@@ -305,8 +303,7 @@ public:
 	void OnToolsRunSeg();
 	void OnAddColumn();
 	void OnMagiMif();
-	void OnRemoveColumn();
-	void OnBinDistances();
+    void OnRemoveColumn();
 	void OnShowBinDistances();
 	void OnFileProperties();
 	void OnToolsAPD();
