@@ -56,8 +56,8 @@ class MetaGraph : public SuperSpacePixel, public FileProperties
 public:
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
    enum { NONE = 0x0000, POINTMAPS = 0x0002, LINEDATA = 0x0004,
-          FIXED = 0x0008 /* Deprecated */, ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, SHAPEGRAPHS = 0x0100,
-          PREWRITTEN = 0x1000, BUGGY = 0x8000 };
+          ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, SHAPEGRAPHS = 0x0100,
+          BUGGY = 0x8000 };
    enum { NOT_EDITABLE = 0, EDITABLE_OFF = 1, EDITABLE_ON = 2 };
 protected:
    int m_file_version;
@@ -259,7 +259,7 @@ protected:
 public:
    enum { SHOWHIDEVGA = 0x0100, SHOWVGATOP = 0x0200, SHOWHIDEAXIAL = 0x0400, SHOWAXIALTOP = 0x0800, SHOWHIDESHAPE = 0x1000, SHOWSHAPETOP = 0x2000 };
    enum { VIEWNONE = 0x00, VIEWVGA = 0x01, VIEWBACKVGA = 0x02, VIEWAXIAL = 0x04, VIEWBACKAXIAL = 0x08,
-          VIEWLINKS = 0x10, VIEWDATA = 0x20, VIEWBACKDATA = 0x40, VIEWFRONT = 0x25, VIEWBACK = 0x4a };
+          VIEWDATA = 0x20, VIEWBACKDATA = 0x40, VIEWFRONT = 0x25 };
    //
    int getViewClass()
    { return m_view_class; }

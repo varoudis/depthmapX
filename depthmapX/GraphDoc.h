@@ -189,10 +189,10 @@ public:
    bool modifiedFlag;
 
    // Redraw commands
-   enum {REDRAW_DONE, REDRAW_MARKEDSET, REDRAW_POINTS, REDRAW_GRAPH, REDRAW_TOTAL };
+   enum {REDRAW_DONE, REDRAW_POINTS, REDRAW_GRAPH, REDRAW_TOTAL };
    // Redraw reasons
    enum {UNDECLARED, NEW_FOCUS, NEW_DEPTHMAPVIEW_SETUP,
-                     NEW_VIEWER, NEW_LINESET, NEW_DATA,
+                     NEW_LINESET, NEW_DATA,
                      NEW_SELECTION, NEW_TABLE, NEW_COLUMN, NEW_FILE, DELETED_TABLE };
    // Mainframe table changes:
    enum {CONTROLS_DESTROYALL,CONTROLS_LOADALL,
