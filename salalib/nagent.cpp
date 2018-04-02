@@ -950,7 +950,7 @@ Point2f Agent::onOcclusionLook(bool wholeisovist, int looktype)
    }
    PixelRef tarpixelate = NoPixel;
    int vbin = m_program->m_vbin;
-   if (vbin = -1) {
+   if (vbin == -1) {
       vbin = 16;
    }
    int directionbin = 32 + binfromvec(m_vector) - vbin;
