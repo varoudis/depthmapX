@@ -515,7 +515,7 @@ bool AgentProgram::open(const std::string& filename)
          std::string bins = line.substr(6);
          dXstring::ltrim(bins);
          int binx = stoi(bins);
-         if (binx = 32) {
+         if (binx == 32) {
             m_vbin = -1;
          }
          else {
@@ -884,7 +884,7 @@ Point2f Agent::onWeightedLook(bool wholeisovist)
    }
    int tarpixelate = -1;
    int vbin = m_program->m_vbin;
-   if (vbin = -1) {
+   if (vbin == -1) {
       vbin = 16;
    }
    int aheadbin = binfromvec(m_vector);
