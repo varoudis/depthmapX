@@ -402,6 +402,7 @@ AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b)
    return child;
 }
 
+// TODO: Expose this functionality to the UIs
 void AgentProgram::save(const std::string& filename)
 {
    // standard ascii:
@@ -876,6 +877,7 @@ Point2f Agent::onStandardLook(bool wholeisovist)
    return (m_target - m_loc).normalise();
 }
 
+// TODO: Expose this functionality to the UIs
 Point2f Agent::onWeightedLook(bool wholeisovist)
 {
    if (wholeisovist) {
