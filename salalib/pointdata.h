@@ -108,13 +108,8 @@ public:
    virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
-   //
-   // Quick mod - TV
-#if defined(_WIN32)
-   void communicate( __time64_t& atime, Communicator *comm, int record );
-#else
+
    void communicate( time_t& atime, Communicator *comm, int record );
-#endif
    // constrain is constrain to existing rows / cols
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
    Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 

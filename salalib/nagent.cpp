@@ -78,12 +78,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
             pointmap->requireIsovistAnalysis();
         }
     }
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
-   time_t atime =0;
-#endif   
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_timesteps );

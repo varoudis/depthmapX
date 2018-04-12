@@ -674,12 +674,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       }
       m_bsp_root = new BSPNode();
 
-      // Quick mod - TV
-#if defined(_WIN32)      
-      __time64_t atime = 0;
-#else
       time_t atime = 0;
-#endif      
       communicator->CommPostMessage( Communicator::NUM_RECORDS, partitionlines.size() );
       qtimer( atime, 0 );
 
@@ -1469,14 +1464,9 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
       communicator->CommPostMessage( Communicator::NUM_RECORDS, size );
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t a_time = 0;
-#else
-   time_t a_time = 0;
-#endif
+   time_t atime = 0;
    
-   qtimer( a_time, 0 );
+   qtimer( atime, 0 );
 
    long size = 0; 
    int numlines = 0;
@@ -1583,7 +1573,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
       size += inputline.length() + 1;
 
       if (communicator) {
-         if (qtimer( a_time, 500 )) {
+         if (qtimer( atime, 500 )) {
             if (communicator->IsCancelled()) {
                throw Communicator::CancelledException();
             }
