@@ -296,10 +296,6 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
    table.setValue(row,col,(float)area);
 
 
-
-   // dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-#ifndef _COMPILE_dX_SIMPLE_VERSION
    if(!simple_version) {
        col = table.getColumnIndex("Isovist Compactness");
        if (col == -1) {
@@ -341,6 +337,5 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
        }
        table.setValue(row,col,(float)m_perimeter);
    }
-#endif
 
 }
