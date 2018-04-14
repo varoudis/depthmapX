@@ -23,11 +23,11 @@ def writeConfig(filename, rundir):
 class TestMethods(unittest.TestCase):
     def test_buildCmd(self):
         data = [{ "infile": "foo.graph", "outfile": "bar.graph", "mode": "VGA", "extraArgs": { "-vm": "visibility", "-vg": "", "-vr": "5"}}]
-        cmd = config.buildCmd( data )
-        self.assertEqual(cmd.infile, "foo.graph")
-        self.assertEqual(cmd.outfile, "bar.graph")
-        self.assertEqual(cmd.mode, "VGA")
-        self.assertEqual(len(cmd.extraArgs),3)
+        cmds = config.buildCmd( data )
+        self.assertEqual(cmds[0].infile, "foo.graph")
+        self.assertEqual(cmds[0].outfile, "bar.graph")
+        self.assertEqual(cmds[0].mode, "VGA")
+        self.assertEqual(len(cmds[0].extraArgs),3)
 
 
     def test_configClass(self):

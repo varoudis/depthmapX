@@ -97,7 +97,7 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
         cmd.infile = infile
         cmd.outfile = outfile
         cmd.mode = mode
-        return cmd
+        return [cmd]
 
 
     def testSuccessfullRun(self):
