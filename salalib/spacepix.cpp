@@ -751,7 +751,7 @@ void SpacePixel::cutLine(Line& l, short dir)
 
    double tolerance = l.length() * 1e-9;
 
-   pvecdouble loc;
+   std::set<double> loc;
    PixelRefVector vec = pixelateLine(l);
 
    int axis;
@@ -781,7 +781,7 @@ void SpacePixel::cutLine(Line& l, short dir)
                      break;
                   case 2:
                      {
-                        loc.add( l.intersection_point(linetest.line, axis) );
+                        loc.insert( l.intersection_point(linetest.line, axis) );
                      }
                      break;
                   case 1:
@@ -810,10 +810,10 @@ void SpacePixel::cutLine(Line& l, short dir)
                                  if (sgn(oa) != sgn(ob) || fabs(oa) < tolerance * linetest.line.length() || fabs(ob) < tolerance * linetest.line.length()) {
                                     // crossed
                                     if (fabs(oa) > tolerance * linetest.line.length()) {  // checks not parallel...
-                                       loc.add( l.intersection_point(linetest.line, axis) );
+                                       loc.insert( l.intersection_point(linetest.line, axis) );
                                     }
                                     else if (fabs(ob) > tolerance * linetest.line.length()) {
-                                       loc.add( l.intersection_point(touching_lines[pair], axis) );
+                                       loc.insert( l.intersection_point(touching_lines[pair], axis) );
                                     }
                                     else {
                                        // parallel with both lines ... this shouldn't happen...
@@ -845,12 +845,12 @@ void SpacePixel::cutLine(Line& l, short dir)
          // check the first loc actually occurred in this pixel...
          if ( (dir == l.direction() && (axis == XAXIS || l.sign() == 1)) ||
               (dir != l.direction() && (axis == YAXIS && l.sign() == -1)) ) {      
-            if (pix == pixelate(l.point_on_line(loc.head(),axis))) {
+            if (pix == pixelate(l.point_on_line(*loc.begin(),axis))) {
                found = true;
             }
          }
          else {
-            if (pix == pixelate(l.point_on_line(loc.tail(),axis))) {
+            if (pix == pixelate(l.point_on_line(*loc.rbegin(),axis))) {
                found = true;
             }
          }
@@ -862,34 +862,34 @@ void SpacePixel::cutLine(Line& l, short dir)
       double pos;
       if (dir == l.direction()) {
          if (axis == XAXIS) {
-            pos = loc.head();
+            pos = *loc.begin();
             l.by() = l.ay() + l.sign() * l.height() * (pos - l.ax()) / l.width();
             l.bx() = pos;
          }
          else if (l.sign() == 1) {
-            pos = loc.head();
+            pos = *loc.begin();
             l.bx() = l.ax() + l.width() * (pos - l.ay()) / l.height();
             l.by() = pos;
          }
          else {
-            pos = loc.tail();
+            pos = *loc.rbegin();
             l.bx() = l.ax() + l.width() * (l.ay() - pos) / l.height();
             l.by() = pos;
          }
       }
       else {
          if (axis == XAXIS) {
-            pos = loc.tail();
+            pos = *loc.rbegin();
             l.ay() = l.by() - l.sign() * l.height() * (l.bx() - pos) / l.width();
             l.ax() = pos;
          }
          else if (l.sign() == 1) {
-           pos = loc.tail();
+           pos = *loc.rbegin();
            l.ax() = l.bx() - l.width() * (l.by() - pos) / l.height();
            l.ay() = pos;
          }
          else {
-           pos = loc.head();
+           pos = *loc.begin();
            l.ax() = l.bx() - l.width() * (pos - l.by()) / l.height();
            l.ay() = pos;
          }
