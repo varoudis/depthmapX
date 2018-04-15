@@ -29,6 +29,7 @@
 #include "salalib/pafcolor.h"
 #include "genlib/paftl.h"
 #include <map>
+#include <deque>
 
 class SalaShape;
 
@@ -232,7 +233,7 @@ protected:
    std::string m_name;   // <- file name
    mutable int m_current_layer;
 public:
-   std::vector<T> m_spacePixels;
+   std::deque<T> m_spacePixels;
    QtRegion m_region;  // easier public for now
    //
    SpacePixelGroup(const std::string& name = std::string())
