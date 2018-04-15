@@ -2017,7 +2017,7 @@ int ShapeMap::getClosestLine(const Point2f& p) const
    return index;
 }
 
-void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
+void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
 {
    if (!intersect_region(li_orig,m_region)) {
       return;
@@ -2054,7 +2054,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,li2)) {
                            // find intersection point and add:
-                           cuts.add(ValuePair(shaperef.m_shape_ref,li.intersection_point(li2,axis,1e-9)),paftl::ADD_DUPLICATE);  // note: added key not rowid
+                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(li2,axis,1e-9)));  // note: added key not rowid
                         }
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,x),paftl::ADD_HERE);
@@ -2071,7 +2071,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,poly.m_region)) {
                            // find intersection point and add:
-                           cuts.add(ValuePair(shaperef.m_shape_ref,li.intersection_point(poly.m_region,axis,1e-9)),paftl::ADD_DUPLICATE);  // note: added key not rowid
+                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(poly.m_region,axis,1e-9)));  // note: added key not rowid
                         }
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
@@ -2085,8 +2085,9 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
 
 void ShapeMap::cutLine(Line& li) //, short dir)
 {
-   pvector<ValuePair> cuts;
+   std::vector<ValuePair> cuts;
    getShapeCuts(li,cuts);
+   std::sort(cuts.begin(), cuts.end());
 /*
    bool same = false;
    if (dir == li.direction()) {
@@ -2120,18 +2121,18 @@ void ShapeMap::cutLine(Line& li) //, short dir)
    if (cuts.size()) {
       if (li.width() > li.height()) {
          if (li.rightward()) {
-            li = Line(li.start(),li.point_on_line(cuts.head().value,XAXIS));
+            li = Line(li.start(),li.point_on_line(cuts.front().value,XAXIS));
          }
          else {
-            li = Line(li.point_on_line(cuts.tail().value,XAXIS),li.end());
+            li = Line(li.point_on_line(cuts.back().value,XAXIS),li.end());
          }
       }
       else {
          if (li.upward()) {
-            li = Line(li.t_start(),li.point_on_line(cuts.head().value,YAXIS));
+            li = Line(li.t_start(),li.point_on_line(cuts.front().value,YAXIS));
          }
          else {
-            li = Line(li.t_start(),li.point_on_line(cuts.tail().value,YAXIS));
+            li = Line(li.t_start(),li.point_on_line(cuts.back().value,YAXIS));
          }
       }
    }
