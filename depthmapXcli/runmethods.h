@@ -22,6 +22,7 @@
 #include "performancesink.h"
 #include "vgaparser.h"
 #include "axialparser.h"
+#include "segmentparser.h"
 #include "agentparser.h"
 #include "exportparser.h"
 #include "salalib/isovistdef.h"
@@ -36,6 +37,7 @@ namespace dm_runmethods{
     void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
     void runVisualPrep(const CommandLineParser &clp, double gridSize, const std::vector<Point2f> &fillPoints, double maxVisibility, bool boundaryGraph, IPerformanceSink &perfWriter);
     void runAxialAnalysis(const CommandLineParser& clp, const AxialParser &ap, IPerformanceSink &perfWriter);
+    void runSegmentAnalysis(const CommandLineParser& clp, const SegmentParser &sp, IPerformanceSink &perfWriter);
     void runAgentAnalysis(const CommandLineParser &cmdP, const AgentParser &agentP, IPerformanceSink &perfWriter );
     void runIsovists(const CommandLineParser &cmdP, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter );
     void exportData(const CommandLineParser &cmdP, const ExportParser &exportP, IPerformanceSink &perfWriter );
