@@ -18,6 +18,7 @@
 #pragma once
 
 #include "p2dpoly.h"
+#include <memory>
 
 // Binary Space Partition
 
