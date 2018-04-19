@@ -81,8 +81,10 @@ void sparkSieve2::block( const std::map<int,Line>& lines, int q )
          block.end = a + 1e-10;
       }
       // this creates a list of blocks sorted by start location
-      m_blocks.insert(block);
+      m_blocks.push_back(block);
    }
+   std::sort( m_blocks.begin(), m_blocks.end() );
+   m_blocks.erase( std::unique( m_blocks.begin(), m_blocks.end() ), m_blocks.end() );
 }
 
 void sparkSieve2::collectgarbage()

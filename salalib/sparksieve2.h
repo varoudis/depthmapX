@@ -45,7 +45,7 @@ public:
 private:
    Point2f m_centre;
    double m_maxdist; // for creating graphs that only see out a certain distance: set to -1.0 for infinite
-   std::set<sparkZone2> m_blocks;
+   std::vector<sparkZone2> m_blocks;
 public:
    std::list<sparkZone2> m_gaps;
 public:
