@@ -2912,30 +2912,32 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygon.second.getPoint());
-         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
-         size_t j;
-         for (j = 0; j < pix_shapes.size(); j++) {
-            for (size_t k = j + 1; k < pix_shapes.size(); k++) {
-               auto aIter = m_shapes.find((int) pix_shapes[j].m_shape_ref);
-               auto bIter = m_shapes.find((int) pix_shapes[k].m_shape_ref);
-               int a = std::distance(m_shapes.begin(), aIter);
-               int b = std::distance(m_shapes.begin(), bIter);
-               if (aIter != m_shapes.end() && bIter != m_shapes.end() && aIter->second.isLine() && bIter->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
+         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+         auto iter = pix_shapes.begin();
+         for (; iter != pix_shapes.end(); ++iter) {
+            for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
+               auto aIter = m_shapes.find(int(iter->m_shape_ref));
+               auto bIter = m_shapes.find(int(jter->m_shape_ref));
+               int a = int(std::distance(m_shapes.begin(), aIter));
+               int b = int(std::distance(m_shapes.begin(), bIter));
+               if (aIter != m_shapes.end() && bIter != m_shapes.end()
+                       && aIter->second.isLine() && bIter->second.isLine()
+                       && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
                   closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-                  intersections.push_back( IntPair((int)a,(int)b) );
+                  intersections.push_back( IntPair(a,b) );
                }
             }
          }
          double mindist = -1.0;
          int minpair = -1;
-         for (j = 0; j < closepoints.size(); j++) {
+         for (size_t j = 0; j < closepoints.size(); j++) {
             if (minpair == -1 || dist(polygon.second.getPoint(),closepoints[j]) < mindist) {
                mindist = dist(polygon.second.getPoint(),closepoints[j]);
-               minpair = j;
+               minpair = int(j);
             }
          }
          if (minpair != -1) {
-            unlinkShapes(intersections[minpair].a, intersections[minpair].b, false);
+            unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
          }
          else {
             cerr << "eek!";
