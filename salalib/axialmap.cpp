@@ -182,7 +182,7 @@ void AxialPolygons::clear()
    m_handled_list.clear();
 }
 
-void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
+void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
 {
    // init pixelbase members
    m_region = region;
@@ -223,7 +223,7 @@ void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
    sortPixelLines();
 }
 
-void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefvec<Connector>& connectionset)
+void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const prefvec<Connector>& connectionset)
 {
    m_vertex_possibles.clear();
    m_vertex_polys.clear();
@@ -618,7 +618,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    QtRegion region;
    int size = 0;
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
 
    // add all visible layers to the set of polygon lines...
    for (size_t i = 0; i < superspacepix.size(); i++) {
@@ -1756,7 +1756,7 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
       return -1;
    }
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    prefvec<Connector> connectionset;
 
    ShapeGraph& dispmap = getDisplayedMap();
@@ -1968,7 +1968,7 @@ void ShapeGraph::initAttributes()
 bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
 {
    // take lines from lines layer and make into regions (using the axial polygons)
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    for (auto shape: m_shapes) {
       lines.push_back(shape.second.getLine());
    }
@@ -3041,7 +3041,7 @@ void ShapeGraph::makeNewSegMap()
 // identify the original axial line this line segment is
 // associated with
 
-void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
+void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
    std::map<OrderedIntPair,IntPair> segmentlist;
@@ -4171,30 +4171,26 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
 
 // helper -- a little class to tidy up a set of lines
 
-void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
+void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
 {
-   size_t i = 0;
    m_region = region;
    double maxdim = __max(m_region.width(),m_region.height());
 
    // simple first pass -- remove very short lines
-   pvecint removelist;
-   for (i = 0; i < lines.size(); i++) {
-      if (lines[i].length() < maxdim * TOLERANCE_B) {
-         removelist.add(i);
-      }
-   }
-   lines.remove_at(removelist);
-   removelist.clear();  // always clear this list, it's reused
+   lines.erase(
+               std::remove_if(lines.begin(), lines.end(),
+                              [maxdim](const Line& line)
+   {return line.length() < maxdim * TOLERANCE_B;}), lines.end());
 
    // now load up m_lines...
    initLines(lines.size(),m_region.bottom_left,m_region.top_right);
-   for (i = 0; i < lines.size(); i++) {
-      addLine(lines[i]);
+   for (auto& line: lines) {
+      addLine(line);
    }
    sortPixelLines();
 
-   for (i = 0; i < lines.size(); i++) {
+   std::vector<int> removelist;
+   for (size_t i = 0; i < lines.size(); i++) {
       // n.b., as m_lines have just been made, note that what's in m_lines matches whats in lines
       // we will use this later!
       m_test++;
@@ -4217,7 +4213,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      int end = ((lines[i].end()[axis_i] * parity) > (lines[j].end()[axis_j] * parity)) ? i : j;
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                   if ((lines[j].start()[axis_j] * parity + TOLERANCE_B * maxdim) > (lines[i].start()[axis_i] * parity) &&
@@ -4227,7 +4223,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      lines[j].ay() = lines[i].ay();
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                }
@@ -4235,7 +4231,12 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
          }
       }
    }
-   lines.remove_at(removelist);
+
+   // comes out sorted, remove duplicates just in case
+   removelist.erase(std::unique(removelist.begin(), removelist.end()), removelist.end());
+
+   for(auto iter = removelist.rbegin(); iter != removelist.rend(); ++iter)
+       lines.erase(lines.begin() + *iter);
    removelist.clear();  // always clear this list, it's reused
 }
 
