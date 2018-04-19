@@ -1702,8 +1702,8 @@ void QGraphDoc::OnToolsRun()
    COptionsDlg dlg;
 
    dlg.m_layer_names.push_back("<None>");
-   for (size_t i = 0; i < m_meta_graph->getDataMaps().size(); i++) {
-       dlg.m_layer_names.push_back(m_meta_graph->getDataMaps()[i].getName());
+   for (auto& dataMap: m_meta_graph->getDataMaps()) {
+       dlg.m_layer_names.push_back(dataMap.getName());
    }
 
    if (QDialog::Accepted != dlg.exec()) {
