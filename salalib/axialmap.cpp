@@ -2980,10 +2980,10 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x + pix1.y*m_cols];
-      for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
-         auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      for (auto& shape: shapes1) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -2991,21 +2991,21 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(1,seg_a),x);
             }
          }
       }
       PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x + pix2.y*m_cols];
-      for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
-         auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+      for (auto& shape: shapes2) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -3013,13 +3013,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(-1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
             }
          }
       }
