@@ -4189,7 +4189,7 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
    }
    sortPixelLines();
 
-   std::set<int> removelist;
+   std::vector<int> removelist;
    for (size_t i = 0; i < lines.size(); i++) {
       // n.b., as m_lines have just been made, note that what's in m_lines matches whats in lines
       // we will use this later!
@@ -4213,7 +4213,7 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
                      int end = ((lines[i].end()[axis_i] * parity) > (lines[j].end()[axis_j] * parity)) ? i : j;
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.insert(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                   if ((lines[j].start()[axis_j] * parity + TOLERANCE_B * maxdim) > (lines[i].start()[axis_i] * parity) &&
@@ -4223,7 +4223,7 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
                      lines[j].ay() = lines[i].ay();
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.insert(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                }
@@ -4231,6 +4231,9 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
          }
       }
    }
+
+   // comes out sorted, remove duplicates just in case
+   removelist.erase(std::unique(removelist.begin(), removelist.end()), removelist.end());
 
    for(auto iter = removelist.rbegin(); iter != removelist.rend(); ++iter)
        lines.erase(lines.begin() + *iter);
