@@ -2075,7 +2075,7 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
          std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
-         for (ShapeRef& shape: shapes) {
+         for (const ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
             }
