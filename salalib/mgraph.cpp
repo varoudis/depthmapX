@@ -74,7 +74,7 @@ QtRegion MetaGraph::getBoundingBox() const
       bounds = m_shape_graphs.getBoundingBox();
    }
    if (bounds.atZero() && ((getState() & MetaGraph::DATAMAPS) == MetaGraph::DATAMAPS)) {
-      bounds = m_data_maps.getBoundingBox();
+      bounds = getDisplayedDataMap().getRegion();
    }
    return bounds;
 }
@@ -194,7 +194,7 @@ double MetaGraph::getLocationValue(const Point2f& point)
       val = m_shape_graphs.getDisplayedMap().getLocationValue(point);
    }
    else if (viewingProcessedShapes()) {
-      val = m_data_maps.getDisplayedMap().getLocationValue(point);
+      val = getDisplayedDataMap().getLocationValue(point);
    }
 
    return val;
@@ -469,13 +469,15 @@ int MetaGraph::makeIsovist(Communicator *communicator, const Point2f& p, double 
    if (makeBSPtree(communicator)) {
       retvar = 1;
       iso.makeit(m_bsp_root,p,SuperSpacePixel::m_region, startangle, endangle);
-      int shapelayer = m_data_maps.getMapRef("Isovists");
+      int shapelayer = getMapRef(m_dataMaps, "Isovists");
       if (shapelayer == -1) {
-         shapelayer = m_data_maps.addMap("Isovists",ShapeMap::DATAMAP);
+         m_dataMaps.emplace_back("Isovists",ShapeMap::DATAMAP);
+         setDisplayedDataMapRef(m_dataMaps.size() - 1);
+         shapelayer = m_dataMaps.size() - 1;
          m_state |= DATAMAPS;
          retvar = 2;
       }
-      ShapeMap& map = m_data_maps.getMap(shapelayer);
+      ShapeMap& map = m_dataMaps[shapelayer];
       // false: closed polygon, true: isovist
       int polyref = map.makePolyShape(iso.getPolygon(),false);  
       map.getAllShapes()[polyref].setCentroid(p);
@@ -536,12 +538,14 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
          if (path.isLine() || path.isPolyLine()) {
             if (first) {
                retvar = 1;
-               isovistmapref = m_data_maps.getMapRef("Isovists");
+               isovistmapref = getMapRef(m_dataMaps, "Isovists");
                if (isovistmapref == -1) {
-                  isovistmapref = m_data_maps.addMap("Isovists",ShapeMap::DATAMAP);
+                  m_dataMaps.emplace_back("Isovists",ShapeMap::DATAMAP);
+                  isovistmapref = m_dataMaps.size() - 1;
+                  setDisplayedDataMapRef(isovistmapref);
                   retvar = 2;
                }
-               isovists = &(m_data_maps.getMap(isovistmapref));
+               isovists = &(m_dataMaps[isovistmapref]);
                first = false;
             }
             // now make an isovist:
@@ -585,7 +589,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
       if (isovists) {
          isovists->overrideDisplayedAttribute(-2);
          isovists->setDisplayedAttribute(-1);
-         m_data_maps.setDisplayedMapRef(isovistmapref);
+         setDisplayedDataMapRef(isovistmapref);
       }
    }
    return retvar;
@@ -683,10 +687,10 @@ int MetaGraph::addShapeGraph(const std::string& name, int type)
 }
 int MetaGraph::addShapeMap(const std::string& name)
 {
-   int ref = m_data_maps.addMap(name,ShapeMap::DATAMAP);
+   m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
    m_state |= DATAMAPS;
    setViewClass(SHOWSHAPETOP);
-   return ref;
+   return m_dataMaps.size() - 1;
 }
 void MetaGraph::removeDisplayedMap()
 {
@@ -707,8 +711,8 @@ void MetaGraph::removeDisplayedMap()
       }
       break;
    case VIEWDATA:
-      m_data_maps.removeMap(ref);
-      if (m_data_maps.getMapCount() == 0) {
+      removeDataMap(ref);
+      if (m_dataMaps.empty()) {
          setViewClass(SHOWHIDESHAPE);
          m_state &= ~DATAMAPS;
       }
@@ -757,7 +761,7 @@ bool MetaGraph::convertDataToAxial(Communicator *comm, std::string layer_name, b
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDataToAxial( comm, layer_name, m_data_maps.getDisplayedMap(), pushvalues );
+      int mapref = m_shape_graphs.convertDataToAxial( comm, layer_name, getDisplayedDataMap(), pushvalues );
       if (mapref != -1) {
          retvar = true;
       }
@@ -770,8 +774,8 @@ bool MetaGraph::convertDataToAxial(Communicator *comm, std::string layer_name, b
 
    if (retvar) {
       if (!keeporiginal) {
-         m_data_maps.removeMap( m_data_maps.getDisplayedMapRef() );
-         if (m_data_maps.getMapCount() == 0) {
+         removeDataMap( getDisplayedDataMapRef() );
+         if (m_dataMaps.empty()) {
             setViewClass(SHOWHIDESHAPE);
             m_state &= ~DATAMAPS;
          }
@@ -798,7 +802,7 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
          mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, (SuperSpacePixel&) *this );
       }
       else {
-         mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, m_data_maps.getDisplayedMap(), (typeflag != 0) );
+         mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) );
       }
       if (mapref != -1) {
          retvar = true;
@@ -812,8 +816,8 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
 
    if (retvar) {
       if (typeflag != -1 && !keeporiginal) {
-         m_data_maps.removeMap( m_data_maps.getDisplayedMapRef() );
-         if (m_data_maps.getMapCount() == 0) {
+         removeDataMap( getDisplayedDataMapRef() );
+         if (m_dataMaps.empty()) {
             setViewClass(SHOWHIDESHAPE);
             m_state &= ~DATAMAPS;
          }
@@ -862,7 +866,7 @@ bool MetaGraph::convertDataToSegment(Communicator *comm, std::string layer_name,
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDataToSegment( comm, layer_name, m_data_maps.getDisplayedMap(), pushvalues );
+      int mapref = m_shape_graphs.convertDataToSegment( comm, layer_name, getDisplayedDataMap(), pushvalues );
       if (mapref != -1) {
          retvar = true;
       }
@@ -875,8 +879,8 @@ bool MetaGraph::convertDataToSegment(Communicator *comm, std::string layer_name,
 
    if (retvar) {
       if (!keeporiginal) {
-         m_data_maps.removeMap( m_data_maps.getDisplayedMapRef() );
-         if (m_data_maps.getMapCount() == 0) {
+         removeDataMap( getDisplayedDataMapRef() );
+         if (m_dataMaps.empty()) {
             setViewClass(SHOWHIDESHAPE);
             m_state &= ~DATAMAPS;
          }
@@ -903,8 +907,9 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       // simply move the shapes from the drawing layer
       // note however that more than one layer might be combined:
       // create map layer...
-      int destmapref = m_data_maps.addMap(layer_name,ShapeMap::DATAMAP);
-      ShapeMap& destmap = m_data_maps.getMap(destmapref);
+      m_dataMaps.emplace_back(layer_name,ShapeMap::DATAMAP);
+      int destmapref = m_dataMaps.size() - 1;
+      ShapeMap& destmap = m_dataMaps.back();
       AttributeTable& table = destmap.getAttributeTable();
       int count = 0;
       //
@@ -937,12 +942,12 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       //
       if (count == 0) {
          // if no objects converted then a crash is caused, so remove it:
-         m_data_maps.removeMap(destmapref);
+         removeDataMap(destmapref);
          retvar = false;
       }
       else {
          // we can stop here! -- remember to set up display:
-         m_data_maps.setDisplayedMapRef(destmapref);
+         setDisplayedDataMapRef(destmapref);
          destmap.invalidateDisplayedAttribute();
          destmap.setDisplayedAttribute(-1);
          retvar = true;
@@ -1043,22 +1048,22 @@ bool MetaGraph::convertPointsToShape()
 
    m_state &= ~DATAMAPS;
 
-   if (m_data_maps.getMapCount() == 0) {
-      m_data_maps.addMap("Gates",ShapeMap::DATAMAP);
+   if (m_dataMaps.empty()) {
+      m_dataMaps.emplace_back("Gates",ShapeMap::DATAMAP);
    }
 
-   if (m_data_maps.getDisplayedMap().makeShapeFromPointSet(getDisplayedPointMap()) != -1) {
+   if (getDisplayedDataMap().makeShapeFromPointSet(getDisplayedPointMap()) != -1) {
       getDisplayedPointMap().clearSel();
       // override the displayed attribute and redisplay:
-      m_data_maps.getDisplayedMap().overrideDisplayedAttribute(-2);
-      m_data_maps.getDisplayedMap().setDisplayedAttribute(-1);
+      getDisplayedDataMap().overrideDisplayedAttribute(-2);
+      getDisplayedDataMap().setDisplayedAttribute(-1);
       // set up a specifc view class to show both layers:
       m_view_class = VIEWVGA | VIEWBACKDATA;
       m_state |= DATAMAPS;
       retvar = true;
    }
    else if (!oldstate) {
-      m_data_maps.removeMap(0);
+      removeDataMap(0);
    }
 
    m_state |= oldstate;
@@ -1131,17 +1136,18 @@ int MetaGraph::loadMifMap(Communicator *comm, istream& miffile, istream& midfile
    
    try {
       // create map layer...
-      int mifmapref = m_data_maps.addMap(comm->GetMBInfileName(),ShapeMap::DATAMAP);
-      ShapeMap& mifmap = m_data_maps.getMap(mifmapref);
+      m_dataMaps.emplace_back(comm->GetMBInfileName(),ShapeMap::DATAMAP);
+      int mifmapref = m_dataMaps.size() - 1;
+      ShapeMap& mifmap = m_dataMaps.back();
       retvar = mifmap.loadMifMap(miffile, midfile);
       if (retvar == MINFO_OK || retvar == MINFO_MULTIPLE) { // multiple is just a warning
           // display an attribute:
          mifmap.overrideDisplayedAttribute(-2);
          mifmap.setDisplayedAttribute(-1);
-         m_data_maps.setDisplayedMapRef(mifmapref);
+         setDisplayedDataMapRef(mifmapref);
       }
       else { // error: undo!
-         m_data_maps.removeMap(mifmapref);
+         removeDataMap(mifmapref);
       }
    } 
    catch (Communicator::CancelledException) {
@@ -1590,13 +1596,13 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    // for each category
    for (auto val: map.m_categories) {
       ShapeMap shapeMap = ShapeMap(val.first);
-      shapeMap.init(val.second.size(), map.getRegion() );
+      shapeMap.init(val.second.chains.size(), map.getRegion() );
 
       // for each chains in category:
-      for (size_t j = 0; j < val.second.size(); j++) {
+      for (size_t j = 0; j < val.second.chains.size(); j++) {
          // for each node pair in each category
-         for (size_t k = 0; k < val.second.at(j).size(); k++) {
-            shapeMap.makeLineShape( val.second.at(j).at(k) );
+         for (size_t k = 0; k < val.second.chains[j].lines.size(); k++) {
+            shapeMap.makeLineShape( val.second.chains[j].lines[k] );
          }
       }
 
@@ -1617,8 +1623,8 @@ ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::strin
             return SuperSpacePixel::tail().tail();
         }
         case depthmapX::ImportType::DATAMAP: {
-            m_data_maps.addMap(name,ShapeMap::DATAMAP);
-            return m_data_maps.tail();
+            m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
+            return m_dataMaps.back();
         }
     }
 }
@@ -1648,9 +1654,9 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
             }
         }
         case depthmapX::ImportType::DATAMAP: {
-            for(size_t i = 0; i < m_data_maps.size(); i++) {
-                if(&m_data_maps[i] == &shapeMap) {
-                    m_data_maps.remove_at(i);
+            for(size_t i = 0; i < m_dataMaps.size(); i++) {
+                if(&m_dataMaps[i] == &shapeMap) {
+                    m_dataMaps.erase(m_dataMaps.begin() + i);
                     break;
                 }
             }
@@ -1681,8 +1687,8 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 
    for (size_t i = 0; i < size_t(datalayers.getLayerCount()); i++) {
       if (datalayers[i].getObjectCount()) {
-         int x = m_data_maps.addMap(datalayers[i].getLayerName(),ShapeMap::DATAMAP);
-         conversion_lookup[i] = x;
+         m_dataMaps.emplace_back(datalayers[i].getLayerName(),ShapeMap::DATAMAP);
+         conversion_lookup[i] = m_dataMaps.size() - 1;
       }
    }
    // nothing to convert:
@@ -1692,7 +1698,7 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 
    int i = 0;
    for (auto& iter: conversion_lookup) {
-      ShapeMap& shapemap = m_data_maps.getMap(iter.second);
+      ShapeMap& shapemap = m_dataMaps[iter.second];
       int j;
       // add shapes:
       pvecint row_lookup;
@@ -1812,19 +1818,19 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          }
          gatelist.clear();
          if (desttype == VIEWVGA) {
-            m_data_maps.getMap(sourcelayer).pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
+            m_dataMaps[sourcelayer].pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shape_graphs.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(shapeMap[table_out.getRowKey(i)],gatelist);
+            m_dataMaps[sourcelayer].shapeInPolyList(shapeMap[table_out.getRowKey(i)],gatelist);
          }
          else if (desttype == VIEWDATA) {
             if (sourcelayer == destlayer) {
                // error: pushing to same map
                return false;
             }
-            auto dataMap = m_data_maps.getMap(destlayer).getAllShapes();
-            m_data_maps.getMap(sourcelayer).shapeInPolyList(dataMap[table_out.getRowKey(i)],gatelist);
+            auto dataMap = m_dataMaps[destlayer].getAllShapes();
+            m_dataMaps[sourcelayer].shapeInPolyList(dataMap[table_out.getRowKey(i)],gatelist);
          }
          double val = -1.0;
          int count = 0;
@@ -1862,7 +1868,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
             gatelist.clear();
             if (desttype == VIEWDATA) {
-               m_data_maps.getMap(destlayer).pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               m_dataMaps[destlayer].pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                // note, "axial" could be convex map, and hence this would be a valid operation
@@ -1890,7 +1896,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             gatelist.clear();
             if (desttype == VIEWDATA) {
                auto dataMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
-               m_data_maps.getMap(destlayer).shapeInPolyList(dataMap[table_in.getRowKey(i)],gatelist);
+               m_dataMaps[destlayer].shapeInPolyList(dataMap[table_in.getRowKey(i)],gatelist);
             }
             else if (desttype == VIEWAXIAL) {
                 auto shapeMap = m_shape_graphs.getMap(sourcelayer).getAllShapes();
@@ -1934,8 +1940,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
       m_shape_graphs.getMap(destlayer).setDisplayedAttribute(col_out);
    }
    else if (desttype == VIEWDATA) {
-      m_data_maps.getMap(destlayer).overrideDisplayedAttribute(-2);
-      m_data_maps.getMap(destlayer).setDisplayedAttribute(col_out);
+      m_dataMaps[destlayer].overrideDisplayedAttribute(-2);
+      m_dataMaps[destlayer].setDisplayedAttribute(col_out);
    }
 
 
@@ -1963,7 +1969,7 @@ void MetaGraph::runAgentEngine(Communicator *comm)
    if (m_agent_engine.m_gatelayer != -1) {
       // switch column counts from vga layer to gates layer...
       int colcounts = table.getColumnIndex(g_col_gate_counts);
-      AttributeTable& tableout = m_data_maps.getMap(m_agent_engine.m_gatelayer).getAttributeTable();
+      AttributeTable& tableout = m_dataMaps[m_agent_engine.m_gatelayer].getAttributeTable();
       int targetcol = tableout.insertColumn("Agent Counts");
       pushValuesToLayer(VIEWVGA,getDisplayedPointMapRef(),
                         VIEWDATA,m_agent_engine.m_gatelayer,
@@ -2006,7 +2012,7 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
    colcounts = table.getColumnIndex(g_col_gate_counts);
 
    if (retvar && gatelayer != -1) {
-      AttributeTable& tableout = m_data_maps.getMap(gatelayer).getAttributeTable();
+      AttributeTable& tableout = m_dataMaps[gatelayer].getAttributeTable();
       int targetcol = tableout.insertColumn("Thru Vision Counts");
       pushValuesToLayer(VIEWVGA,getDisplayedPointMapRef(),
                         VIEWDATA,gatelayer,
@@ -2033,7 +2039,7 @@ int MetaGraph::getDisplayedMapRef() const
       ref = m_shape_graphs.getDisplayedMapRef();
       break;
    case VIEWDATA:
-      ref = m_data_maps.getDisplayedMapRef();
+      ref = getDisplayedDataMapRef();
       break;
    }
    return ref;
@@ -2050,7 +2056,7 @@ int MetaGraph::getDisplayedMapType()
       type = m_shape_graphs.getDisplayedMap().getMapType();
       break;
    case VIEWDATA:
-      type = m_data_maps.getDisplayedMap().getMapType();
+      type = getDisplayedDataMap().getMapType();
       break;
    }
    return type;
@@ -2081,7 +2087,7 @@ int MetaGraph::isEditable() const
       }
       break;
    case VIEWDATA:
-      editable = m_data_maps.getDisplayedMap().isEditable() ? EDITABLE_ON : EDITABLE_OFF;
+      editable = getDisplayedDataMap().isEditable() ? EDITABLE_ON : EDITABLE_OFF;
       break;
    }
    return editable;
@@ -2098,7 +2104,7 @@ bool MetaGraph::canUndo() const
       canundo = m_shape_graphs.getDisplayedMap().canUndo();
       break;
    case VIEWDATA:
-      canundo = m_data_maps.getDisplayedMap().canUndo();
+      canundo = getDisplayedDataMap().canUndo();
       break;
    }
    return canundo;
@@ -2114,7 +2120,7 @@ void MetaGraph::undo()
       m_shape_graphs.getDisplayedMap().undo();
       break;
    case VIEWDATA:
-      m_data_maps.getDisplayedMap().undo();
+      getDisplayedDataMap().undo();
       break;
    }
 }
@@ -2132,7 +2138,7 @@ int MetaGraph::addAttribute(const std::string& name)
       col = m_shape_graphs.getDisplayedMap().addAttribute(name);
       break;
    case VIEWDATA:
-      col = m_data_maps.getDisplayedMap().addAttribute(name);
+      col = getDisplayedDataMap().addAttribute(name);
       break;
    }
    return col;
@@ -2148,7 +2154,7 @@ void MetaGraph::removeAttribute(int col)
       m_shape_graphs.getDisplayedMap().removeAttribute(col);
       break;
    case VIEWDATA:
-      m_data_maps.getDisplayedMap().removeAttribute(col);
+      getDisplayedDataMap().removeAttribute(col);
       break;
    }
 }
@@ -2169,7 +2175,7 @@ int MetaGraph::getDisplayedAttribute() const
       col = m_shape_graphs.getDisplayedMap().getDisplayedAttribute();
       break;
    case VIEWDATA:
-      col = m_data_maps.getDisplayedMap().getDisplayedAttribute();
+      col = getDisplayedDataMap().getDisplayedAttribute();
       break;
    }
    return col;
@@ -2188,8 +2194,8 @@ void MetaGraph::setDisplayedAttribute(int col)
       m_shape_graphs.getDisplayedMap().setDisplayedAttribute(col);
       break;
    case VIEWDATA:
-      m_data_maps.getDisplayedMap().overrideDisplayedAttribute(-2);
-      m_data_maps.getDisplayedMap().setDisplayedAttribute(col);
+      getDisplayedDataMap().overrideDisplayedAttribute(-2);
+      getDisplayedDataMap().setDisplayedAttribute(col);
       break;
    }
 }
@@ -2210,7 +2216,7 @@ AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
       tab = (layer == -1) ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
       break;
    case VIEWDATA:
-      tab = (layer == -1) ? &(m_data_maps.getDisplayedMap().getAttributeTable()) : &(m_data_maps.getMap(layer).getAttributeTable());
+      tab = (layer == -1) ? &(getDisplayedDataMap().getAttributeTable()) : &(m_dataMaps[layer].getAttributeTable());
       break;
    }
    return *tab;
@@ -2230,7 +2236,7 @@ const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
       tab = layer == -1 ? &(m_shape_graphs.getDisplayedMap().getAttributeTable()) : &(m_shape_graphs.getMap(layer).getAttributeTable());
       break;
    case VIEWDATA:
-      tab = layer == -1 ? &(m_data_maps.getDisplayedMap().getAttributeTable()) : &(m_data_maps.getMap(layer).getAttributeTable());
+      tab = layer == -1 ? &(getDisplayedDataMap().getAttributeTable()) : &(m_dataMaps[layer].getAttributeTable());
       break;
    }
    return *tab;
@@ -2502,7 +2508,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       }
    }
    if (type == 's') {
-      m_data_maps.read( stream, version );
+      readDataMaps(stream, version );
       temp_state |= DATAMAPS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2576,7 +2582,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       else if (m_view_class & MetaGraph::VIEWDATA) {
          type = 's';
          stream.write(&type, 1);
-         m_data_maps.write( stream, version, true );
+         writeDataMaps( stream, version, true );
       }
    }
    else {
@@ -2598,7 +2604,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
       if (oldstate & DATAMAPS) {
          type = 's';
          stream.write(&type, 1);
-         m_data_maps.write( stream, version );
+         writeDataMaps( stream, version );
       }
    }
 
@@ -2695,6 +2701,53 @@ bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmapo
       stream.write((char *) &dummy, sizeof(dummy));
       //
       m_pointMaps[m_displayed_pointmap].write(stream, version);
+   }
+   return true;
+}
+
+bool MetaGraph::readDataMaps(istream& stream, int version )
+{
+    m_dataMaps.clear(); // empty existing data
+    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+    unsigned int displayed_map;
+    stream.read((char *)&displayed_map,sizeof(displayed_map));
+    m_displayed_datamap = size_t(displayed_map);
+    // read maps
+    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+    unsigned int count = 0;
+    stream.read((char *) &count, sizeof(count));
+
+    for (size_t j = 0; j < size_t(count); j++) {
+        m_dataMaps.emplace_back();
+        m_dataMaps.back().read(stream,version);
+    }
+    return true;
+}
+
+bool MetaGraph::writeDataMaps( ofstream& stream, int version, bool displayedmaponly )
+{
+   if (!displayedmaponly) {
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int displayed_map = (unsigned int)(m_displayed_datamap);
+      stream.write((char *)&displayed_map,sizeof(displayed_map));
+      // write maps
+      // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
+      unsigned int count = (unsigned int) m_dataMaps.size();
+      stream.write((char *) &count, sizeof(count));
+      for (size_t j = 0; j < count; j++) {
+         m_dataMaps[j].write(stream,version);
+      }
+   }
+   else {
+      unsigned int dummy;
+      // displayed map is 0
+      dummy = 0;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // count is 1
+      dummy = 1;
+      stream.write((char *)&dummy,sizeof(dummy));
+      // write map:
+      m_dataMaps[m_displayed_datamap].write(stream,version);
    }
    return true;
 }

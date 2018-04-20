@@ -117,17 +117,13 @@ public:
    const QString& GetString() const
    { return m_string; }
 
-   //
    void SetFileSet(QStringList strings)
    { 
-/*	   m_fileset.clear();
-	   comm_string strs;
+       m_fileset.clear();
        for (int i = 0; i < strings.size(); i++)
-	   {
-		   strs.clear();
-           for(int j=0; j<strings[i].size(); j++) strs.push_back(strings[i].toLatin1().data()[j]);
-           m_fileset.push_back(strs);
-       }*/
+       {
+           m_fileset.push_back(strings[i].toStdString());
+       }
    }
 
 
@@ -190,10 +186,10 @@ public:
    bool modifiedFlag;
 
    // Redraw commands
-   enum {REDRAW_DONE, REDRAW_MARKEDSET, REDRAW_POINTS, REDRAW_GRAPH, REDRAW_TOTAL };
+   enum {REDRAW_DONE, REDRAW_POINTS, REDRAW_GRAPH, REDRAW_TOTAL };
    // Redraw reasons
    enum {UNDECLARED, NEW_FOCUS, NEW_DEPTHMAPVIEW_SETUP,
-                     NEW_VIEWER, NEW_LINESET, NEW_DATA,
+                     NEW_LINESET, NEW_DATA,
                      NEW_SELECTION, NEW_TABLE, NEW_COLUMN, NEW_FILE, DELETED_TABLE };
    // Mainframe table changes:
    enum {CONTROLS_DESTROYALL,CONTROLS_LOADALL,
