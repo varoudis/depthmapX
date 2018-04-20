@@ -1,5 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,27 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
 
-
-// This is my code to make a set of axial lines from a set of boundary lines
-
-#ifndef __TIGERP_H__
-#define __TIGERP_H__
+#include "genlib/p2dpoly.h"
+#include <vector>
+#include <map>
 
 // look up is the tiger (major) line category:
 // string is A1, A2, A3 (road types) or B1, B2 (railroad types)
 // C,D etc are not currently parsed, but given the nice file format 
 // (thank you US Census Bureau!) they can easily be added
 
-class TigerChain : public prefvec<Line>
+class TigerChain
 {
 public:
+   std::vector<Line> lines;
    TigerChain() {;}
 };
 
-class TigerCategory : public prefvec<TigerChain>
+class TigerCategory
 {
 public:
+   std::vector<TigerChain> chains;
    TigerCategory() {;}
 };
 
@@ -56,5 +58,3 @@ public:
    QtRegion getRegion()
    { return m_region; }
 };
-
-#endif

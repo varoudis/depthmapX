@@ -54,9 +54,9 @@ class MetaGraph : public SuperSpacePixel, public FileProperties
 {
 public:
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
-   enum { NONE = 0x0000, /* GRAPH = 0x0001, Deprecated */ POINTMAPS = 0x0002, LINEDATA = 0x0004, 
-          FIXED = 0x0008 /* Deprecated */, ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, /* BOUNDARYGRAPH = 0x0080, Deprecated */ SHAPEGRAPHS = 0x0100,
-          PREWRITTEN = 0x1000, BUGGY = 0x8000 };
+   enum { NONE = 0x0000, POINTMAPS = 0x0002, LINEDATA = 0x0004,
+          ANGULARGRAPH = 0x0010, DATAMAPS = 0x0020, AXIALLINES = 0x0040, SHAPEGRAPHS = 0x0100,
+          BUGGY = 0x8000 };
    enum { NOT_EDITABLE = 0, EDITABLE_OFF = 1, EDITABLE_ON = 2 };
 protected:
    int m_file_version;
@@ -67,7 +67,7 @@ public:
    bool m_showtext;
    //
 public:
-   ShapeMaps<ShapeMap> m_data_maps;
+   std::vector<ShapeMap> m_dataMaps;
    ShapeGraphs m_shape_graphs;
 public:
    MetaGraph();
@@ -201,12 +201,43 @@ public:
    //
    ShapeGraph& getDisplayedShapeGraph()
    { return m_shape_graphs.getDisplayedMap(); }
+   size_t m_displayed_datamap = -1;
    ShapeMap& getDisplayedDataMap()
-   { return m_data_maps.getDisplayedMap(); }
+   { return m_dataMaps[m_displayed_datamap]; }
+   const ShapeMap& getDisplayedDataMap() const
+   { return m_dataMaps[m_displayed_datamap]; }
+   size_t getDisplayedDataMapRef() const
+   { return m_displayed_datamap; }
+
+   void removeDataMap(int i)
+   { if (m_displayed_datamap >= i) m_displayed_datamap--; m_dataMaps.erase(m_dataMaps.begin() + i); }
+
+   void setDisplayedDataMapRef(size_t map)
+   {
+      if (m_displayed_datamap != -1 && m_displayed_datamap != map)
+         m_dataMaps[m_displayed_datamap].clearSel();
+      m_displayed_datamap = map;
+   }
+
+   template <class T>
+   size_t getMapRef(std::vector<T>& maps, const std::string& name) const
+   {
+      // note, only finds first map with this name
+      for (size_t i = 0; i < maps.size(); i++) {
+         if (maps[i].getName() == name)
+            return i;
+      }
+      return -1;
+   }
+
    ShapeGraphs& getShapeGraphs()
    { return m_shape_graphs; }
-   ShapeMaps<ShapeMap>& getDataMaps()
-   { return m_data_maps; }
+   std::vector<ShapeMap>& getDataMaps()
+   { return m_dataMaps; }
+
+   bool readDataMaps(istream &stream, int version );
+   bool writeDataMaps( ofstream& stream, int version, bool displayedmaponly = false );
+
    //
    int getDisplayedMapType();
    //
@@ -265,7 +296,7 @@ protected:
 public:
    enum { SHOWHIDEVGA = 0x0100, SHOWVGATOP = 0x0200, SHOWHIDEAXIAL = 0x0400, SHOWAXIALTOP = 0x0800, SHOWHIDESHAPE = 0x1000, SHOWSHAPETOP = 0x2000 };
    enum { VIEWNONE = 0x00, VIEWVGA = 0x01, VIEWBACKVGA = 0x02, VIEWAXIAL = 0x04, VIEWBACKAXIAL = 0x08,
-          VIEWLINKS = 0x10, VIEWDATA = 0x20, VIEWBACKDATA = 0x40, VIEWFRONT = 0x25, VIEWBACK = 0x4a };
+          VIEWDATA = 0x20, VIEWBACKDATA = 0x40, VIEWFRONT = 0x25 };
    //
    int getViewClass()
    { return m_view_class; }
@@ -297,7 +328,7 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().isSelected();
       else if (m_view_class & VIEWDATA) 
-         return m_data_maps.getDisplayedMap().isSelected();
+         return getDisplayedDataMap().isSelected();
       else 
          return false;
    }
@@ -305,13 +336,13 @@ public:
    {  if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().setCurSel(r, add);
       else if (m_view_class & VIEWDATA)
-         return m_data_maps.getDisplayedMap().setCurSel( r, add );
+         return getDisplayedDataMap().setCurSel( r, add );
       else if (m_view_class & VIEWVGA)
          return getDisplayedPointMap().setCurSel( r, add );
       else if (m_state & POINTMAPS && !getDisplayedPointMap().isProcessed()) // this is a default select application
          return getDisplayedPointMap().setCurSel( r, add );
       else if (m_state & DATAMAPS) // I'm not sure why this is a possibility, but it appears you might have state & DATAMAPS without VIEWDATA...
-         return m_data_maps.getDisplayedMap().setCurSel( r, add );
+         return getDisplayedDataMap().setCurSel( r, add );
       else 
          return false;
    }
@@ -323,7 +354,7 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().clearSel();
       else if (m_view_class & VIEWDATA) 
-         return m_data_maps.getDisplayedMap().clearSel();
+         return getDisplayedDataMap().clearSel();
       else
          return false;
    }
@@ -334,7 +365,7 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          return (int) m_shape_graphs.getDisplayedMap().getSelCount();
       else if (m_view_class & VIEWDATA) 
-         return (int) m_data_maps.getDisplayedMap().getSelCount();
+         return (int) getDisplayedDataMap().getSelCount();
       else
          return 0;
    }
@@ -345,7 +376,7 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          return (float)m_shape_graphs.getDisplayedMap().getAttributeTable().getSelAvg();
       else if (m_view_class & VIEWDATA) 
-         return (float)m_data_maps.getDisplayedMap().getAttributeTable().getSelAvg();
+         return (float)getDisplayedDataMap().getAttributeTable().getSelAvg();
       else
          return -1.0f;
    }
@@ -356,7 +387,7 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelBounds();
       else if (m_view_class & VIEWDATA) 
-         return m_data_maps.getDisplayedMap().getSelBounds();
+         return getDisplayedDataMap().getSelBounds();
       else
          return QtRegion();
    }
@@ -367,21 +398,21 @@ public:
       else if (m_view_class & VIEWAXIAL) 
          m_shape_graphs.getDisplayedMap().setCurSel(selset,add);
       else // if (m_view_class & VIEWDATA) 
-         m_data_maps.getDisplayedMap().setCurSel(selset,add); }
+         getDisplayedDataMap().setCurSel(selset,add); }
    std::set<int>& getSelSet()
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
-         return m_data_maps.getDisplayedMap().getSelSet(); }
+         return getDisplayedDataMap().getSelSet(); }
    const std::set<int>& getSelSet() const
    {  if (m_view_class & VIEWVGA && m_state & POINTMAPS)
          return getDisplayedPointMap().getSelSet();
       else if (m_view_class & VIEWAXIAL) 
          return m_shape_graphs.getDisplayedMap().getSelSet();
       else // if (m_view_class & VIEWDATA) 
-         return m_data_maps.getDisplayedMap().getSelSet(); }
+         return getDisplayedDataMap().getSelSet(); }
 //
 public:
    // no longer supported

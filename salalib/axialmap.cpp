@@ -182,7 +182,7 @@ void AxialPolygons::clear()
    m_handled_list.clear();
 }
 
-void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
+void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
 {
    // init pixelbase members
    m_region = region;
@@ -223,7 +223,7 @@ void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
    sortPixelLines();
 }
 
-void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefvec<Connector>& connectionset)
+void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const prefvec<Connector>& connectionset)
 {
    m_vertex_possibles.clear();
    m_vertex_polys.clear();
@@ -618,7 +618,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    QtRegion region;
    int size = 0;
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
 
    // add all visible layers to the set of polygon lines...
    for (size_t i = 0; i < superspacepix.size(); i++) {
@@ -1756,7 +1756,7 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
       return -1;
    }
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    prefvec<Connector> connectionset;
 
    ShapeGraph& dispmap = getDisplayedMap();
@@ -1968,7 +1968,7 @@ void ShapeGraph::initAttributes()
 bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
 {
    // take lines from lines layer and make into regions (using the axial polygons)
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    for (auto shape: m_shapes) {
       lines.push_back(shape.second.getLine());
    }
@@ -2074,9 +2074,8 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
-         pqvector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
-         for (size_t k = 0; k < shapes.size(); k++) {
-            ShapeRef& shape = shapes[k];
+         std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
+         for (const ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
             }
@@ -2913,30 +2912,32 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygon.second.getPoint());
-         pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
-         size_t j;
-         for (j = 0; j < pix_shapes.size(); j++) {
-            for (size_t k = j + 1; k < pix_shapes.size(); k++) {
-               auto aIter = m_shapes.find((int) pix_shapes[j].m_shape_ref);
-               auto bIter = m_shapes.find((int) pix_shapes[k].m_shape_ref);
-               int a = std::distance(m_shapes.begin(), aIter);
-               int b = std::distance(m_shapes.begin(), bIter);
-               if (aIter != m_shapes.end() && bIter != m_shapes.end() && aIter->second.isLine() && bIter->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
+         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+         auto iter = pix_shapes.begin();
+         for (; iter != pix_shapes.end(); ++iter) {
+            for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
+               auto aIter = m_shapes.find(int(iter->m_shape_ref));
+               auto bIter = m_shapes.find(int(jter->m_shape_ref));
+               int a = int(std::distance(m_shapes.begin(), aIter));
+               int b = int(std::distance(m_shapes.begin(), bIter));
+               if (aIter != m_shapes.end() && bIter != m_shapes.end()
+                       && aIter->second.isLine() && bIter->second.isLine()
+                       && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
                   closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-                  intersections.push_back( IntPair((int)a,(int)b) );
+                  intersections.push_back( IntPair(a,b) );
                }
             }
          }
          double mindist = -1.0;
          int minpair = -1;
-         for (j = 0; j < closepoints.size(); j++) {
+         for (size_t j = 0; j < closepoints.size(); j++) {
             if (minpair == -1 || dist(polygon.second.getPoint(),closepoints[j]) < mindist) {
                mindist = dist(polygon.second.getPoint(),closepoints[j]);
-               minpair = j;
+               minpair = int(j);
             }
          }
          if (minpair != -1) {
-            unlinkShapes(intersections[minpair].a, intersections[minpair].b, false);
+            unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
          }
          else {
             cerr << "eek!";
@@ -2979,10 +2980,10 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      pqvector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
-      for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
-         auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      for (auto& shape: shapes1) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -2990,21 +2991,21 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(1,seg_a),x);
             }
          }
       }
       PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
-      for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
-         auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+      for (auto& shape: shapes2) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -3012,13 +3013,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(-1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
             }
          }
       }
@@ -3041,7 +3042,7 @@ void ShapeGraph::makeNewSegMap()
 // identify the original axial line this line segment is
 // associated with
 
-void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
+void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
    std::map<OrderedIntPair,IntPair> segmentlist;
@@ -4171,30 +4172,26 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
 
 // helper -- a little class to tidy up a set of lines
 
-void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
+void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
 {
-   size_t i = 0;
    m_region = region;
    double maxdim = __max(m_region.width(),m_region.height());
 
    // simple first pass -- remove very short lines
-   pvecint removelist;
-   for (i = 0; i < lines.size(); i++) {
-      if (lines[i].length() < maxdim * TOLERANCE_B) {
-         removelist.add(i);
-      }
-   }
-   lines.remove_at(removelist);
-   removelist.clear();  // always clear this list, it's reused
+   lines.erase(
+               std::remove_if(lines.begin(), lines.end(),
+                              [maxdim](const Line& line)
+   {return line.length() < maxdim * TOLERANCE_B;}), lines.end());
 
    // now load up m_lines...
    initLines(lines.size(),m_region.bottom_left,m_region.top_right);
-   for (i = 0; i < lines.size(); i++) {
-      addLine(lines[i]);
+   for (auto& line: lines) {
+      addLine(line);
    }
    sortPixelLines();
 
-   for (i = 0; i < lines.size(); i++) {
+   std::vector<int> removelist;
+   for (size_t i = 0; i < lines.size(); i++) {
       // n.b., as m_lines have just been made, note that what's in m_lines matches whats in lines
       // we will use this later!
       m_test++;
@@ -4217,7 +4214,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      int end = ((lines[i].end()[axis_i] * parity) > (lines[j].end()[axis_j] * parity)) ? i : j;
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                   if ((lines[j].start()[axis_j] * parity + TOLERANCE_B * maxdim) > (lines[i].start()[axis_i] * parity) &&
@@ -4227,7 +4224,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      lines[j].ay() = lines[i].ay();
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                }
@@ -4235,7 +4232,12 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
          }
       }
    }
-   lines.remove_at(removelist);
+
+   // comes out sorted, remove duplicates just in case
+   removelist.erase(std::unique(removelist.begin(), removelist.end()), removelist.end());
+
+   for(auto iter = removelist.rbegin(); iter != removelist.rend(); ++iter)
+       lines.erase(lines.begin() + *iter);
    removelist.clear();  // always clear this list, it's reused
 }
 
