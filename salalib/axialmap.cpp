@@ -2831,7 +2831,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
 
 void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream << "strict graph {" << std::endl;
 
@@ -2848,7 +2848,7 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 
 void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
@@ -2866,7 +2866,7 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 
 void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
