@@ -222,7 +222,7 @@ protected:
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
-   pqvector<ShapeRef> **m_pixel_shapes;    // i rows of j columns
+   std::vector<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
    mutable BSPNode *m_bsp_root;

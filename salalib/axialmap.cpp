@@ -2074,9 +2074,8 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
-         pqvector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
-         for (size_t k = 0; k < shapes.size(); k++) {
-            ShapeRef& shape = shapes[k];
+         std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
+         for (const ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
             }
@@ -2913,30 +2912,32 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygon.second.getPoint());
-         pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
-         size_t j;
-         for (j = 0; j < pix_shapes.size(); j++) {
-            for (size_t k = j + 1; k < pix_shapes.size(); k++) {
-               auto aIter = m_shapes.find((int) pix_shapes[j].m_shape_ref);
-               auto bIter = m_shapes.find((int) pix_shapes[k].m_shape_ref);
-               int a = std::distance(m_shapes.begin(), aIter);
-               int b = std::distance(m_shapes.begin(), bIter);
-               if (aIter != m_shapes.end() && bIter != m_shapes.end() && aIter->second.isLine() && bIter->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
+         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+         auto iter = pix_shapes.begin();
+         for (; iter != pix_shapes.end(); ++iter) {
+            for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
+               auto aIter = m_shapes.find(int(iter->m_shape_ref));
+               auto bIter = m_shapes.find(int(jter->m_shape_ref));
+               int a = int(std::distance(m_shapes.begin(), aIter));
+               int b = int(std::distance(m_shapes.begin(), bIter));
+               if (aIter != m_shapes.end() && bIter != m_shapes.end()
+                       && aIter->second.isLine() && bIter->second.isLine()
+                       && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
                   closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-                  intersections.push_back( IntPair((int)a,(int)b) );
+                  intersections.push_back( IntPair(a,b) );
                }
             }
          }
          double mindist = -1.0;
          int minpair = -1;
-         for (j = 0; j < closepoints.size(); j++) {
+         for (size_t j = 0; j < closepoints.size(); j++) {
             if (minpair == -1 || dist(polygon.second.getPoint(),closepoints[j]) < mindist) {
                mindist = dist(polygon.second.getPoint(),closepoints[j]);
-               minpair = j;
+               minpair = int(j);
             }
          }
          if (minpair != -1) {
-            unlinkShapes(intersections[minpair].a, intersections[minpair].b, false);
+            unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
          }
          else {
             cerr << "eek!";
@@ -2979,10 +2980,10 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      pqvector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
-      for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
-         auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      for (auto& shape: shapes1) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -2990,21 +2991,21 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(1,seg_a),x);
             }
          }
       }
       PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
-      for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
-         auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+      for (auto& shape: shapes2) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -3012,13 +3013,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(-1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
             }
          }
       }
