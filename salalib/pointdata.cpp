@@ -23,7 +23,6 @@
 
 #include <salalib/mgraph.h>
 #include <salalib/spacepix.h>
-#include <salalib/datalayer.h>
 #include <salalib/pointdata.h>
 #include "MapInfoData.h"
 #include "isovist.h"
