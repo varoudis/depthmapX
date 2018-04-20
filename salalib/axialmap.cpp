@@ -716,18 +716,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       }
    }
 
-/*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = m_polygons.m_region;
-   }
-   else {
-      m_region = runion(m_region, m_polygons.m_region);
-   }
-   // End No longer required
-*/
-
    // create the all line map layer...
    m_all_line_map = addMap("All-Line Map", ShapeMap::ALLLINEMAP);
 
@@ -735,15 +723,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    // make sure it's cleared fully
    alllinemap.clearAll();
 
-/*
-   // temp:
-   alllinemap.initLines(m_polygons.m_lines.size(),m_polygons.m_region.bottom_left,m_polygons.m_region.top_right,2);
-   for (int k = 0; k < m_polygons.m_lines.size(); k++) {
-      alllinemap.makeLineShape(m_polygons.m_lines[k].line);
-   }
-   alllinemap.sortPixelLines();
-   // end temp
-*/
    region.grow(0.99); // <- this paired with crop code below to prevent error
    alllinemap.init(axiallines.size(),m_polygons.m_region);  // used to be double density here
    for (size_t k = 0; k < axiallines.size(); k++) {
@@ -1293,33 +1272,9 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
       return -1;
    }
 
-
-   /*
-   // No longer required
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End no longer required
-   */
-
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
    }
-
-   /*
-   // No longer required
-   // now add to the space pixel:
-   if (m_region.isempty()) {
-      m_region = region;
-   }
-   else {
-      m_region = runion(region,m_region);
-   }
-   */
 
    // create map layer...
    int mapref = addMap(name,ShapeMap::AXIALMAP);
@@ -1594,18 +1549,6 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    if (lines.size() == 0) {
       return -1;
    }
-
-   /*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End No longer required
-   */
 
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
@@ -1938,30 +1881,6 @@ void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
    m_displayed_attribute = -1; // <- override if it's already showing
    setDisplayedAttribute(conn_col);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-// explicit initialisation of attributes for a gates layer
-/*
-void ShapeGraph::initAttributes()
-{
-   m_connectors.clear();
-   m_attributes.clear();
-
-   for (int i = 0; i < m_lines.size(); i++) {
-      int key = m_lines.key(i);
-      // all indices should match...
-      int index1 = m_connectors.add( key, Connector() );
-      int index2 = m_attributes.insertRow(key);
-      // I am going to use this to set the text size soon:
-      float textsize = (float) m_lines[i].line.length();
-   }
-
-   m_displayed_attribute = -2; // <- override if it's already showing
-   // Note: -1 sets it show the ID column:
-   setDisplayedAttribute(-1);
-}
-*/
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2390,16 +2309,8 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                int intersect_size = 0, retro_size = 0;
                pvecint retconnectors = m_connectors[connections[j]].m_connections;
                for (size_t k = 0; k < retconnectors.size(); k++) {
-                  //if (connections[j] != retconnectors[k]) {
-                     retro_size++;
-                     /*
-                     // used for clustering coeff, but clustering coeff next to useless
-                     if (connections.searchindex(retconnectors[k]) != paftl::npos) {
-                        intersect_size++;
-                     }
-                     */
-                     totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
-                  //}
+                   retro_size++;
+                   totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
                }
                control += 1.0 / double(retro_size);
             //}
