@@ -243,7 +243,7 @@ protected:
    // for geometric operations
    double m_tolerance;
    // for screen drawing
-   mutable int *m_display_shapes;
+   mutable std::vector<int> m_display_shapes;
    mutable int m_current;
    mutable bool m_invalidate;
    //
