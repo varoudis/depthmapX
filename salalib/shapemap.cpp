@@ -1901,7 +1901,8 @@ int ShapeMap::getClosestOpenGeom(const Point2f& p) const
 
    auto shapeIter = m_shapes.end();
    double mindist = -1;
-   for (auto& ref: m_pixel_shapes[pix.x + pix.y*m_cols]) {
+   const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+   for (const ShapeRef& ref: shapeRefs) {
       if (ref.m_tags & ShapeRef::SHAPE_OPEN) {
          double thisdist = -1.0;
          auto tempShapeIter = m_shapes.find(ref.m_shape_ref);
@@ -1943,7 +1944,8 @@ Point2f ShapeMap::getClosestVertex(const Point2f& p) const
    PixelRef pix = pixelate(p);
 
    double mindist = -1.0;
-   for (const ShapeRef& ref: m_pixel_shapes[size_t(pix.x + pix.y*m_cols)]) {
+   const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+   for (const ShapeRef& ref: shapeRefs) {
       double thisdist = -1.0;
       Point2f thisvertex;
       const SalaShape& poly = m_shapes.find(ref.m_shape_ref)->second;
@@ -2034,7 +2036,8 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
       if (includes(pix)) { // <- note, for some reason, this pixel may be off edge (line crop problem?)
-         for (ShapeRef& shaperef: m_pixel_shapes[pix.x + pix.y*m_cols]) {
+         std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+         for (ShapeRef& shaperef: shapeRefs) {
             if (!shaperef.m_polyrefs.isEmpty()) {
                int len = shaperef.m_polyrefs.size(); 
                for (int k = 0; k < len; k++) {
@@ -2149,7 +2152,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
    pvector<IntPair> tested;
    for (int i = bl.x; i <= tr.x; i++) {
       for (int j = bl.y; j <= tr.y; j++) {
-         for (const ShapeRef& shaperef: m_pixel_shapes[size_t(i + j*m_cols)]) {
+         const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(i + j*m_cols)];
+         for (const ShapeRef& shaperef: shapeRefs) {
             int len = shaperef.m_polyrefs.size();
             if (len == 0) {
                // this is a non-poly, so check just the shape_ref:
@@ -2187,7 +2191,8 @@ int ShapeMap::withinRadius(const Point2f& pt, double radius, std::vector<int>& b
    // finally, do a quick point in poly test for any polygons in the centre pixel
    // only need to check the shape ref as everything else will have been picked up above
    PixelRef centre = pixelate(pt);
-   for (const ShapeRef& shaperef: m_pixel_shapes[size_t(centre.x + centre.y*m_cols)]) {
+   const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(centre.x + centre.y*m_cols)];
+   for (const ShapeRef& shaperef: shapeRefs) {
       if (shaperef.m_tags & ShapeRef::SHAPE_CENTRE) {
           int shapeindex = depthmapX::findIndexFromKey(m_shapes, int(shaperef.m_shape_ref));
           depthmapX::addIfNotExists(bufferset, shapeindex);
@@ -2258,7 +2263,8 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    PixelRefVector list = pixelateLine( l );
 
    for (size_t i = 0; i < list.size(); i++) {
-      for (const ShapeRef& shape: m_pixel_shapes[size_t(list[i].x + list[i].y*m_cols)]) {
+      const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(list[i].x + list[i].y*m_cols)];
+      for (const ShapeRef& shape: shapeRefs) {
          if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
             continue;
          }
@@ -2392,7 +2398,8 @@ bool ShapeMap::setCurSel( QtRegion& r, bool add )
       PixelRef tr = pixelate(r.top_right);
       for (int i = bl.x; i <= tr.x; i++) {
          for (int j = bl.y; j <= tr.y; j++) {
-            for (const ShapeRef& shape: m_pixel_shapes[size_t(i + j*m_cols)]) {
+            const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(i + j*m_cols)];
+            for (const ShapeRef& shape: shapeRefs) {
                // relies on indices of shapes and attributes being aligned
                auto shapeIter = m_shapes.find(shape.m_shape_ref);
                size_t x = std::distance(m_shapes.begin(), shapeIter);
@@ -2917,7 +2924,8 @@ void ShapeMap::makeViewportShapes( const QtRegion& viewport ) const
 
    for (int i = bl.x; i <= tr.x; i++) {
       for (int j = bl.y; j <= tr.y; j++) {
-         for (const ShapeRef& shape: m_pixel_shapes[i + j*m_cols]) {
+         const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(i + j*m_cols)];
+         for (const ShapeRef& shape: shapeRefs) {
             // copy the index to the correct draworder position (draworder is formatted on display attribute)
             int x = m_attributes.getRowid(shape.m_shape_ref);
             if (m_attributes.isVisible(x)) {
