@@ -23,7 +23,6 @@
 
 #include <salalib/mgraph.h>
 #include <salalib/spacepix.h>
-#include <salalib/datalayer.h>
 #include <salalib/pointdata.h>
 #include "MapInfoData.h"
 #include "isovist.h"
@@ -454,155 +453,6 @@ void PointMap::unblockLines(bool clearblockedflag)
    }
 }
 
-// New blockLines code replaces:
-   
-/*   
-   char blah[64];
-   sprintf(blah,"times %f\nsubtimes %f\n", times, subtimes);
-   MessageBox(NULL,blah,"Blah",MB_OK);
-   
-   for (int file = 0; file < m_spacepix->size(); file++) {
-      for (int layer = 0; layer < m_spacepix->at(file).size(); layer++) {
-         if (m_spacepix->at(file).at(layer).isShown()) {
-            const prefvec<Line>& lineset = m_spacepix->at(file).at(layer).getAllLines();
-            for (int i = 0; i < lineset.size(); i++) {
-               Line line = lineset[i];
-               // line.denormalScale( m_spacepix->m_region ); <- no longer required since standardised PointMap and SpacePixel
-               PixelRefVector pixels = pixelateLine( line, 4 ); // pixelate at quadruple precision
-               for (int j = 0; j < pixels.size(); j++) {
-                  PixelRef actual = pixels[j] / 4;
-                  // now which bits a filled:
-                  int block = 1;
-                  block <<= (pixels[j].x % 4);
-                  block <<= 4 * (pixels[j].y % 4);
-                  getPoint(actual).addBlock( block );
-                  if (getPoint(actual).filled() && getPoint(actual).fillBlocked() ) {
-                     m_point_count--;
-                     getPoint(actual).set( Point::EMPTY, 0 ); // <- note, can't undo this
-                  }
-               }
-            }
-         }
-      }
-   }
-   return true;
-}
-*/
-
-/////////////////////////////////////////////////////////////////////
-
-/*
-// These have not been recoded to work with shape maps rather than space pixels
-// -- note that LineKey cannot be recoded due to possible changes in line mode
-
-// Instead use blocklines each time a line is added, removed or changed
-// (That could be speeded up somewhat with a pixelate of the old and new positions of the line)
-
-void PointMap::addLineDynamic(LineKey ref,const Line& line)
-{
-   if (!m_spacepix || !m_initialised || !m_points) {
-      return;
-   }
-
-   pvector<PixelRef> pixels = pixelateLineTouching(line,1e-10);
-   for (int n = 0; n < pixels.size(); n++)
-   {
-      // right... we have a line over us... we need to tell everyone we can see that there's a change taking place
-      Point& pt = getPoint(pixels[n]);
-      if (pt.filled()) {
-         // just go through our current viewshed
-         for (int i = 0; i < 32; i++) {
-            pt.m_node->bin(i).first();
-            while (!pt.m_node->bin(i).is_tail()) {
-               getPoint(pt.m_node->bin(i).cursor()).m_processflag |= q_opposite(i);
-               pt.m_node->bin(i).next();
-            }
-         }
-         // and we'll have to reprocess ourselves:
-         pt.m_processflag = 0x00FF;
-      }
-      else {
-         // slightly trickier... we don't know who can see us!  Go forth and find out:
-         sparkPixel2(pixels[n],2);  // <- 2 means tell q_opposites that can see you to reprocess
-      }
-   }
-   // now everything's marked, we can go and add the line:
-   for (n = 0; n < pixels.size(); n++) 
-   {
-      Point& pt = getPoint(pixels[n]);
-      int pos = pt.m_lines.add(ref,line);
-      QtRegion viewport = regionate( pixels[n], 1e-10 );
-      if (!pt.m_lines[pos].crop( viewport )) {
-         // the pixelation is fairly rough to make sure that no point is missed: this just
-         // clears up if any point has been added in error:
-         pt.m_lines.remove_at(pos);
-      }
-   }
-}
-
-void PointMap::removeLineDynamic(LineKey ref, const Line& line)
-{
-   if (!m_spacepix || !m_initialised || !m_points) {
-      return;
-   }
-
-   pvector<PixelRef> pixels = pixelateLineTouching(line,1e-10);
-   for (int n = 0; n < pixels.size(); n++)
-   {
-      Point& pt = getPoint(pixels[n]);
-      size_t pos = pt.m_lines.searchindex(ref);
-      if (pos != paftl::npos) {
-         pt.m_lines.remove_at(pos);
-      }
-   }
-   for (n = 0; n < pixels.size(); n++) {
-      // okay, line removed, now reprocess everything that can see us:
-      Point& pt = getPoint(pixels[n]);
-      pt.m_processflag = 0x00FF;
-      if (pt.filled()) {
-         sparkPixel2(pixels[n],3);  // <- 3 means both reprocess us, and tell q_opposites that can see you to reprocess
-      }
-      else {
-         sparkPixel2(pixels[n],2);  // <- 2 means tell q_opposites that can see you to reprocess
-      }
-   }
-   for (n = 0; n < pixels.size(); n++) {
-      // the pixels in the line will automatically flag *each other* as needing reprocessing:
-      // cancel this out since we've just done it!
-      Point& pt = getPoint(pixels[n]);
-      pt.m_processflag = 0x0000;
-   }
-}
-*/
-/////////////////////////////////////////////////////////////////////////////////
-
-// no longer used -- block points through block lines only
-/*
-bool PointMap::blockPoint(const Point2f& p, bool add)
-{
-   PixelRef pix = pixelate(p,true,4);
-   PixelRef actual = pix / 4;
-   // now which bits a filled:
-   int block = 1;
-   block <<= (pix.x % 4);
-   block <<= 4 * (pix.y % 4);
-   if (add) {
-      getPoint(actual).addBlock( block );
-      if (getPoint(actual).fillBlocked()) {
-         if (getPoint(actual).filled()) {
-            m_point_count--;
-            getPoint(actual).set( Point::EMPTY, 0 ); // <- note, can't undo this
-         }
-      }
-   }
-   else {
-      int newblock = getPoint(actual).getBlock() & ~block;
-      getPoint(actual).setBlock( newblock );
-   }
-
-   return true;
-}
-*/
 // still used through pencil tool
 
 bool PointMap::fillPoint(const Point2f& p, bool add)
@@ -2573,46 +2423,6 @@ bool PointMap::analyseThruVision(Communicator *comm)
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
    }
 
-   /*
-   // original version
-   int i;
-   for (i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         PixelRef curs = PixelRef( i, j );
-         getPoint( curs ).m_misc = 0;
-      }
-   }
-
-   for (i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         PixelRef curs = PixelRef( i, j );
-         Point& p = getPoint(curs);
-         if ( getPoint( curs ).filled() ) {
-            p.m_node->first();
-            while (!p.m_node->is_tail()) {
-               PixelRef x = p.m_node->cursor();
-               Line l(depixelate(curs),depixelate(x));
-               PixelRefVector pixels = pixelateLine(l,1);
-               for (int k = 1; k < pixels.size() - 1; k++) {
-                  getPoint(pixels[k]).m_misc += 1;
-               }
-               p.m_node->next();
-            }
-         }
-      }
-   }
-
-   int col = m_attributes.insertColumn("Through vision");
-
-   for (i = 0; i < m_attributes.getRowCount(); i++) {
-      PixelRef curs = m_attributes.getRowKey(i);
-      m_attributes.setValue(i,col,getPoint(curs).m_misc);
-      getPoint(curs).m_misc = 0;
-   }
-
-   setDisplayedAttribute(col);
-   */
-
    // current version (not sure of differences!)
    int i;
    for (i = 0; i < m_cols; i++) {
@@ -2669,63 +2479,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
 
    setDisplayedAttribute(-2);
    setDisplayedAttribute(col);
-/*
-   for (i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         PixelRef curs = PixelRef( i, j );
-         Point& p = getPoint(curs);
-         int thisrow = m_attributes.getRowIndex(curs);
-         if ( getPoint( curs ).filled() ) {
-            p.m_node->first();
-            while (!p.m_node->is_tail()) {
-               PixelRef x = p.m_node->cursor();
-               Line l(depixelate(curs),depixelate(x));
-               PixelRefVector pixels = pixelateLine(l,1);
-               for (int k = 1; k < pixels.size() - 1; k++) {
-                  getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col) * 0.001;
-               }
-               p.m_node->next();
-            }
-         }
-      }
-   }
 
-   int col2 = m_attributes.insertColumn("Through vision 2 step");
-
-   for (i = 0; i < m_attributes.getRowCount(); i++) {
-      PixelRef curs = m_attributes.getRowKey(i);
-      m_attributes.setValue(i,col2,getPoint(curs).m_misc);
-      getPoint(curs).m_misc = 0;
-   }
-
-   for (i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-         PixelRef curs = PixelRef( i, j );
-         Point& p = getPoint(curs);
-         int thisrow = m_attributes.getRowIndex(curs);
-         if ( getPoint( curs ).filled() ) {
-            p.m_node->first();
-            while (!p.m_node->is_tail()) {
-               PixelRef x = p.m_node->cursor();
-               Line l(depixelate(curs),depixelate(x));
-               PixelRefVector pixels = pixelateLine(l,1);
-               for (int k = 1; k < pixels.size() - 1; k++) {
-                  getPoint(pixels[k]).m_misc += m_attributes.getValue(thisrow,col2) * 0.001;
-               }
-               p.m_node->next();
-            }
-         }
-      }
-   }
-
-   int col3 = m_attributes.insertColumn("Through vision 3 step");
-
-   for (i = 0; i < m_attributes.getRowCount(); i++) {
-      PixelRef curs = m_attributes.getRowKey(i);
-      m_attributes.setValue(i,col3,getPoint(curs).m_misc);
-      getPoint(curs).m_misc = 0;
-   }
-*/
    return true;
 }
 
@@ -2836,6 +2590,7 @@ bool PointMap::isPixelMerged(const PixelRef& a)
 {
     return !getPoint(a).m_merge.empty();
 }
+
 
 // -2 for point not in visibility graph, -1 for point has no data
 double PointMap::getLocationValue(const Point2f& point)

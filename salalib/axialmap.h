@@ -41,8 +41,8 @@ public:
    virtual ~AxialPolygons();
    //
    void clear();
-   void init(prefvec<Line>& lines, const QtRegion& region);
-   void makeVertexPossibles(const prefvec<Line>& lines, const prefvec<Connector>& connectionset);
+   void init(std::vector<Line> &lines, const QtRegion& region);
+   void makeVertexPossibles(const std::vector<Line> &lines, const prefvec<Connector>& connectionset);
    void makePixelPolys();
    //
    AxialVertex makeVertex(const AxialVertexKey& vertexkey, const Point2f& openspace);
@@ -207,7 +207,7 @@ public:
    bool analyseTopoMetPD(Communicator *comm, int analysis_type);
    // lineset and connectionset are filled in by segment map
    void makeNewSegMap();
-   void makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval);
+   void makeSegmentMap(std::vector<Line> &lineset, prefvec<Connector>& connectionset, double stubremoval);
    void initSegmentAttributes(prefvec<Connector>& connectionset);
    void makeSegmentConnections(prefvec<Connector>& connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
@@ -262,7 +262,7 @@ class TidyLines : public SpacePixel
 public:
    TidyLines() {;}
    virtual ~TidyLines() {;}
-   void tidy(prefvec<Line>& lines, const QtRegion& region);  
+   void tidy(std::vector<Line> &lines, const QtRegion& region);
    void quicktidy(std::map<int, Line> &lines, const QtRegion& region);
 };
 
@@ -279,7 +279,7 @@ protected:
    bool *m_vital;
    int *m_radialsegcounts;
    int *m_keyvertexcounts;
-   prefvec<Connector> m_axialconns; // <- uses a copy of axial lines as it will remove connections
+   std::vector<Connector> m_axialconns; // <- uses a copy of axial lines as it will remove connections
 public:
    AxialMinimiser(const ShapeGraph& alllinemap, int no_of_axsegcuts, int no_of_radialsegs);
    ~AxialMinimiser();
