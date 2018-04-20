@@ -49,20 +49,17 @@ class Bin
    friend class Node;
 protected:
    char m_dir;
-   unsigned short m_length;
    unsigned short m_node_count;
    float m_distance;
    float m_occ_distance;
-   PixelVec *m_pixel_vecs;
+   std::vector<PixelVec> m_pixel_vecs;
 public:
    Bin()
-   { m_dir = PixelRef::NODIR; m_length = 0; m_pixel_vecs = NULL; m_node_count = 0; m_distance = 0.0f; m_occ_distance = 0.0f; }
+   { m_dir = PixelRef::NODIR; m_node_count = 0; m_distance = 0.0f; m_occ_distance = 0.0f; }
    Bin(const Bin&) 
    { throw 1; }
    Bin& operator = (const Bin&)
    { throw 1; }
-   ~Bin()
-   { if (m_pixel_vecs) delete [] m_pixel_vecs; m_pixel_vecs = NULL; }
    //
    void make(const PixelRefVector& pixels, char m_dir);
    void extractUnseen(PixelRefVector& pixels, PointMap *pointdata, int binmark);

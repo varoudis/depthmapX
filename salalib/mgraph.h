@@ -34,7 +34,6 @@
 #include <salalib/connector.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
-#include <salalib/datalayer.h>   // datalayers deprecated
 
 #include <mutex>
 
@@ -175,8 +174,6 @@ public:
    bool convertToDrawing(Communicator *comm, std::string layer_name, int typeflag); // 0 signifies convert from data map, else convert from graph
    bool convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag); // -1 signifies convert from drawing layer, else convert from data map
    bool convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval);
-   // some compatibility with older version horrors:
-   int convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap);
    int loadMifMap(Communicator *comm, istream& miffile, istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );

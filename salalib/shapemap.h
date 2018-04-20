@@ -238,7 +238,7 @@ protected:
    // for graph functionality
    // Note: this list is stored PACKED for optimal performance on graph analysis
    // ALWAYS check it is in the same order as the shape list and attribute table
-   prefvec<Connector> m_connectors;
+   std::vector<Connector> m_connectors;
    //
    // for geometric operations
    double m_tolerance;
@@ -354,7 +354,7 @@ public:
    //
    bool makeBSPtree() const;
    //
-   const prefvec<Connector>& getConnections() const
+   const std::vector<Connector>& getConnections() const
    { return m_connectors; }
    //
    bool isAllLineMap() const
