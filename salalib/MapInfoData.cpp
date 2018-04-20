@@ -276,7 +276,7 @@ bool MapInfoData::exportFile(ostream& miffile, ostream& midfile, const ShapeMap&
    // if bounds has not been filled in, fill it in
    if (m_bounds.empty()) {
       char bounds[256];
-      sprintf(bounds,"Bounds (%10f, %10f) (%10f, %10f)", map.getRegion().bottom_left.x, 
+      sprintf(bounds,"Bounds (%10f, %10f) (%10f, %10f)", map.getRegion().bottom_left.x,
                                                          map.getRegion().bottom_left.y,
                                                          map.getRegion().top_right.x,
                                                          map.getRegion().top_right.y);

@@ -169,7 +169,7 @@ ShapeMap::ShapeMap(const std::string& name, int type) : m_attributes(name)
    m_bsp_tree = false;
    m_bsp_root = NULL;
    //
-   m_mapinfodata = NULL;
+   m_hasMapInfoData = false;
 }
 
 ShapeMap::~ShapeMap()
@@ -182,10 +182,7 @@ ShapeMap::~ShapeMap()
       delete [] m_display_shapes;
       m_display_shapes = NULL;
    }
-   if (m_mapinfodata) {
-      delete m_mapinfodata;
-      m_mapinfodata = NULL;
-   }
+   m_hasMapInfoData = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -249,13 +246,11 @@ void ShapeMap::copy(const ShapeMap& sourcemap, int copyflags)
    }
 
    // copies mapinfodata (projection data) regardless of copy flags
-   if (sourcemap.getMapInfoData()) {
-      if (m_mapinfodata != NULL) {
-         delete m_mapinfodata;
-      }
-      m_mapinfodata = new MapInfoData;
-      m_mapinfodata->m_coordsys = sourcemap.getMapInfoData()->m_coordsys;
-      m_mapinfodata->m_bounds = sourcemap.getMapInfoData()->m_bounds;
+   if (sourcemap.hasMapInfoData()) {
+      m_mapinfodata = MapInfoData();
+      m_mapinfodata.m_coordsys = sourcemap.getMapInfoData().m_coordsys;
+      m_mapinfodata.m_bounds = sourcemap.getMapInfoData().m_bounds;
+      m_hasMapInfoData = true;
    }
 }
 
@@ -2597,14 +2592,12 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    m_unlinks.read(stream);
 
    // some miscellaneous extra data for mapinfo files
-   if (m_mapinfodata) {
-      delete m_mapinfodata;
-      m_mapinfodata = NULL;
-   }
+   m_hasMapInfoData = false;
    char x = stream.get();
    if (x == 'm') {
-      m_mapinfodata = new MapInfoData;
-      m_mapinfodata->read(stream,version);
+      m_mapinfodata = MapInfoData();
+      m_mapinfodata.read(stream,version);
+      m_hasMapInfoData = true;
    }
 
 
@@ -2669,9 +2662,9 @@ bool ShapeMap::write( ofstream& stream, int version )
    m_unlinks.write(stream);
 
    // some miscellaneous extra data for mapinfo files
-   if (m_mapinfodata) {
+   if (m_hasMapInfoData) {
       stream.put('m');
-      m_mapinfodata->write(stream);
+      m_mapinfodata.write(stream);
    }
    else {
       stream.put('x');
@@ -3043,21 +3036,22 @@ PixelRef ShapeMap::pixelate( const Point2f& p, bool constrain, int ) const
 
 int ShapeMap::loadMifMap(istream& miffile, istream& midfile)
 {
-   m_mapinfodata = new MapInfoData;
-
-   return m_mapinfodata->import(miffile, midfile, *this);
+   m_mapinfodata = MapInfoData();
+   int retvar = m_mapinfodata.import(miffile, midfile, *this);
+   if(retvar == MINFO_OK) m_hasMapInfoData = true;
+   return retvar;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::outputMifMap(ostream& miffile, ostream& midfile) const
+bool ShapeMap::outputMifMap(ostream& miffile, ostream& midfile)
 {
-   if (!m_mapinfodata) {
+   if (!m_hasMapInfoData) {
       MapInfoData mapinfodata;
       mapinfodata.exportFile(miffile, midfile, *this);
    }
    else {
-      m_mapinfodata->exportFile(miffile, midfile, *this);
+      m_mapinfodata.exportFile(miffile, midfile, *this);
    }
 
    return true;
