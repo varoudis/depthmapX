@@ -288,7 +288,6 @@ public:
 	void OnAddGate();
 	void OnPushToLayer();
 	void OnEditGrid();
-    void OnEditGrid();
     void OnToolsMPD();
 	void OnEvoAgent();
 	void OnBinDisplay();
