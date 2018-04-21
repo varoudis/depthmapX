@@ -632,24 +632,7 @@ inline int whichbin( const Point2f& grad )
    else {
       bin += 4;
    }
-   /*
-   // True angular bins
-   if (ratio <      0.0984914033571642) {   // 1/64
-      // nop
-   }
-   else if (ratio < 0.3033466836073423) {   // 3/64
-      bin += 1;
-   }
-   else if (ratio < 0.5345111359507916) {   // 5/64
-      bin += 2;
-   }
-   else if (ratio < 0.8206787908286603) {   // 7/64
-      bin += 3;
-   }
-   else {
-      bin += 4;
-   }
-   */
+
    if (bin < 0) {
       bin = -bin;
    }

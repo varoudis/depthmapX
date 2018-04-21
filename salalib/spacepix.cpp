@@ -454,7 +454,7 @@ bool SpacePixel::findNextLine(bool& nextlayer) const
 
 const Line& SpacePixel::getNextLine() const
 {
-   m_display_lines[m_current] = 0;  // You've drawn it  
+   m_display_lines[m_current] = 0;  // You've drawn it
    /*
    // Fixing: removed rectangle scaling
    l.denormalScale( m_region );
@@ -698,53 +698,6 @@ bool SpacePixel::intersect_exclude( const Line& l, double tolerance )
    return false;
 }
 
-/*
-// get the first crossing point of lines with lines...
-Point2f SpacePixel::getFirstCrossingPoint(const Line& l, int fromend, pvecint& ignorelist)
-{
-   Point2f point;
-
-   int axis;
-   if (l.width() > l.height()) {
-      axis = XAXIS;
-   }
-   else {
-      axis = YAXIS;
-   }
-
-   pvecdouble cross_list = getCrossingPoints(l, axis, ignorelist);
-
-   if (fromend == Line::START) {
-      if (!cross_list.size()) {
-         point = l.end();
-      }
-      else {
-         if (axis == XAXIS || l.sign() == 1) {
-            point = l.point_on_line(cross_list.head(),axis);
-         }
-         else {
-            point = l.point_on_line(cross_list.tail(),axis);
-         }
-      }
-   }
-   else {
-      if (!cross_list.size()) {
-         point = l.start();
-      }
-      else {
-         if (axis == XAXIS || l.sign() == 1) {
-            point = l.point_on_line(cross_list.tail(),axis);
-         }
-         else {
-            point = l.point_on_line(cross_list.head(),axis);
-         }
-      }
-   }
-
-   return point;
-}
-*/
-
 void SpacePixel::cutLine(Line& l, short dir) 
 {
    m_test++;
@@ -901,17 +854,6 @@ pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignor
 {
    pvecdouble cross_list;
    pvecint checked_list = ignorelist;
-
-   /*
-   // Regions no longer normalised
-   l.normalScale( m_region );
-
-   // Now it's me thats doing the squashing business... 
-   // hmm... must correct pixelate function, not the DXF import...
-
-   squash( l.bottom_left );
-   squash( l.top_right );
-   */
 
    PixelRefVector list = pixelateLine( l );
 

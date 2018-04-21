@@ -2088,35 +2088,6 @@ void ShapeMap::cutLine(Line& li) //, short dir)
 {
    pvector<ValuePair> cuts;
    getShapeCuts(li,cuts);
-/*
-   bool same = false;
-   if (dir == li.direction()) {
-      same = true;
-   }
-
-   if (cuts.size()) {
-      if (li.width() > li.height()) {
-         // these are xaxis cuts
-         if (li.rightward() == same) {
-            // in the correct order:
-            li = Line(li.point_on_line(cuts.head().value,XAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,XAXIS));
-         }
-      }
-      else {
-         if (li.upward()) {
-            li = Line(li.point_on_line(cuts.head().value,YAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,YAXIS));
-         }
-      }
-   }
-   */
 
    if (cuts.size()) {
       if (li.width() > li.height()) {

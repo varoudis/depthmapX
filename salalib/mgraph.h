@@ -146,8 +146,6 @@ public:
    bool makePoints( const Point2f& p, int semifilled, Communicator *communicator = NULL);  // override of PointMap
    bool makeGraph( Communicator *communicator, int algorithm, double maxdist );
    bool analyseGraph(Communicator *communicator, Options options , bool simple_version); // <- options copied to keep thread safe
-   bool analyseAngular( Communicator *communicator, bool analyse_in_memory );
-   bool makeAxialLines( Communicator *communicator, bool analyse_in_memory );
    //
    // helpers for editing maps
    bool isEditableMap();
@@ -246,10 +244,7 @@ public:
    bool isAttributeLocked(int col);
    AttributeTable& getAttributeTable(int type = -1, int layer = -1);
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
-   //
-   void loadGraphAgent();
-   void unloadGraphAgent();
-   //
+
    int getLineFileCount() const
       { return (int) SuperSpacePixel::size(); }
 
@@ -259,11 +254,6 @@ public:
    int getLineLayerCount(int file) const
       { return (int) SuperSpacePixel::at(file).size(); }
 
-   //
-/*   SpacePixel& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
-   const SpacePixel& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }*/
    ShapeMap& getLineLayer(int file, int layer)
       { return SuperSpacePixel::at(file).at(layer); }
    const ShapeMap& getLineLayer(int file, int layer) const

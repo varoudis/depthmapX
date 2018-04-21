@@ -75,13 +75,12 @@ class CMSCommunicator : public Communicator
 {
 public:
    enum { IMPORT, IMPORTMIF, MAKEPOINTS, MAKEGRAPH, ANALYSEGRAPH, 
-          POINTDEPTH, METRICPOINTDEPTH, ANGULARPOINTDEPTH, TOPOLOGICALPOINTDEPTH, ANALYSEANGULAR, 
+          POINTDEPTH, METRICPOINTDEPTH, ANGULARPOINTDEPTH, TOPOLOGICALPOINTDEPTH,
           MAKEISOVIST, MAKEISOVISTPATH,
-          MAKEAXIALLINES, MAKEALLLINEMAP, MAKEFEWESTLINEMAP, MAKEDRAWING,
+          MAKEALLLINEMAP, MAKEFEWESTLINEMAP, MAKEDRAWING,
           MAKEUSERMAP, MAKEUSERMAPSHAPE, MAKEUSERSEGMAP, MAKEUSERSEGMAPSHAPE, MAKEGATESMAP, MAKEBOUNDARYMAP, MAKESEGMENTMAP, 
           MAKECONVEXMAP, 
-          AXIALANALYSIS, SEGMENTANALYSIS, TOPOMETANALYSIS, AGENTANALYSIS, IMPORTEDANALYSIS };
-	
+          AXIALANALYSIS, SEGMENTANALYSIS, TOPOMETANALYSIS, AGENTANALYSIS };	
 public:
    void ProcPostMessage(int m, int x, int y);
    CMSCommunicator();
@@ -120,7 +119,6 @@ public:
    { m_string= str; }
    const QString& GetString() const
    { return m_string; }
-
    void SetFileSet(QStringList strings)
    { 
        m_fileset.clear();
@@ -263,11 +261,6 @@ public:
    void OnFillPoints(const Point2f& p, int fill_type = 0 );
    void OnMakeIsovist(const Point2f& seed, double angle = -1.0);
    void OnToolsAxialMap( const Point2f& seed );
-   //
-   bool CheckMemory(const QString& filename = QString());
-   //
-   bool ViewHandler(int nCode, void *pExtra, int viewing, int layer = -1);
-   //
    int RenameColumn(AttributeTable *tab, int col);
    bool ReplaceColumnContents(PointMap* pointmap, ShapeMap *shapemap, int col);
    bool SelectByQuery(PointMap* pointmap, ShapeMap *shapemap);
@@ -287,16 +280,12 @@ public:
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
 	void OnToolsMakeGraph();
-	void OnEditClear();
-	void OnVGAOptions();
+    void OnEditClear();
 	void OnToolsRun();
 	void OnEditUndo();
     void OnToolsPD();
 	void OnPushToLayer();
-	void OnEditGrid();
-	void OnToolsAxialLines();
-	void OnEditFixgrid();
-	void OnEditFixFill();
+    void OnEditGrid();
     void OnToolsMPD();
 	void OnToolsMakeFewestLineMap();
 	void OnToolsRunSeg();
@@ -305,18 +294,12 @@ public:
 	void OnFileProperties();
 	void OnToolsAPD();
 	void OnViewShowGrid();
-	void OnViewSummary();
-	void OnViewShowText();
 	void OnToolsRunAxa();
-    void OnSwapColours();
-	void OnToolsAxialClearLinks();
+	void OnSwapColours();
+	void OnViewSummary();
 	void OnToolsPointConvShapeMap();
 	void OnToolsAxialConvShapeMap();
-	void OnUpdateColumn();
-	void OnWindow3dView();
-	void OnViewScatterplot();
-	void OnWindowMap();
-	void OnViewTable();
+    void OnUpdateColumn();
     void OnToolsAgentRun();
 	void OnRenameColumn();
 	void OnEditQuery();
@@ -329,8 +312,7 @@ public:
     void OnToolsIsovistpath();
     bool OnFileSave();
     bool OnFileSaveAs();
-	void OnConvertMapShapes();
-	void OnToolsBoundaryToAxial();
+    void OnConvertMapShapes();
 	void OnToolsLineLoadUnlinks();
     void OnPointmapExportConnectionsAsCSV();
 
