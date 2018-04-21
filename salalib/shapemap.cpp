@@ -974,7 +974,7 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
          // note, you cannot delete from a segment map, it's just too messy!
       }
 
-      m_connectors.remove_at(rowid);
+      m_connectors.erase(m_connectors.begin() + rowid);
 
       // take out explicit links and unlinks (note, undo won't restore these):
       size_t k;
@@ -1032,7 +1032,7 @@ void ShapeMap::undo()
          // ...but that doesn't exist yet, so for the moment do lines:
          //
          // insert new connector at the row:
-         m_connectors.insert_at(rowid,Connector());
+         m_connectors[rowid] = Connector();
          //
          // now go through all connectors, ensuring they're reindexed above this one:
          // Argh!  ...but, remember the reason we're doing this is for fast processing elsewhere
@@ -2088,35 +2088,6 @@ void ShapeMap::cutLine(Line& li) //, short dir)
 {
    pvector<ValuePair> cuts;
    getShapeCuts(li,cuts);
-/*
-   bool same = false;
-   if (dir == li.direction()) {
-      same = true;
-   }
-
-   if (cuts.size()) {
-      if (li.width() > li.height()) {
-         // these are xaxis cuts
-         if (li.rightward() == same) {
-            // in the correct order:
-            li = Line(li.point_on_line(cuts.head().value,XAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,XAXIS));
-         }
-      }
-      else {
-         if (li.upward()) {
-            li = Line(li.point_on_line(cuts.head().value,YAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,YAXIS));
-         }
-      }
-   }
-   */
 
    if (cuts.size()) {
       if (li.width() > li.height()) {
