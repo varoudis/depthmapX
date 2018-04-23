@@ -140,7 +140,7 @@ public:
    bool fillLines();
    void fillLine(const Line& li);
    bool blockLines();
-   void blockLine(int key, const Line& li);
+   void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    void addLineDynamic(LineKey ref,const Line& line);
    void removeLineDynamic(LineKey ref,const Line& line);
