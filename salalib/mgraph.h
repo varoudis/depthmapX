@@ -117,30 +117,18 @@ public:
         return std::unique_lock<std::recursive_mutex>(mLock, std::defer_lock_t());
     }
 
-   //
-   void copyLineData(const SuperSpacePixel& meta);
-   void copyPointMap(const PointMap& meta);
-   //
    int getState() const
       { return m_state; }
    // use with caution: only very rarely needed outside MetaGraph itself
    void setState(int state)
       { m_state = state; }
-   //
-   // quick loaders from input streams rather than files:
-   bool importCat( istream& stream );
-   // make a graph using the supplied seed and graph spacing:
-   void fastGraph( const Point2f& seed, double spacing );
-   //
+
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
    void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
    void updateParentRegions(ShapeMap &shapeMap);
-   int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
-   int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
-   bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
    bool makePoints( const Point2f& p, int semifilled, Communicator *communicator = NULL);  // override of PointMap
@@ -444,10 +432,7 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   int convertVirtualMem( ifstream& stream, int version );
-   //
    streampos skipVirtualMem(istream &stream, int version);
-   streampos copyVirtualMem(istream& reader, ofstream& writer, int version);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

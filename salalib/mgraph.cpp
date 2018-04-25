@@ -200,26 +200,6 @@ double MetaGraph::getLocationValue(const Point2f& point)
    return val;
 }
 
-void MetaGraph::copyLineData(const SuperSpacePixel& meta)
-{
-   m_state &= ~LINEDATA;
-
-   *(SuperSpacePixel *)this = meta;
-
-   setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
-
-   m_state |= LINEDATA;
-}
-
-void MetaGraph::copyPointMap(const PointMap& meta)
-{
-   m_state &= ~POINTMAPS;
-
-   *(PointMap *)this = meta;
-
-   m_state |= POINTMAPS;
-}
-
 bool MetaGraph::setGrid( double spacing, const Point2f& offset )
 {
    m_state &= ~POINTMAPS;
@@ -255,12 +235,6 @@ bool MetaGraph::makePoints( const Point2f& p, int fill_type , Communicator *comm
 //   m_state |= POINTS;
 
    return true;
-}
-
-bool MetaGraph::undoPoints()
-{
-   bool b_return = getDisplayedPointMap().undoPoints();
-   return b_return;
 }
 
 bool MetaGraph::clearPoints()
@@ -1569,51 +1543,6 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    return 1;
 }
 
-bool MetaGraph::importCat(istream& filecontents)
-{
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-
-   // load the data from the file
-   if (!loadCat( filecontents, NULL )) {
-      return false;
-   }
-
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   return true;
-}
-
-// a second does the lot, especially for evolutionary graphs
-// essentially, hand the ecoevograph a new meta graph each time...
-// it'll do everything for you
-
-void MetaGraph::fastGraph( const Point2f& seed, double spacing )
-{
-   setGrid( spacing );
-
-   getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
-
-   m_state |= POINTMAPS;
-
-   getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
-
-   // historical tag - essentially stamps version, so kept:
-   m_state |= ANGULARGRAPH;
-
-   setViewClass(SHOWVGATOP);
-
-   // Testing: 
-   // write("dummy.graph");
-}
-
 ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::string name) {
 
     switch(mapType) {
@@ -1674,56 +1603,6 @@ void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
     } else {
         SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
     }
-}
-
-int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
-                                     QtRegion region,
-                                     std::string name,
-                                     depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
-   int x = m_dataMaps.size() - 1;
-
-   getDisplayedDataMap().init(lines.size(), region);
-   if (!getDisplayedDataMap().importLines( lines, data )) {
-      removeDataMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
-}
-
-int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
-                                      QtRegion region,
-                                      std::string name,
-                                      depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
-   int x = m_dataMaps.size() - 1;
-
-   getDisplayedDataMap().init(points.size(), region);
-   if (!getDisplayedDataMap().importPoints( points, data )) {
-      removeDataMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
 }
 
 // the tidy(ish) version: still needs to be at top level and switch between layers
