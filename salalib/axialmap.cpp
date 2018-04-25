@@ -665,12 +665,8 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
+
    time_t atime = 0;
-#endif
    int count = 0;
    if (comm) {
       qtimer( atime, 0 );
@@ -1974,12 +1970,7 @@ void ShapeGraph::outputNet(ostream& netfile) const
 
 void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
 {
-    // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
-    time_t atime = 0;
-#endif
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, polyconnections.size() );
@@ -2054,12 +2045,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // note, from 10.0, Depthmap no longer includes *self* connections on axial lines
    // self connections are stripped out on loading graph files, as well as no longer made
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -3190,12 +3176,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -3345,12 +3326,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       return processed_rows;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
 
    if (comm) {
       qtimer( atime, 0 );

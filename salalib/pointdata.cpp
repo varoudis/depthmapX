@@ -162,12 +162,8 @@ void PointMap::construct(const PointMap& pointdata)
 }
 
 
-// Quick mod - TV
-#if defined(_WIN32)
-void PointMap::communicate( __time64_t& atime, Communicator *comm, int record )
-#else
+
 void PointMap::communicate( time_t& atime, Communicator *comm, int record )
-#endif
 {
    if (comm) {
       if (qtimer( atime, 500 )) {
@@ -546,12 +542,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
 
    int added = 0;
 
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    qtimer( atime, 0 );
 
    while (surface.a().size() > 0) {
@@ -1376,12 +1367,7 @@ bool PointMap::binMap( Communicator *comm )
 
    // start the timer when you know the true count including fixed points
 
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_rows * m_cols );
@@ -1497,12 +1483,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
 
    // start the timer when you know the true count including fixed points
    
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, count );
@@ -1836,12 +1817,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
 
    comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
 
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
@@ -1899,12 +1875,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
 
 bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_version)
 {
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
@@ -2225,12 +2196,7 @@ bool PointMap::analyseVisualPointDepth(Communicator *comm)
 
 bool PointMap::analyseMetric(Communicator *comm, Options& options)
 {
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
@@ -2420,12 +2386,7 @@ bool PointMap::analyseMetricPointDepth(Communicator *comm)
 
 bool PointMap::analyseAngular(Communicator *comm, Options& options)
 {
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
@@ -2590,12 +2551,7 @@ bool PointMap::analyseAngularPointDepth(Communicator *comm)
 
 bool PointMap::analyseThruVision(Communicator *comm)
 {
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif   
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
