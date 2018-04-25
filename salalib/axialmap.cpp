@@ -182,7 +182,7 @@ void AxialPolygons::clear()
    m_handled_list.clear();
 }
 
-void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
+void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
 {
    // init pixelbase members
    m_region = region;
@@ -223,7 +223,7 @@ void AxialPolygons::init(prefvec<Line>& lines, const QtRegion& region)
    sortPixelLines();
 }
 
-void AxialPolygons::makeVertexPossibles(const prefvec<Line>& lines, const prefvec<Connector>& connectionset)
+void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const prefvec<Connector>& connectionset)
 {
    m_vertex_possibles.clear();
    m_vertex_polys.clear();
@@ -618,7 +618,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    QtRegion region;
    int size = 0;
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
 
    // add all visible layers to the set of polygon lines...
    for (auto& pixelGroup: superspacepix.m_spacePixels) {
@@ -665,12 +665,8 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
+
    time_t atime = 0;
-#endif
    int count = 0;
    if (comm) {
       qtimer( atime, 0 );
@@ -716,18 +712,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       }
    }
 
-/*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = m_polygons.m_region;
-   }
-   else {
-      m_region = runion(m_region, m_polygons.m_region);
-   }
-   // End No longer required
-*/
-
    // create the all line map layer...
    m_all_line_map = addMap("All-Line Map", ShapeMap::ALLLINEMAP);
 
@@ -735,15 +719,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    // make sure it's cleared fully
    alllinemap.clearAll();
 
-/*
-   // temp:
-   alllinemap.initLines(m_polygons.m_lines.size(),m_polygons.m_region.bottom_left,m_polygons.m_region.top_right,2);
-   for (int k = 0; k < m_polygons.m_lines.size(); k++) {
-      alllinemap.makeLineShape(m_polygons.m_lines[k].line);
-   }
-   alllinemap.sortPixelLines();
-   // end temp
-*/
    region.grow(0.99); // <- this paired with crop code below to prevent error
    alllinemap.init(axiallines.size(),m_polygons.m_region);  // used to be double density here
    for (size_t k = 0; k < axiallines.size(); k++) {
@@ -1295,33 +1270,9 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
       return -1;
    }
 
-
-   /*
-   // No longer required
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End no longer required
-   */
-
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
    }
-
-   /*
-   // No longer required
-   // now add to the space pixel:
-   if (m_region.isempty()) {
-      m_region = region;
-   }
-   else {
-      m_region = runion(region,m_region);
-   }
-   */
 
    // create map layer...
    int mapref = addMap(name,ShapeMap::AXIALMAP);
@@ -1600,18 +1551,6 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
       return -1;
    }
 
-   /*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End No longer required
-   */
-
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
    }
@@ -1761,7 +1700,7 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
       return -1;
    }
 
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    prefvec<Connector> connectionset;
 
    ShapeGraph& dispmap = getDisplayedMap();
@@ -1946,34 +1885,10 @@ void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-// explicit initialisation of attributes for a gates layer
-/*
-void ShapeGraph::initAttributes()
-{
-   m_connectors.clear();
-   m_attributes.clear();
-
-   for (int i = 0; i < m_lines.size(); i++) {
-      int key = m_lines.key(i);
-      // all indices should match...
-      int index1 = m_connectors.add( key, Connector() );
-      int index2 = m_attributes.insertRow(key);
-      // I am going to use this to set the text size soon:
-      float textsize = (float) m_lines[i].line.length();
-   }
-
-   m_displayed_attribute = -2; // <- override if it's already showing
-   // Note: -1 sets it show the ID column:
-   setDisplayedAttribute(-1);
-}
-*/
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
 bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
 {
    // take lines from lines layer and make into regions (using the axial polygons)
-   prefvec<Line> lines;
+   std::vector<Line> lines;
    for (auto shape: m_shapes) {
       lines.push_back(shape.second.getLine());
    }
@@ -2060,12 +1975,7 @@ void ShapeGraph::outputNet(ostream& netfile) const
 
 void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
 {
-    // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
-    time_t atime = 0;
-#endif
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, polyconnections.size() );
@@ -2079,9 +1989,8 @@ void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
-         pqvector<ShapeRef> &shapes = m_pixel_shapes[pix.x][pix.y];
-         for (size_t k = 0; k < shapes.size(); k++) {
-            ShapeRef& shape = shapes[k];
+         std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
+         for (const ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
             }
@@ -2141,12 +2050,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // note, from 10.0, Depthmap no longer includes *self* connections on axial lines
    // self connections are stripped out on loading graph files, as well as no longer made
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -2198,19 +2102,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          }
       }
 
-// dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           m_attributes.insertColumn(entropy_col_text.c_str());
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       m_attributes.insertColumn(integ_dv_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           m_attributes.insertColumn(integ_pv_col_text.c_str());
@@ -2221,19 +2120,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           m_attributes.insertColumn(harmonic_col_text.c_str());
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
       std::string count_col_text = std::string("Node Count") + radius_text;
       m_attributes.insertColumn(count_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           m_attributes.insertColumn(rel_entropy_col_text);
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2242,22 +2138,17 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          m_attributes.insertColumn(total_weight_text.c_str());
       }
       if (fulloutput) {
-
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              m_attributes.insertColumn(penn_norm_text);
          }
-#endif
          std::string ra_col_text = std::string("RA") + radius_text;
          m_attributes.insertColumn(ra_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string rra_col_text = std::string("RRA") + radius_text;
              m_attributes.insertColumn(rra_col_text.c_str());
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          m_attributes.insertColumn(td_col_text.c_str());
@@ -2265,12 +2156,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
       //
    }
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           m_attributes.insertColumn("Control");
           m_attributes.insertColumn("Controllability");
       }
-#endif
    }
    // then look up all the columns... eek:
    pvecint choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
@@ -2292,17 +2181,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
             nw_choice_col.push_back(m_attributes.getColumnIndex(nw_choice_col_text.c_str()));
          }
       }
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           entropy_col.push_back(m_attributes.getColumnIndex(entropy_col_text.c_str()));
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       integ_dv_col.push_back(m_attributes.getColumnIndex(integ_dv_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           integ_pv_col.push_back(m_attributes.getColumnIndex(integ_pv_col_text.c_str()));
@@ -2313,19 +2199,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           harmonic_col.push_back(m_attributes.getColumnIndex(harmonic_col_text.c_str()));
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
       std::string count_col_text = std::string("Node Count") + radius_text;
       count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           rel_entropy_col.push_back(m_attributes.getColumnIndex(rel_entropy_col_text.c_str()));
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2337,14 +2220,12 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          std::string ra_col_text = std::string("RA") + radius_text;
          ra_col.push_back(m_attributes.getColumnIndex(ra_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              penn_norm_col.push_back(m_attributes.getColumnIndex(penn_norm_text));
              std::string rra_col_text = std::string("RRA") + radius_text;
              rra_col.push_back(m_attributes.getColumnIndex(rra_col_text.c_str()));
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
@@ -2352,12 +2233,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    }
    int control_col, controllability_col;
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
        if(!simple_version) {
            control_col = m_attributes.getColumnIndex("Control");
            controllability_col = m_attributes.getColumnIndex("Controllability");
        }
-#endif
    }
 
    // for choice
@@ -2396,22 +2275,13 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                int intersect_size = 0, retro_size = 0;
                pvecint retconnectors = m_connectors[connections[j]].m_connections;
                for (size_t k = 0; k < retconnectors.size(); k++) {
-                  //if (connections[j] != retconnectors[k]) {
-                     retro_size++;
-                     /*
-                     // used for clustering coeff, but clustering coeff next to useless
-                     if (connections.searchindex(retconnectors[k]) != paftl::npos) {
-                        intersect_size++;
-                     }
-                     */
-                     totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
-                  //}
+                   retro_size++;
+                   totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
                }
                control += 1.0 / double(retro_size);
             //}
          }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              if (connections.size() > 0) {
                  m_attributes.setValue(i, control_col, float(control) );
@@ -2422,7 +2292,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                  m_attributes.setValue(i, controllability_col, -1 );
              }
          }
-#endif
       }
 
       pvecint depthcounts;
@@ -2518,7 +2387,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                double integ_tk = teklinteg(node_count, total_depth);
                m_attributes.setValue(i,integ_dv_col[r],float(1.0/rra_d));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],float(1.0/rra_p));
                    if (total_depth - node_count + 1 > 1) {
@@ -2528,19 +2396,15 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                        m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                    }
                }
-#endif
 
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],float(ra));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],float(rra_d));
                   }
-#endif
                   m_attributes.setValue(i,td_col[r],float(total_depth));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       // alan's palm-tree normalisation: palmtree
                       double dmin = node_count - 1;
@@ -2549,38 +2413,30 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                           m_attributes.setValue(i,penn_norm_col[r],float((dmax - total_depth)/(dmax - dmin)));
                       }
                   }
-#endif
                }
             }
             else {
                m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                    m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                }
-#endif
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],-1.0f);
                   }
-#endif
 
                   m_attributes.setValue(i,td_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,penn_norm_col[r],-1.0f);
                   }
-#endif
                }
             }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 double entropy = 0.0, intensity = 0.0, rel_entropy = 0.0, factorial = 1.0, harmonic = 0.0;
                 for (size_t k = 0; k < depthcounts.size(); k++) {
@@ -2609,13 +2465,11 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,intensity_col[r],float(intensity));
                 m_attributes.setValue(i,harmonic_col[r],float(harmonic));
             }
-#endif
          }
          else {
             m_attributes.setValue(i,depth_col[r],-1.0f);
             m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                 m_attributes.setValue(i,integ_tk_col[r],-1.0f);
@@ -2623,7 +2477,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,rel_entropy_col[r],-1.0f);
                 m_attributes.setValue(i,harmonic_col[r],-1.0f);
             }
-#endif
          }
 
       }
@@ -2837,7 +2690,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
 
 void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream << "strict graph {" << std::endl;
 
@@ -2854,7 +2707,7 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 
 void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
@@ -2872,7 +2725,7 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 
 void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
@@ -2918,30 +2771,32 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
          pqvector<Point2f> closepoints;
          prefvec<IntPair> intersections;
          PixelRef pix = pixelate(polygon.second.getPoint());
-         pqvector<ShapeRef>& pix_shapes = m_pixel_shapes[pix.x][pix.y];
-         size_t j;
-         for (j = 0; j < pix_shapes.size(); j++) {
-            for (size_t k = j + 1; k < pix_shapes.size(); k++) {
-               auto aIter = m_shapes.find((int) pix_shapes[j].m_shape_ref);
-               auto bIter = m_shapes.find((int) pix_shapes[k].m_shape_ref);
-               int a = std::distance(m_shapes.begin(), aIter);
-               int b = std::distance(m_shapes.begin(), bIter);
-               if (aIter != m_shapes.end() && bIter != m_shapes.end() && aIter->second.isLine() && bIter->second.isLine() && m_connectors[a].m_connections.searchindex(b) != -1) {
+         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+         auto iter = pix_shapes.begin();
+         for (; iter != pix_shapes.end(); ++iter) {
+            for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
+               auto aIter = m_shapes.find(int(iter->m_shape_ref));
+               auto bIter = m_shapes.find(int(jter->m_shape_ref));
+               int a = int(std::distance(m_shapes.begin(), aIter));
+               int b = int(std::distance(m_shapes.begin(), bIter));
+               if (aIter != m_shapes.end() && bIter != m_shapes.end()
+                       && aIter->second.isLine() && bIter->second.isLine()
+                       && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
                   closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-                  intersections.push_back( IntPair((int)a,(int)b) );
+                  intersections.push_back( IntPair(a,b) );
                }
             }
          }
          double mindist = -1.0;
          int minpair = -1;
-         for (j = 0; j < closepoints.size(); j++) {
+         for (size_t j = 0; j < closepoints.size(); j++) {
             if (minpair == -1 || dist(polygon.second.getPoint(),closepoints[j]) < mindist) {
                mindist = dist(polygon.second.getPoint(),closepoints[j]);
-               minpair = j;
+               minpair = int(j);
             }
          }
          if (minpair != -1) {
-            unlinkShapes(intersections[minpair].a, intersections[minpair].b, false);
+            unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
          }
          else {
             cerr << "eek!";
@@ -2984,10 +2839,10 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      pqvector<ShapeRef> &shapes1 = m_pixel_shapes[pix1.x][pix1.y];
-      for (size_t j1 = 0; j1 < shapes1.size(); j1++) {
-         auto seg_b_iter = lineset.find(shapes1[j1].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      for (auto& shape: shapes1) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -2995,21 +2850,21 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_back_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(1,seg_a),x);
+               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(1,seg_a),x);
             }
          }
       }
       PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      pqvector<ShapeRef> &shapes2 = m_pixel_shapes[pix2.x][pix2.y];
-      for (size_t j2 = 0; j2 < shapes2.size(); j2++) {
-         auto seg_b_iter = lineset.find(shapes2[j2].m_shape_ref);
-         size_t seg_b = std::distance(lineset.begin(), seg_b_iter);
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+      for (auto& shape: shapes2) {
+         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
+         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
          if (seg_b_iter != lineset.end() && seg_a < seg_b) {
             Point2f alpha = seg_a_line.second.vector();
             Point2f beta  = seg_b_iter->second.vector();
@@ -3017,13 +2872,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(1,seg_b),x);
+               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(-1,seg_a),x);
             }
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[seg_b].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
+               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
             }
          }
       }
@@ -3046,7 +2901,7 @@ void ShapeGraph::makeNewSegMap()
 // identify the original axial line this line segment is
 // associated with
 
-void ShapeGraph::makeSegmentMap(prefvec<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
+void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
    std::map<OrderedIntPair,IntPair> segmentlist;
@@ -3283,12 +3138,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -3438,12 +3288,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       return processed_rows;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
 
    if (comm) {
       qtimer( atime, 0 );
@@ -4176,30 +4021,26 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
 
 // helper -- a little class to tidy up a set of lines
 
-void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
+void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
 {
-   size_t i = 0;
    m_region = region;
    double maxdim = __max(m_region.width(),m_region.height());
 
    // simple first pass -- remove very short lines
-   pvecint removelist;
-   for (i = 0; i < lines.size(); i++) {
-      if (lines[i].length() < maxdim * TOLERANCE_B) {
-         removelist.add(i);
-      }
-   }
-   lines.remove_at(removelist);
-   removelist.clear();  // always clear this list, it's reused
+   lines.erase(
+               std::remove_if(lines.begin(), lines.end(),
+                              [maxdim](const Line& line)
+   {return line.length() < maxdim * TOLERANCE_B;}), lines.end());
 
    // now load up m_lines...
    initLines(lines.size(),m_region.bottom_left,m_region.top_right);
-   for (i = 0; i < lines.size(); i++) {
-      addLine(lines[i]);
+   for (auto& line: lines) {
+      addLine(line);
    }
    sortPixelLines();
 
-   for (i = 0; i < lines.size(); i++) {
+   std::vector<int> removelist;
+   for (size_t i = 0; i < lines.size(); i++) {
       // n.b., as m_lines have just been made, note that what's in m_lines matches whats in lines
       // we will use this later!
       m_test++;
@@ -4222,7 +4063,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      int end = ((lines[i].end()[axis_i] * parity) > (lines[j].end()[axis_j] * parity)) ? i : j;
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                   if ((lines[j].start()[axis_j] * parity + TOLERANCE_B * maxdim) > (lines[i].start()[axis_i] * parity) &&
@@ -4232,7 +4073,7 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
                      lines[j].ay() = lines[i].ay();
                      lines[j].bx() = lines[end].bx();
                      lines[j].by() = lines[end].by();
-                     removelist.add(i);
+                     removelist.push_back(i);
                      continue; // <- don't do this any more, we've zapped it and replaced it with the later line
                   }
                }
@@ -4240,7 +4081,12 @@ void TidyLines::tidy(prefvec<Line>& lines, const QtRegion& region)
          }
       }
    }
-   lines.remove_at(removelist);
+
+   // comes out sorted, remove duplicates just in case
+   removelist.erase(std::unique(removelist.begin(), removelist.end()), removelist.end());
+
+   for(auto iter = removelist.rbegin(); iter != removelist.rend(); ++iter)
+       lines.erase(lines.begin() + *iter);
    removelist.clear();  // always clear this list, it's reused
 }
 

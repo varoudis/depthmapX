@@ -17,14 +17,6 @@
 #include "salalib/point.h"
 #include "salalib/ngraph.h"
 
-Point::~Point()
-{
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-   }
-}
-
 float Point::getBinDistance(int i)
 {
    return m_node->bindistance(i);
@@ -32,10 +24,6 @@ float Point::getBinDistance(int i)
 
 std::istream& Point::read(std::istream& stream, int version, int attr_count)
 {
-   if (m_node) {
-      delete m_node;
-      m_node = NULL;
-   }
    stream.read( (char *) &m_state, sizeof(m_state) );
    // block is the same size as m_noderef used to be for ease of replacement:
    // (note block NO LONGER used!)
@@ -50,7 +38,7 @@ std::istream& Point::read(std::istream& stream, int version, int attr_count)
    bool ngraph;
    stream.read( (char *) &ngraph, sizeof(ngraph) );
    if (ngraph) {
-       m_node = new Node;
+       m_node = std::unique_ptr<Node>(new Node());
        m_node->read(stream, version);
    }
 

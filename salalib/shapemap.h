@@ -222,7 +222,7 @@ protected:
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
-   pqvector<ShapeRef> **m_pixel_shapes;    // i rows of j columns
+   std::vector<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
    mutable BSPNode *m_bsp_root;
@@ -231,14 +231,14 @@ protected:
    std::map<int,SalaShape> m_shapes;
    std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
-   prefvec<SalaEvent> m_undobuffer;
+   std::vector<SalaEvent> m_undobuffer;
    //
    AttributeTable m_attributes;
    //
    // for graph functionality
    // Note: this list is stored PACKED for optimal performance on graph analysis
    // ALWAYS check it is in the same order as the shape list and attribute table
-   prefvec<Connector> m_connectors;
+   std::vector<Connector> m_connectors;
    //
    // for geometric operations
    double m_tolerance;
@@ -356,7 +356,7 @@ public:
    //
    bool makeBSPtree() const;
    //
-   const prefvec<Connector>& getConnections() const
+   const std::vector<Connector>& getConnections() const
    { return m_connectors; }
    //
    bool isAllLineMap() const
