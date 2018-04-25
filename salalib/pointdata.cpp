@@ -1881,10 +1881,6 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
    }
 
-   // dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-
-#ifndef _COMPILE_dX_SIMPLE_VERSION
    int cluster_col, control_col, controllability_col;
    if(!simple_version) {
        if (options.local) {
@@ -1893,7 +1889,6 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
            controllability_col = m_attributes.insertColumn("Visual Controllability");
        }
    }
-#endif
 
    int entropy_col, rel_entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, depth_col, count_col;
    if (options.global) {
