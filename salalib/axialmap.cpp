@@ -665,12 +665,8 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
+
    time_t atime = 0;
-#endif
    int count = 0;
    if (comm) {
       qtimer( atime, 0 );
@@ -1974,12 +1970,7 @@ void ShapeGraph::outputNet(ostream& netfile) const
 
 void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
 {
-    // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
-    time_t atime = 0;
-#endif
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, polyconnections.size() );
@@ -2054,12 +2045,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // note, from 10.0, Depthmap no longer includes *self* connections on axial lines
    // self connections are stripped out on loading graph files, as well as no longer made
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -2111,19 +2097,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          }
       }
 
-// dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           m_attributes.insertColumn(entropy_col_text.c_str());
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       m_attributes.insertColumn(integ_dv_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           m_attributes.insertColumn(integ_pv_col_text.c_str());
@@ -2134,19 +2115,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           m_attributes.insertColumn(harmonic_col_text.c_str());
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
       std::string count_col_text = std::string("Node Count") + radius_text;
       m_attributes.insertColumn(count_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           m_attributes.insertColumn(rel_entropy_col_text);
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2155,22 +2133,17 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          m_attributes.insertColumn(total_weight_text.c_str());
       }
       if (fulloutput) {
-
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              m_attributes.insertColumn(penn_norm_text);
          }
-#endif
          std::string ra_col_text = std::string("RA") + radius_text;
          m_attributes.insertColumn(ra_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string rra_col_text = std::string("RRA") + radius_text;
              m_attributes.insertColumn(rra_col_text.c_str());
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          m_attributes.insertColumn(td_col_text.c_str());
@@ -2178,12 +2151,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
       //
    }
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           m_attributes.insertColumn("Control");
           m_attributes.insertColumn("Controllability");
       }
-#endif
    }
    // then look up all the columns... eek:
    pvecint choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
@@ -2205,17 +2176,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
             nw_choice_col.push_back(m_attributes.getColumnIndex(nw_choice_col_text.c_str()));
          }
       }
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           entropy_col.push_back(m_attributes.getColumnIndex(entropy_col_text.c_str()));
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       integ_dv_col.push_back(m_attributes.getColumnIndex(integ_dv_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           integ_pv_col.push_back(m_attributes.getColumnIndex(integ_pv_col_text.c_str()));
@@ -2226,19 +2194,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           harmonic_col.push_back(m_attributes.getColumnIndex(harmonic_col_text.c_str()));
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
       std::string count_col_text = std::string("Node Count") + radius_text;
       count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           rel_entropy_col.push_back(m_attributes.getColumnIndex(rel_entropy_col_text.c_str()));
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2250,14 +2215,12 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          std::string ra_col_text = std::string("RA") + radius_text;
          ra_col.push_back(m_attributes.getColumnIndex(ra_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              penn_norm_col.push_back(m_attributes.getColumnIndex(penn_norm_text));
              std::string rra_col_text = std::string("RRA") + radius_text;
              rra_col.push_back(m_attributes.getColumnIndex(rra_col_text.c_str()));
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
@@ -2265,12 +2228,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    }
    int control_col, controllability_col;
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
        if(!simple_version) {
            control_col = m_attributes.getColumnIndex("Control");
            controllability_col = m_attributes.getColumnIndex("Controllability");
        }
-#endif
    }
 
    // for choice
@@ -2316,7 +2277,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
             //}
          }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              if (connections.size() > 0) {
                  m_attributes.setValue(i, control_col, float(control) );
@@ -2327,7 +2287,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                  m_attributes.setValue(i, controllability_col, -1 );
              }
          }
-#endif
       }
 
       pvecint depthcounts;
@@ -2423,7 +2382,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                double integ_tk = teklinteg(node_count, total_depth);
                m_attributes.setValue(i,integ_dv_col[r],float(1.0/rra_d));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],float(1.0/rra_p));
                    if (total_depth - node_count + 1 > 1) {
@@ -2433,19 +2391,15 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                        m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                    }
                }
-#endif
 
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],float(ra));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],float(rra_d));
                   }
-#endif
                   m_attributes.setValue(i,td_col[r],float(total_depth));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       // alan's palm-tree normalisation: palmtree
                       double dmin = node_count - 1;
@@ -2454,38 +2408,30 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                           m_attributes.setValue(i,penn_norm_col[r],float((dmax - total_depth)/(dmax - dmin)));
                       }
                   }
-#endif
                }
             }
             else {
                m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                    m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                }
-#endif
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],-1.0f);
                   }
-#endif
 
                   m_attributes.setValue(i,td_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,penn_norm_col[r],-1.0f);
                   }
-#endif
                }
             }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 double entropy = 0.0, intensity = 0.0, rel_entropy = 0.0, factorial = 1.0, harmonic = 0.0;
                 for (size_t k = 0; k < depthcounts.size(); k++) {
@@ -2514,13 +2460,11 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,intensity_col[r],float(intensity));
                 m_attributes.setValue(i,harmonic_col[r],float(harmonic));
             }
-#endif
          }
          else {
             m_attributes.setValue(i,depth_col[r],-1.0f);
             m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                 m_attributes.setValue(i,integ_tk_col[r],-1.0f);
@@ -2528,7 +2472,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,rel_entropy_col[r],-1.0f);
                 m_attributes.setValue(i,harmonic_col[r],-1.0f);
             }
-#endif
          }
 
       }
@@ -3190,12 +3133,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -3345,12 +3283,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       return processed_rows;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
 
    if (comm) {
       qtimer( atime, 0 );
