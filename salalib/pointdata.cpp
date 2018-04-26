@@ -528,8 +528,6 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
        }
    }
 
-
-
    if (!m_blockedlines) {
       blockLines();
    }
