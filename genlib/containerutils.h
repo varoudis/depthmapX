@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#include <map>
 
 namespace depthmapX {
 
@@ -57,5 +58,14 @@ int insertAndGetIndex(std::map<K, V> &m, K key, V value) {
     m.insert(std::make_pair(key, value));
     return findIndexFromKey(m, key);
 }
+
+template<class TIterator, class TValue> TIterator findBinary( const TIterator& begin, const TIterator& end, const TValue& val ){
+    auto res = std::lower_bound(begin, end, val);
+    if ( res == end || val < *res ){
+        return end;
+    }
+    return res;
+}
+
 
 }
