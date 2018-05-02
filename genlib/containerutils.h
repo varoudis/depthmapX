@@ -59,10 +59,20 @@ int insertAndGetIndex(std::map<K, V> &m, K key, V value) {
     return findIndexFromKey(m, key);
 }
 
-template<class TIterator, class TValue> TIterator findBinary( const TIterator& begin, const TIterator& end, const TValue& val ){
-    auto res = std::lower_bound(begin, end, val);
-    if ( res == end || val < *res ){
-        return end;
+template< typename TContainer, typename TValue> typename TContainer::iterator findBinary( TContainer& container, const TValue val){
+    auto res = std::lower_bound(container.begin(), container.end(), val);
+    if (res  == container.end() || val < *res )
+    {
+        return container.end();
+    }
+    return res;
+}
+
+template< typename TContainer, typename TValue> typename TContainer::const_iterator findBinary( const TContainer& container, const TValue val){
+    auto res = std::lower_bound(container.begin(), container.end(), val);
+    if (res  == container.end() || val < *res )
+    {
+        return container.end();
     }
     return res;
 }

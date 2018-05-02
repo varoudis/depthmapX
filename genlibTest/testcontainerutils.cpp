@@ -17,18 +17,19 @@
 #include <genlib/containerutils.h>
 #include <vector>
 
-TEST_CASE("Test binary search helper", ""){
+
+TEST_CASE("Test binary search helper with container", ""){
     std::vector<int> testVec{ 1, 2, 4, 5};
 
-    REQUIRE(*depthmapX::findBinary(testVec.begin(), testVec.end(), 2) == 2);
-    REQUIRE(depthmapX::findBinary(testVec.begin(), testVec.end(), 3) == testVec.end());
-    REQUIRE(depthmapX::findBinary(testVec.begin(), testVec.end(), 6) == testVec.end());
-    auto iter = depthmapX::findBinary(testVec.begin(), testVec.end(), 2);
+    REQUIRE(*depthmapX::findBinary(testVec, 2) == 2);
+    REQUIRE(depthmapX::findBinary(testVec, 3) == testVec.end());
+    REQUIRE(depthmapX::findBinary(testVec, 6) == testVec.end());
+    auto iter = depthmapX::findBinary(testVec, 2);
     *iter = 3;
-    REQUIRE(*depthmapX::findBinary(testVec.begin(), testVec.end(), 3) == 3);
+    REQUIRE(*depthmapX::findBinary(testVec, 3) == 3);
 
     const std::vector<int>& constVec = testVec;
-    REQUIRE(*depthmapX::findBinary(constVec.begin(), constVec.end(), 3) == 3);
-    REQUIRE(depthmapX::findBinary(constVec.begin(), constVec.end(), 2) == testVec.end());
-    REQUIRE(depthmapX::findBinary(constVec.begin(), constVec.end(), 6) == testVec.end());
+    REQUIRE(*depthmapX::findBinary(constVec, 3) == 3);
+    REQUIRE(depthmapX::findBinary(constVec, 2) == testVec.end());
+    REQUIRE(depthmapX::findBinary(constVec, 6) == testVec.end());
 }
