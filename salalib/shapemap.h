@@ -27,6 +27,7 @@
 #include "salalib/importtypedefs.h"
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
+#include "salalib/MapInfoData.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +223,7 @@ protected:
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
-   pqvector<ShapeRef> **m_pixel_shapes;    // i rows of j columns
+   std::vector<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
    mutable BSPNode *m_bsp_root;
@@ -231,19 +232,19 @@ protected:
    std::map<int,SalaShape> m_shapes;
    std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
-   prefvec<SalaEvent> m_undobuffer;
+   std::vector<SalaEvent> m_undobuffer;
    //
    AttributeTable m_attributes;
    //
    // for graph functionality
    // Note: this list is stored PACKED for optimal performance on graph analysis
    // ALWAYS check it is in the same order as the shape list and attribute table
-   prefvec<Connector> m_connectors;
+   std::vector<Connector> m_connectors;
    //
    // for geometric operations
    double m_tolerance;
    // for screen drawing
-   mutable int *m_display_shapes;
+   mutable std::vector<int> m_display_shapes;
    mutable int m_current;
    mutable bool m_invalidate;
    //
@@ -340,7 +341,7 @@ public:
    // this version simply finds the closest vertex to the point
    Point2f getClosestVertex(const Point2f& p) const;
    // Find out which shapes a line cuts through:
-   void getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts);
+   void getShapeCuts(const Line& li_orig, std::vector<ValuePair> &cuts);
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
    // Find out which shapes are within a certain radius of a point:
@@ -356,7 +357,7 @@ public:
    //
    bool makeBSPtree() const;
    //
-   const prefvec<Connector>& getConnections() const
+   const std::vector<Connector>& getConnections() const
    { return m_connectors; }
    //
    bool isAllLineMap() const
@@ -474,11 +475,13 @@ public:
    void setEditable(bool on = true) 
    { m_editable = on; }
 protected:
-   MapInfoData *m_mapinfodata;
+   bool m_hasMapInfoData = false;
+   MapInfoData m_mapinfodata;
 public:
+   bool hasMapInfoData() const {return m_hasMapInfoData;}
    int loadMifMap(istream& miffile, istream& midfile);
-   bool outputMifMap(ostream& miffile, ostream& midfile) const;
-   const MapInfoData *getMapInfoData() const
+   bool outputMifMap(ostream& miffile, ostream& midfile);
+   const MapInfoData& getMapInfoData() const
    { return m_mapinfodata; }
 public:
    // Screen

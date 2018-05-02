@@ -78,12 +78,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
             pointmap->requireIsovistAnalysis();
         }
     }
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t atime = 0;
-#else
-   time_t atime =0;
-#endif   
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_timesteps );
@@ -402,6 +397,7 @@ AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b)
    return child;
 }
 
+// TODO: Expose this functionality to the UIs
 void AgentProgram::save(const std::string& filename)
 {
    // standard ascii:
@@ -515,7 +511,7 @@ bool AgentProgram::open(const std::string& filename)
          std::string bins = line.substr(6);
          dXstring::ltrim(bins);
          int binx = stoi(bins);
-         if (binx = 32) {
+         if (binx == 32) {
             m_vbin = -1;
          }
          else {
@@ -876,6 +872,7 @@ Point2f Agent::onStandardLook(bool wholeisovist)
    return (m_target - m_loc).normalise();
 }
 
+// TODO: Expose this functionality to the UIs
 Point2f Agent::onWeightedLook(bool wholeisovist)
 {
    if (wholeisovist) {
@@ -884,7 +881,7 @@ Point2f Agent::onWeightedLook(bool wholeisovist)
    }
    int tarpixelate = -1;
    int vbin = m_program->m_vbin;
-   if (vbin = -1) {
+   if (vbin == -1) {
       vbin = 16;
    }
    int aheadbin = binfromvec(m_vector);
@@ -950,7 +947,7 @@ Point2f Agent::onOcclusionLook(bool wholeisovist, int looktype)
    }
    PixelRef tarpixelate = NoPixel;
    int vbin = m_program->m_vbin;
-   if (vbin = -1) {
+   if (vbin == -1) {
       vbin = 16;
    }
    int directionbin = 32 + binfromvec(m_vector) - vbin;

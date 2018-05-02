@@ -20,7 +20,6 @@ SOURCES += \
     attributes.cpp \
     axialmap.cpp \
     connector.cpp \
-    datalayer.cpp \
     isovist.cpp \
     MapInfoData.cpp \
     mgraph.cpp \
@@ -46,7 +45,6 @@ HEADERS += \
     attributes.h \
     axialmap.h \
     connector.h \
-    datalayer.h \
     fileproperties.h \
     isovist.h \
     MapInfoData.h \
