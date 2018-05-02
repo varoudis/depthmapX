@@ -1381,10 +1381,11 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    }
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
@@ -1632,10 +1633,11 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    ShapeGraph& usermap = tail();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.init(lines.size(),region);
@@ -1720,10 +1722,11 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
    lines.clear();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (dispmap.m_mapinfodata) {
-      segmap.m_mapinfodata = new MapInfoData;
-      segmap.m_mapinfodata->m_coordsys = dispmap.m_mapinfodata->m_coordsys;
-      segmap.m_mapinfodata->m_bounds = dispmap.m_mapinfodata->m_bounds;
+   if (dispmap.m_hasMapInfoData) {
+      segmap.m_mapinfodata = MapInfoData();
+      segmap.m_mapinfodata.m_coordsys = dispmap.m_mapinfodata.m_coordsys;
+      segmap.m_mapinfodata.m_bounds = dispmap.m_mapinfodata.m_bounds;
+      segmap.m_hasMapInfoData = true;
    }
 
    // initialise attributes now separated from making the connections
@@ -1894,9 +1897,9 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;
-   if (m_mapinfodata) {
-      mapinfodata.m_coordsys = m_mapinfodata->m_coordsys;
-      mapinfodata.m_bounds = m_mapinfodata->m_bounds;
+   if (m_hasMapInfoData) {
+      mapinfodata.m_coordsys = m_mapinfodata.m_coordsys;
+      mapinfodata.m_bounds = m_mapinfodata.m_bounds;
    }
    mapinfodata.exportPolygons(miffile, midfile, newpolygons, m_region);
 
@@ -2646,16 +2649,11 @@ bool ShapeGraph::readold( istream& stream, int version )
    m_links.read(stream);
    m_unlinks.read(stream);
 
-   // some miscellaneous extra data for mapinfo files
-   if (m_mapinfodata) {
-      delete m_mapinfodata;
-      m_mapinfodata = NULL;
-   }
-
    char x = stream.get();
    if (x == 'm') {
-      m_mapinfodata = new MapInfoData;
-      m_mapinfodata->read(stream,version);
+      m_mapinfodata = MapInfoData();
+      m_mapinfodata.read(stream,version);
+      m_hasMapInfoData = true;
    }
 
 

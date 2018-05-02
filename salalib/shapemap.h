@@ -27,6 +27,7 @@
 #include "salalib/importtypedefs.h"
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
+#include "salalib/MapInfoData.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -474,11 +475,13 @@ public:
    void setEditable(bool on = true) 
    { m_editable = on; }
 protected:
-   MapInfoData *m_mapinfodata;
+   bool m_hasMapInfoData = false;
+   MapInfoData m_mapinfodata;
 public:
+   bool hasMapInfoData() const {return m_hasMapInfoData;}
    int loadMifMap(istream& miffile, istream& midfile);
-   bool outputMifMap(ostream& miffile, ostream& midfile) const;
-   const MapInfoData *getMapInfoData() const
+   bool outputMifMap(ostream& miffile, ostream& midfile);
+   const MapInfoData& getMapInfoData() const
    { return m_mapinfodata; }
 public:
    // Screen
