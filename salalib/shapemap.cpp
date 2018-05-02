@@ -149,8 +149,7 @@ ShapeMap::ShapeMap(const std::string& name, int type) : m_attributes(name)
    // shape and object counters
    m_obj_ref = -1;
    // -1 is the shape ref column (which will be shown by default)
-   m_displayed_attribute = -1; 
-   m_display_shapes = NULL;
+   m_displayed_attribute = -1;
    m_invalidate = false;
    // for polygons:
    m_show_lines = true;
@@ -178,10 +177,6 @@ ShapeMap::~ShapeMap()
       delete m_bsp_root;
       m_bsp_root = NULL;
    }
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
    if (m_mapinfodata) {
       delete m_mapinfodata;
       m_mapinfodata = NULL;
@@ -195,10 +190,7 @@ ShapeMap::~ShapeMap()
 void ShapeMap::init(int size, const QtRegion &r)
 {
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
    m_rows = __min(__max(20,(int)sqrt((double)size)),32768);
    m_cols = __min(__max(20,(int)sqrt((double)size)),32768);
    if (m_region.atZero()) {
@@ -267,10 +259,7 @@ void ShapeMap::clearAll()
       m_bsp_root = NULL;
    }
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
 
    m_shapes.clear();
    m_objects.clear();
@@ -2491,10 +2480,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
 
    // clear old:
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
    m_objects.clear();
    m_shapes.clear();
    m_attributes.clear();
@@ -2878,14 +2864,9 @@ void ShapeMap::makeViewportShapes( const QtRegion& viewport ) const
       return;
    }
 
-   if (!m_display_shapes || m_newshape) {
-      if (m_display_shapes) 
-         delete [] m_display_shapes;
-      m_display_shapes = new int [m_shapes.size()];
+   if (m_display_shapes.empty() || m_newshape) {
+      m_display_shapes.assign(m_shapes.size(), -1);
       m_newshape = false;
-      for (size_t i = 0; i < m_shapes.size(); i++) {
-         m_display_shapes[i] = -1;
-      }
    }
 
    m_current = -1;   // note: findNext expects first to be labelled -1
