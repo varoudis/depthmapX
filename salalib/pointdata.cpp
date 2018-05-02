@@ -516,6 +516,14 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
       return false;
    }
 
+   // check if seed point is actually visible from the centre of the cell
+   std::map<int, Line>& linesTouching = getPoint(seedref).m_lines;
+   for(auto line: linesTouching) {
+       if(intersect_line_no_touch(line.second, Line(seed, getPoint(seedref).m_location))) {
+           return false;
+       }
+   }
+
    if (!m_blockedlines) {
       blockLines();
    }
