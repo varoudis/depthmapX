@@ -200,26 +200,6 @@ double MetaGraph::getLocationValue(const Point2f& point)
    return val;
 }
 
-void MetaGraph::copyLineData(const SuperSpacePixel& meta)
-{
-   m_state &= ~LINEDATA;
-
-   *(SuperSpacePixel *)this = meta;
-
-   setSpacePixel( (SuperSpacePixel *) this );   // <- also helpfully gives PointMap the space pixel
-
-   m_state |= LINEDATA;
-}
-
-void MetaGraph::copyPointMap(const PointMap& meta)
-{
-   m_state &= ~POINTMAPS;
-
-   *(PointMap *)this = meta;
-
-   m_state |= POINTMAPS;
-}
-
 bool MetaGraph::setGrid( double spacing, const Point2f& offset )
 {
    m_state &= ~POINTMAPS;
@@ -257,28 +237,9 @@ bool MetaGraph::makePoints( const Point2f& p, int fill_type , Communicator *comm
    return true;
 }
 
-bool MetaGraph::undoPoints()
-{
-   bool b_return = getDisplayedPointMap().undoPoints();
-/*   
-   if (PointMap::m_point_count == 0) {
-      m_state &= ~POINTS;
-   }
-   else {
-      m_state |= POINTS;
-   }
-*/
-   return b_return;
-}
-
 bool MetaGraph::clearPoints()
 {
    bool b_return = getDisplayedPointMap().clearPoints();
-/*   
-   if (PointMap::m_point_count == 0) {
-      m_state &= ~POINTS;
-   }
-*/
    return b_return;
 }
 
@@ -678,12 +639,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       }
       m_bsp_root = new BSPNode();
 
-      // Quick mod - TV
-#if defined(_WIN32)      
-      __time64_t atime = 0;
-#else
       time_t atime = 0;
-#endif      
       communicator->CommPostMessage( Communicator::NUM_RECORDS, partitionlines.size() );
       qtimer( atime, 0 );
 
@@ -1312,67 +1268,6 @@ bool MetaGraph::analyseTopoMet( Communicator *communicator, Options options ) //
    return retvar;
 }
 
-
-bool MetaGraph::analyseAngular( Communicator *communicator, bool analyse_in_memory )
-{
-   bool retvar = false;
-   /*
-   Graph::m_nodes.openread();
-
-   if (analyse_in_memory) {
-      Graph::m_nodes.loadmem();
-   }
-   try {
-      retvar = Graph::angular_analysis( communicator );
-   } 
-   catch (Communicator::CancelledException) {
-      retvar = false;
-   }
-   if (analyse_in_memory) {
-      Graph::m_nodes.unloadmem();
-   }
-
-   Graph::m_nodes.close();
-
-   if (retvar) {
-      setDisplayAttribute( AttrHeader::MEDIAN_ANGLE );
-   }
-
-   m_state |= AXIALLINES;
-   */
-   return retvar;
-}
-
-bool MetaGraph::makeAxialLines( Communicator *communicator, bool analyse_in_memory )
-{
-   bool retvar = false;
-
-   /*
-   m_state &= ~AXIALLINES;      // Clear axial line data flag (stops accidental redraw during reload) 
-
-   Graph::m_nodes.openread();
-
-   if (analyse_in_memory) {
-      Graph::m_nodes.loadmem();
-   }
-   try {
-      retvar = AxialLines::makeAxialLines( (Graph&) *this, (PointMap&) *this );
-   } 
-   catch (Communicator::CancelledException) {
-      retvar = false;
-   }
-   if (analyse_in_memory) {
-      Graph::m_nodes.unloadmem();
-   }
-
-   Graph::m_nodes.close();
-
-   if (retvar) 
-      m_state |= AXIALLINES;
-   */
-   return retvar;
-}
-
 int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 {
     if (load_type & DXF) {
@@ -1381,13 +1276,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
     }
 
    m_state &= ~LINEDATA;      // Clear line data flag (stops accidental redraw during reload) 
-/*
-   if (m_state & POINTS) {
-      PointMap::s_bl = NoPixel; // <- force coming clear to clear *all* points
-      PointMap::clearPoints();  // If points exist, clear them
-      m_state &= ~POINTS;        // ...and clear the flag
-   }
-*/
+
    // if bsp tree exists 
    if (m_bsp_root) {
       delete m_bsp_root;
@@ -1475,14 +1364,9 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
       communicator->CommPostMessage( Communicator::NUM_RECORDS, size );
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)   
-   __time64_t a_time = 0;
-#else
-   time_t a_time = 0;
-#endif
+   time_t atime = 0;
    
-   qtimer( a_time, 0 );
+   qtimer( atime, 0 );
 
    long size = 0; 
    int numlines = 0;
@@ -1589,7 +1473,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
       size += inputline.length() + 1;
 
       if (communicator) {
-         if (qtimer( a_time, 500 )) {
+         if (qtimer( atime, 500 )) {
             if (communicator->IsCancelled()) {
                throw Communicator::CancelledException();
             }
@@ -1647,128 +1531,6 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
    }
 
    return 1;
-}
-
-
-
-/*
-// DEPRECATED
-
-void MetaGraph::fastGraph( istream& stream, double spacing )
-{
-   // does the lot -- assumes a bounding polygon,
-   // and tries to find a location outside all other polygons to populate grid
-   prefvec<Poly> polygons;
-
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-   
-   // load the data from the file
-   loadCat( stream, NULL, &polygons );
-
-   // organise the data from the file
-   for (int i = 0; i < SuperSpacePixel::tail().size(); i++) {
-      SuperSpacePixel::tail().at(i).sortPixelLines();
-   }
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   setGrid( spacing );
-
-   // this is a silly way to do this, but there you go, randomly choose points until you get one
-   // that hits empty space...
-   srand(time(NULL));
-   int testhits, count = 0;
-   PixelRef testpixel;
-   Point2f testpoint;
-   do {
-      count++;
-      testhits = 0;
-      testpixel = PixelRef( rand() % PointMap::getCols(), rand() % PointMap::getRows() );
-      testpoint = PointMap::depixelate(testpixel);
-      for (int i = 0; i < polygons.size(); i++) {
-         try {
-            if (polygons[i].contains(testpoint)) {
-               testhits++;
-            }
-         }
-         catch (int) {
-            // polygons throw if on edge:
-            // break from this loop and continue do-while loop:
-            testhits = 0;
-            break;
-         }
-      }
-   } while (testhits != 1 && count < (PointMap::getCols() * PointMap::getRows()) );
-
-   if (testhits != 1) {
-      return; // give up, you must have tried just about every location by now...
-   }
-
-   PointMap::makePoints(testpoint, Point::FILLED);
-
-   m_state |= POINTS;
-
-   PointMap::sparkGraph2(NULL, 0);
-
-   m_state |= GRAPH | ANGULARGRAPH;
-
-   setViewClass(SHOWVGATOP);
-
-   // Testing: 
-   // write("dummy.graph");
-}
-*/
-
-bool MetaGraph::importCat(istream& filecontents)
-{
-   // any name for the file will do...
-   SuperSpacePixel::push_back(SpacePixelFile("salad"));
-
-   // load the data from the file
-   if (!loadCat( filecontents, NULL )) {
-      return false;
-   }
-
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
-   }
-   else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
-   }
-
-   m_state |= LINEDATA;
-
-   return true;
-}
-
-// a second does the lot, especially for evolutionary graphs
-// essentially, hand the ecoevograph a new meta graph each time...
-// it'll do everything for you
-
-void MetaGraph::fastGraph( const Point2f& seed, double spacing )
-{
-   setGrid( spacing );
-
-   getDisplayedPointMap().makePoints(seed, 0); // 0 = not semifilled
-
-   m_state |= POINTMAPS;
-
-   getDisplayedPointMap().sparkGraph2(NULL, 0, -1.0);
-
-   // historical tag - essentially stamps version, so kept:
-   m_state |= ANGULARGRAPH;
-
-   setViewClass(SHOWVGATOP);
-
-   // Testing: 
-   // write("dummy.graph");
 }
 
 ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::string name) {
@@ -1831,121 +1593,6 @@ void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
     } else {
         SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
     }
-}
-
-int MetaGraph::importLinesAsShapeMap(const std::vector<Line> &lines,
-                                     QtRegion region,
-                                     std::string name,
-                                     depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
-   int x = m_dataMaps.size() - 1;
-
-   getDisplayedDataMap().init(lines.size(), region);
-   if (!getDisplayedDataMap().importLines( lines, data )) {
-      removeDataMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
-}
-
-int MetaGraph::importPointsAsShapeMap(const std::vector<Point2f> &points,
-                                      QtRegion region,
-                                      std::string name,
-                                      depthmapX::Table &data )
-{
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
-   int x = m_dataMaps.size() - 1;
-
-   getDisplayedDataMap().init(points.size(), region);
-   if (!getDisplayedDataMap().importPoints( points, data )) {
-      removeDataMap(x);
-      m_state = oldstate;
-      return -1;
-   }
-
-   m_state |= DATAMAPS;
-   setViewClass(SHOWSHAPETOP);
-
-   return x;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// New layer interaction code
-
-int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap)
-{
-   int retvar = 1;
-   // check for existence of data:
-   std::map<int,int> conversion_lookup;
-
-   for (size_t i = 0; i < size_t(datalayers.getLayerCount()); i++) {
-      if (datalayers[i].getObjectCount()) {
-         m_dataMaps.emplace_back(datalayers[i].getLayerName(),ShapeMap::DATAMAP);
-         conversion_lookup[i] = m_dataMaps.size() - 1;
-      }
-   }
-   // nothing to convert:
-   if (!conversion_lookup.size()) {
-      return 0;
-   }
-
-   int i = 0;
-   for (auto& iter: conversion_lookup) {
-      ShapeMap& shapemap = m_dataMaps[iter.second];
-      int j;
-      // add shapes:
-      pvecint row_lookup;
-      for (j = 0; j < datalayers[i].getObjectCount(); j++) {
-         row_lookup.push_back(shapemap.makeShapeFromPointSet(pointmap));
-         pointmap.clearSel();
-      }
-      // now add attributes:
-      AttributeTable& table = shapemap.getAttributeTable();
-      // add columns, note, we'll have to add and then have lookups because not necessarily in alphabetical order:
-      for (j = 0; j < datalayers[i].getColumnCount(); j++) {
-         table.insertColumn(datalayers[i].getColumnTitle(j));
-      }
-      pvecint column_lookup;
-      for (j = 0; j < datalayers[i].getColumnCount(); j++) {
-         column_lookup.push_back(table.getColumnIndex(datalayers[i].getColumnTitle(j)));
-      }
-      
-      // now we can add the data for this horrible matrix:
-      for (j = 0; j < datalayers[i].getObjectCount(); j++) {
-         for (int k = 0; k < datalayers[i].getColumnCount(); k++) {
-            if (row_lookup[j] != -1) {
-               int row = table.getRowid(row_lookup[j]);  // row lookup should equal j since this is a new shape map, but for safety looked up
-               table.setValue(row,column_lookup[k],float(datalayers[i][j][k]));
-            }
-            else {
-               // conversion error occurred:
-               retvar = -1;
-            }
-         }
-      }
-
-      // set the displayed attribute ready for first draw:
-      shapemap.overrideDisplayedAttribute(-2);
-      shapemap.setDisplayedAttribute(-1);
-      i++;
-   }
-   // the horror is over:     
-   return retvar;
 }
 
 // the tidy(ish) version: still needs to be at top level and switch between layers
@@ -2450,97 +2097,6 @@ const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
    return *tab;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////
-
-/*
-// These two functions are no longer supported
-
-// for editing spacespixel lines post build
-
-// *before* using these functions you need to make at least one layer
-// *editable* (e.g., getLineLayer(0,0).setEditable(true)) 
-// *after* using these functions you need to rebuild the graph
-// (use dynamicSparkGraph2)
-
-int MetaGraph::addLineDynamic(const Line& l)
-{
-   LineKey linekey = -1;
-
-   // this is only used once the graph is built
-   if (!getDisplayedPointMap().isProcessed()) {
-      return linekey;
-   }
-
-   getDisplayedPointMap().blockLines();
-
-   for (int i = 0; i < getLineFileCount(); i++) {
-      for (int j = 0; j < getLineLayerCount(i); j++) {
-         // chooses the first editable layer it can find:
-         if (SuperSpacePixel::at(i).at(j).isEditable()) {
-            SpacePixel& spacepix = SuperSpacePixel::at(i).at(j);
-            linekey.file = i;
-            linekey.layer = j;
-            linekey.lineref = spacepix.addLineDynamic(l);
-         }
-      }
-   }
-
-   if (linekey != -1) {
-      // update the pointdata... nb.  The graph isn't affected until you rebuild graph
-      // (as you might be playing with more than one line at a time it seems sensible to 
-      // wait until you're ready to go with all of them)
-      getDisplayedPointMap().addLineDynamic(linekey,l);
-   }
-
-   return linekey;
-}
-
-bool MetaGraph::removeLineDynamic(LineKey linekey)
-{
-   bool retvar = false;
-
-   // this is only used once the graph is built
-   if (!getDisplayedPointMap().isProcessed()) {
-      return retvar;
-   }
-
-   // first *before adding or removing the line* ensure existing lines are blocked
-   getDisplayedPointMap().blockLines();
-
-   if (linekey != -1) {  // <- this will be typical value when unset
-      SpacePixel& spacepix = SuperSpacePixel::at(linekey.file).at(linekey.layer);
-      Line line;
-      retvar = spacepix.removeLineDynamic(linekey.lineref,line);
-
-      if (retvar) {
-         // update the pointdata... nb.  The graph isn't affected until you rebuild graph
-         // (as you might be playing with more than one line at a time it seems sensible to 
-         // wait until you're ready to go with all of them)
-         // Note: the line itself is used to find the affected pixels
-         getDisplayedPointMap().removeLineDynamic(linekey,line);
-      }
-   }
-
-   return retvar;
-}
-*/
-///////////////////////////////////////////////////////////////////////////////
-
-void MetaGraph::loadGraphAgent()
-{
-//   Graph::m_nodes.openread();
-//   Graph::m_nodes.loadmem();
-}
-
-void MetaGraph::unloadGraphAgent()
-{
-//   Graph::m_nodes.unloadmem();
-//   Graph::m_nodes.close();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int MetaGraph::readFromFile( const std::string& filename )
 {
 
@@ -2611,6 +2167,20 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
 
    char type;
    stream.read( &type, 1 );
+   if (type == 'd') {
+       // contains deprecated datalayers. Read through mgraph440 which will
+       // convert them into shapemaps
+       std::unique_ptr<mgraph440::MetaGraph> mgraph(new mgraph440::MetaGraph);
+       auto result = mgraph->read(filename);
+       if ( result != mgraph440::MetaGraph::OK)
+       {
+           return DAMAGED_FILE;
+       }
+       std::stringstream tempstream;
+       mgraph->writeToStream(tempstream, METAGRAPH_VERSION, 0);
+
+       return readFromStream(tempstream, filename);
+   }
    if (type == 'x') {
       FileProperties::read(stream,version);
       if (stream.eof()) {
@@ -2681,31 +2251,6 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       temp_state |= ANGULARGRAPH;
       if (!stream.eof()) {
          stream.read( &type, 1 );
-      }
-   }
-   if (type == 'd') {
-      // data layers are deprecated: data layers have been replaced by shape maps
-      // so: first read data layers:
-      DataLayers dl;
-      dl.read( stream, version );
-      // now replace with shape maps, but only if layer exists:
-      temp_state &= ~DATAMAPS;
-      // converter requires a point map to work on:
-      if (m_pointMaps.size()) {
-         // returns 0 if there are actually no objects in the shapemaps to convert,
-         int conv_ok = convertDataLayersToShapeMap(dl,getDisplayedPointMap());
-         if (conv_ok == 1) {
-            // read objects in:
-            temp_state |= DATAMAPS;
-         }
-         else if (conv_ok == -1) {
-            // read objects in, but had trouble converting them:
-            temp_state |= DATAMAPS;
-            temp_state |= WARN_CONVERTED;
-         }
-      }
-      if (!stream.eof()) {
-         stream.read( &type, 1 );         
       }
    }
    if (type == 'x') {

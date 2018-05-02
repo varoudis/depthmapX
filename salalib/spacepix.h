@@ -70,20 +70,7 @@ struct LineTest {
    { line = l; test = t; }
 // operator Line() {return line;}
 };
-/*
-struct LineTest : public Line 
-{
-public:
-   // Inside / outside system... sides refer to the side hit when line runs from A to B
-   enum { NEITHER = 0, LEFT = 1, RIGHT = 2 };
-   unsigned short inside;
-   //
-   unsigned int test;
-public:
-   LineTest(const Line& l = Line(), int t = -1) : Line(l)
-   { test = t; inside = NEITHER; }
-};
-*/
+
 struct LineKey {
    unsigned int file : 4;
    unsigned int layer : 6;

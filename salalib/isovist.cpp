@@ -151,18 +151,18 @@ void Isovist::make(BSPNode *here)
    if (m_gaps.size()) {
       int which = here->classify(m_centre);
       if (which == BSPNode::BSPLEFT) {
-         if (here->m_left)
-            make(here->m_left);
+         if (here->m_left.get())
+            make(here->m_left.get());
          drawnode(here->getLine(),here->getTag());
          if (here->m_right)
-            make(here->m_right);
+            make(here->m_right.get());
       }
       else {
-         if (here->m_right)
-            make(here->m_right);
+         if (here->m_right.get())
+            make(here->m_right.get());
          drawnode(here->getLine(),here->getTag());
          if (here->m_left)
-            make(here->m_left);
+            make(here->m_left.get());
       }
    }
 }
@@ -315,10 +315,6 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
    table.setValue(row,col,(float)area);
 
 
-
-   // dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-#ifndef _COMPILE_dX_SIMPLE_VERSION
    if(!simple_version) {
        col = table.getColumnIndex("Isovist Compactness");
        if (col == -1) {
@@ -360,6 +356,5 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
        }
        table.setValue(row,col,(float)m_perimeter);
    }
-#endif
 
 }

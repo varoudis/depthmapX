@@ -26,7 +26,6 @@
 
 #include <salalib/mgraph.h>
 #include <salalib/spacepix.h>
-#include <salalib/datalayer.h>
 #include <salalib/pointdata.h>
 
 #include "sparksieve2.h"
@@ -43,7 +42,7 @@ sparkSieve2::~sparkSieve2()
 {
 }
 
-bool sparkSieve2::testblock( const Point2f& point, const std::map<int,Line>& lines, double tolerance )
+bool sparkSieve2::testblock( const Point2f& point, const std::vector<Line>& lines, double tolerance )
 {
    Line l(m_centre, point);
 
@@ -55,7 +54,7 @@ bool sparkSieve2::testblock( const Point2f& point, const std::map<int,Line>& lin
    for (auto line: lines)
    {
       // Note: must check regions intersect before using this intersect_line test -- see notes on intersect_line
-      if (intersect_region(l,line.second,tolerance) && intersect_line(l,line.second,tolerance)) {
+      if (intersect_region(l,line,tolerance) && intersect_line(l,line,tolerance)) {
          return true;
       }
    }
@@ -65,11 +64,11 @@ bool sparkSieve2::testblock( const Point2f& point, const std::map<int,Line>& lin
 
 //
 
-void sparkSieve2::block( const std::map<int,Line>& lines, int q )
+void sparkSieve2::block( const std::vector<Line>& lines, int q )
 {
    for (auto line: lines) {
-      double a = tanify(line.second.start(), q);
-      double b = tanify(line.second.end(), q);
+      double a = tanify(line.start(), q);
+      double b = tanify(line.end(), q);
 
       sparkZone2 block;
       if (a < b) {

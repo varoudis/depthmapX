@@ -1067,22 +1067,6 @@ void QGraphDoc::OnEditGrid()
    }
 }
 
-void QGraphDoc::OnEditFixgrid() 
-{
-}
-
-void QGraphDoc::OnEditFixFill() 
-{
-   // only used in Developer mode
-   if (m_communicator) {
-	  QMessageBox::warning(this, tr("Notice"), tr("Please wait, another task is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-   m_meta_graph->getDisplayedPointMap().fillLines();
-
-   SetRedrawFlag(VIEW_ALL,REDRAW_GRAPH, NEW_DATA);
-}
-
 // AV TV // semifilled
 void QGraphDoc::OnFillPoints( const Point2f& p, int fill_type ) // semifilled = 0 (intention to use semifilled steps for part filled)
 {
@@ -1112,29 +1096,6 @@ void QGraphDoc::OnFillPoints( const Point2f& p, int fill_type ) // semifilled = 
 
    m_thread.render(this);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void QGraphDoc::OnToolsBoundaryToAxial() 
-{
-   int state = m_meta_graph->getState();
-   if (m_communicator) {
-	  QMessageBox::warning(this, tr("Notice"), tr("Please wait, another task is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-   if (!m_meta_graph->getDisplayedPointMap().isProcessed()) {
-	  QMessageBox::warning(this, tr("Notice"), tr("Sorry, a graph must exist to construct map"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-
-   // This is easy too... too easy... hmm... crossed-fingers, here goes:
-   m_communicator = new CMSCommunicator();
-   CreateWaitDialog(tr("Constructing boundary axial map..."));
-   m_communicator->SetFunction( CMSCommunicator::MAKEBOUNDARYMAP );
-
-   m_thread.render(this);
-}
-
 
 // convert any shape layer to any other (certain rules apply)
 
@@ -1451,22 +1412,6 @@ void QGraphDoc::OnToolsTopomet()
    }
 }
 
-////////////////////////////////////////////////////////////////////////
-
-void QGraphDoc::OnToolsAxialClearLinks() 
-{
-   if(QMessageBox::Yes == QMessageBox::warning(this, tr("depthmapX"),
-										tr("Are you sure you want to clear all links and unlinks?"),
-										QMessageBox::Yes | QMessageBox::No
-										| QMessageBox::Yes,
-										QMessageBox::No))
-   {
-      m_meta_graph->getDisplayedShapeGraph().clearLinks();
-      // if currently in join mode, then redraw:
-      SetRedrawFlag(VIEW_ALL, REDRAW_GRAPH, NEW_DATA );
-   }
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 // New agent functionality:
@@ -1647,9 +1592,6 @@ void QGraphDoc::OnToolsMakeGraph()
 	   QMessageBox::warning(this, tr("Warning"), tr("Sorry, you need an unprocessed set of points to make the visibility graph"), QMessageBox::Ok, QMessageBox::Ok);
       return;
    }
-   /*if (!CheckMemory()) {
-      return;
-   }*/
 
    CMakeOptionsDlg dlg;
    dlg.m_boundarygraph = false;
@@ -1677,19 +1619,6 @@ void QGraphDoc::OnToolsMakeGraph()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-
-void QGraphDoc::OnVGAOptions() 
-{
-   COptionsDlg dlg;
-
-   dlg.m_layer_names.push_back("<None>");
-   for (auto& dataMap: m_meta_graph->getDataMaps()) {
-       dlg.m_layer_names.push_back(dataMap.getName());
-   }
-
-   dlg.exec();
-}
 
 void QGraphDoc::OnToolsRun() 
 {
@@ -1778,17 +1707,6 @@ void QGraphDoc::OnToolsAPD()
       }
    }
 }
-/*
-void QGraphDoc::OnUpdateToolsTPD()//CCmdUI *pCmdUI)
-{
-   // segment maps only (with selection)
-   if (m_meta_graph->viewingProcessedLines() && m_meta_graph->getDisplayedShapeGraph().isSegmentMap() && m_meta_graph->isSelected()) {
-      pCmdUI->Enable(TRUE);
-   }
-   else {
-      pCmdUI->Enable(FALSE);
-   }	
-}*/
 
 void QGraphDoc::OnToolsTPD()
 {
@@ -1828,22 +1746,6 @@ void QGraphDoc::OnBinDisplay()
          m_thread.render(this);
       }
    }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void QGraphDoc::OnToolsAxialLines() 
-{
-   if (m_communicator) {
-      QMessageBox::warning(this, tr("Warning"), tr("Please wait, another process is running"), QMessageBox::Ok, QMessageBox::Ok);
-      return;
-   }
-
-   // This is easy too... too easy... hmm... crossed-fingers, here goes:
-   m_communicator = new CMSCommunicator();
-   CreateWaitDialog(tr("Analysing graph..."));
-   m_communicator->SetFunction( CMSCommunicator::MAKEAXIALLINES );
-   m_thread.render(this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2572,17 +2474,6 @@ void QGraphDoc::OnViewShowGrid()
    SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DEPTHMAPVIEW_SETUP);
 }
 
-void QGraphDoc::OnViewShowText() 
-{
-   if (m_meta_graph->m_showtext) {
-      m_meta_graph->m_showtext = false;
-   }
-   else {
-      m_meta_graph->m_showtext = true;
-   }
-   SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DEPTHMAPVIEW_SETUP);
-}
-
 //#include "AttributeSummary.h"
 
 void QGraphDoc::OnViewSummary() 
@@ -2688,103 +2579,6 @@ void QGraphDoc::OnConvertMapShapes()
          }
       }
    }
-}
-
-// Point depth either lines, axials or segments: 
-
-// Deprecated, now in CViewSelector
-
-bool QGraphDoc::ViewHandler(int nCode, void *pExtra, int viewing, int layer)
-{
-/*
-   if (nCode == CN_COMMAND) {
-      if (layer != -1) {
-         if (!m_meta_graph->setCurrentLayerRef(layer)) {
-            // Layer doesn't exist for some reason...
-            return false;
-         }
-         SetTitle(m_base_title + " - " + m_meta_graph->getCurrentLayer().getLayerName().c_str());
-      }
-      else {
-         SetTitle(m_base_title + " - Attributes");
-      }
-      if (m_meta_graph->getViewing() != viewing) {
-         m_meta_graph->setViewing(viewing, *m_meta_graph);
-      }
-      SetRedrawFlag(VIEW_ALL, true );
-      SetRedrawFlag(VIEW_ALL, QGraphDoc::REDRAW_GRAPH );
-   }
-   else if (nCode == CN_UPDATE_COMMAND_UI) {
-      (()//CCmdUI*)pExtra)->Enable(TRUE);
-      if (m_meta_graph->getViewing() == viewing && 
-          (layer == -1 || m_meta_graph->getCurrentLayerRef() == layer)) {
-         (()//CCmdUI*)pExtra)->SetCheck(1);
-      }
-      else {
-         (()//CCmdUI*)pExtra)->SetCheck(0);
-      }
-   }
-*/
-   return true;
-}
-
-bool QGraphDoc::CheckMemory(const QString& filename) 
-{
-/*   // Check there's enough memory to hold the graph (based on benchmarks)
-   MEMORYSTATUS memstat;
-   memstat.dwLength = sizeof(MEMORYSTATUS);
-   GlobalMemoryStatus(&memstat);
-   double avail = double(memstat.dwAvailPhys) / double(1024 * 1024);
-
-   double min_required = double(m_meta_graph->getDisplayedPointMap().getPointCount()) * 0.0050;
-   double absolute_min_req = double(m_meta_graph->getDisplayedPointMap().getPointCount()) * 0.0025;
-
-   if (!filename.IsEmpty()) {
-      ifstream test(filename, ios::binary);
-      if (test.fail()) {
-         AfxMessageBox(QString("Couldn't open ") + filename);
-         if (test.is_open()) {
-            test.close();
-         }
-         return false;
-      }
-      char header[3];
-      test.read( (char *) &header, 3 );
-      if (header[0] != 'g' || header[1] != 'r' || header[2] != 'f') {
-         AfxMessageBox(tr("Sorry: this is not a depthmapX graph file"));
-         test.close();
-         return false;
-      }
-      int version;
-      test.read( (char *) &version, sizeof(version));
-      test.seekg(0,ios::end);
-      if (version < VERSION_NGRAPH_INTROD) {
-         // Should be able to fit old graphs into about the same memory:
-         min_required = 1.1 * double(test.tellg()) / double(1024 * 1024);
-      }
-      else {
-         // Don't know why, but the current version appears double the file size when in memory:
-         min_required = 1.1 * double(test.tellg()) / double(1024 * 1024); // .... did use to be 2.2
-      }
-      test.close();
-      if (version < VERSION_NGRAPH_INTROD) {
-         if (IDYES != AfxMessageBox(tr("Warning, this graph will require conversion, which may take a few minutes.\nDo you want to continue?"), MB_YESNO)) {
-            return false;
-         }
-      }
-   }
-
-   if (avail < min_required) {
-      QString str;
-      str.Format(tr("%.1f MB available, %.1f MB advised"), avail, min_required );
-      if ( IDYES != AfxMessageBox( QString("According to benchmark stats, there may not be enough memory to process this graph.\n") +
-                                   tr("(") + str + tr(")\n") +
-                                   tr("The analysis may take much longer than usual.  Do you still want to continue?"), MB_YESNO ) ) {
-         return false;
-      }
-   }
-*/
-   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -149,8 +149,7 @@ ShapeMap::ShapeMap(const std::string& name, int type) : m_attributes(name)
    // shape and object counters
    m_obj_ref = -1;
    // -1 is the shape ref column (which will be shown by default)
-   m_displayed_attribute = -1; 
-   m_display_shapes = NULL;
+   m_displayed_attribute = -1;
    m_invalidate = false;
    // for polygons:
    m_show_lines = true;
@@ -178,11 +177,6 @@ ShapeMap::~ShapeMap()
       delete m_bsp_root;
       m_bsp_root = NULL;
    }
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
-   m_hasMapInfoData = false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -192,10 +186,7 @@ ShapeMap::~ShapeMap()
 void ShapeMap::init(int size, const QtRegion &r)
 {
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
    m_rows = __min(__max(20,(int)sqrt((double)size)),32768);
    m_cols = __min(__max(20,(int)sqrt((double)size)),32768);
    if (m_region.atZero()) {
@@ -262,10 +253,7 @@ void ShapeMap::clearAll()
       m_bsp_root = NULL;
    }
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
 
    m_shapes.clear();
    m_objects.clear();
@@ -969,7 +957,7 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
          // note, you cannot delete from a segment map, it's just too messy!
       }
 
-      m_connectors.remove_at(rowid);
+      m_connectors.erase(m_connectors.begin() + rowid);
 
       // take out explicit links and unlinks (note, undo won't restore these):
       size_t k;
@@ -1027,7 +1015,7 @@ void ShapeMap::undo()
          // ...but that doesn't exist yet, so for the moment do lines:
          //
          // insert new connector at the row:
-         m_connectors.insert_at(rowid,Connector());
+         m_connectors[rowid] = Connector();
          //
          // now go through all connectors, ensuring they're reindexed above this one:
          // Argh!  ...but, remember the reason we're doing this is for fast processing elsewhere
@@ -2013,7 +2001,7 @@ int ShapeMap::getClosestLine(const Point2f& p) const
    return index;
 }
 
-void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
+void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
 {
    if (!intersect_region(li_orig,m_region)) {
       return;
@@ -2050,7 +2038,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,li2)) {
                            // find intersection point and add:
-                           cuts.add(ValuePair(shaperef.m_shape_ref,li.intersection_point(li2,axis,1e-9)),paftl::ADD_DUPLICATE);  // note: added key not rowid
+                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(li2,axis,1e-9)));  // note: added key not rowid
                         }
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,x),paftl::ADD_HERE);
@@ -2067,7 +2055,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,poly.m_region)) {
                            // find intersection point and add:
-                           cuts.add(ValuePair(shaperef.m_shape_ref,li.intersection_point(poly.m_region,axis,1e-9)),paftl::ADD_DUPLICATE);  // note: added key not rowid
+                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(poly.m_region,axis,1e-9)));  // note: added key not rowid
                         }
                      }
                      tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
@@ -2081,53 +2069,25 @@ void ShapeMap::getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts)
 
 void ShapeMap::cutLine(Line& li) //, short dir)
 {
-   pvector<ValuePair> cuts;
+   std::vector<ValuePair> cuts;
    getShapeCuts(li,cuts);
-/*
-   bool same = false;
-   if (dir == li.direction()) {
-      same = true;
-   }
-
-   if (cuts.size()) {
-      if (li.width() > li.height()) {
-         // these are xaxis cuts
-         if (li.rightward() == same) {
-            // in the correct order:
-            li = Line(li.point_on_line(cuts.head().value,XAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,XAXIS));
-         }
-      }
-      else {
-         if (li.upward()) {
-            li = Line(li.point_on_line(cuts.head().value,YAXIS),li.end());
-         }
-         else {
-            // in reverse order:
-            li = Line(li.start(),li.point_on_line(cuts.tail().value,YAXIS));
-         }
-      }
-   }
-   */
+   std::sort(cuts.begin(), cuts.end());
 
    if (cuts.size()) {
       if (li.width() > li.height()) {
          if (li.rightward()) {
-            li = Line(li.start(),li.point_on_line(cuts.head().value,XAXIS));
+            li = Line(li.start(),li.point_on_line(cuts.front().value,XAXIS));
          }
          else {
-            li = Line(li.point_on_line(cuts.tail().value,XAXIS),li.end());
+            li = Line(li.point_on_line(cuts.back().value,XAXIS),li.end());
          }
       }
       else {
          if (li.upward()) {
-            li = Line(li.t_start(),li.point_on_line(cuts.head().value,YAXIS));
+            li = Line(li.t_start(),li.point_on_line(cuts.front().value,YAXIS));
          }
          else {
-            li = Line(li.t_start(),li.point_on_line(cuts.tail().value,YAXIS));
+            li = Line(li.t_start(),li.point_on_line(cuts.back().value,YAXIS));
          }
       }
    }
@@ -2515,10 +2475,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
 
    // clear old:
    m_pixel_shapes.clear();
-   if (m_display_shapes) {
-      delete [] m_display_shapes;
-      m_display_shapes = NULL;
-   }
+   m_display_shapes.clear();
    m_objects.clear();
    m_shapes.clear();
    m_attributes.clear();
@@ -2900,14 +2857,9 @@ void ShapeMap::makeViewportShapes( const QtRegion& viewport ) const
       return;
    }
 
-   if (!m_display_shapes || m_newshape) {
-      if (m_display_shapes) 
-         delete [] m_display_shapes;
-      m_display_shapes = new int [m_shapes.size()];
+   if (m_display_shapes.empty() || m_newshape) {
+      m_display_shapes.assign(m_shapes.size(), -1);
       m_newshape = false;
-      for (size_t i = 0; i < m_shapes.size(); i++) {
-         m_display_shapes[i] = -1;
-      }
    }
 
    m_current = -1;   // note: findNext expects first to be labelled -1
