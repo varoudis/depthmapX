@@ -104,6 +104,6 @@ TEST_CASE("Test pointMaps", "")
         mgraph->removeDisplayedMap();
         REQUIRE(mgraph->getPointMaps().size() == 1);
         REQUIRE(mgraph->getPointMaps()[0].getName() == "Stan");
-        REQUIRE(mgraph->getDisplayedPointMapRef() == -1);
+        REQUIRE(mgraph->getDisplayedPointMapRef() == 0);
     }
 }
