@@ -3414,9 +3414,9 @@ int findwinner(double *bins, int bincount, int& difficult, int& impossible)
 #include <windows.h>
 #endif
 
-std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() {
+std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() const {
     std::vector<SimpleLine> lines;
-    std::map<int,SalaShape>& allShapes = getAllShapes();
+    const std::map<int,SalaShape>& allShapes = getAllShapes();
     for (auto refShape: allShapes) {
         SalaShape& shape = refShape.second;
         if (shape.isLine()) {
