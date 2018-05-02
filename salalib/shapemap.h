@@ -340,7 +340,7 @@ public:
    // this version simply finds the closest vertex to the point
    Point2f getClosestVertex(const Point2f& p) const;
    // Find out which shapes a line cuts through:
-   void getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts);
+   void getShapeCuts(const Line& li_orig, std::vector<ValuePair> &cuts);
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
    // Find out which shapes are within a certain radius of a point:
