@@ -642,19 +642,19 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
    }
 
    std::vector<TaggedLine> partitionlines;
-   for (auto& pixelGroup: m_spacePixels) {
-      for (auto& pixel: pixelGroup.m_spacePixels) {
+   for (const auto& pixelGroup: m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
          if (pixel.isShown()) {
              auto refShapes = pixel.getAllShapes();
              int k = -1;
-             for (auto refShape: refShapes) {
+             for (const auto& refShape: refShapes) {
                  k++;
                  std::vector<Line> newLines = refShape.second.getAsLines();
                  // I'm not sure what the tagging was meant for any more,
                  // tagging at the moment tags the *polygon* it was original attached to
                  // must check it is not a zero length line:
-                 for(Line& line: newLines) {
+                 for(const Line& line: newLines) {
                      if(line.length() > 0.0) {
                          partitionlines.push_back(TaggedLine(line,k));
                      }
@@ -946,12 +946,12 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       if (typeflag == -1) {
          int layercol = destmap.addAttribute("Drawing Layer");
          // add all visible layers to the set of map:
-         for (auto& pixelGroup: m_spacePixels) {
+         for (const auto& pixelGroup: m_spacePixels) {
             int j = 0;
-            for (auto& pixel: pixelGroup.m_spacePixels) {
+            for (const auto& pixel: pixelGroup.m_spacePixels) {
                if (pixel.isShown()) {
                   auto refShapes = pixel.getAllShapes();
-                  for (auto refShape: refShapes) {
+                  for (const auto& refShape: refShapes) {
                      int key = destmap.makeShape(refShape.second);
                      table.setValue(table.getRowid(key),layercol,float(j+1));
                      count++;
@@ -2840,8 +2840,8 @@ std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
 
     std::vector<SimpleLine> lines;
 
-    for (auto& pixelGroup: m_spacePixels) {
-       for (auto& pixel: pixelGroup.m_spacePixels) {
+    for (const auto& pixelGroup: m_spacePixels) {
+       for (const auto& pixel: pixelGroup.m_spacePixels) {
             if (pixel.isShown()) {
                 const std::vector<SimpleLine> &newLines = pixel.getAllShapesAsLines();
                 lines.insert(std::end(lines), std::begin(newLines), std::end(newLines));

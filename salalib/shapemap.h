@@ -142,7 +142,7 @@ public:
    bool read(istream &stream, int version);
    bool write(ofstream& stream);
 
-   std::vector<Line> getAsLines() {
+   std::vector<Line> getAsLines() const {
        std::vector<Line> lines;
        if (isLine()) {
           lines.push_back(getLine());
@@ -444,7 +444,7 @@ public:
       { return m_attributes.getAvgValue( m_displayed_attribute ); }
    //
 protected:
-   bool m_show;              // used when shape map is a drawing layer
+   mutable bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
    std::set<int> m_selection_set;   // note: uses rowids not keys
@@ -466,7 +466,7 @@ public:
    // To showing
    bool isShown() const
    { return m_show; }
-   void setShow(bool on = true)
+   void setShow(bool on = true) const
    { m_show = on; }
    // To all editing
    bool isEditable() const
@@ -541,7 +541,7 @@ public:
    std::vector<Point2f> getAllUnlinkPoints();
    void outputUnlinkPoints( ofstream& stream, char delim );
 public:
-   std::vector<SimpleLine> getAllShapesAsLines();
+   std::vector<SimpleLine> getAllShapesAsLines() const;
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);

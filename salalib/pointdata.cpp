@@ -381,11 +381,11 @@ bool PointMap::fillLines()
    }
    m_undocounter++;
 
-   for (auto& pixelGroup: m_spacepix->m_spacePixels) {
-      for (auto& pixel: pixelGroup.m_spacePixels) {
+   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
          if (pixel.isShown()) {
              std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
-             for (auto line: newLines) {
+             for (const auto& line: newLines) {
                 fillLine(Line(line.start(), line.end()));
              }
          }
@@ -422,12 +422,12 @@ bool PointMap::blockLines()
    // would require a key with (file, layer, shaperef, seg) when used with shaperef,
    // so just switched to an integer key:
 
-   for (auto& pixelGroup: m_spacepix->m_spacePixels) {
-      for (auto& pixel: pixelGroup.m_spacePixels) {
+   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
          if (pixel.isShown()) {
              std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
-             for (auto line: newLines) {
+             for (const auto& line: newLines) {
                 blockLine(count++, Line(line.start(), line.end()));
              }
          }
