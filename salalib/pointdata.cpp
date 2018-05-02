@@ -414,7 +414,7 @@ bool PointMap::blockLines()
          if (m_spacepix->at(i).at(j).isShown()) {
              std::vector<SimpleLine> newLines = m_spacepix->at(i).at(j).getAllShapesAsLines();
              for (auto line: newLines) {
-                blockLine(count++, Line(line.start(), line.end()));
+                blockLine(Line(line.start(), line.end()));
              }
          }
       }
@@ -425,9 +425,9 @@ bool PointMap::blockLines()
          PixelRef curs = PixelRef( i, j );
          Point& pt = getPoint( curs );
          QtRegion viewport = regionate( curs, 1e-10 );
-         std::map<int, Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
+         std::vector<Line>::iterator iter = pt.m_lines.begin(), end = pt.m_lines.end();
          for(; iter != end; ) {
-             if (!iter->second.crop( viewport )) {
+             if (!iter->crop( viewport )) {
                  // the pixelation is fairly rough to make sure that no point is missed: this just
                  // clears up if any point has been added in error:
                  iter = pt.m_lines.erase(iter);
@@ -444,14 +444,14 @@ bool PointMap::blockLines()
    return true;
 }
 
-void PointMap::blockLine(int key, const Line& li)
+void PointMap::blockLine(const Line& li)
 {
    std::vector<PixelRef> pixels = pixelateLineTouching(li,1e-10);
    // touching is generally better for ensuring lines pixelated completely, 
    // although it may catch extra points...
    for (size_t n = 0; n < pixels.size(); n++)
    {
-      getPoint(pixels[n]).m_lines.insert(std::make_pair(key,li));
+      getPoint(pixels[n]).m_lines.push_back(li);
       getPoint(pixels[n]).setBlock(true);
    }
 }
@@ -583,16 +583,16 @@ int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list
       return 2;
    }
    Line l(depixelate(p1),depixelate(p2));
-   for (size_t i = 0; i < getPoint(p1).m_lines.size(); i++)
+   for (auto& line: getPoint(p1).m_lines)
    {
-      if (intersect_region(l, getPoint(p1).m_lines[i], m_spacing * 1e-10) && intersect_line(l, getPoint(p1).m_lines[i], m_spacing * 1e-10)) {
+      if (intersect_region(l, line, m_spacing * 1e-10) && intersect_line(l, line, m_spacing * 1e-10)) {
          // 4 = blocked
          return 4;
       }
    }
-   for (size_t j = 0; j < getPoint(p2).m_lines.size(); j++)
+   for (auto& line: getPoint(p2).m_lines)
    {
-      if (intersect_region(l, getPoint(p2).m_lines[j], m_spacing * 1e-10) && intersect_line(l, getPoint(p2).m_lines[j], m_spacing * 1e-10)) {
+      if (intersect_region(l, line, m_spacing * 1e-10) && intersect_line(l, line, m_spacing * 1e-10)) {
          // 4 = blocked
          return 4;
       }
@@ -1641,12 +1641,12 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
          viewport0.top_right.y = centre0.y;
          break;
       }
-      std::map<int,Line> lines0;
-      for (const std::pair<int,Line>& line: getPoint(curs).m_lines)
+      std::vector<Line> lines0;
+      for (const Line& line: getPoint(curs).m_lines)
       {
-         Line l = line.second;
+         Line l = line;
          if (l.crop(viewport0)) {
-            lines0.insert(std::make_pair(line.first,l));
+            lines0.push_back(line);
          }
       }
       sieve.block(lines0, q);
