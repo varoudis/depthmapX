@@ -1342,6 +1342,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
             }
          }
 
+         // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
          m_spacePixels.back().m_spacePixels[i].setDisplayedAttribute(-2);
          m_spacePixels.back().m_spacePixels[i].setDisplayedAttribute(-1);
       }
