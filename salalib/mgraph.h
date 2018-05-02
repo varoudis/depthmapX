@@ -102,7 +102,11 @@ private:
    void setSpacePixel(SuperSpacePixel *spacepix)
    { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
    void removePointMap(int i)
-   { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
+   {
+       if (m_displayed_pointmap >= i) m_displayed_pointmap--;
+       if(m_displayed_pointmap < 0) m_displayed_pointmap = 0;
+       m_pointMaps.erase(m_pointMaps.begin() + i);
+   }
 
    bool readPointMaps(istream &stream, int version );
    bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
