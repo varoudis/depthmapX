@@ -985,15 +985,15 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
       //
       if (sourcemap->getShapeCount() != 0) {
          // this is very simple: create a new drawing layer, and add the data...
-         auto group = m_spacePixels.rbegin();
-         for (; group != m_spacePixels.rend(); ++group) {
+         auto group = m_spacePixels.begin();
+         for (; group != m_spacePixels.end(); ++group) {
             if (group->getName() == "Converted Maps") {
                break;
             }
          }
-         if (group == m_spacePixels.rend()) {
+         if (group == m_spacePixels.end()) {
             m_spacePixels.emplace_back(std::string("Converted Maps"));
-            group = m_spacePixels.rbegin();
+            group = std::prev(m_spacePixels.end());
          }
          group->m_spacePixels.emplace_back(layer_name);
          group->m_spacePixels.back().copy(*sourcemap, ShapeMap::COPY_GEOMETRY);
