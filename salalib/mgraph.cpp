@@ -607,19 +607,19 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
    }
 
    std::vector<TaggedLine> partitionlines;
-   for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
-      for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
+   for (const auto& pixelGroup: m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
-         if (SuperSpacePixel::at(i).at(j).isShown()) {
-             auto refShapes = SuperSpacePixel::at(i).at(j).getAllShapes();
+         if (pixel.isShown()) {
+             auto refShapes = pixel.getAllShapes();
              int k = -1;
-             for (auto refShape: refShapes) {
+             for (const auto& refShape: refShapes) {
                  k++;
                  std::vector<Line> newLines = refShape.second.getAsLines();
                  // I'm not sure what the tagging was meant for any more,
                  // tagging at the moment tags the *polygon* it was original attached to
                  // must check it is not a zero length line:
-                 for(Line& line: newLines) {
+                 for(const Line& line: newLines) {
                      if(line.length() > 0.0) {
                          partitionlines.push_back(TaggedLine(line,k));
                      }
@@ -907,17 +907,19 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       if (typeflag == -1) {
          int layercol = destmap.addAttribute("Drawing Layer");
          // add all visible layers to the set of map:
-         for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
-            for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
-               if (SuperSpacePixel::at(i).at(j).isShown()) {
-                  auto refShapes = SuperSpacePixel::at(i).at(j).getAllShapes();
-                  for (auto refShape: refShapes) {
+         for (const auto& pixelGroup: m_spacePixels) {
+            int j = 0;
+            for (const auto& pixel: pixelGroup.m_spacePixels) {
+               if (pixel.isShown()) {
+                  auto refShapes = pixel.getAllShapes();
+                  for (const auto& refShape: refShapes) {
                      int key = destmap.makeShape(refShape.second);
                      table.setValue(table.getRowid(key),layercol,float(j+1));
                      count++;
                   }
-                  SuperSpacePixel::at(i).at(j).setShow(false);
+                  pixel.setShow(false);
                }
+               j++;
             }
          }
       }
@@ -983,35 +985,35 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
       //
       if (sourcemap->getShapeCount() != 0) {
          // this is very simple: create a new drawing layer, and add the data...
-         int group = -1;
-         for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
-            if (SuperSpacePixel::at(i).getName() == "Converted Maps") {
-               group = i;
+         auto group = m_spacePixels.begin();
+         for (; group != m_spacePixels.end(); ++group) {
+            if (group->getName() == "Converted Maps") {
+               break;
             }
          }
-         if (group == -1) {
-            SuperSpacePixel::push_back(std::string("Converted Maps"));
-            group = SuperSpacePixel::size() - 1;
+         if (group == m_spacePixels.end()) {
+            m_spacePixels.emplace_back(std::string("Converted Maps"));
+            group = std::prev(m_spacePixels.end());
          }
-         SuperSpacePixel::at(group).push_back(ShapeMap(layer_name));
-         SuperSpacePixel::at(group).tail().copy(*sourcemap, ShapeMap::COPY_GEOMETRY);
+         group->m_spacePixels.emplace_back(layer_name);
+         group->m_spacePixels.back().copy(*sourcemap, ShapeMap::COPY_GEOMETRY);
          //
          // dummy set still required:
-         SuperSpacePixel::at(group).tail().invalidateDisplayedAttribute();
-         SuperSpacePixel::at(group).tail().setDisplayedAttribute(-1);
+         group->m_spacePixels.back().invalidateDisplayedAttribute();
+         group->m_spacePixels.back().setDisplayedAttribute(-1);
          //      
          // two levels of merge region:
-         if (SuperSpacePixel::at(group).size() == 1) {
-            SuperSpacePixel::at(group).m_region = sourcemap->getRegion();
+         if (group->m_spacePixels.size() == 1) {
+            group->m_region = sourcemap->getRegion();
          }
          else {
-            SuperSpacePixel::at(group).m_region = runion(SuperSpacePixel::at(group).m_region, sourcemap->getRegion());
+            group->m_region = runion(group->m_region, sourcemap->getRegion());
          }
-         if (SuperSpacePixel::size() == 1) {
-            SuperSpacePixel::m_region = SuperSpacePixel::at(group).m_region;
+         if (m_spacePixels.size() == 1) {
+            SuperSpacePixel::m_region = group->m_region;
          }
          else {
-            SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::at(group).m_region);
+            SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, group->m_region);
          }
          //
          retvar = true;
@@ -1285,10 +1287,10 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    m_bsp_tree = false;
 
    if (load_type & REPLACE) {
-      SuperSpacePixel::clear();
+      m_spacePixels.clear();
    }
 
-   SuperSpacePixel::push_back(communicator->GetMBInfileName());
+   m_spacePixels.emplace_back(communicator->GetMBInfileName());
 
    if (load_type & CAT) {
       // separate the stream and the communicator, allowing non-file streams read
@@ -1312,44 +1314,45 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
          map.open(communicator->GetFileSet(), communicator);
       }
       catch (Communicator::CancelledException) {
-         SuperSpacePixel::pop_back();
+         m_spacePixels.pop_back();
          return 0;
       }
       catch (pexception) {
-         SuperSpacePixel::pop_back();
+         m_spacePixels.pop_back();
          return -1;
       }
 
       if (communicator->IsCancelled()) {
-         SuperSpacePixel::pop_back();
+         m_spacePixels.pop_back();
          return 0;
       }
 
-      SuperSpacePixel::tail().m_region = map.getRegion();;
+      m_spacePixels.back().m_region = map.getRegion();;
 
       for (size_t i = 0; i < map.size(); i++) {
 
-         SuperSpacePixel::tail().push_back(ShapeMap(map[i].getName()));
-         SuperSpacePixel::tail().at(i).init(map[i].getLineCount(), map.getRegion());
+         m_spacePixels.back().m_spacePixels.emplace_back(map[i].getName());
+         m_spacePixels.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
 
          for (size_t j = 0; j < map[i].size(); j++) {
 
             for (size_t k = 0; k < map[i][j].size(); k++) {
 
-               SuperSpacePixel::tail().at(i).makeLineShape( map[i][j][k] );
+               m_spacePixels.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
             }
          }
 
-         SuperSpacePixel::tail().at(i).setDisplayedAttribute(-2);
-         SuperSpacePixel::tail().at(i).setDisplayedAttribute(-1);
+         // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
+         m_spacePixels.back().m_spacePixels[i].setDisplayedAttribute(-2);
+         m_spacePixels.back().m_spacePixels[i].setDisplayedAttribute(-1);
       }
    }
 
-   if (SuperSpacePixel::size() == 1) {
-      SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
+   if (m_spacePixels.size() == 1) {
+      SuperSpacePixel::m_region = m_spacePixels.back().m_region;
    }
    else {
-      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+      SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, m_spacePixels.back().m_region);
    }
 
    m_state |= LINEDATA;
@@ -1418,9 +1421,9 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
          }
       }
    }
-   SuperSpacePixel::tail().m_region = QtRegion(min_point, max_point);
-   SuperSpacePixel::tail().push_back(ShapeMap());
-   SuperSpacePixel::tail().tail().init( numlines, QtRegion(min_point, max_point) );
+   m_spacePixels.back().m_region = QtRegion(min_point, max_point);
+   m_spacePixels.back().m_spacePixels.emplace_back();
+   m_spacePixels.back().m_spacePixels.back().init( numlines, QtRegion(min_point, max_point) );
 
    // in MSVC 6, ios::eof remains set and it needs to be cleared.
    // in MSVC 8 it's even worse: it won't even seekg until eof flag has been cleared
@@ -1450,14 +1453,14 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
          else if (dXstring::toLower(inputline).substr(0,3) == "end") {
             if (points.size() > 2) {
                if (parsing == 1) { // polygon
-                  SuperSpacePixel::tail().tail().makePolyShape(points, false);
+                  m_spacePixels.back().m_spacePixels.back().makePolyShape(points, false);
                }
                else { // polyline
-                  SuperSpacePixel::tail().tail().makePolyShape(points, true);
+                  m_spacePixels.back().m_spacePixels.back().makePolyShape(points, true);
                }
             }
             else if (points.size() == 2) {
-               SuperSpacePixel::tail().tail().makeLineShape(Line(points[0],points[1]));
+               m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(points[0],points[1]));
             }
             points.clear();
             parsing = 0;
@@ -1482,8 +1485,8 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
       }
    }
 
-   SuperSpacePixel::tail().tail().setDisplayedAttribute(-2);
-   SuperSpacePixel::tail().tail().setDisplayedAttribute(-1);
+   m_spacePixels.back().m_spacePixels.back().setDisplayedAttribute(-2);
+   m_spacePixels.back().m_spacePixels.back().setDisplayedAttribute(-1);
 
    return 1;
 }
@@ -1496,20 +1499,20 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
       map.parse( fileset, communicator );
    }
    catch (Communicator::CancelledException) {
-      SuperSpacePixel::pop_back();
+      m_spacePixels.pop_back();
       return 0;
    }
    catch (pexception) {
-      SuperSpacePixel::pop_back();
+      m_spacePixels.pop_back();
       return -1;
    }
 
    if (communicator->IsCancelled()) {
-      SuperSpacePixel::pop_back();
+      m_spacePixels.pop_back();
       return 0;
    }
 
-   SuperSpacePixel::tail().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
+   m_spacePixels.back().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
 
    // for each category
    for (auto val: map.m_categories) {
@@ -1526,7 +1529,7 @@ int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communi
 
       shapeMap.setDisplayedAttribute(-2);
       shapeMap.setDisplayedAttribute(-1);
-      SuperSpacePixel::tail().push_back(shapeMap);
+      m_spacePixels.back().m_spacePixels.emplace_back(shapeMap);
    
    }
 
@@ -1537,8 +1540,8 @@ ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::strin
 
     switch(mapType) {
         case depthmapX::ImportType::DRAWINGMAP: {
-            SuperSpacePixel::tail().push_back(ShapeMap(name));
-            return SuperSpacePixel::tail().tail();
+            m_spacePixels.back().m_spacePixels.emplace_back(name);
+            return m_spacePixels.back().m_spacePixels.back();
         }
         case depthmapX::ImportType::DATAMAP: {
             m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
@@ -1554,18 +1557,20 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
             // go through the files to find if the layer is in one of them
             // if it is, remove it and if the remaining file is empty then
             // remove that too
-            for(size_t j = 0; j < SuperSpacePixel::size(); j++) {
-                int mapToRemove = -1;
-                for(size_t i = 0; i < SuperSpacePixel::at(j).size(); i++) {
-                    if(&SuperSpacePixel::at(j).at(i) == &shapeMap) {
-                        mapToRemove = i;
+            auto pixelGroup = m_spacePixels.begin();
+            for (; pixelGroup != m_spacePixels.begin(); ++pixelGroup) {
+                auto mapToRemove = pixelGroup->m_spacePixels.end();
+                auto pixel = pixelGroup->m_spacePixels.begin();
+                for (; pixel != pixelGroup->m_spacePixels.end(); ++pixel) {
+                    if(&(*pixel) == &shapeMap) {
+                        mapToRemove = pixel;
                         break;
                     }
                 }
-                if(mapToRemove != -1) {
-                    SuperSpacePixel::at(j).remove_at(mapToRemove);
-                    if(SuperSpacePixel::at(j).size() == 0) {
-                        SuperSpacePixel::remove_at(j);
+                if(mapToRemove != pixelGroup->m_spacePixels.end()) {
+                    pixelGroup->m_spacePixels.erase(mapToRemove);
+                    if(pixelGroup->m_spacePixels.size() == 0) {
+                        m_spacePixels.erase(pixelGroup);
                     }
                     break;
                 }
@@ -1583,15 +1588,15 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
 }
 
 void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
-    if(SuperSpacePixel::tail().m_region.atZero()) {
-        SuperSpacePixel::tail().m_region = shapeMap.getRegion();
+    if(m_spacePixels.back().m_region.atZero()) {
+        m_spacePixels.back().m_region = shapeMap.getRegion();
     } else {
-        SuperSpacePixel::tail().m_region = runion(SuperSpacePixel::tail().m_region, shapeMap.getRegion());
+        m_spacePixels.back().m_region = runion(m_spacePixels.back().m_region, shapeMap.getRegion());
     }
     if(SuperSpacePixel::m_region.atZero()) {
-        SuperSpacePixel::m_region = SuperSpacePixel::tail().m_region;
+        SuperSpacePixel::m_region = m_spacePixels.back().m_region;
     } else {
-        SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, SuperSpacePixel::tail().m_region);
+        SuperSpacePixel::m_region = runion(SuperSpacePixel::m_region, m_spacePixels.back().m_region);
     }
 }
 
@@ -2389,10 +2394,10 @@ std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
 
     std::vector<SimpleLine> lines;
 
-    for (size_t i = 0; i < SuperSpacePixel::size(); i++) {
-        for (size_t j = 0; j < SuperSpacePixel::at(i).size(); j++) {
-            if (SuperSpacePixel::at(i).at(j).isShown()) {
-                const std::vector<SimpleLine> &newLines = SuperSpacePixel::at(i).at(j).getAllShapesAsLines();
+    for (const auto& pixelGroup: m_spacePixels) {
+       for (const auto& pixel: pixelGroup.m_spacePixels) {
+            if (pixel.isShown()) {
+                const std::vector<SimpleLine> &newLines = pixel.getAllShapesAsLines();
                 lines.insert(std::end(lines), std::begin(newLines), std::end(newLines));
             }
         }

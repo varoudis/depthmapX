@@ -367,11 +367,12 @@ bool PointMap::fillLines()
       return false;
    }
    m_undocounter++;
-   for (size_t file = 0; file < m_spacepix->size(); file++) {
-      for (size_t layer = 0; layer < m_spacepix->at(file).size(); layer++) {
-         if (m_spacepix->at(file).at(layer).isShown()) {
-             std::vector<SimpleLine> newLines = m_spacepix->at(file).at(layer).getAllShapesAsLines();
-             for (auto line: newLines) {
+
+   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
+             std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+             for (const auto& line: newLines) {
                 fillLine(Line(line.start(), line.end()));
              }
          }
@@ -408,12 +409,12 @@ bool PointMap::blockLines()
    // would require a key with (file, layer, shaperef, seg) when used with shaperef,
    // so just switched to an integer key:
 
-   for (size_t i = 0; i < m_spacepix->size(); i++) {
-      for (size_t j = 0; j < m_spacepix->at(i).size(); j++) {
+   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
-         if (m_spacepix->at(i).at(j).isShown()) {
-             std::vector<SimpleLine> newLines = m_spacepix->at(i).at(j).getAllShapesAsLines();
-             for (auto line: newLines) {
+         if (pixel.isShown()) {
+             std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+             for (const auto& line: newLines) {
                 blockLine(Line(line.start(), line.end()));
              }
          }

@@ -242,18 +242,18 @@ public:
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
 
    int getLineFileCount() const
-      { return (int) SuperSpacePixel::size(); }
+      { return (int) m_spacePixels.size(); }
 
    // Quick mod - TV
    const std::string& getLineFileName(int file) const
-      { return SuperSpacePixel::at(file).getName(); }
+      { return m_spacePixels[file].getName(); }
    int getLineLayerCount(int file) const
-      { return (int) SuperSpacePixel::at(file).size(); }
+      { return (int) m_spacePixels[file].m_spacePixels.size(); }
 
    ShapeMap& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    const ShapeMap& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    //
    // Some error handling -- the idea is that you catch the error in MetaGraph,
    // return a generic error code and then get your front end to interrogate the 
