@@ -133,14 +133,14 @@ class DepthmapRegressioRunnerTest(unittest.TestCase):
             runner = depthmaprunner.DepthmapRegressionRunner(lambda d, a: self.runfuncFail(d,a, "basebin", False), "basebin", "testbin", dir.name())
             (result, message) = runner.runTestCase("testname", self.makeCommand("infile.graph", "outfile.graph", "visibility"))
             self.assertFalse(result)
-            self.assertEqual(message, "Baseline run failed")
+            self.assertEqual(message, "Baseline run failed at step: 0")
 
     def testTestRunFail(self):
         with DisposableDirectory("testdir", True) as dir:
             runner = depthmaprunner.DepthmapRegressionRunner(lambda d, a: self.runfuncFail(d,a, "testbin", True), "basebin", "testbin", dir.name())
             (result, message) = runner.runTestCase("testname", self.makeCommand("infile.graph", "outfile.graph", "visibility"))
             self.assertFalse(result)
-            self.assertEqual(message, "Test run failed")
+            self.assertEqual(message, "Test run failed at step: 0")
 
 
 if __name__=="__main__":

@@ -43,20 +43,20 @@ class DepthmapRegressionRunner():
 
     def runTestCaseImpl(self, name, cmds):
         baseDir = self.makeBaseDir(name)
-        for cmd in cmds:
+        for step,cmd in enumerate(cmds):
             (baseSuccess, baseOut) = self.__baseRunner.runDepthmap(cmd, baseDir)
             if not baseSuccess:
-                print("Baseline run failed with arguments " + pprint.pformat(cmd.toCmdArray()))
+                print("Baseline run failed at step " + str(step) + " with arguments " + pprint.pformat(cmd.toCmdArray()))
                 print(baseOut)
-                return (False, "Baseline run failed")
+                return (False, "Baseline run failed at step: " + str(step))
 
         testDir = self.makeTestDir(name)
-        for cmd in cmds:
+        for step,cmd in enumerate(cmds):
             (testSuccess, testOut) = self.__testRunner.runDepthmap(cmd, testDir)
             if not testSuccess:
-                print("Test run failed with arguments " + pprint.pformat(cmd.toCmdArray()))
+                print("Test run failed at step " + str(step) + " with arguments " + pprint.pformat(cmd.toCmdArray()))
                 print(testOut)
-                return (False, "Test run failed")
+                return (False, "Test run failed at step: " + str(step))
 
         baseFile = os.path.join(baseDir, cmds[-1].outfile)
         testFile = os.path.join(testDir, cmds[-1].outfile)
