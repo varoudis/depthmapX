@@ -52,32 +52,32 @@ TEST_CASE("Test SuperSpacePixel construction", "")
         Point2f topRight(max(lineStart.x,lineEnd.x),max(lineStart.y,lineEnd.y));
 
         // push a SpacePixelFile in the SuperSpacePixel
-        spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
+        spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
 
         // push a ShapeMap in the SpacePixelFile
-        spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
+        spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
 
         // add a line to the ShapeMap
-        spacePixel->tail().tail().makeLineShape(Line(lineStart, lineEnd));
+        spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
 
         // check if the ShapeMap bounds are set correctly
-        REQUIRE(spacePixel->tail().tail().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().tail().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().tail().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().tail().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
         // SpacePixelGroup (and thus SuperSpacePixel and SpacePixelFile)
         // does not automatically grow its region when a new shapemap/file
         // is added to it therefore we have to do this externally
-        spacePixel->tail().m_region = spacePixel->tail().tail().getRegion();
+        spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
 
         // check if the SpacePixelFile bounds are set correctly
-        REQUIRE(spacePixel->tail().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->tail().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(spacePixel->m_spacePixels.back().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
-        spacePixel->m_region = spacePixel->tail().m_region;
+        spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
 
         // check if the SuperSpacePixel bounds are set correctly
         REQUIRE(spacePixel->m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
@@ -341,14 +341,14 @@ TEST_CASE("Test PointMap connections output", "")
     Point2f line3Start(rectSize,0);
     Point2f line3End(0,0);
 
-    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
-    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
-    spacePixel->tail().tail().makeLineShape(Line(line0Start, line0End));
-    spacePixel->tail().tail().makeLineShape(Line(line1Start, line1End));
-    spacePixel->tail().tail().makeLineShape(Line(line2Start, line2End));
-    spacePixel->tail().tail().makeLineShape(Line(line3Start, line3End));
-    spacePixel->tail().m_region = spacePixel->tail().tail().getRegion();
-    spacePixel->m_region = spacePixel->tail().m_region;
+    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
+    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
+    spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
     PointMap pointMap("Test PointMap");
     bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
 
