@@ -1381,7 +1381,8 @@ void QGraphDoc::OnToolsRunSeg()
    if (QDialog::Accepted == dlg.exec()) {
       m_communicator = new CMSCommunicator();
       CreateWaitDialog(tr("Performing segment line analysis..."));
-      m_communicator->SetFunction( CMSCommunicator::SEGMENTANALYSIS );
+      m_communicator->SetFunction( dlg.m_analysis_type == 1 ? CMSCommunicator::SEGMENTANALYSISANGULAR :
+                                                              CMSCommunicator::SEGMENTANALYSISTULIP );
       m_thread.render(this);
    }
 }

@@ -286,11 +286,11 @@ namespace dm_runmethods
         }
         switch(sp.getAnalysisType()) {
             case SegmentParser::AnalysisType::ANGULAR_TULIP: {
-                DO_TIMED("Segment tulip analysis", mGraph->analyseSegments(0, options))
+                DO_TIMED("Segment tulip analysis", mGraph->analyseSegmentsTulip(0, options))
                 break;
             }
             case SegmentParser::AnalysisType::ANGULAR_FULL: {
-                DO_TIMED("Segment angular analysis", mGraph->analyseSegments(0, options))
+                DO_TIMED("Segment angular analysis", mGraph->analyseSegmentsAngular(0, options))
                 break;
             }
             case SegmentParser::AnalysisType::TOPOLOGICAL: {

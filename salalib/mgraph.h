@@ -172,7 +172,8 @@ public:
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );
    bool analyseAxial( Communicator *communicator, Options options, bool simple_version ); // <- options copied to keep thread safe
-   bool analyseSegments( Communicator *communicator, Options options ); // <- options copied to keep thread safe
+   bool analyseSegmentsTulip( Communicator *communicator, Options options ); // <- options copied to keep thread safe
+   bool analyseSegmentsAngular( Communicator *communicator, Options options ); // <- options copied to keep thread safe
    bool analyseTopoMet( Communicator *communicator, Options options ); // <- options copied to keep thread safe
    //
    bool hasAllLineMap()
