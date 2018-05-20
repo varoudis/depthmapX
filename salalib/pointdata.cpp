@@ -42,7 +42,6 @@ PointMap::PointMap(const std::string& name)
 {
    m_name = name;
 
-   m_points = NULL;
    m_cols = 0;
    m_rows = 0;
    m_point_count = 0;
@@ -71,21 +70,6 @@ PointMap::PointMap(const std::string& name)
    m_displayed_attribute = -2;
 }
 
-PointMap::~PointMap()
-{
-   if (m_points) {
-      // Trying to clear out the memory quicker -> predelete nodes and bins
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_points[i];
-      }
-      delete [] m_points;
-      m_points = NULL;
-      m_cols = 0;
-      m_rows = 0;
-      m_point_count = 0;
-   }
-}
-
 PointMap::PointMap(const PointMap& pointdata)
 {
    construct(pointdata);
@@ -95,12 +79,8 @@ PointMap& PointMap::operator = (const PointMap& pointdata)
 {
    if (this != &pointdata) {
 
-      if (m_points) {
-         for (int i = 0; i < m_cols; i++) {
-            delete [] m_points[i];
-         }
-         delete [] m_points;
-         m_points = NULL;
+      if (!m_points.empty()) {
+         m_points.clear();
          m_cols = 0;
          m_rows = 0;         
       }
@@ -121,18 +101,12 @@ void PointMap::construct(const PointMap& pointdata)
    m_cols = pointdata.m_cols;
    m_rows = pointdata.m_rows;
 
-   if (m_cols) {
-      m_points = new Point *[m_cols];
-      for (int i = 0; i < m_cols; i++) {
-         m_points[i] = new Point [m_rows];
-         for (int j = 0; j < m_rows; j++) {
-            m_points[i][j] = pointdata.m_points[i][j];
-         }
+   if (m_cols != 0) {
+      m_points.clear();
+      m_points.resize(m_cols*m_rows);
+      for (size_t i = 0; i < m_cols*m_rows; i++) {
+          m_points[i] = pointdata.m_points[i];
       }
-   }
-   else {
-      m_points = NULL;
-
    }
 
    m_point_count = pointdata.m_point_count;
@@ -203,12 +177,8 @@ bool PointMap::setGrid(double spacing, const Point2f& offset)
 
    m_offset = Point2f(-xoffset, -yoffset);
 
-   if (m_points) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_points[i];
-      }
-      delete [] m_points;
-      m_points = NULL;
+   if (!m_points.empty()) {
+      m_points.clear();
       m_point_count = 0;
    }
    m_undocounter = 0;  // <- reset the undo counter... sorry... once you've done this you can't undo
@@ -225,11 +195,11 @@ bool PointMap::setGrid(double spacing, const Point2f& offset)
       Point2f(m_bottom_left.x+double(m_cols-1)*m_spacing + m_spacing/2.0,
               m_bottom_left.y+double(m_rows-1)*m_spacing + m_spacing/2.0) );
 
-   m_points = new Point *[m_cols];
+   m_points.clear();
+   m_points.resize(m_cols*m_rows);
    for (int j = 0; j < m_cols; j++) {
-      m_points[j] = new Point [m_rows];
       for (int k = 0; k < m_rows; k++) {
-         m_points[j][k].m_location = depixelate(PixelRef(j,k));
+         m_points[size_t(j*m_rows + k)].m_location = depixelate(PixelRef(j,k));
       }
    }
 
@@ -255,11 +225,9 @@ bool PointMap::clearPoints()
 
    m_undocounter++;
    if (m_selection == NO_SELECTION) {
-      for (int i = 0; i < m_cols; i++) {
-         for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].filled()) {
-               m_points[i][j].set( Point::EMPTY, m_undocounter );
-            }
+      for(auto& point: m_points) {
+         if(point.filled()) {
+             point.set( Point::EMPTY, m_undocounter );
          }
       }
       m_point_count = 0;
@@ -269,10 +237,11 @@ bool PointMap::clearPoints()
       m_undocounter++;
       for (int i = s_bl.x; i <= s_tr.x; i++) {
          for (int j = s_bl.y; j <= s_tr.y; j++) {
-            if (m_points[i][j].m_state & (Point::SELECTED | Point::FILLED)) {
-               m_points[i][j].set( Point::EMPTY, m_undocounter );
-               if (!m_points[i][j].m_merge.empty()) {
-                  PixelRef p = m_points[i][j].m_merge;
+            Point& pnt = m_points[size_t(i*m_rows + j)];
+            if (pnt.m_state & (Point::SELECTED | Point::FILLED)) {
+               pnt.set( Point::EMPTY, m_undocounter );
+               if (!pnt.m_merge.empty()) {
+                  PixelRef p = pnt.m_merge;
                   depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
@@ -285,10 +254,11 @@ bool PointMap::clearPoints()
    else { // COMPOUND_SELECTION (note, need to test bitwise now)
       for (int i = 0; i < m_cols; i++) {
          for (int j = 0; j < m_rows; j++) {
-            if (m_points[i][j].m_state & (Point::SELECTED | Point::FILLED)) {
-               m_points[i][j].set( Point::EMPTY, m_undocounter );
-               if (!m_points[i][j].m_merge.empty()) {
-                  PixelRef p = m_points[i][j].m_merge;
+            Point& pnt = m_points[size_t(i*m_rows + j)];
+            if (pnt.m_state & (Point::SELECTED | Point::FILLED)) {
+               pnt.set( Point::EMPTY, m_undocounter );
+               if (!pnt.m_merge.empty()) {
+                  PixelRef p = pnt.m_merge;
                   depthmapX::findAndErase(m_merge_lines, PixelRefPair(PixelRef(i,j),p));
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
@@ -296,7 +266,7 @@ bool PointMap::clearPoints()
                m_point_count--;
             }
          }
-      }      
+      }
    }
 
    m_selection_set.clear();
@@ -310,25 +280,21 @@ bool PointMap::undoPoints()
    if (!m_undocounter) {
       return false;
    }
-   for (int i = 0; i < m_cols; i++) {
-      for (int j = 0; j < m_rows; j++) {
-
-         if ( m_points[i][j].m_misc == m_undocounter) {
-            Point& p = m_points[i][j];
+   for (auto& p: m_points) {
+        if ( p.m_misc == m_undocounter) {
             if (p.m_state & Point::FILLED) {
-               p.m_state &= ~Point::FILLED;
-               p.m_state |= Point::EMPTY;
-               p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
-               m_point_count--;
+                p.m_state &= ~Point::FILLED;
+                p.m_state |= Point::EMPTY;
+                p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
+                m_point_count--;
             }
             else if (p.m_state & Point::EMPTY) {
-               p.m_state |= Point::FILLED;
-               p.m_state &= ~Point::EMPTY;
-               p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
-               m_point_count++;
+                p.m_state |= Point::FILLED;
+                p.m_state &= ~Point::EMPTY;
+                p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
+                m_point_count++;
             }
-         }
-      }
+        }
    }
    m_undocounter--;  // reduce undo counter
 
@@ -363,7 +329,7 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
 
 bool PointMap::fillLines()
 {
-   if (!m_spacepix || !m_initialised || !m_points) {
+   if (!m_spacepix || !m_initialised || m_points.empty()) {
       return false;
    }
    m_undocounter++;
@@ -394,7 +360,7 @@ void PointMap::fillLine(const Line& li)
 
 bool PointMap::blockLines()
 {
-   if (!m_spacepix || !m_initialised || !m_points) {
+   if (!m_spacepix || !m_initialised || m_points.empty()) {
       return false;
    }
    if (m_blockedlines) {
@@ -502,7 +468,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
    if (!m_spacepix) {
       return false;
    }
-   if (!m_initialised || !m_points) {
+   if (!m_initialised || m_points.empty()) {
       return false;
    }
    if (comm) {
@@ -683,10 +649,10 @@ void PointMap::outputNet(ostream& netfile)
    std::map<PixelRef,PixelRefVector> graph;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
-         if (m_points[i][j].filled() && m_points[i][j].m_node) {
+         if (m_points[size_t(i*m_rows + j)].filled() && m_points[size_t(i*m_rows + j)].m_node) {
             PixelRef pix(i,j);
             PixelRefVector connections;
-            m_points[i][j].m_node->contents(connections);
+            m_points[size_t(i*m_rows + j)].m_node->contents(connections);
             graph.insert(std::make_pair(pix,connections));
          }
       }
@@ -721,14 +687,14 @@ void PointMap::outputConnections(ostream& myout)
    myout << "#graph v1.0" << endl;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
-         if (m_points[i][j].filled() && m_points[i][j].m_node) {
+         if (m_points[size_t(i*m_rows + j)].filled() && m_points[size_t(i*m_rows + j)].m_node) {
             PixelRef pix(i,j);
             Point2f p = depixelate(pix);
             myout << "node {\n" 
                   << "  ref    " << pix << "\n" 
                   << "  origin " << p.x << " " << p.y << " " << 0.0 << "\n"
                   << "  connections [" << endl;
-            myout << *(m_points[i][j].m_node);
+            myout << *(m_points[size_t(i*m_rows + j)].m_node);
             myout << "  ]\n}" << endl;
          }
       }
@@ -743,14 +709,14 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
     {
         for (int j = 0; j < m_rows; j++)
         {
-            if (m_points[i][j].filled() && m_points[i][j].m_node)
+            if (m_points[size_t(i*m_rows + j)].filled() && m_points[size_t(i*m_rows + j)].m_node)
             {
                 PixelRef pix(i,j);
                 seenPix.insert(pix);
                 for (int b = 0; b < 32; b++)
                 {
                     PixelRefVector hood;
-                    m_points[i][j].m_node->bin(b).contents(hood);
+                    m_points[size_t(i*m_rows + j)].m_node->bin(b).contents(hood);
                     for(size_t p = 0; p < hood.size(); p++)
                     {
                         if(!(std::find(seenPix.begin(), seenPix.end(), hood[p]) != seenPix.end()))
@@ -772,9 +738,9 @@ void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
     {
         for (int j = 0; j < m_rows; j++)
         {
-            if (m_points[i][j].filled() && m_points[i][j].m_node)
+            if (m_points[size_t(i*m_rows + j)].filled() && m_points[size_t(i*m_rows + j)].m_node)
             {
-                PixelRef mergePixelRef = m_points[i][j].getMergePixel();
+                PixelRef mergePixelRef = m_points[size_t(i*m_rows + j)].getMergePixel();
                 if(mergePixelRef != NoPixel) {
                     PixelRef pix(i,j);
                     if(seenPix.insert(pix).second)
@@ -1045,8 +1011,8 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
 
    for (int i = s_bl.x; i <= s_tr.x; i++) {
       for (int j = s_bl.y; j <= s_tr.y; j++) {
-         if ((m_points[i][j].m_state & mask) && (~m_points[i][j].m_state & Point::SELECTED)) {
-            m_points[i][j].m_state |= Point::SELECTED;
+         if ((m_points[size_t(i*m_rows + j)].m_state & mask) && (~m_points[size_t(i*m_rows + j)].m_state & Point::SELECTED)) {
+            m_points[size_t(i*m_rows + j)].m_state |= Point::SELECTED;
             m_selection_set.insert( PixelRef(i,j) );
             if (add) {
                m_selection &= ~SINGLE_SELECTION;
@@ -1055,7 +1021,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
             else {
                m_selection |= SINGLE_SELECTION;
             }
-            if (m_points[i][j].m_node) {
+            if (m_points[size_t(i*m_rows + j)].m_node) {
                m_attributes.selectRowByKey(PixelRef(i,j));
             }
          }
@@ -1081,7 +1047,7 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
       if (includes(pix)) {
          int row = m_attributes.getRowid(pix);
          if (row != -1) {
-            m_points[pix.x][pix.y].m_state |= Point::SELECTED;
+            m_points[size_t(pix.x*m_rows + pix.y)].m_state |= Point::SELECTED;
             if (m_attributes.selectRowByKey(pix)) {
                m_selection_set.insert(pix);
             }
@@ -1095,8 +1061,8 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
 bool PointMap::overrideSelPixel(PixelRef pix)
 {
    m_selection = OVERRIDE_SELECTION;
-   if (!(m_points[pix.x][pix.y].m_state & Point::SELECTED)) {
-      m_points[pix.x][pix.y].m_state |= Point::SELECTED;
+   if (!(m_points[size_t(pix.x*m_rows + pix.y)].m_state & Point::SELECTED)) {
+      m_points[size_t(pix.x*m_rows + pix.y)].m_state |= Point::SELECTED;
       m_selection_set.insert(pix);
    }
    return true;
@@ -1172,13 +1138,7 @@ bool PointMap::read(istream& stream, int version )
    // NOTE: You MUST set m_spacepix manually!
    m_displayed_attribute = -1;
 
-   if (m_points) {
-      for (int i = 0; i < m_cols; i++) {
-         delete [] m_points[i];
-      }
-      delete [] m_points;
-      m_points = NULL;
-   }
+   m_points.clear();
 
    stream.read( (char *) &m_spacing, sizeof(m_spacing) );
 
@@ -1203,20 +1163,18 @@ bool PointMap::read(istream& stream, int version )
    stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
    m_attributes.read( stream, version );
 
-   m_points = new Point *[m_cols];
+   m_points.clear();
+   m_points.resize(m_cols*m_rows);
    
    for (int j = 0; j < m_cols; j++) {
-      m_points[j] = new Point [m_rows];
-      // ...and read...
-
       for (int k = 0; k < m_rows; k++) {
-         m_points[j][k].read(stream,version,attr_count);
+         m_points[size_t(j*m_rows + k)].read(stream,version,attr_count);
 
          // check if occdistance of any pixel's bin is set, meaning that
          // the isovist analysis was done
          if(!m_hasIsovistAnalysis) {
              for(int b = 0; b < 32; b++) {
-                if(m_points[j][k].m_node && m_points[j][k].m_node->occdistance(b) > 0) {
+                if(m_points[size_t(j*m_rows + k)].m_node && m_points[size_t(j*m_rows + k)].m_node->occdistance(b) > 0) {
                     m_hasIsovistAnalysis = true;
                     break;
                 }
@@ -1229,15 +1187,15 @@ bool PointMap::read(istream& stream, int version )
          // Old style point node reffing and also unselects selected nodes which would otherwise be difficult
 
          // would soon be better simply to turn off the select flag....
-         m_points[j][k].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
+         m_points[size_t(j*m_rows + k)].m_state &= ( Point::EMPTY | Point::FILLED | Point::MERGED | Point::BLOCKED | Point::CONTEXTFILLED | Point::EDGE);
 
          // Set the node pixel if it exists:
-         if (m_points[j][k].m_node) {
-            m_points[j][k].m_node->setPixel(PixelRef(j,k));
+         if (m_points[size_t(j*m_rows + k)].m_node) {
+            m_points[size_t(j*m_rows + k)].m_node->setPixel(PixelRef(j,k));
          }
          // Add merge line if merged:
-         if (!m_points[j][k].m_merge.empty()) {
-             depthmapX::addIfNotExists(m_merge_lines, PixelRefPair(PixelRef(j,k),m_points[j][k].m_merge));
+         if (!m_points[size_t(j*m_rows + k)].m_merge.empty()) {
+             depthmapX::addIfNotExists(m_merge_lines, PixelRefPair(PixelRef(j,k),m_points[size_t(j*m_rows + k)].m_merge));
          }
       }
    }
@@ -1275,10 +1233,8 @@ bool PointMap::write( ofstream& stream, int version )
    stream.write( (char *) &m_displayed_attribute, sizeof(m_displayed_attribute) );
    m_attributes.write( stream, version );
    
-   for (int j = 0; j < m_cols; j++) {
-      for (int k = 0; k < m_rows; k++) {
-         m_points[j][k].write( stream, version );
-      }
+   for (auto& point: m_points) {
+       point.write( stream, version );
    }
 
    stream.write((char *) &m_processed, sizeof(m_processed));
@@ -1474,7 +1430,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
          for (int j = 0; j < m_rows; j++) {
             PixelRef curs = PixelRef( i, j );
             if ( getPoint( curs ).filled() && !getPoint( curs ).edge()) {
-               m_points[i][j].m_state &= ~Point::FILLED;
+               m_points[size_t(i*m_rows + j)].m_state &= ~Point::FILLED;
                m_point_count--;
             }
          }
@@ -1952,12 +1908,12 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
 
             if (options.global) {
 
-               for (int ii = 0; ii < m_cols; ii++) {
-                  for (int jj = 0; jj < m_rows; jj++) {
-                     m_points[ii][jj].m_misc = 0;
-                     m_points[ii][jj].m_extent = PixelRef(ii,jj);
-                  }
-               }
+                for (int ii = 0; ii < m_cols; ii++) {
+                   for (int jj = 0; jj < m_rows; jj++) {
+                      m_points[size_t(ii*m_rows + jj)].m_misc = 0;
+                      m_points[size_t(ii*m_rows + jj)].m_extent = PixelRef(ii,jj);
+                   }
+                }
 
                int total_depth = 0;
                int total_nodes = 0;
@@ -2243,12 +2199,10 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
                continue;
             }
 
-            for (int ii = 0; ii < m_cols; ii++) {
-               for (int jj = 0; jj < m_rows; jj++) {
-                  m_points[ii][jj].m_misc = 0;
-                  m_points[ii][jj].m_dist = -1.0f;
-                  m_points[ii][jj].m_cumangle = 0.0f;
-               }
+            for (auto& point: m_points) {
+                point.m_misc = 0;
+                point.m_dist = -1.0f;
+                point.m_cumangle = 0.0f;
             }
 
             float euclid_depth = 0.0f;
@@ -2431,12 +2385,10 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
                continue;
             }
 
-            for (int ii = 0; ii < m_cols; ii++) {
-               for (int jj = 0; jj < m_rows; jj++) {
-                  m_points[ii][jj].m_misc = 0;
-                  m_points[ii][jj].m_dist = 0.0f;
-                  m_points[ii][jj].m_cumangle = -1.0f;
-               }
+            for (auto& point: m_points) {
+                point.m_misc = 0;
+                point.m_dist = 0.0f;
+                point.m_cumangle = -1.0f;
             }
 
             float total_angle = 0.0f;

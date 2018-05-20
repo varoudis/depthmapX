@@ -84,7 +84,7 @@ private:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
-   Point **m_points;    // will contain the graph reference when created
+   std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
    int m_point_count;
@@ -105,7 +105,6 @@ public:
    PointMap(const PointMap& pointdata);
    PointMap& operator = (const PointMap& pointdata);
    void construct( const PointMap& pointdata );
-   virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
 
@@ -190,10 +189,12 @@ public:
       { return j + (y * s); }
    int remaining(int i, int j, int x, int y, int q);
    //
-   Point& getPoint(const PixelRef& p) const
-      { return m_points[p.x][p.y]; }
+   const Point& getPoint(const PixelRef& p) const
+      { return m_points[p.x*m_rows + p.y]; }
+   Point& getPoint(const PixelRef& p)
+      { return m_points[p.x*m_rows + p.y]; }
    const int& pointState( const PixelRef& p ) const
-      { return m_points[p.x][p.y].m_state; }
+      { return m_points[p.x*m_rows + p.y].m_state; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
@@ -323,7 +324,9 @@ public:
    bool findNextPoint() const;
    Point2f getNextPointLocation() const
    { return getPoint(cur).m_location; }
-   Point& getNextPoint() const
+   const Point& getNextPoint() const
+   { return getPoint(cur); }
+   Point& getNextPoint()
    { return getPoint(cur); }
    bool findNextRow() const;
    Line getNextRow() const;
