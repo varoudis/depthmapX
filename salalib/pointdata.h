@@ -131,7 +131,7 @@ public:
    { return m_processed; }
    void fillLine(const Line& li);
    bool blockLines();
-   void blockLine(int key, const Line& li);
+   void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    bool fillPoint(const Point2f& p, bool add = true); // use add = false for remove point
    //bool blockPoint(const Point2f& p, bool add = true); // no longer used

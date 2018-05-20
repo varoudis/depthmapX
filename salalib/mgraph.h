@@ -102,7 +102,11 @@ private:
    void setSpacePixel(SuperSpacePixel *spacepix)
    { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
    void removePointMap(int i)
-   { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
+   {
+       if (m_displayed_pointmap >= i) m_displayed_pointmap--;
+       if(m_displayed_pointmap < 0) m_displayed_pointmap = 0;
+       m_pointMaps.erase(m_pointMaps.begin() + i);
+   }
 
    bool readPointMaps(istream &stream, int version );
    bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
@@ -238,18 +242,18 @@ public:
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
 
    int getLineFileCount() const
-      { return (int) SuperSpacePixel::size(); }
+      { return (int) m_spacePixels.size(); }
 
    // Quick mod - TV
    const std::string& getLineFileName(int file) const
-      { return SuperSpacePixel::at(file).getName(); }
+      { return m_spacePixels[file].getName(); }
    int getLineLayerCount(int file) const
-      { return (int) SuperSpacePixel::at(file).size(); }
+      { return (int) m_spacePixels[file].m_spacePixels.size(); }
 
    ShapeMap& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    const ShapeMap& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    //
    // Some error handling -- the idea is that you catch the error in MetaGraph,
    // return a generic error code and then get your front end to interrogate the 

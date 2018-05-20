@@ -202,11 +202,11 @@ TEST_CASE("Test linking - half filled grid", "")
     Point2f topRight(max(lineStart.x,lineEnd.x),max(lineStart.y,lineEnd.y));
 
     std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
-    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
-    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
-    spacePixel->tail().tail().makeLineShape(Line(lineStart, lineEnd));
-    spacePixel->tail().m_region = spacePixel->tail().tail().getRegion();
-    spacePixel->m_region = spacePixel->tail().m_region;
+    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
+    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
+    spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
+    spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
 
     PointMap pointMap("Test PointMap");
     pointMap.setSpacePixel(spacePixel.get());

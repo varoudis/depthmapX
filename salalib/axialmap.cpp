@@ -621,17 +621,17 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    std::vector<Line> lines;
 
    // add all visible layers to the set of polygon lines...
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.push_back(Line(line.start(), line.end()));
             }
          }
@@ -1235,26 +1235,28 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      int j = 0;
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count ++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
@@ -1381,10 +1383,11 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    }
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
@@ -1411,12 +1414,13 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
 
    size_t count = 0;
    size_t i = 0;
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
-             auto refShapes = superspacepix.at(i).at(j).getAllShapes();
-             for (auto refShape: refShapes) {
-                 SalaShape& shape = refShape.second;
+
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
+             auto refShapes = pixel.getAllShapes();
+             for (const auto& refShape: refShapes) {
+               const SalaShape& shape = refShape.second;
                if (shape.isPolygon()) {
                   usermap.makeShape(shape);
                   usermap.m_connectors.push_back( Connector() );
@@ -1432,9 +1436,9 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
       return -1;
    }
 
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         superspacepix.at(i).at(j).setShow(false);
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         pixel.setShow(false);
       }
    }
 
@@ -1513,26 +1517,28 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+       int j = 0;
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto& line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
@@ -1632,10 +1638,11 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    ShapeGraph& usermap = tail();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.init(lines.size(),region);
@@ -1720,10 +1727,11 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
    lines.clear();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (dispmap.m_mapinfodata) {
-      segmap.m_mapinfodata = new MapInfoData;
-      segmap.m_mapinfodata->m_coordsys = dispmap.m_mapinfodata->m_coordsys;
-      segmap.m_mapinfodata->m_bounds = dispmap.m_mapinfodata->m_bounds;
+   if (dispmap.m_hasMapInfoData) {
+      segmap.m_mapinfodata = MapInfoData();
+      segmap.m_mapinfodata.m_coordsys = dispmap.m_mapinfodata.m_coordsys;
+      segmap.m_mapinfodata.m_bounds = dispmap.m_mapinfodata.m_bounds;
+      segmap.m_hasMapInfoData = true;
    }
 
    // initialise attributes now separated from making the connections
@@ -1894,9 +1902,9 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;
-   if (m_mapinfodata) {
-      mapinfodata.m_coordsys = m_mapinfodata->m_coordsys;
-      mapinfodata.m_bounds = m_mapinfodata->m_bounds;
+   if (m_hasMapInfoData) {
+      mapinfodata.m_coordsys = m_mapinfodata.m_coordsys;
+      mapinfodata.m_bounds = m_mapinfodata.m_bounds;
    }
    mapinfodata.exportPolygons(miffile, midfile, newpolygons, m_region);
 
@@ -2646,16 +2654,11 @@ bool ShapeGraph::readold( istream& stream, int version )
    m_links.read(stream);
    m_unlinks.read(stream);
 
-   // some miscellaneous extra data for mapinfo files
-   if (m_mapinfodata) {
-      delete m_mapinfodata;
-      m_mapinfodata = NULL;
-   }
-
    char x = stream.get();
    if (x == 'm') {
-      m_mapinfodata = new MapInfoData;
-      m_mapinfodata->read(stream,version);
+      m_mapinfodata = MapInfoData();
+      m_mapinfodata.read(stream,version);
+      m_hasMapInfoData = true;
    }
 
 

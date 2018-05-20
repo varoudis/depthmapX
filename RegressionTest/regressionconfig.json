@@ -193,8 +193,16 @@
                 "-xa": "n",
                 "-xal": ""
             }
+        },
+        "vis_prep_dense_pointmap":{
+            "infile": "../../../testdata/rect1x1.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+                "-pg": "0.02",
+                "-pp": "0.5,0.5"
+            }
         }
-
 
     }
 }
