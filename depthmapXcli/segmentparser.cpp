@@ -79,7 +79,7 @@ void SegmentParser::parse(int argc, char **argv)
                 _analysisType = AnalysisType::METRIC;
             }
         }
-        if (std::strcmp(argv[i], "-srt") == 0)
+        else if (std::strcmp(argv[i], "-srt") == 0)
         {
             if (_radiusType != RadiusType::NONE)
             {
