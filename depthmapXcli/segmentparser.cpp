@@ -102,6 +102,10 @@ void SegmentParser::parse(int argc, char **argv)
             {
                 _radiusType = RadiusType::METRIC;
             }
+            else
+            {
+                throw CommandLineException(std::string("Invalid SEGMENT radius type: ") + argv[i]);
+            }
         }
         else if(std::strcmp(argv[i], "-sic") == 0)
         {

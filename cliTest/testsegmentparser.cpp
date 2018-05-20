@@ -71,6 +71,12 @@ TEST_CASE("Test Segment Parsing Exceptions","")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "-srt requires an argument" );
     }
 
+    SECTION("Invalid SEGMENT radius type")
+    {
+        ArgumentHolder ah{"prog", "-srt", "foo"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "Invalid SEGMENT radius type: foo" );
+    }
+
     SECTION("Argument missing -stb")
     {
         ArgumentHolder ah{"prog", "-stb"};
