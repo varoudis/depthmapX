@@ -2029,11 +2029,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
                      SalaShape& poly = m_shapes.find(shaperef.m_shape_ref)->second;
                      
                      // Quick mod - TV
-#if defined(_WIN32)                     
-                     Line& li2 = Line(poly.points[x],poly[(x+1)%poly.points.size()]);
-#else
              Line li2(poly.m_points[x], poly.m_points[(x+1) % poly.m_points.size()]);
-#endif                     
                      if (intersect_region(li,li2)) {
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,li2)) {
