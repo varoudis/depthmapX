@@ -26,6 +26,7 @@
 #include "agentparser.h"
 #include "exportparser.h"
 #include "salalib/isovistdef.h"
+#include "salalib/topomet.h"
 #include <vector>
 
 class Line;

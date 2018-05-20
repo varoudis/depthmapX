@@ -1402,7 +1402,7 @@ void QGraphDoc::OnToolsTopomet()
       ((MainWindow*)m_mainFrame)->m_options.output_type = dlg.m_topological;
       ((MainWindow*)m_mainFrame)->m_options.radius = dlg.m_dradius;
       ((MainWindow*)m_mainFrame)->m_options.sel_only = dlg.m_selected_only;
-      if (dlg.m_topological == 0) {
+      if (dlg.isAnalysisTopological()) {
          CreateWaitDialog(tr("Performing topological analysis..."));
       }
       else {
