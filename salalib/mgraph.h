@@ -34,7 +34,6 @@
 #include <salalib/connector.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
-#include <salalib/datalayer.h>   // datalayers deprecated
 
 #include <mutex>
 
@@ -103,7 +102,11 @@ private:
    void setSpacePixel(SuperSpacePixel *spacepix)
    { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
    void removePointMap(int i)
-   { if (m_displayed_pointmap >= i) m_displayed_pointmap--; m_pointMaps.erase(m_pointMaps.begin() + i); }
+   {
+       if (m_displayed_pointmap >= i) m_displayed_pointmap--;
+       if(m_displayed_pointmap < 0) m_displayed_pointmap = 0;
+       m_pointMaps.erase(m_pointMaps.begin() + i);
+   }
 
    bool readPointMaps(istream &stream, int version );
    bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
@@ -118,37 +121,23 @@ public:
         return std::unique_lock<std::recursive_mutex>(mLock, std::defer_lock_t());
     }
 
-   //
-   void copyLineData(const SuperSpacePixel& meta);
-   void copyPointMap(const PointMap& meta);
-   //
    int getState() const
       { return m_state; }
    // use with caution: only very rarely needed outside MetaGraph itself
    void setState(int state)
       { m_state = state; }
-   //
-   // quick loaders from input streams rather than files:
-   bool importCat( istream& stream );
-   // make a graph using the supplied seed and graph spacing:
-   void fastGraph( const Point2f& seed, double spacing );
-   //
+
    int loadLineData( Communicator *communicator, int load_type );
    int loadCat( istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
    void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
    void updateParentRegions(ShapeMap &shapeMap);
-   int importLinesAsShapeMap(const std::vector<Line> &lines, QtRegion region, std::string name, depthmapX::Table &data );
-   int importPointsAsShapeMap(const std::vector<Point2f> &points, QtRegion region, std::string name, depthmapX::Table &data);
-   bool undoPoints();
    bool clearPoints();
    bool setGrid( double spacing, const Point2f& offset = Point2f() );                 // override of PointMap
    bool makePoints( const Point2f& p, int semifilled, Communicator *communicator = NULL);  // override of PointMap
    bool makeGraph( Communicator *communicator, int algorithm, double maxdist );
    bool analyseGraph(Communicator *communicator, Options options , bool simple_version); // <- options copied to keep thread safe
-   bool analyseAngular( Communicator *communicator, bool analyse_in_memory );
-   bool makeAxialLines( Communicator *communicator, bool analyse_in_memory );
    //
    // helpers for editing maps
    bool isEditableMap();
@@ -178,10 +167,7 @@ public:
    // note: not same categories
    bool convertPointsToShape();
    //bool convertBoundaryGraph( Communicator *communicator );
-   //
-   // some compatibility with older version horrors:
-   int convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap);
-   //
+
    int loadMifMap(Communicator *comm, istream& miffile, istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );
@@ -254,28 +240,20 @@ public:
    bool isAttributeLocked(int col);
    AttributeTable& getAttributeTable(int type = -1, int layer = -1);
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
-   //
-   void loadGraphAgent();
-   void unloadGraphAgent();
-   //
+
    int getLineFileCount() const
-      { return (int) SuperSpacePixel::size(); }
+      { return (int) m_spacePixels.size(); }
 
    // Quick mod - TV
    const std::string& getLineFileName(int file) const
-      { return SuperSpacePixel::at(file).getName(); }
+      { return m_spacePixels[file].getName(); }
    int getLineLayerCount(int file) const
-      { return (int) SuperSpacePixel::at(file).size(); }
+      { return (int) m_spacePixels[file].m_spacePixels.size(); }
 
-   //
-/*   SpacePixel& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
-   const SpacePixel& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }*/
    ShapeMap& getLineLayer(int file, int layer)
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    const ShapeMap& getLineLayer(int file, int layer) const
-      { return SuperSpacePixel::at(file).at(layer); }
+      { return m_spacePixels[file].m_spacePixels[layer]; }
    //
    // Some error handling -- the idea is that you catch the error in MetaGraph,
    // return a generic error code and then get your front end to interrogate the 
@@ -458,10 +436,7 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   int convertVirtualMem( ifstream& stream, int version );
-   //
    streampos skipVirtualMem(istream &stream, int version);
-   streampos copyVirtualMem(istream& reader, ofstream& writer, int version);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

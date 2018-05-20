@@ -108,13 +108,8 @@ public:
    virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
-   //
-   // Quick mod - TV
-#if defined(_WIN32)
-   void communicate( __time64_t& atime, Communicator *comm, int record );
-#else
+
    void communicate( time_t& atime, Communicator *comm, int record );
-#endif
    // constrain is constrain to existing rows / cols
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
    Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 
@@ -140,7 +135,7 @@ public:
    bool fillLines();
    void fillLine(const Line& li);
    bool blockLines();
-   void blockLine(int key, const Line& li);
+   void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    void addLineDynamic(LineKey ref,const Line& line);
    void removeLineDynamic(LineKey ref,const Line& line);
@@ -632,24 +627,7 @@ inline int whichbin( const Point2f& grad )
    else {
       bin += 4;
    }
-   /*
-   // True angular bins
-   if (ratio <      0.0984914033571642) {   // 1/64
-      // nop
-   }
-   else if (ratio < 0.3033466836073423) {   // 3/64
-      bin += 1;
-   }
-   else if (ratio < 0.5345111359507916) {   // 5/64
-      bin += 2;
-   }
-   else if (ratio < 0.8206787908286603) {   // 7/64
-      bin += 3;
-   }
-   else {
-      bin += 4;
-   }
-   */
+
    if (bin < 0) {
       bin = -bin;
    }

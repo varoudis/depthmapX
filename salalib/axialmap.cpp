@@ -621,17 +621,17 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    std::vector<Line> lines;
 
    // add all visible layers to the set of polygon lines...
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.push_back(Line(line.start(), line.end()));
             }
          }
@@ -665,12 +665,8 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
+
    time_t atime = 0;
-#endif
    int count = 0;
    if (comm) {
       qtimer( atime, 0 );
@@ -716,18 +712,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
       }
    }
 
-/*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = m_polygons.m_region;
-   }
-   else {
-      m_region = runion(m_region, m_polygons.m_region);
-   }
-   // End No longer required
-*/
-
    // create the all line map layer...
    m_all_line_map = addMap("All-Line Map", ShapeMap::ALLLINEMAP);
 
@@ -735,15 +719,6 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
    // make sure it's cleared fully
    alllinemap.clearAll();
 
-/*
-   // temp:
-   alllinemap.initLines(m_polygons.m_lines.size(),m_polygons.m_region.bottom_left,m_polygons.m_region.top_right,2);
-   for (int k = 0; k < m_polygons.m_lines.size(); k++) {
-      alllinemap.makeLineShape(m_polygons.m_lines[k].line);
-   }
-   alllinemap.sortPixelLines();
-   // end temp
-*/
    region.grow(0.99); // <- this paired with crop code below to prevent error
    alllinemap.init(axiallines.size(),m_polygons.m_region);  // used to be double density here
    for (size_t k = 0; k < axiallines.size(); k++) {
@@ -811,13 +786,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
             continue;
          }
          else {
-            // Quick mod - TV
-            // TODO: (CS) Is there still any point to that #ifdef?
-#if defined(_WIN32)
-            radialsegs.insert(std::make_pair( (RadialKey)m_radial_lines[i], (RadialKey)m_radial_lines[i-1]));
-#else
             radialsegs.insert(std::make_pair( (RadialKey)m_radial_lines[i], (RadialSegment)m_radial_lines[i-1]));
-#endif
          }
       }
    }
@@ -1260,26 +1229,28 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      int j = 0;
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count ++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
@@ -1293,33 +1264,9 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
       return -1;
    }
 
-
-   /*
-   // No longer required
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End no longer required
-   */
-
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
    }
-
-   /*
-   // No longer required
-   // now add to the space pixel:
-   if (m_region.isempty()) {
-      m_region = region;
-   }
-   else {
-      m_region = runion(region,m_region);
-   }
-   */
 
    // create map layer...
    int mapref = addMap(name,ShapeMap::AXIALMAP);
@@ -1430,10 +1377,11 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    }
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
@@ -1460,12 +1408,13 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
 
    size_t count = 0;
    size_t i = 0;
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
-             auto refShapes = superspacepix.at(i).at(j).getAllShapes();
-             for (auto refShape: refShapes) {
-                 SalaShape& shape = refShape.second;
+
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
+             auto refShapes = pixel.getAllShapes();
+             for (const auto& refShape: refShapes) {
+               const SalaShape& shape = refShape.second;
                if (shape.isPolygon()) {
                   usermap.makeShape(shape);
                   usermap.m_connectors.push_back( Connector() );
@@ -1481,9 +1430,9 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
       return -1;
    }
 
-   for (i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         superspacepix.at(i).at(j).setShow(false);
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         pixel.setShow(false);
       }
    }
 
@@ -1562,26 +1511,28 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (size_t i = 0; i < superspacepix.size(); i++) {
-      for (size_t j = 0; j < superspacepix.at(i).size(); j++) {
-         if (superspacepix.at(i).at(j).isShown()) {
+   for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+       int j = 0;
+      for (const auto& pixel: pixelGroup.m_spacePixels) {
+         if (pixel.isShown()) {
             if (region.atZero()) {
-               region = superspacepix.at(i).at(j).getRegion();
+               region = pixel.getRegion();
             }
             else {
-               region = runion(region,superspacepix.at(i).at(j).getRegion());
+               region = runion(region, pixel.getRegion());
             }
-            std::vector<SimpleLine> newLines = superspacepix.at(i).at(j).getAllShapesAsLines();
-            for (auto& line: newLines) {
+            std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
+            for (const auto& line: newLines) {
                lines.insert(std::make_pair(count, Line(line.start(), line.end())));
                layers.insert(std::make_pair(count,j));
                count++;
             }
-            superspacepix.at(i).at(j).setShow(false);
+            pixel.setShow(false);
          }
          if (j > 0) {
             recordlayer = true;
          }
+         j++;
       }
    }
    if (count == 0) {
@@ -1594,18 +1545,6 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    if (lines.size() == 0) {
       return -1;
    }
-
-   /*
-   // No longer required for ShapeMaps version:
-   if (!m_length) {
-      // now add to the space pixel:
-      m_region = region;
-   }
-   else {
-      m_region = runion(region, m_region);
-   }
-   // End No longer required
-   */
 
    if (comm) {
       comm->CommPostMessage( Communicator::CURRENT_STEP, 2 );
@@ -1693,10 +1632,11 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    ShapeGraph& usermap = tail();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (shapemap.getMapInfoData()) {
-      usermap.m_mapinfodata = new MapInfoData;
-      usermap.m_mapinfodata->m_coordsys = shapemap.getMapInfoData()->m_coordsys;
-      usermap.m_mapinfodata->m_bounds = shapemap.getMapInfoData()->m_bounds;
+   if (shapemap.hasMapInfoData()) {
+      usermap.m_mapinfodata = MapInfoData();
+      usermap.m_mapinfodata.m_coordsys = shapemap.getMapInfoData().m_coordsys;
+      usermap.m_mapinfodata.m_bounds = shapemap.getMapInfoData().m_bounds;
+      usermap.m_hasMapInfoData = true;
    }
 
    usermap.init(lines.size(),region);
@@ -1781,10 +1721,11 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
    lines.clear();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
-   if (dispmap.m_mapinfodata) {
-      segmap.m_mapinfodata = new MapInfoData;
-      segmap.m_mapinfodata->m_coordsys = dispmap.m_mapinfodata->m_coordsys;
-      segmap.m_mapinfodata->m_bounds = dispmap.m_mapinfodata->m_bounds;
+   if (dispmap.m_hasMapInfoData) {
+      segmap.m_mapinfodata = MapInfoData();
+      segmap.m_mapinfodata.m_coordsys = dispmap.m_mapinfodata.m_coordsys;
+      segmap.m_mapinfodata.m_bounds = dispmap.m_mapinfodata.m_bounds;
+      segmap.m_hasMapInfoData = true;
    }
 
    // initialise attributes now separated from making the connections
@@ -1941,30 +1882,6 @@ void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-// explicit initialisation of attributes for a gates layer
-/*
-void ShapeGraph::initAttributes()
-{
-   m_connectors.clear();
-   m_attributes.clear();
-
-   for (int i = 0; i < m_lines.size(); i++) {
-      int key = m_lines.key(i);
-      // all indices should match...
-      int index1 = m_connectors.add( key, Connector() );
-      int index2 = m_attributes.insertRow(key);
-      // I am going to use this to set the text size soon:
-      float textsize = (float) m_lines[i].line.length();
-   }
-
-   m_displayed_attribute = -2; // <- override if it's already showing
-   // Note: -1 sets it show the ID column:
-   setDisplayedAttribute(-1);
-}
-*/
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
 bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
 {
    // take lines from lines layer and make into regions (using the axial polygons)
@@ -1979,9 +1896,9 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;
-   if (m_mapinfodata) {
-      mapinfodata.m_coordsys = m_mapinfodata->m_coordsys;
-      mapinfodata.m_bounds = m_mapinfodata->m_bounds;
+   if (m_hasMapInfoData) {
+      mapinfodata.m_coordsys = m_mapinfodata.m_coordsys;
+      mapinfodata.m_bounds = m_mapinfodata.m_bounds;
    }
    mapinfodata.exportPolygons(miffile, midfile, newpolygons, m_region);
 
@@ -2055,12 +1972,7 @@ void ShapeGraph::outputNet(ostream& netfile) const
 
 void ShapeGraph::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
 {
-    // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
-    time_t atime = 0;
-#endif
+   time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, polyconnections.size() );
@@ -2135,12 +2047,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // note, from 10.0, Depthmap no longer includes *self* connections on axial lines
    // self connections are stripped out on loading graph files, as well as no longer made
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -2192,19 +2099,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          }
       }
 
-// dX simple version test // TV
-//#define _COMPILE_dX_SIMPLE_VERSION
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           m_attributes.insertColumn(entropy_col_text.c_str());
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       m_attributes.insertColumn(integ_dv_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           m_attributes.insertColumn(integ_pv_col_text.c_str());
@@ -2215,19 +2117,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           m_attributes.insertColumn(harmonic_col_text.c_str());
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
       std::string count_col_text = std::string("Node Count") + radius_text;
       m_attributes.insertColumn(count_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           m_attributes.insertColumn(rel_entropy_col_text);
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2236,22 +2135,17 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          m_attributes.insertColumn(total_weight_text.c_str());
       }
       if (fulloutput) {
-
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              m_attributes.insertColumn(penn_norm_text);
          }
-#endif
          std::string ra_col_text = std::string("RA") + radius_text;
          m_attributes.insertColumn(ra_col_text.c_str());
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string rra_col_text = std::string("RRA") + radius_text;
              m_attributes.insertColumn(rra_col_text.c_str());
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          m_attributes.insertColumn(td_col_text.c_str());
@@ -2259,12 +2153,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
       //
    }
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           m_attributes.insertColumn("Control");
           m_attributes.insertColumn("Controllability");
       }
-#endif
    }
    // then look up all the columns... eek:
    pvecint choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
@@ -2286,17 +2178,14 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
             nw_choice_col.push_back(m_attributes.getColumnIndex(nw_choice_col_text.c_str()));
          }
       }
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string entropy_col_text = std::string("Entropy") + radius_text;
           entropy_col.push_back(m_attributes.getColumnIndex(entropy_col_text.c_str()));
       }
-#endif
 
       std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
       integ_dv_col.push_back(m_attributes.getColumnIndex(integ_dv_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
           integ_pv_col.push_back(m_attributes.getColumnIndex(integ_pv_col_text.c_str()));
@@ -2307,19 +2196,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
           std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
           harmonic_col.push_back(m_attributes.getColumnIndex(harmonic_col_text.c_str()));
       }
-#endif
 
       std::string depth_col_text = std::string("Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
       std::string count_col_text = std::string("Node Count") + radius_text;
       count_col.push_back(m_attributes.getColumnIndex(count_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
       if(!simple_version) {
           std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
           rel_entropy_col.push_back(m_attributes.getColumnIndex(rel_entropy_col_text.c_str()));
       }
-#endif
 
       if (weighting_col != -1) {
          std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
@@ -2331,14 +2217,12 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          std::string ra_col_text = std::string("RA") + radius_text;
          ra_col.push_back(m_attributes.getColumnIndex(ra_col_text.c_str()));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
              penn_norm_col.push_back(m_attributes.getColumnIndex(penn_norm_text));
              std::string rra_col_text = std::string("RRA") + radius_text;
              rra_col.push_back(m_attributes.getColumnIndex(rra_col_text.c_str()));
          }
-#endif
 
          std::string td_col_text = std::string("Total Depth") + radius_text;
          td_col.push_back(m_attributes.getColumnIndex(td_col_text.c_str()));
@@ -2346,12 +2230,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    }
    int control_col, controllability_col;
    if (local) {
-#ifndef _COMPILE_dX_SIMPLE_VERSION
        if(!simple_version) {
            control_col = m_attributes.getColumnIndex("Control");
            controllability_col = m_attributes.getColumnIndex("Controllability");
        }
-#endif
    }
 
    // for choice
@@ -2390,22 +2272,13 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                int intersect_size = 0, retro_size = 0;
                pvecint retconnectors = m_connectors[connections[j]].m_connections;
                for (size_t k = 0; k < retconnectors.size(); k++) {
-                  //if (connections[j] != retconnectors[k]) {
-                     retro_size++;
-                     /*
-                     // used for clustering coeff, but clustering coeff next to useless
-                     if (connections.searchindex(retconnectors[k]) != paftl::npos) {
-                        intersect_size++;
-                     }
-                     */
-                     totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
-                  //}
+                   retro_size++;
+                   totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
                }
                control += 1.0 / double(retro_size);
             //}
          }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
          if(!simple_version) {
              if (connections.size() > 0) {
                  m_attributes.setValue(i, control_col, float(control) );
@@ -2416,7 +2289,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                  m_attributes.setValue(i, controllability_col, -1 );
              }
          }
-#endif
       }
 
       pvecint depthcounts;
@@ -2512,7 +2384,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                double integ_tk = teklinteg(node_count, total_depth);
                m_attributes.setValue(i,integ_dv_col[r],float(1.0/rra_d));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],float(1.0/rra_p));
                    if (total_depth - node_count + 1 > 1) {
@@ -2522,19 +2393,15 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                        m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                    }
                }
-#endif
 
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],float(ra));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],float(rra_d));
                   }
-#endif
                   m_attributes.setValue(i,td_col[r],float(total_depth));
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       // alan's palm-tree normalisation: palmtree
                       double dmin = node_count - 1;
@@ -2543,38 +2410,30 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                           m_attributes.setValue(i,penn_norm_col[r],float((dmax - total_depth)/(dmax - dmin)));
                       }
                   }
-#endif
                }
             }
             else {
                m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                if(!simple_version) {
                    m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                    m_attributes.setValue(i,integ_tk_col[r],-1.0f);
                }
-#endif
                if (fulloutput) {
                   m_attributes.setValue(i,ra_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,rra_col[r],-1.0f);
                   }
-#endif
 
                   m_attributes.setValue(i,td_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
                   if(!simple_version) {
                       m_attributes.setValue(i,penn_norm_col[r],-1.0f);
                   }
-#endif
                }
             }
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 double entropy = 0.0, intensity = 0.0, rel_entropy = 0.0, factorial = 1.0, harmonic = 0.0;
                 for (size_t k = 0; k < depthcounts.size(); k++) {
@@ -2603,13 +2462,11 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,intensity_col[r],float(intensity));
                 m_attributes.setValue(i,harmonic_col[r],float(harmonic));
             }
-#endif
          }
          else {
             m_attributes.setValue(i,depth_col[r],-1.0f);
             m_attributes.setValue(i,integ_dv_col[r],-1.0f);
 
-#ifndef _COMPILE_dX_SIMPLE_VERSION
             if(!simple_version) {
                 m_attributes.setValue(i,integ_pv_col[r],-1.0f);
                 m_attributes.setValue(i,integ_tk_col[r],-1.0f);
@@ -2617,7 +2474,6 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,rel_entropy_col[r],-1.0f);
                 m_attributes.setValue(i,harmonic_col[r],-1.0f);
             }
-#endif
          }
 
       }
@@ -2792,16 +2648,11 @@ bool ShapeGraph::readold( istream& stream, int version )
    m_links.read(stream);
    m_unlinks.read(stream);
 
-   // some miscellaneous extra data for mapinfo files
-   if (m_mapinfodata) {
-      delete m_mapinfodata;
-      m_mapinfodata = NULL;
-   }
-
    char x = stream.get();
    if (x == 'm') {
-      m_mapinfodata = new MapInfoData;
-      m_mapinfodata->read(stream,version);
+      m_mapinfodata = MapInfoData();
+      m_mapinfodata.read(stream,version);
+      m_hasMapInfoData = true;
    }
 
 
@@ -2831,7 +2682,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
 
 void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream << "strict graph {" << std::endl;
 
@@ -2848,7 +2699,7 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
 
 void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
@@ -2866,7 +2717,7 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
 
 void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
 {
-    const prefvec<Connector>& connectors = ShapeMap::getConnections();
+    const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
     stream.precision(12);
 
@@ -3279,12 +3130,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       return false;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
    if (comm) {
       qtimer( atime, 0 );
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_connectors.size() );
@@ -3434,12 +3280,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       return processed_rows;
    }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   __time64_t atime = 0;
-#else
    time_t atime = 0;
-#endif
 
    if (comm) {
       qtimer( atime, 0 );

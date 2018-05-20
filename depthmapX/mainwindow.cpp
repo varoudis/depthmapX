@@ -631,16 +631,6 @@ void MainWindow::OnToolsOptions()
     }
 }
 
-void MainWindow::OnShowResearchtoolbar()
-{
-    //if (GetApp()->m_show_researchtoolbar) {
-    //	m_wndResearchToolBar.show();
-    //}
-    //else {
-    //	m_wndResearchToolBar.hide();
-    //}
-}
-
 void MainWindow::OnViewCentreView()
 {
     activeMapDoc()->SetRedrawFlag(QGraphDoc::VIEW_MAP, QGraphDoc::REDRAW_TOTAL, QGraphDoc::NEW_DEPTHMAPVIEW_SETUP, this);
@@ -1139,14 +1129,6 @@ void MainWindow::updateGLWindows(bool datasetChanged, bool recentreView) {
         if(datasetChanged) child->notifyDatasetChanged();
         if(recentreView) child->matchViewToCurrentMetaGraph();
     }
-}
-
-void MainWindow::switchLayoutDirection()
-{
-    if (layoutDirection() == Qt::LeftToRight)
-        qApp->setLayoutDirection(Qt::RightToLeft);
-    else
-        qApp->setLayoutDirection(Qt::LeftToRight);
 }
 
 void MainWindow::setActiveSubWindow(QWidget *win)
