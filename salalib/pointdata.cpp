@@ -44,7 +44,7 @@ PointMap::PointMap(const std::string& name)
 
    m_cols = 0;
    m_rows = 0;
-   m_point_count = 0;
+   m_filled_point_count = 0;
 
    m_spacepix = NULL;
    m_spacing = 0.0;
@@ -109,11 +109,11 @@ void PointMap::construct(const PointMap& pointdata)
       }
    }
 
-   m_point_count = pointdata.m_point_count;
+   m_filled_point_count = pointdata.m_filled_point_count;
 
    // You *must* set SpacePixel manually
    m_spacepix = NULL;
-   m_spacing = pointdata.m_point_count;
+   m_spacing = pointdata.m_filled_point_count;
 
    m_initialised = pointdata.m_initialised;
    m_blockedlines = false;       // <- always false for a new point data
@@ -179,7 +179,7 @@ bool PointMap::setGrid(double spacing, const Point2f& offset)
 
    if (!m_points.empty()) {
       m_points.clear();
-      m_point_count = 0;
+      m_filled_point_count = 0;
    }
    m_undocounter = 0;  // <- reset the undo counter... sorry... once you've done this you can't undo
 
@@ -215,7 +215,7 @@ bool PointMap::setGrid(double spacing, const Point2f& offset)
 
 bool PointMap::clearPoints()
 {
-   if (!m_point_count) {
+   if (!m_filled_point_count) {
       return false;
    }
 
@@ -230,7 +230,7 @@ bool PointMap::clearPoints()
              point.set( Point::EMPTY, m_undocounter );
          }
       }
-      m_point_count = 0;
+      m_filled_point_count = 0;
       m_merge_lines.clear();
    }
    else if (m_selection & SINGLE_SELECTION) {
@@ -246,7 +246,7 @@ bool PointMap::clearPoints()
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
-               m_point_count--;
+               m_filled_point_count--;
             }
          }
       }
@@ -263,7 +263,7 @@ bool PointMap::clearPoints()
                   getPoint(p).m_merge = NoPixel;
                   getPoint(p).m_state &= ~Point::MERGED;
                }
-               m_point_count--;
+               m_filled_point_count--;
             }
          }
       }
@@ -286,13 +286,13 @@ bool PointMap::undoPoints()
                 p.m_state &= ~Point::FILLED;
                 p.m_state |= Point::EMPTY;
                 p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
-                m_point_count--;
+                m_filled_point_count--;
             }
             else if (p.m_state & Point::EMPTY) {
                 p.m_state |= Point::FILLED;
                 p.m_state &= ~Point::EMPTY;
                 p.m_misc = 0; // probably shouldn't set to 0 (can't undo)  Eventually will implement 'redo' counter as well
-                m_point_count++;
+                m_filled_point_count++;
             }
         }
    }
@@ -353,7 +353,7 @@ void PointMap::fillLine(const Line& li)
    for (size_t j = 0; j < pixels.size(); j++) {
       if (getPoint(pixels[j]).empty()) {
          getPoint(pixels[j]).set( Point::FILLED, m_undocounter );
-         m_point_count++;
+         m_filled_point_count++;
       }
    }
 }
@@ -448,11 +448,11 @@ bool PointMap::fillPoint(const Point2f& p, bool add)
    }
    Point& pt = getPoint(pix);
    if (add && !pt.filled()) {
-      m_point_count++;
+      m_filled_point_count++;
       pt.set( Point::FILLED, ++m_undocounter );
    }
    else if (!add && (pt.m_state & Point::FILLED)) {
-      m_point_count--;
+      m_filled_point_count--;
       pt.set( Point::EMPTY, ++m_undocounter );
    }
    return true;
@@ -508,7 +508,7 @@ bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm
        filltype = Point::AUGMENTED;
 
    getPoint(seedref).set( filltype, m_undocounter );
-   m_point_count++;
+   m_filled_point_count++;
 
    // Now... start making lines:
    pflipper<PixelRefVector> surface;
@@ -573,7 +573,7 @@ int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list
       }
    }
    getPoint(p2).set( filltype, m_undocounter );
-   m_point_count++;
+   m_filled_point_count++;
    list.push_back( p2 ); 
 
    // 8 = success
@@ -1145,7 +1145,7 @@ bool PointMap::read(istream& stream, int version )
    stream.read( (char *) &m_rows, sizeof(m_rows) );
    stream.read( (char *) &m_cols, sizeof(m_cols) );
 
-   stream.read( (char *) &m_point_count, sizeof(m_point_count) );
+   stream.read( (char *) &m_filled_point_count, sizeof(m_filled_point_count) );
 
    stream.read( (char *) &m_bottom_left, sizeof(m_bottom_left) );
 
@@ -1226,7 +1226,7 @@ bool PointMap::write( ofstream& stream, int version )
    stream.write( (char *) &m_rows, sizeof(m_rows) );
    stream.write( (char *) &m_cols, sizeof(m_cols) );
 
-   stream.write( (char *) &m_point_count, sizeof(m_point_count) );
+   stream.write( (char *) &m_filled_point_count, sizeof(m_filled_point_count) );
 
    stream.write( (char *) &m_bottom_left, sizeof(m_bottom_left) );
 
@@ -1431,7 +1431,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
             PixelRef curs = PixelRef( i, j );
             if ( getPoint( curs ).filled() && !getPoint( curs ).edge()) {
                m_points[size_t(i*m_rows + j)].m_state &= ~Point::FILLED;
-               m_point_count--;
+               m_filled_point_count--;
             }
          }
       }
@@ -1785,7 +1785,7 @@ bool PointMap::analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple
    time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
+      comm->CommPostMessage( Communicator::NUM_RECORDS, m_filled_point_count );
    }
    int count = 0;
 
@@ -1843,7 +1843,7 @@ bool PointMap::analyseVisual(Communicator *comm, Options& options, bool simple_v
    time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
+      comm->CommPostMessage( Communicator::NUM_RECORDS, m_filled_point_count );
    }
 
    int cluster_col, control_col, controllability_col;
@@ -2159,7 +2159,7 @@ bool PointMap::analyseMetric(Communicator *comm, Options& options)
    time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
+      comm->CommPostMessage( Communicator::NUM_RECORDS, m_filled_point_count );
    }
 
    std::string radius_text;
@@ -2347,7 +2347,7 @@ bool PointMap::analyseAngular(Communicator *comm, Options& options)
    time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
+      comm->CommPostMessage( Communicator::NUM_RECORDS, m_filled_point_count );
    }
 
    std::string radius_text;
@@ -2510,7 +2510,7 @@ bool PointMap::analyseThruVision(Communicator *comm)
    time_t atime = 0;
    if (comm) {
       qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_point_count );
+      comm->CommPostMessage( Communicator::NUM_RECORDS, m_filled_point_count );
    }
 
    // current version (not sure of differences!)
