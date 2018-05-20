@@ -78,6 +78,10 @@ void SegmentParser::parse(int argc, char **argv)
             {
                 _analysisType = AnalysisType::METRIC;
             }
+            else
+            {
+                throw CommandLineException(std::string("Invalid SEGMENT mode: ") + argv[i]);
+            }
         }
         else if (std::strcmp(argv[i], "-srt") == 0)
         {

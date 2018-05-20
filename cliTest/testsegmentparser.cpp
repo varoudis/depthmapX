@@ -53,6 +53,12 @@ TEST_CASE("Test Segment Parsing Exceptions","")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "-st requires an argument" );
     }
 
+    SECTION("Invalid SEGMENT mode")
+    {
+        ArgumentHolder ah{"prog", "-st", "foo"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), "Invalid SEGMENT mode: foo" );
+    }
+
     SECTION("Argument missing -sr")
     {
         ArgumentHolder ah{"prog", "-sr"};
