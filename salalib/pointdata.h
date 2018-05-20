@@ -102,9 +102,6 @@ protected:
    AttributeTable m_attributes;
 public:
    PointMap(const std::string& name = std::string("VGA Map"));
-   PointMap(const PointMap& pointdata);
-   PointMap& operator = (const PointMap& pointdata);
-   void construct( const PointMap& pointdata );
    const std::string& getName() const
    { return m_name; }
 
