@@ -1655,7 +1655,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
       {
          Line l = line;
          if (l.crop(viewport0)) {
-            lines0.push_back(line);
+            lines0.push_back(l);
          }
       }
       sieve.block(lines0, q);
