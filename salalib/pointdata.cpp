@@ -514,7 +514,7 @@ int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list
 }
 
 
-void PointMap::outputPoints(ostream& stream, char delim)
+void PointMap::outputPoints(std::ostream& stream, char delim)
 {
    stream << "Ref" << delim << "x" << delim << "y" << endl;
    stream.precision(12);
@@ -535,7 +535,7 @@ void PointMap::outputPoints(ostream& stream, char delim)
    }
 }
 
-void PointMap::outputMergeLines(ostream& stream, char delim)
+void PointMap::outputMergeLines(std::ostream& stream, char delim)
 {
    stream << "x1" << delim << "y1" << delim << "x2" << delim << "y2" << endl;
 
@@ -551,7 +551,7 @@ void PointMap::outputMergeLines(ostream& stream, char delim)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void PointMap::outputSummary(ostream& myout, char delimiter)
+void PointMap::outputSummary(std::ostream& myout, char delimiter)
 {
    myout << "Ref" << delimiter << "x" << delimiter << "y";
 
@@ -569,13 +569,13 @@ void PointMap::outputSummary(ostream& myout, char delimiter)
    }
 }
 
-void PointMap::outputMif( ostream& miffile, ostream& midfile )
+void PointMap::outputMif( std::ostream& miffile, std::ostream& midfile )
 {
    MapInfoData mapinfodata;
    mapinfodata.exportFile(miffile, midfile, *this);
 }
 
-void PointMap::outputNet(ostream& netfile)
+void PointMap::outputNet(std::ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
@@ -615,7 +615,7 @@ void PointMap::outputNet(ostream& netfile)
    }
 }
 
-void PointMap::outputConnections(ostream& myout)
+void PointMap::outputConnections(std::ostream& myout)
 {
    myout << "#graph v1.0" << endl;
    for (int i = 0; i < m_cols; i++) {
@@ -634,7 +634,7 @@ void PointMap::outputConnections(ostream& myout)
    }
 }
 
-void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
+void PointMap::outputConnectionsAsCSV(std::ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
     std::unordered_set<PixelRef, hashPixelRef> seenPix;
@@ -663,7 +663,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
     }
 }
 
-void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
+void PointMap::outputLinksAsCSV(std::ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
     std::unordered_set<PixelRef, hashPixelRef> seenPix;
@@ -687,7 +687,7 @@ void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
     }
 }
 
-void PointMap::outputBinSummaries(ostream& myout)
+void PointMap::outputBinSummaries(std::ostream& myout)
 {
    myout << "cols " << m_cols << " rows " << m_rows << endl;
 
@@ -1063,7 +1063,7 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool PointMap::read(istream& stream, int version )
+bool PointMap::read(std::istream& stream, int version )
 {
    m_name = dXstring::readString(stream);
 
@@ -1150,7 +1150,7 @@ bool PointMap::read(istream& stream, int version )
    return true;
 }
 
-bool PointMap::write( ofstream& stream, int version )
+bool PointMap::write( std::ofstream& stream, int version )
 {
    dXstring::writeString(stream, m_name);
 

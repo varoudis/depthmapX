@@ -144,9 +144,9 @@ public:
    bool canUndo() const
       { return !m_processed && m_undocounter != 0; }
    //
-   bool importPoints(istream& stream);
-   void outputPoints( ostream& stream, char delim );
-   void outputMergeLines(ostream& stream, char delim);
+   bool importPoints(std::istream& stream);
+   void outputPoints(std::ostream& stream, char delim );
+   void outputMergeLines(std::ostream& stream, char delim);
    //
    void makeConstants();
    int  tagState(bool settag, bool sparkgraph = false);
@@ -173,11 +173,11 @@ public:
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
    //
-   void outputSummary(ostream& myout, char delimiter = '\t');
-   void outputMif( ostream& miffile, ostream& midfile );
-   void outputNet( ostream& netfile );
-   void outputConnections(ostream& myout);
-   void outputBinSummaries(ostream& myout);
+   void outputSummary(std::ostream& myout, char delimiter = '\t');
+   void outputMif(std::ostream& miffile, std::ostream& midfile );
+   void outputNet(std::ostream& netfile );
+   void outputConnections(std::ostream& myout);
+   void outputBinSummaries(std::ostream& myout);
    //
    // scruffy little helper functions
    int u(int i, int x, int s) const
@@ -350,11 +350,11 @@ public:
    // this is an odd helper function, value in range 0 to 1
    PixelRef pickPixel(double value) const;
 public:
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version );
+   bool write(std::ofstream& stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
-   void outputConnectionsAsCSV(ostream &myout, std::string delim = ",");
-   void outputLinksAsCSV(ostream &myout, std::string delim = ",");
+   void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
+   void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
 };
 
 // inlined to make thread safe
