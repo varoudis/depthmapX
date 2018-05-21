@@ -108,13 +108,13 @@ private:
        m_pointMaps.erase(m_pointMaps.begin() + i);
    }
 
-   bool readPointMaps(istream &stream, int version );
-   bool writePointMaps( ofstream& stream, int version, bool displayedmaponly = false );
+   bool readPointMaps(std::istream &stream, int version );
+   bool writePointMaps( std::ofstream& stream, int version, bool displayedmaponly = false );
 
    std::recursive_mutex mLock;
 public:
     std::unique_lock<std::recursive_mutex> getLock(){
-       return std::unique_lock<recursive_mutex>(mLock);
+       return std::unique_lock<std::recursive_mutex>(mLock);
    }
 
     std::unique_lock<std::recursive_mutex> getLockDeferred(){
@@ -128,8 +128,8 @@ public:
       { m_state = state; }
 
    int loadLineData( Communicator *communicator, int load_type );
-   int loadCat( istream& stream, Communicator *communicator );
-   int loadRT1(const std::vector<string>& fileset, Communicator *communicator);
+   int loadCat( std::istream& stream, Communicator *communicator );
+   int loadRT1(const std::vector<std::string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
    void deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap);
    void updateParentRegions(ShapeMap &shapeMap);
@@ -168,7 +168,7 @@ public:
    bool convertPointsToShape();
    //bool convertBoundaryGraph( Communicator *communicator );
 
-   int loadMifMap(Communicator *comm, istream& miffile, istream& midfile);
+   int loadMifMap(Communicator *comm, std::istream& miffile, std::istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );
    bool analyseAxial( Communicator *communicator, Options options, bool simple_version ); // <- options copied to keep thread safe
@@ -225,8 +225,8 @@ public:
    std::vector<ShapeMap>& getDataMaps()
    { return m_dataMaps; }
 
-   bool readDataMaps(istream &stream, int version );
-   bool writeDataMaps( ofstream& stream, int version, bool displayedmaponly = false );
+   bool readDataMaps(std::istream &stream, int version );
+   bool writeDataMaps( std::ofstream& stream, int version, bool displayedmaponly = false );
 
    //
    int getDisplayedMapType();
@@ -431,12 +431,12 @@ public:
    enum { OK, WARN_BUGGY_VERSION, WARN_CONVERTED, NOT_A_GRAPH, DAMAGED_FILE, DISK_ERROR, NEWER_VERSION, DEPRECATED_VERSION };
    // likely to use communicator if too slow...
    int readFromFile( const std::string& filename );
-   int readFromStream( istream &stream, const std::string& filename );
+   int readFromStream( std::istream &stream, const std::string& filename );
    int write( const std::string& filename, int version, bool currentlayer = false);
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   streampos skipVirtualMem(istream &stream, int version);
+   std::streampos skipVirtualMem(std::istream &stream, int version);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
