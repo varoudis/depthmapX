@@ -84,10 +84,10 @@ private:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
-   Point **m_points;    // will contain the graph reference when created
+   std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
-   int m_point_count;
+   int m_filled_point_count;
    double m_spacing;
    Point2f m_offset;
    Point2f m_bottom_left;
@@ -102,10 +102,6 @@ protected:
    AttributeTable m_attributes;
 public:
    PointMap(const std::string& name = std::string("VGA Map"));
-   PointMap(const PointMap& pointdata);
-   PointMap& operator = (const PointMap& pointdata);
-   void construct( const PointMap& pointdata );
-   virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
 
@@ -149,7 +145,7 @@ public:
       { return !m_processed && m_undocounter != 0; }
    //
    bool importPoints(std::istream& stream);
-   void outputPoints( std::ostream& stream, char delim );
+   void outputPoints(std::ostream& stream, char delim );
    void outputMergeLines(std::ostream& stream, char delim);
    //
    void makeConstants();
@@ -178,8 +174,8 @@ public:
    bool isPixelMerged(const PixelRef &a);
    //
    void outputSummary(std::ostream& myout, char delimiter = '\t');
-   void outputMif( std::ostream& miffile, std::ostream& midfile );
-   void outputNet( std::ostream& netfile );
+   void outputMif(std::ostream& miffile, std::ostream& midfile );
+   void outputNet(std::ostream& netfile );
    void outputConnections(std::ostream& myout);
    void outputBinSummaries(std::ostream& myout);
    //
@@ -190,15 +186,17 @@ public:
       { return j + (y * s); }
    int remaining(int i, int j, int x, int y, int q);
    //
-   Point& getPoint(const PixelRef& p) const
-      { return m_points[p.x][p.y]; }
+   const Point& getPoint(const PixelRef& p) const
+      { return m_points[p.x*m_rows + p.y]; }
+   Point& getPoint(const PixelRef& p)
+      { return m_points[p.x*m_rows + p.y]; }
    const int& pointState( const PixelRef& p ) const
-      { return m_points[p.x][p.y].m_state; }
+      { return m_points[p.x*m_rows + p.y].m_state; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
-   int getPointCount() const
-      { return m_point_count; }
+   int getFilledPointCount() const
+      { return m_filled_point_count; }
    //
    void requireIsovistAnalysis()
    {
@@ -323,7 +321,9 @@ public:
    bool findNextPoint() const;
    Point2f getNextPointLocation() const
    { return getPoint(cur).m_location; }
-   Point& getNextPoint() const
+   const Point& getNextPoint() const
+   { return getPoint(cur); }
+   Point& getNextPoint()
    { return getPoint(cur); }
    bool findNextRow() const;
    Line getNextRow() const;
@@ -351,7 +351,7 @@ public:
    PixelRef pickPixel(double value) const;
 public:
    bool read(std::istream &stream, int version );
-   bool write( std::ofstream& stream, int version );
+   bool write(std::ofstream& stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
    void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
    void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");

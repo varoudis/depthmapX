@@ -168,7 +168,7 @@ void QGraphDoc::UpdateMainframestatus()
        }
        // either showing or constructing the VGA graph
        else if ((state & MetaGraph::POINTMAPS) && m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
-          n = (int) m_meta_graph->getDisplayedPointMap().getPointCount();
+          n = (int) m_meta_graph->getDisplayedPointMap().getFilledPointCount();
        }
        if (n > 0) {
           s1 = QString("%1   ").arg(n);
@@ -1049,7 +1049,7 @@ void QGraphDoc::OnEditGrid()
       // this can happen if there are no displayed maps -- so flag new map required:
       newmap = true;
    }
-   else if (m_meta_graph->getDisplayedPointMap().getPointCount() != 0) {
+   else if (m_meta_graph->getDisplayedPointMap().getFilledPointCount() != 0) {
       if ( QMessageBox::Yes != QMessageBox::question(this, tr("depthmapX"), tr("This will clear existing points.  Do you want to continue?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
          return;
    }
