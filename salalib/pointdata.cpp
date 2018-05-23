@@ -615,9 +615,9 @@ int PointMap::expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list
 }
 
 
-void PointMap::outputPoints(ostream& stream, char delim)
+void PointMap::outputPoints(std::ostream& stream, char delim)
 {
-   stream << "Ref" << delim << "x" << delim << "y" << endl;
+   stream << "Ref" << delim << "x" << delim << "y" << std::endl;
    stream.precision(12);
 
    int count = 0;
@@ -629,16 +629,16 @@ void PointMap::outputPoints(ostream& stream, char delim)
          if ( getPoint(curs).filled() ) {
 
             Point2f p = depixelate(curs);
-            stream << curs << delim << p.x << delim << p.y << endl;
+            stream << curs << delim << p.x << delim << p.y << std::endl;
             count++;
          }
       }
    }
 }
 
-void PointMap::outputMergeLines(ostream& stream, char delim)
+void PointMap::outputMergeLines(std::ostream& stream, char delim)
 {
-   stream << "x1" << delim << "y1" << delim << "x2" << delim << "y2" << endl;
+   stream << "x1" << delim << "y1" << delim << "x2" << delim << "y2" << std::endl;
 
    stream.precision(12);
    for (size_t i = 0; i < m_merge_lines.size(); i++) {
@@ -646,13 +646,13 @@ void PointMap::outputMergeLines(ostream& stream, char delim)
       Line li(depixelate(m_merge_lines[i].a),depixelate(m_merge_lines[i].b));
 
       stream << li.start().x << delim << li.start().y << delim
-             << li.end().x << delim << li.end().y << endl;
+             << li.end().x << delim << li.end().y << std::endl;
    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void PointMap::outputSummary(ostream& myout, char delimiter)
+void PointMap::outputSummary(std::ostream& myout, char delimiter)
 {
    myout << "Ref" << delimiter << "x" << delimiter << "y";
 
@@ -670,13 +670,13 @@ void PointMap::outputSummary(ostream& myout, char delimiter)
    }
 }
 
-void PointMap::outputMif( ostream& miffile, ostream& midfile )
+void PointMap::outputMif( std::ostream& miffile, std::ostream& midfile )
 {
    MapInfoData mapinfodata;
    mapinfodata.exportFile(miffile, midfile, *this);
 }
 
-void PointMap::outputNet(ostream& netfile)
+void PointMap::outputNet(std::ostream& netfile)
 {
    // this is a bid of a faff, as we first have to get the point locations, 
    // then the connections from a lookup table... ickity ick ick...
@@ -691,7 +691,7 @@ void PointMap::outputNet(ostream& netfile)
          }
       }
    }
-   netfile << "*Vertices " << graph.size() << endl;
+   netfile << "*Vertices " << graph.size() << std::endl;
    double maxdim = __max(m_region.width(),m_region.height());
    Point2f offset = Point2f((maxdim - m_region.width())/(2.0*maxdim),(maxdim - m_region.height())/(2.0*maxdim));
    size_t j = 0;
@@ -700,25 +700,25 @@ void PointMap::outputNet(ostream& netfile)
       Point2f p = depixelate(graphKey);
       p.x = offset.x + (p.x - m_region.bottom_left.x) / maxdim;
       p.y = 1.0 - (offset.y + (p.y - m_region.bottom_left.y) / maxdim);
-      netfile << (j+1) << " \"" << graphKey << "\" " << p.x << " " << p.y << endl;
+      netfile << (j+1) << " \"" << graphKey << "\" " << p.x << " " << p.y << std::endl;
       j++;
    }
-   netfile << "*Edges" << endl;
+   netfile << "*Edges" << std::endl;
    size_t k = 0;
    for (auto& iter: graph) {
       PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = depthmapX::findIndexFromKey(graph, list[m]);
          if (n != paftl::npos && k < n) {
-            netfile << (k+1) << " " << (n+1) << " 1" << endl;
+            netfile << (k+1) << " " << (n+1) << " 1" << std::endl;
          }
       }
    }
 }
 
-void PointMap::outputConnections(ostream& myout)
+void PointMap::outputConnections(std::ostream& myout)
 {
-   myout << "#graph v1.0" << endl;
+   myout << "#graph v1.0" << std::endl;
    for (int i = 0; i < m_cols; i++) {
       for (int j = 0; j < m_rows; j++) {
          if (m_points[i][j].filled() && m_points[i][j].m_node) {
@@ -727,15 +727,15 @@ void PointMap::outputConnections(ostream& myout)
             myout << "node {\n" 
                   << "  ref    " << pix << "\n" 
                   << "  origin " << p.x << " " << p.y << " " << 0.0 << "\n"
-                  << "  connections [" << endl;
+                  << "  connections [" << std::endl;
             myout << *(m_points[i][j].m_node);
-            myout << "  ]\n}" << endl;
+            myout << "  ]\n}" << std::endl;
          }
       }
    }
 }
 
-void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
+void PointMap::outputConnectionsAsCSV(std::ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
     std::unordered_set<PixelRef, hashPixelRef> seenPix;
@@ -764,7 +764,7 @@ void PointMap::outputConnectionsAsCSV(ostream& myout, std::string delim)
     }
 }
 
-void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
+void PointMap::outputLinksAsCSV(std::ostream& myout, std::string delim)
 {
     myout << "RefFrom" << delim << "RefTo";
     std::unordered_set<PixelRef, hashPixelRef> seenPix;
@@ -788,15 +788,15 @@ void PointMap::outputLinksAsCSV(ostream& myout, std::string delim)
     }
 }
 
-void PointMap::outputBinSummaries(ostream& myout)
+void PointMap::outputBinSummaries(std::ostream& myout)
 {
-   myout << "cols " << m_cols << " rows " << m_rows << endl;
+   myout << "cols " << m_cols << " rows " << m_rows << std::endl;
 
    myout << "x\ty";
    for (int i = 0; i < 32; i++) {
       myout << "\tbin" << i;
    }
-   myout << endl;
+   myout << std::endl;
 
    int count = 0;
    for (int i = 0; i < m_cols; i++) {
@@ -817,7 +817,7 @@ void PointMap::outputBinSummaries(ostream& myout)
             }
          }
 
-         myout << endl;
+         myout << std::endl;
       }
    }
 }
@@ -1164,7 +1164,7 @@ bool PointMap::blockedAdjacent( const PixelRef p ) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool PointMap::read(istream& stream, int version )
+bool PointMap::read(std::istream& stream, int version )
 {
    m_name = dXstring::readString(stream);
 
@@ -1259,7 +1259,7 @@ bool PointMap::read(istream& stream, int version )
    return true;
 }
 
-bool PointMap::write( ofstream& stream, int version )
+bool PointMap::write( std::ofstream& stream, int version )
 {
    dXstring::writeString(stream, m_name);
 
