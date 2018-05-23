@@ -48,7 +48,7 @@ static const double TOLERANCE_B = 1e-12;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SalaShape::read(istream& stream, int version)
+bool SalaShape::read(std::istream& stream, int version)
 {
    // defaults
    m_draworder = -1; 
@@ -70,7 +70,7 @@ bool SalaShape::read(istream& stream, int version)
    return true;
 }
 
-bool SalaShape::write(ofstream& stream)
+bool SalaShape::write(std::ofstream& stream)
 {
    stream.write((char *)&m_type,sizeof(m_type));
    stream.write((char *)&m_region,sizeof(m_region));
@@ -2457,7 +2457,7 @@ bool ShapeMap::selectionToLayer(const std::string& name)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;
@@ -2560,7 +2560,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    return true;
 }
 
-bool ShapeMap::write( ofstream& stream, int version )
+bool ShapeMap::write( std::ofstream& stream, int version )
 {
    // name
    dXstring::writeString(stream, m_name);
@@ -2626,7 +2626,7 @@ bool ShapeMap::write( ofstream& stream, int version )
    return true;
 }
 
-bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
+bool ShapeMap::output( std::ofstream& stream, char delimiter, bool updated_only )
 {
    stream << "Ref";
    if ((m_map_type & LINEMAP) == 0) {
@@ -2982,7 +2982,7 @@ PixelRef ShapeMap::pixelate( const Point2f& p, bool constrain, int ) const
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-int ShapeMap::loadMifMap(istream& miffile, istream& midfile)
+int ShapeMap::loadMifMap(std::istream& miffile, std::istream& midfile)
 {
    m_mapinfodata = MapInfoData();
    int retvar = m_mapinfodata.import(miffile, midfile, *this);
@@ -2992,7 +2992,7 @@ int ShapeMap::loadMifMap(istream& miffile, istream& midfile)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::outputMifMap(ostream& miffile, ostream& midfile)
+bool ShapeMap::outputMifMap(std::ostream& miffile, std::ostream& midfile)
 {
    if (!m_hasMapInfoData) {
       MapInfoData mapinfodata;
@@ -3175,7 +3175,7 @@ bool ShapeMap::clearLinks()
    return true;
 }
 
-bool ShapeMap::unlinkShapeSet(istream& idset, int refcol)
+bool ShapeMap::unlinkShapeSet(std::istream& idset, int refcol)
 {
    std::string line;
    prefvec<IntPair> unlinks;
@@ -3289,16 +3289,16 @@ std::vector<Point2f> ShapeMap::getAllUnlinkPoints()
 
 }
 
-void ShapeMap::outputUnlinkPoints( ofstream& stream, char delim )
+void ShapeMap::outputUnlinkPoints( std::ofstream& stream, char delim )
 {
-   stream << "x" << delim << "y" << endl;
+   stream << "x" << delim << "y" << std::endl;
 
    stream.precision(12);
    for (size_t i = 0; i < m_unlinks.size(); i++) {
       // note, links are stored directly by rowid, not by key:
       Point2f p = intersection_point(depthmapX::getMapAtIndex(m_shapes, m_unlinks[i].a)->second.getLine(),
                                      depthmapX::getMapAtIndex(m_shapes, m_unlinks[i].b)->second.getLine(), TOLERANCE_A);
-      stream << p.x << delim << p.y << endl;
+      stream << p.x << delim << p.y << std::endl;
    }
 }
 

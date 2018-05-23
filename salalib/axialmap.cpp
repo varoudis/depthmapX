@@ -1753,7 +1753,7 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraphs::read( istream& stream, int version )
+bool ShapeGraphs::read( std::istream& stream, int version )
 {
    // base class read
 
@@ -1785,7 +1785,7 @@ bool ShapeGraphs::read( istream& stream, int version )
 }
 
 // for backward compatibility only:
-bool ShapeGraphs::readold( istream& stream, int version )
+bool ShapeGraphs::readold( std::istream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
    dXstring::readString(stream);
@@ -1802,7 +1802,7 @@ bool ShapeGraphs::readold( istream& stream, int version )
    return true;
 }
 
-bool ShapeGraphs::write( ofstream& stream, int version, bool displayedmaponly )
+bool ShapeGraphs::write( std::ofstream& stream, int version, bool displayedmaponly )
 {
    // base class write
    ShapeMaps<ShapeGraph>::write(stream, version, displayedmaponly);
@@ -1882,7 +1882,7 @@ void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
+bool ShapeGraph::outputMifPolygons(std::ostream& miffile, std::ostream& midfile) const
 {
    // take lines from lines layer and make into regions (using the axial polygons)
    std::vector<Line> lines;
@@ -1905,12 +1905,12 @@ bool ShapeGraph::outputMifPolygons(ostream& miffile, ostream& midfile) const
    return true;
 }
 
-void ShapeGraph::outputNet(ostream& netfile) const
+void ShapeGraph::outputNet(std::ostream& netfile) const
 {
    double maxdim = __max(m_region.width(),m_region.height());
    Point2f offset = Point2f((maxdim - m_region.width())/(2.0*maxdim),(maxdim - m_region.height())/(2.0*maxdim));
    if (isSegmentMap()) {
-      netfile << "*Vertices " << m_shapes.size() * 2 << endl;
+      netfile << "*Vertices " << m_shapes.size() * 2 << std::endl;
       int i = -1;
       for (auto shape: m_shapes) {
          i++;
@@ -1921,14 +1921,14 @@ void ShapeGraph::outputNet(ostream& netfile) const
          p2.x = offset.x + (p2.x - m_region.bottom_left.x) / maxdim;
          p1.y = 1.0 - (offset.y + (p1.y - m_region.bottom_left.y) / maxdim);
          p2.y = 1.0 - (offset.y + (p2.y - m_region.bottom_left.y) / maxdim);
-         netfile << (i * 2 + 1) << " \"" << i << "a\" " << p1.x << " " << p1.y << endl;
-         netfile << (i * 2 + 2) << " \"" << i << "b\" " << p2.x << " " << p2.y << endl;
+         netfile << (i * 2 + 1) << " \"" << i << "a\" " << p1.x << " " << p1.y << std::endl;
+         netfile << (i * 2 + 2) << " \"" << i << "b\" " << p2.x << " " << p2.y << std::endl;
       }
-      netfile << "*Edges" << endl;
+      netfile << "*Edges" << std::endl;
       for (size_t i = 0; i < m_shapes.size(); i++) {
-         netfile << (i * 2 + 1) << " " << (i * 2 + 2) << " 2" << endl;
+         netfile << (i * 2 + 1) << " " << (i * 2 + 2) << " 2" << std::endl;
       }
-      netfile << "*Arcs" << endl;
+      netfile << "*Arcs" << std::endl;
       // this makes an assumption about which is the "start" and which is the "end"
       // it works for an automatically converted axial map, I'm not sure it works for others...
       for (size_t j = 0; j < m_connectors.size(); j++) {
@@ -1936,32 +1936,32 @@ void ShapeGraph::outputNet(ostream& netfile) const
          for (size_t k1 = 0; k1 < conn.m_forward_segconns.size(); k1++) {
             SegmentRef ref = conn.m_forward_segconns.key(k1);
             float weight = conn.m_forward_segconns.value(k1);
-            netfile << (j * 2 + 1) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << endl;
+            netfile << (j * 2 + 1) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << std::endl;
          }
          for (size_t k2 = 0; k2 < conn.m_back_segconns.size(); k2++) {
             SegmentRef ref = conn.m_back_segconns.key(k2);
             float weight = conn.m_back_segconns.value(k2);
-            netfile << (j * 2 + 2) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << endl;
+            netfile << (j * 2 + 2) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << std::endl;
          }
       }
    }
    else {
-      netfile << "*Vertices " << m_shapes.size() << endl;
+      netfile << "*Vertices " << m_shapes.size() << std::endl;
       int i = -1;
       for (auto shape: m_shapes) {
          i++;
          Point2f p = shape.second.getCentroid();
          p.x = offset.x + (p.x - m_region.bottom_left.x) / maxdim;
          p.y = 1.0 - (offset.y + (p.y - m_region.bottom_left.y) / maxdim);
-         netfile << (i + 1) << " \"" << i << "\" " << p.x << " " << p.y << endl;
+         netfile << (i + 1) << " \"" << i << "\" " << p.x << " " << p.y << std::endl;
       }
-      netfile << "*Edges" << endl;
+      netfile << "*Edges" << std::endl;
       for (size_t j = 0; j < m_connectors.size(); j++) {
          const Connector& conn = m_connectors[j];
          for (size_t k = 0; k < conn.m_connections.size(); k++) {
             size_t to = conn.m_connections[k];
             if (j < to) {
-               netfile << (j+1) << " " << (to + 1) << " 1" << endl;
+               netfile << (j+1) << " " << (to + 1) << " 1" << std::endl;
             }
          }
       }
@@ -2572,7 +2572,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeGraph::read(istream &stream, int version )
+bool ShapeGraph::read(std::istream &stream, int version )
 {
    m_attributes.clear();
    m_connectors.clear();
@@ -2594,7 +2594,7 @@ bool ShapeGraph::read(istream &stream, int version )
    return true;
 }
 
-bool ShapeGraph::readold( istream& stream, int version )
+bool ShapeGraph::readold( std::istream& stream, int version )
 {
    // read in from old base class
    SpacePixel linemap;
@@ -2664,7 +2664,7 @@ bool ShapeGraph::readold( istream& stream, int version )
    return true;
 }
 
-bool ShapeGraph::write( ofstream& stream, int version )
+bool ShapeGraph::write( std::ofstream& stream, int version )
 {
    // note keyvertexcount and keyvertices are different things!  (length keyvertices not the same as keyvertexcount!)
    stream.write((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
@@ -2680,7 +2680,7 @@ bool ShapeGraph::write( ofstream& stream, int version )
    return true;
 }
 
-void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
+void ShapeGraph::writeAxialConnectionsAsDotGraph(std::ostream &stream)
 {
     const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2697,7 +2697,7 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(ostream &stream)
     stream << "}" << std::endl;
 }
 
-void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
+void ShapeGraph::writeAxialConnectionsAsPairsCSV(std::ostream &stream)
 {
     const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2715,7 +2715,7 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(ostream &stream)
     }
 }
 
-void ShapeGraph::writeSegmentConnectionsAsPairsCSV(ostream &stream)
+void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
 {
     const std::vector<Connector>& connectors = ShapeMap::getConnections();
 
@@ -2791,7 +2791,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
             unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
          }
          else {
-            cerr << "eek!";
+            std::cerr << "eek!";
          }
       }
    }
