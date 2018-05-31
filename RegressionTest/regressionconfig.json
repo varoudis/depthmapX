@@ -28,6 +28,16 @@
                 "-vl": ""
             }
         }],
+        "visibility_global_with_multiple_pointmaps": [{
+            "infile": "../../../testdata/gallery_two_pointmaps.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vg": "",
+                "-vr": "3"
+            }
+        }],
         "visibility_global_3": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
