@@ -140,8 +140,8 @@ public:
    //
    pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
-   bool read(istream &stream, int version);
-   bool write(ofstream& stream);
+   bool read(std::istream &stream, int version);
+   bool write(std::ofstream& stream);
 
    std::vector<Line> getAsLines() const {
        std::vector<Line> lines;
@@ -167,16 +167,16 @@ protected:
 public:
    SalaObject() {;}
    //
-   bool read(istream &stream, int version);
-   bool write(ofstream& stream);
+   bool read(std::istream &stream, int version);
+   bool write(std::ofstream& stream);
 };
-inline bool SalaObject::read(istream& stream, int)
+inline bool SalaObject::read(std::istream& stream, int)
 {
    stream.read((char *)&m_centroid,sizeof(m_centroid));
    pvecint::read(stream);
    return true;
 }
-inline bool SalaObject::write(ofstream& stream)
+inline bool SalaObject::write(std::ofstream& stream)
 {
    stream.write((char *)&m_centroid,sizeof(m_centroid));
    pvecint::write(stream);
@@ -479,8 +479,8 @@ protected:
    MapInfoData m_mapinfodata;
 public:
    bool hasMapInfoData() const {return m_hasMapInfoData;}
-   int loadMifMap(istream& miffile, istream& midfile);
-   bool outputMifMap(ostream& miffile, ostream& midfile);
+   int loadMifMap(std::istream& miffile, std::istream& midfile);
+   bool outputMifMap(std::ostream& miffile, std::ostream& midfile);
    const MapInfoData& getMapInfoData() const
    { return m_mapinfodata; }
 public:
@@ -514,10 +514,10 @@ public:
    //
 public:
    // file
-   bool read(istream &stream, int version, bool drawinglayer = false );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version, bool drawinglayer = false );
+   bool write( std::ofstream& stream, int version );
    //
-   bool output( ofstream& stream, char delimiter = '\t', bool updated_only = false );
+   bool output( std::ofstream& stream, char delimiter = '\t', bool updated_only = false );
    //
    // links and unlinks
 protected:
@@ -532,7 +532,7 @@ public:
    bool linkShapes(int id1, int dir1, int id2, int dir2, float weight);
    bool unlinkShapes(const Point2f& p);
    bool unlinkShapes(int index1, int index2, bool refresh = true);
-   bool unlinkShapeSet(istream& idset, int refcol);
+   bool unlinkShapeSet(std::istream& idset, int refcol);
 public:
    // generic for all types of graphs
    bool findNextLinkLine() const;
@@ -542,7 +542,7 @@ public:
    bool findNextUnlinkPoint() const;
    Point2f getNextUnlinkPoint() const;
    std::vector<Point2f> getAllUnlinkPoints();
-   void outputUnlinkPoints( ofstream& stream, char delim );
+   void outputUnlinkPoints( std::ofstream& stream, char delim );
 public:
    std::vector<SimpleLine> getAllShapesAsLines() const;
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
@@ -607,8 +607,8 @@ public:
    const size_t getShapeCount() const
    { return prefvec<T>::at(m_displayed_map).m_shapes.size(); }
    //
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool read(std::istream &stream, int version );
+   bool write( std::ofstream& stream, int version, bool displayedmaponly = false );
    //
    const QtRegion& getBoundingBox() const
    { return prefvec<T>::at(m_displayed_map).getRegion(); }
@@ -665,7 +665,7 @@ void ShapeMaps<T>::setDisplayedMapRef(size_t map)
    m_displayed_map = map;
 }
 template <class T>
-bool ShapeMaps<T>::read( istream& stream, int version )
+bool ShapeMaps<T>::read( std::istream& stream, int version )
 {
     prefvec<T>::clear(); // empty existing data
    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
@@ -684,7 +684,7 @@ bool ShapeMaps<T>::read( istream& stream, int version )
    return true;
 }
 template <class T>
-bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
+bool ShapeMaps<T>::write( std::ofstream& stream, int version, bool displayedmaponly )
 {
    if (!displayedmaponly) {
       // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems

@@ -770,7 +770,7 @@ void SpacePixel::cutLine(Line& l, short dir)
                                     }
                                     else {
                                        // parallel with both lines ... this shouldn't happen...
-                                       cerr << "couldn't chop at boundary" << endl;
+                                       std::cerr << "couldn't chop at boundary" << std::endl;
                                     }
                                  }
                               }
@@ -888,7 +888,7 @@ pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignor
    return cross_list;
 }
 
-bool SpacePixel::read( istream& stream, int version )
+bool SpacePixel::read( std::istream& stream, int version )
 {
    // clear anything that was there:
    if (m_pixel_lines)
@@ -957,7 +957,7 @@ bool SpacePixel::read( istream& stream, int version )
    return true;
 }
 
-bool SpacePixel::write( ofstream& stream )
+bool SpacePixel::write( std::ofstream& stream )
 {
    // write name:
    dXstring::writeString(stream, m_name );

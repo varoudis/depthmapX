@@ -84,10 +84,10 @@ private:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
-   Point **m_points;    // will contain the graph reference when created
+   std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
-   int m_point_count;
+   int m_filled_point_count;
    double m_spacing;
    Point2f m_offset;
    Point2f m_bottom_left;
@@ -102,10 +102,6 @@ protected:
    AttributeTable m_attributes;
 public:
    PointMap(const std::string& name = std::string("VGA Map"));
-   PointMap(const PointMap& pointdata);
-   PointMap& operator = (const PointMap& pointdata);
-   void construct( const PointMap& pointdata );
-   virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
 
@@ -141,9 +137,8 @@ public:
    bool undoPoints();
    bool canUndo() const
       { return !m_processed && m_undocounter != 0; }
-   void outputPoints( ostream& stream, char delim );
-   void outputMergeLines(ostream& stream, char delim);
-
+   void outputPoints(std::ostream& stream, char delim );
+   void outputMergeLines(std::ostream& stream, char delim);
    int  tagState(bool settag, bool sparkgraph = false);
    bool sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist );
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
@@ -164,22 +159,24 @@ public:
    bool mergePixels(PixelRef a, PixelRef b);
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
-   //
-   void outputSummary(ostream& myout, char delimiter = '\t');
-   void outputMif( ostream& miffile, ostream& midfile );
-   void outputNet( ostream& netfile );
-   void outputConnections(ostream& myout);
-   void outputBinSummaries(ostream& myout);
+   
+   void outputSummary(std::ostream& myout, char delimiter = '\t');
+   void outputMif(std::ostream& miffile, std::ostream& midfile );
+   void outputNet(std::ostream& netfile );
+   void outputConnections(std::ostream& myout);
+   void outputBinSummaries(std::ostream& myout);
 
-   Point& getPoint(const PixelRef& p) const
-      { return m_points[p.x][p.y]; }
+   const Point& getPoint(const PixelRef& p) const
+      { return m_points[p.x*m_rows + p.y]; }
+   Point& getPoint(const PixelRef& p)
+      { return m_points[p.x*m_rows + p.y]; }
    const int& pointState( const PixelRef& p ) const
-      { return m_points[p.x][p.y].m_state; }
+      { return m_points[p.x*m_rows + p.y].m_state; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
-   int getPointCount() const
-      { return m_point_count; }
+   int getFilledPointCount() const
+      { return m_filled_point_count; }
    //
    void requireIsovistAnalysis()
    {
@@ -316,11 +313,11 @@ public:
    // this is an odd helper function, value in range 0 to 1
    PixelRef pickPixel(double value) const;
 public:
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version );
+   bool write(std::ofstream& stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
-   void outputConnectionsAsCSV(ostream &myout, std::string delim = ",");
-   void outputLinksAsCSV(ostream &myout, std::string delim = ",");
+   void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
+   void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
 };
 
 // inlined to make thread safe

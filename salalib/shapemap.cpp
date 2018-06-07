@@ -48,7 +48,7 @@ static const double TOLERANCE_B = 1e-12;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SalaShape::read(istream& stream, int version)
+bool SalaShape::read(std::istream& stream, int version)
 {
    // defaults
    m_draworder = -1; 
@@ -70,7 +70,7 @@ bool SalaShape::read(istream& stream, int version)
    return true;
 }
 
-bool SalaShape::write(ofstream& stream)
+bool SalaShape::write(std::ofstream& stream)
 {
    stream.write((char *)&m_type,sizeof(m_type));
    stream.write((char *)&m_region,sizeof(m_region));
@@ -321,7 +321,7 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    // note, shape constructor sets centroid, length etc
-   int rowid = depthmapX::insertAndGetIndex(m_shapes, shape_ref, SalaShape(line));
+   m_shapes.insert(std::make_pair(shape_ref, SalaShape(line)));
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
@@ -340,9 +340,9 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    if (through_ui) {
-      //
       // manually add connections:
       if (m_hasgraph) {
+         int rowid = depthmapX::findIndexFromKey(m_shapes, shape_ref);
          if (isAxialMap()) {
             connectIntersected(rowid,true); // "true" means line-line intersections only will be applied
          }
@@ -378,9 +378,9 @@ int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open
    case 0:
       return -1;
    case 1:
-      return makePointShape(points[0],tempshape);
+      return makePointShapeWithRef(points[0], shape_ref, tempshape);
    case 2:
-      return makeLineShape(Line(points[0],points[1]),false,tempshape);  // false is not through ui: there really should be a through ui here?
+      return makeLineShapeWithRef(Line(points[0],points[1]), shape_ref, false, tempshape);  // false is not through ui: there really should be a through ui here?
    }
 
    QtRegion region(points[0],points[0]);
@@ -2029,11 +2029,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
                      SalaShape& poly = m_shapes.find(shaperef.m_shape_ref)->second;
                      
                      // Quick mod - TV
-#if defined(_WIN32)                     
-                     Line& li2 = Line(poly.points[x],poly[(x+1)%poly.points.size()]);
-#else
              Line li2(poly.m_points[x], poly.m_points[(x+1) % poly.m_points.size()]);
-#endif                     
                      if (intersect_region(li,li2)) {
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,li2)) {
@@ -2461,7 +2457,7 @@ bool ShapeMap::selectionToLayer(const std::string& name)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;
@@ -2564,7 +2560,7 @@ bool ShapeMap::read( istream& stream, int version, bool drawinglayer )
    return true;
 }
 
-bool ShapeMap::write( ofstream& stream, int version )
+bool ShapeMap::write( std::ofstream& stream, int version )
 {
    // name
    dXstring::writeString(stream, m_name);
@@ -2630,7 +2626,7 @@ bool ShapeMap::write( ofstream& stream, int version )
    return true;
 }
 
-bool ShapeMap::output( ofstream& stream, char delimiter, bool updated_only )
+bool ShapeMap::output( std::ofstream& stream, char delimiter, bool updated_only )
 {
    stream << "Ref";
    if ((m_map_type & LINEMAP) == 0) {
@@ -2986,7 +2982,7 @@ PixelRef ShapeMap::pixelate( const Point2f& p, bool constrain, int ) const
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-int ShapeMap::loadMifMap(istream& miffile, istream& midfile)
+int ShapeMap::loadMifMap(std::istream& miffile, std::istream& midfile)
 {
    m_mapinfodata = MapInfoData();
    int retvar = m_mapinfodata.import(miffile, midfile, *this);
@@ -2996,7 +2992,7 @@ int ShapeMap::loadMifMap(istream& miffile, istream& midfile)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ShapeMap::outputMifMap(ostream& miffile, ostream& midfile)
+bool ShapeMap::outputMifMap(std::ostream& miffile, std::ostream& midfile)
 {
    if (!m_hasMapInfoData) {
       MapInfoData mapinfodata;
@@ -3179,7 +3175,7 @@ bool ShapeMap::clearLinks()
    return true;
 }
 
-bool ShapeMap::unlinkShapeSet(istream& idset, int refcol)
+bool ShapeMap::unlinkShapeSet(std::istream& idset, int refcol)
 {
    std::string line;
    prefvec<IntPair> unlinks;
@@ -3293,16 +3289,16 @@ std::vector<Point2f> ShapeMap::getAllUnlinkPoints()
 
 }
 
-void ShapeMap::outputUnlinkPoints( ofstream& stream, char delim )
+void ShapeMap::outputUnlinkPoints( std::ofstream& stream, char delim )
 {
-   stream << "x" << delim << "y" << endl;
+   stream << "x" << delim << "y" << std::endl;
 
    stream.precision(12);
    for (size_t i = 0; i < m_unlinks.size(); i++) {
       // note, links are stored directly by rowid, not by key:
       Point2f p = intersection_point(depthmapX::getMapAtIndex(m_shapes, m_unlinks[i].a)->second.getLine(),
                                      depthmapX::getMapAtIndex(m_shapes, m_unlinks[i].b)->second.getLine(), TOLERANCE_A);
-      stream << p.x << delim << p.y << endl;
+      stream << p.x << delim << p.y << std::endl;
    }
 }
 

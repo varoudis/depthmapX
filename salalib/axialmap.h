@@ -188,8 +188,8 @@ protected:
    int m_keyvertexcount;
 protected:
 public:
-   bool outputMifPolygons(ostream& miffile, ostream& midfile) const;
-   void outputNet(ostream& netfile) const;
+   bool outputMifPolygons(std::ostream& miffile, std::ostream& midfile) const;
+   void outputNet(std::ostream& netfile) const;
 public:
    ShapeGraph(const std::string& name = "<axial map>", int type = ShapeMap::AXIALMAP);
    virtual ~ShapeGraph() {;}
@@ -212,12 +212,12 @@ public:
    void makeSegmentConnections(prefvec<Connector>& connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
-   virtual bool read( istream& stream, int version );
-   bool readold( istream& stream, int version );
-   virtual bool write( ofstream& stream, int version );
-   void writeAxialConnectionsAsDotGraph(ostream &stream);
-   void writeAxialConnectionsAsPairsCSV(ostream &stream);
-   void writeSegmentConnectionsAsPairsCSV(ostream &stream);
+   virtual bool read( std::istream& stream, int version );
+   bool readold( std::istream& stream, int version );
+   virtual bool write( std::ofstream& stream, int version );
+   void writeAxialConnectionsAsDotGraph(std::ostream &stream);
+   void writeAxialConnectionsAsPairsCSV(std::ostream &stream);
+   void writeSegmentConnectionsAsPairsCSV(std::ostream &stream);
    //
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
@@ -250,9 +250,9 @@ public:
    bool hasAllLineMap()
    { return m_all_line_map != -1; }
    //
-   bool read(istream &stream, int version );
-   bool readold( istream& stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool read(std::istream &stream, int version );
+   bool readold( std::istream& stream, int version );
+   bool write( std::ofstream& stream, int version, bool displayedmaponly = false );
 };
 
 // helpers... a class to tidy up ugly maps people may give me...
