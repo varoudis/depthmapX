@@ -321,7 +321,7 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    // note, shape constructor sets centroid, length etc
-   int rowid = depthmapX::insertAndGetIndex(m_shapes, shape_ref, SalaShape(line));
+   m_shapes.insert(std::make_pair(shape_ref, SalaShape(line)));
 
    if (bounds_good) {
       // note: also sets polygon bounding box:
@@ -340,9 +340,9 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    if (through_ui) {
-      //
       // manually add connections:
       if (m_hasgraph) {
+         int rowid = depthmapX::findIndexFromKey(m_shapes, shape_ref);
          if (isAxialMap()) {
             connectIntersected(rowid,true); // "true" means line-line intersections only will be applied
          }
