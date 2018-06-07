@@ -378,9 +378,9 @@ int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open
    case 0:
       return -1;
    case 1:
-      return makePointShape(points[0],tempshape);
+      return makePointShapeWithRef(points[0], shape_ref, tempshape);
    case 2:
-      return makeLineShape(Line(points[0],points[1]),false,tempshape);  // false is not through ui: there really should be a through ui here?
+      return makeLineShapeWithRef(Line(points[0],points[1]), shape_ref, false, tempshape);  // false is not through ui: there really should be a through ui here?
    }
 
    QtRegion region(points[0],points[0]);
