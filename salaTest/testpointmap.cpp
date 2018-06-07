@@ -322,6 +322,75 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
     REQUIRE(pointsMade);
 }
 
+TEST_CASE("PointMap copy, assign and add to vector")
+{
+    const double EPSILON = 0.001;
+    double spacing = 0.5;
+    Point2f offset(0,0); // seems that this is always set to 0,0
+
+    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+
+    double rectSize = 1.5;
+
+    Point2f line0Start(0,0);
+    Point2f line0End(0,rectSize);
+    Point2f line1Start(0,rectSize);
+    Point2f line1End(rectSize,rectSize);
+    Point2f line2Start(rectSize,rectSize);
+    Point2f line2End(rectSize,0);
+    Point2f line3Start(rectSize,0);
+    Point2f line3End(0,0);
+
+    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
+    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
+    spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
+    PointMap pointMap("Test PointMap");
+    bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
+
+
+
+    Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
+
+    Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
+                     gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
+
+    int fill_type = 0; // = QDepthmapView::FULLFILL
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
+
+    bool pointsMade = pointMap.makePoints(midPoint, fill_type);
+
+    bool boundaryGraph = false;
+    double maxDist = -1;
+    // a communicator is required in order to create the connections between the pixels
+    std::unique_ptr<Communicator> comm(new ICommunicator());
+
+    bool graphMade = pointMap.sparkGraph2(comm.get(), boundaryGraph, maxDist);
+
+    REQUIRE(graphMade);
+
+    std::vector<PointMap> pointmaps;
+    pointmaps.push_back(pointMap);
+    REQUIRE(pointmaps.size() == 1);
+
+    PointMap assignedPointMap("Assigned PointMap");
+    REQUIRE(assignedPointMap.getName() == "Assigned PointMap");
+
+    assignedPointMap = pointMap;
+    REQUIRE(assignedPointMap.getName() == pointMap.getName());
+    pointmaps.push_back(assignedPointMap);
+    REQUIRE(pointmaps.size() == 2);
+
+    PointMap copiedPointMap(pointMap);
+    REQUIRE(copiedPointMap.getName() == pointMap.getName());
+    pointmaps.push_back(copiedPointMap);
+    REQUIRE(pointmaps.size() == 3);
+}
+
 TEST_CASE("Test PointMap connections output", "")
 {
     const float EPSILON = 0.001;
