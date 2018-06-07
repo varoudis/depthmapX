@@ -193,6 +193,7 @@ public:
 public:
    ShapeGraph(const std::string& name = "<axial map>", int type = ShapeMap::AXIALMAP);
    virtual ~ShapeGraph() {;}
+   void initialiseAttributesAxial();
    void makeConnections(const prefvec<pvecint>& keyvertices = prefvec<pvecint>());
    //void initAttributes();
    void makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey, pvecint> &radialdivisions, std::map<int,pvecint>& axialdividers, Communicator *comm);
@@ -208,7 +209,7 @@ public:
    // lineset and connectionset are filled in by segment map
    void makeNewSegMap();
    void makeSegmentMap(std::vector<Line> &lineset, prefvec<Connector>& connectionset, double stubremoval);
-   void initSegmentAttributes(prefvec<Connector>& connectionset);
+   void initialiseAttributesSegment();
    void makeSegmentConnections(prefvec<Connector>& connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
