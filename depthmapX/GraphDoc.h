@@ -281,7 +281,7 @@ public:
 	void OnEditUndo();
     void OnToolsPD();
 	void OnPushToLayer();
-    void OnEditGrid();
+	void OnEditGrid();
     void OnToolsMPD();
 	void OnToolsMakeFewestLineMap();
 	void OnToolsRunSeg();

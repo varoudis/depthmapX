@@ -258,28 +258,6 @@ PixelRef PointMap::pixelate( const Point2f& p, bool constrain, int scalefactor )
    return ref;
 }
 
-// I've reverted to actually filling the lines, provided there's space to put a filled point in
-
-bool PointMap::fillLines()
-{
-   if (!m_spacepix || !m_initialised || m_points.empty()) {
-      return false;
-   }
-   m_undocounter++;
-
-   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
-      for (const auto& pixel: pixelGroup.m_spacePixels) {
-         if (pixel.isShown()) {
-             std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
-             for (const auto& line: newLines) {
-                fillLine(Line(line.start(), line.end()));
-             }
-         }
-      }
-   }
-   return true;
-}
-
 void PointMap::fillLine(const Line& li)
 {
    PixelRefVector pixels = pixelateLine( li, 1 );
@@ -990,17 +968,6 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
    return true;
 }
 
-// dangerous: used only for making a false selection set
-bool PointMap::overrideSelPixel(PixelRef pix)
-{
-   m_selection = OVERRIDE_SELECTION;
-   if (!(m_points[size_t(pix.x*m_rows + pix.y)].m_state & Point::SELECTED)) {
-      m_points[size_t(pix.x*m_rows + pix.y)].m_state |= Point::SELECTED;
-      m_selection_set.insert(pix);
-   }
-   return true;
-}
-
 // Helper function: is there a blocked point next to you?
 // ...rather scruffily goes round the eight adjacent points...
 
@@ -1182,45 +1149,6 @@ bool PointMap::write( std::ofstream& stream, int version )
 
 // Visibility graph construction constants
 
-pvecint g_primes;
-prefvec<Grad> g_gradients;
-
-int PointMap::remaining(int i, int j, int x, int y, int q) 
-{
-   int x1,y1,ret = 0;
-   if (x > 0) {
-      if (q % 2 == 0) {
-         x1 = i / x;
-      }
-      else {
-         x1 = (m_cols - 1 - i) / x; 
-      }
-   }
-   else {
-      ret = 1;
-   }
-   if (y > 0) {
-      if ((q / 2) % 2 == 0) {
-         y1 = j / y;
-      }
-      else {
-         y1 = (m_rows - 1 - j) / y;
-      }
-   }
-   else {
-      ret = -1;
-   }
-   if (ret == 1) {
-      return y1;
-   }
-   if (ret == -1) {
-      return x1;
-   }
-   return __min(x1, y1);
-}
-
-// Helper for for making graph
-
 int PointMap::tagState(bool settag, bool sparkgraph)
 {
    m_selection_set.clear();
@@ -1250,82 +1178,6 @@ int PointMap::tagState(bool settag, bool sparkgraph)
       }
    }
    return count;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
-// calculate 32 distances by explicit angle...
-
-bool PointMap::binMap( Communicator *comm )
-{
-   // Note, graph must be fixed (i.e., having blocking pixels filled in)
-   if (!m_spacepix) {
-      return false;
-   }
-
-   // start the timer when you know the true count including fixed points
-
-   time_t atime = 0;
-   if (comm) {
-      qtimer( atime, 0 );
-      comm->CommPostMessage( Communicator::NUM_RECORDS, m_rows * m_cols );
-   }
-
-   int i = 0;
-
-   float far_bin_dists[32];
-   Point2f bin_vectors[32];
-   Point2f diagonal = m_spacepix->m_region.top_right - m_spacepix->m_region.bottom_left;
-   Point2f east = diagonal.length() * Point2f(1.0,0.0);
-   for (i = 0; i < 32; i++) {
-      bin_vectors[i] = east;
-      east.rotate(0.0625 * M_PI);
-   }
-
-   int count = 0;
-
-   for (i = 0; i < m_cols; i++) {
-
-      for (int j = 0; j < m_rows; j++) {
-
-         PixelRef curs = PixelRef( i, j );
-
-         if ( getPoint( curs ).getState() & Point::FILLED ) {
-
-            if (!getPoint(curs).m_node) {
-               getPoint( curs ).m_node = std::unique_ptr<Node>(new Node());
-               m_attributes.insertRow( curs );
-            }
-
-            Point2f point = depixelate(curs);
-
-            for (int k = 0; k < 32; k++) {
-               Line l(point, point + bin_vectors[k]);
-               l.crop(m_spacepix->m_region);
-               m_spacepix->cutLine(l);//,1);
-               far_bin_dists[k] = (float) l.length();
-            }
-
-            Point& pt = getPoint( curs );
-            pt.getNode().setbindistances( far_bin_dists );
-
-            count++;    // <- increment count
-
-            if (comm) {
-               if (qtimer( atime, 500 )) {
-                  if (comm->IsCancelled()) {
-                     tagState( false, true );         // <- the state field has been used for tagging visited nodes... set back to a state variable
-                     //
-                     throw Communicator::CancelledException();
-                  }
-                  comm->CommPostMessage( Communicator::CURRENT_RECORD, count );
-               }         
-            }
-         }
-      }
-   }
-
-   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1443,32 +1295,6 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
    // override and reset:
    m_displayed_attribute = -2;
    setDisplayedAttribute(connectivity_col);
-
-   return true;
-}
-
-// essentially does the same as sparkGraph2, but designed to go through only
-// points tagged for revision, and without a communicator
-
-bool PointMap::dynamicSparkGraph2()
-{
-   for (int i = 0; i < m_cols; i++) {
-
-      for (int j = 0; j < m_rows; j++) {
-
-         PixelRef curs = PixelRef( i, j );
-   
-         if ( getPoint( curs ).getState() & Point::FILLED ) {
-
-            sparkPixel2(curs,1); // make flag of 1 suggests make this node, don't set reciprocral process flags on those you can see
-
-         }
-      }
-   }
-
-   // and add grid connections
-   // (this is easier than trying to work it out per pixel as we calculate visibility)
-   addGridConnections();
 
    return true;
 }
@@ -2614,72 +2440,6 @@ bool PointMap::isPixelMerged(const PixelRef& a)
     return !getPoint(a).m_merge.empty();
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-
-void makePrimes()
-{
-   for (int i = 1; i < 200; i++) {
-      bool pr = true;
-      for (size_t j = 1; j < g_primes.size(); j++) {  // Note : ignore 1
-         if (i % g_primes[j] == 0) {
-            pr = false;
-            break;
-         }
-         else if (g_primes[j] * g_primes[j] > i) {
-            pr = true;
-            break;
-         }
-      }
-      if (pr) {
-         g_primes.push_back(i);
-      }
-   }
-}
-
-void makeGradients()
-{
-   // Slow... but can't be bothered to work this out better!
-
-   g_gradients.push_back( Grad(1,0) );
-   g_gradients.push_back( Grad(1,1) );
-
-   for (int i = 1; i < 200; i++) {
-      for (int j = 1; j < i; j++) {
-         if (g_primes.searchindex(i) != paftl::npos) {
-            g_gradients.push_back( Grad(i, j) );
-         }
-         else if (j == 1) {
-            g_gradients.push_back( Grad(i, j) );
-         }
-         else if (i % j != 0) {
-            bool pr = true;
-            for (size_t k = 1; k < g_primes.size(); k++) {  // Note: ignore 1
-               if (i % g_primes[k] == 0 && j % g_primes[k] == 0) {
-                  pr = false;
-                  break;
-               }
-               else if (g_primes[k] > j) {
-                  pr = true;
-                  break;
-               }
-            }
-            if (pr) {
-               g_gradients.push_back( Grad(i, j) );
-            }
-         }
-      }
-   }
-}
-
-void PointMap::makeConstants()
-{
-   if (g_primes.size() == 0) {
-      makePrimes();
-   }
-   if (g_gradients.size() == 0) {
-      makeGradients();
-   }
-}
 
 // -2 for point not in visibility graph, -1 for point has no data
 double PointMap::getLocationValue(const Point2f& point)
