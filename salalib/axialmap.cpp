@@ -194,6 +194,7 @@ void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
    // for easier debugging, the axial code is reused to make segments
    ShapeGraph firstpass;
    firstpass.init(lines.size(),m_region); // used to be double density
+   firstpass.initialiseAttributesAxial();
    size_t i;
    for (i = 0; i < lines.size(); i++) {
       firstpass.makeLineShape(lines[i]);
@@ -721,6 +722,7 @@ bool ShapeGraphs::makeAllLineMap(Communicator *comm, SuperSpacePixel& superspace
 
    region.grow(0.99); // <- this paired with crop code below to prevent error
    alllinemap.init(axiallines.size(),m_polygons.m_region);  // used to be double density here
+   alllinemap.initialiseAttributesAxial();
    for (size_t k = 0; k < axiallines.size(); k++) {
       axiallines[k].crop(region); // <- should be cropped anyway, but causing an error
       alllinemap.makeLineShape(axiallines[k]);
@@ -879,6 +881,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
       fewestlinemap_subsets.clearAll();
       fewestlinemap_subsets.init(lines_s.size(),m_polygons.m_region); // used to have a '2' for double pixel density
    }
+   fewestlinemap_subsets.initialiseAttributesAxial();
    for (k = 0; k < lines_s.size(); k++) {
       fewestlinemap_subsets.makeLineShape(lines_s[k]);
    }
@@ -901,6 +904,7 @@ bool ShapeGraphs::makeFewestLineMap(Communicator *comm, bool replace_existing)
       fewestlinemap_minimal.clearAll();
       fewestlinemap_minimal.init(lines_m.size(),m_polygons.m_region); // used to have a '2' for double pixel density
    }
+   fewestlinemap_minimal.initialiseAttributesAxial();
    for (k = 0; k < lines_m.size(); k++) {
       fewestlinemap_minimal.makeLineShape(lines_m[k]);
    }
@@ -1274,23 +1278,21 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
    ShapeGraph& usermap = tail();
 
    usermap.init(lines.size(),region);        // used to be double density
-   for (size_t k = 0; k < lines.size(); k++) {
-      usermap.makeLineShape(lines[k]);
+   std::map<int, float> layerAttributes;
+   usermap.initialiseAttributesAxial();
+   int layerCol = -1;
+   if (recordlayer)   {
+       layerCol = usermap.getAttributeTable().insertColumn("Drawing Layer");
    }
-
-   // n.b. make connections also initialises attributes
-   usermap.makeConnections();
-
-   // record origin layer only if more than one layer:
-   if (recordlayer) {
-      AttributeTable& table = usermap.getAttributeTable();
-      int col = table.insertColumn("Drawing Layer");
-      int k = -1;
-      for (auto line: lines) {
-         k++;
-         table.setValue(k,col,float(layers.find(line.first)->second));
+   for (auto & line: lines) {
+      if (recordlayer)
+      {
+          layerAttributes[layerCol] = float(layers.find(line.first)->second);
       }
+      usermap.makeLineShape(line.second, false, false, layerAttributes );
    }
+
+   usermap.makeConnections();
 
    // we can stop here!
    setDisplayedMapRef(mapref);
@@ -1350,31 +1352,35 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
    ShapeGraph& usermap = tail();
 
    usermap.init(lines.size(),region);  // used to be double density
+   usermap.initialiseAttributesAxial();
+   std::map<int, float> extraAttributes;
+   std::vector<int> columns;
+   if (copydata)   {
+       AttributeTable& input = shapemap.getAttributeTable();
+       AttributeTable& output = usermap.getAttributeTable();
+       for (int i = 0; i < input.getColumnCount(); i++) {
+          std::string colname = input.getColumnName(i);
+          for (size_t k = 1; output.getColumnIndex(colname) != -1; k++){
+             colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
+          }
+          columns.push_back( output.insertColumn(colname));
+       }
+   }
+
    for (size_t k = 0; k < lines.size(); k++) {
-      usermap.makeLineShapeWithRef(lines[k], keys[k]);
+      if (copydata){
+          AttributeTable& input = shapemap.getAttributeTable();
+          for ( int i = 0; i < input.getColumnCount(); ++i)
+          {
+              extraAttributes[columns[i]] = input.getValue(k, i);
+          }
+      }
+      usermap.makeLineShapeWithRef(lines[k], keys[k], false, false, extraAttributes);
    }
 
    // n.b. make connections also initialises attributes
-   usermap.makeConnections();
 
-   // use property that segments are still in same order as input in order to copy
-   // data across from ShapeMap
-   if (copydata) {
-      AttributeTable& input = shapemap.getAttributeTable();
-      AttributeTable& output = usermap.getAttributeTable();
-      for (int i = 0; i < input.getColumnCount(); i++) {
-         std::string colname = input.getColumnName(i);
-         for (size_t k = 1; output.getColumnIndex(colname) != -1; k++)
-            colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
-         int outcol = output.insertColumn(colname);
-         int j = -1;
-         for (auto line: lines) {
-            j++;
-            int inrow = input.getRowid(keys.find(line.first)->second);
-            output.setValue(j,outcol,input.getValue(inrow,i));
-         }
-      }
-   }
+   usermap.makeConnections();
 
    // if we are inheriting from a mapinfo map, pass on the coordsys and bounds:
    if (shapemap.hasMapInfoData()) {
@@ -1454,12 +1460,31 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name
 
    pvecint lookup;
    auto refShapes = shapemap.getAllShapes();
+   std::map<int,float> extraAttr;
+   std::vector<int> attrCols;
+   AttributeTable& input = shapemap.getAttributeTable();
+   if (copydata) {
+      AttributeTable& output = usermap.getAttributeTable();
+      for (int i = 0; i < input.getColumnCount(); i++) {
+         std::string colname = input.getColumnName(i);
+         for (int k = 1; output.getColumnIndex(colname) != -1; k++){
+            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
+         }
+         attrCols.push_back(output.insertColumn(colname));
+      }
+   }
+
    int k = -1;
    for (auto refShape: refShapes) {
       k++;
+      if ( copydata ){
+          for ( int i = 0; i < input.getColumnCount(); ++i ){
+              extraAttr[attrCols[i]] =input.getValue(k, i);
+          }
+      }
       SalaShape& shape = refShape.second;
       if (shape.isPolygon()) {
-         int n = usermap.makeShape(shape);
+         int n = usermap.makeShape(shape, -1, extraAttr);
          usermap.m_connectors.push_back( Connector() );
          usermap.m_attributes.setValue(n,conn_col,0);
          lookup.push_back(k);
@@ -1468,20 +1493,6 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name
    if (lookup.size() == 0) {
       removeMap(mapref);
       return -1;
-   }
-
-   if (copydata) {
-      AttributeTable& input = shapemap.getAttributeTable();
-      AttributeTable& output = usermap.getAttributeTable();
-      for (int i = 0; i < input.getColumnCount(); i++) {
-         std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++)
-            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
-         int outcol = output.insertColumn(colname);
-         for (size_t j = 0; j < lookup.size(); j++) {
-            output.setValue(j,outcol,input.getValue(lookup[j],i));
-         }
-      }
    }
 
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
@@ -1556,24 +1567,22 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
    ShapeGraph& usermap = tail();
 
    usermap.init(lines.size(),region);
-
-   for (auto line: lines) {
-      usermap.makeLineShape(line.second);
+   std::map<int, float> layerAttributes;
+   usermap.initialiseAttributesSegment();
+   int layerCol = -1;
+   if (recordlayer)   {
+       layerCol = usermap.getAttributeTable().insertColumn("Drawing Layer");
+   }
+   for (auto & line: lines) {
+      if (recordlayer)
+      {
+          layerAttributes[layerCol] = float(layers.find(line.first)->second);
+      }
+      usermap.makeLineShape(line.second, false, false, layerAttributes);
    }
 
    // make it!
    usermap.makeNewSegMap();
-
-   // record origin layer only if more than one layer:
-   if (recordlayer) {
-      AttributeTable& table = usermap.getAttributeTable();
-      int col = table.insertColumn("Drawing Layer");
-      int k = -1;
-      for (auto line: lines) {
-         k++;
-         table.setValue(k,col,float(layers.find(line.first)->second));
-      }
-   }
 
    // we can stop here!
    setDisplayedMapRef(mapref);
@@ -1640,11 +1649,34 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    }
 
    usermap.init(lines.size(),region);
+   usermap.initialiseAttributesSegment();
+
+   std::map<int,float> extraAttr;
+   std::vector<int> attrCols;
+   AttributeTable& input = shapemap.getAttributeTable();
+   if (copydata) {
+      AttributeTable& output = usermap.getAttributeTable();
+      for (int i = 0; i < input.getColumnCount(); i++) {
+         std::string colname = input.getColumnName(i);
+         for (int k = 1; output.getColumnIndex(colname) != -1; k++){
+            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
+         }
+         attrCols.push_back(output.insertColumn(colname));
+      }
+   }
+
 
    auto keyIter = keys.begin();
+   int k = 0;
    for (auto& line: lines) {
+       if (copydata){
+           for (int i = 0; i < input.getColumnCount(); ++i){
+               extraAttr[attrCols[i]] = input.getValue(k,i);
+           }
+       }
       usermap.makeLineShapeWithRef(line.second, keyIter->second);
-      keyIter++;
+      ++keyIter;
+      ++k;
    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits
@@ -1713,6 +1745,8 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
    ShapeGraph& segmap = getMap(mapref);
 
    segmap.init(lines.size(),dispmap.m_region);
+   segmap.initialiseAttributesSegment();
+
    for (size_t k = 0; k < lines.size(); k++) {
       segmap.makeLineShape(lines[k]);
    }
@@ -1728,8 +1762,8 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
       segmap.m_hasMapInfoData = true;
    }
 
-   // initialise attributes now separated from making the connections
-   segmap.initSegmentAttributes(connectionset);
+
+   segmap.makeSegmentConnections(connectionset);
 
    if (copydata) {
       segmap.pushAxialValues(dispmap);
@@ -1739,8 +1773,6 @@ int ShapeGraphs::convertAxialToSegment(Communicator *comm, const std::string& na
       dispmap.m_attributes.clear();
    }
 
-   // only now make connections, once some memory has been freed
-   segmap.makeSegmentConnections(connectionset);
 
    segmap.m_displayed_attribute = -2; // <- override if it's already showing
    segmap.setDisplayedAttribute( segmap.m_attributes.getColumnIndex("Connectivity") );
@@ -1846,25 +1878,31 @@ ShapeGraph::ShapeGraph(const std::string& name, int type) : ShapeMap(name,type)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// n.b., also initialises attributes, you must make connections before display map!
+void ShapeGraph::initialiseAttributesAxial()
+{
+    m_attributes.clear();
+    // note, expects these to be numbered 0, 1...
+    int conn_col = m_attributes.insertLockedColumn("Connectivity");
+    int leng_col = m_attributes.insertLockedColumn("Line Length");
+
+}
 
 void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
 {
    m_connectors.clear();
-   m_attributes.clear();
    m_links.clear();
    m_unlinks.clear();
    m_keyvertices.clear();
 
    // note, expects these to be numbered 0, 1...
-   int conn_col = m_attributes.insertLockedColumn("Connectivity");
-   int leng_col = m_attributes.insertLockedColumn("Line Length");
+   int conn_col = m_attributes.getColumnIndex("Connectivity");
+   int leng_col = m_attributes.getColumnIndex("Line Length");
 
    int i = -1;
    for (auto shape: m_shapes) {
       i++;
       int key = shape.first;
-      int rowid = m_attributes.insertRow(key);
+      int rowid = m_attributes.getRowid(key);
       // all indices should match...
       m_connectors.push_back( Connector() );
       int connectivity = getLineConnections( key, m_connectors[i].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
@@ -2877,7 +2915,6 @@ void ShapeGraph::makeNewSegMap()
    }
 
    // initialise attributes now separated from making the connections
-   initSegmentAttributes(connectionset);
    makeSegmentConnections(connectionset);
 }
 
@@ -3047,37 +3084,37 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
    }
 }
 
+void ShapeGraph::initialiseAttributesSegment()
+{
+    m_attributes.clear();
+
+    // note, expects these in alphabetical order to preserve numbering:
+    m_attributes.insertLockedColumn("Axial Line Ref");
+    m_attributes.insertLockedColumn("Segment Length");
+}
+
 // now segments and connections are listed separately...
 // put them together in a new map
-
-void ShapeGraph::initSegmentAttributes(prefvec<Connector>& connectionset)
-{
-   m_attributes.clear();
-
-   // note, expects these in alphabetical order to preserve numbering:
-   int ref_col = m_attributes.insertLockedColumn("Axial Line Ref");
-   int leng_col = m_attributes.insertLockedColumn("Segment Length");
-
-   int i = -1;
-   for (auto shape: m_shapes) {
-       i++;
-      int key = shape.first;
-      int rowid = m_attributes.insertRow(key);
-      //
-      m_attributes.setValue(rowid, ref_col, (float) connectionset[i].m_segment_axialref );
-      m_attributes.setValue(rowid, leng_col, (float) shape.second.getLine().length() );
-   }
-}
 
 void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
 {
    m_connectors.clear();
 
+   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
+   int leng_col = m_attributes.getColumnIndex("Segment Length");
+
    // note, expects these in alphabetical order to preserve numbering:
    int w_conn_col = m_attributes.insertColumn("Angular Connectivity");
    int uw_conn_col = m_attributes.insertLockedColumn("Connectivity");
 
-   for (size_t i = 0; i < m_shapes.size(); i++) {
+   int i = -1;
+   for (auto shape: m_shapes) {
+       i++;
+      int rowid = m_attributes.getRowid(shape.first);
+
+      m_attributes.setValue(rowid, ref_col, (float) connectionset[i].m_segment_axialref );
+      m_attributes.setValue(rowid, leng_col, (float) shape.second.getLine().length() );
+
       // all indices should match... (including lineset/connectionset versus m_shapes)
       m_connectors.push_back( connectionset[i] );
       float total_weight = 0.0f;
@@ -3087,8 +3124,8 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
       for (size_t k = 0; k < connectionset[i].m_back_segconns.size(); k++) {
          total_weight += connectionset[i].m_back_segconns.value(k);
       }
-      m_attributes.setValue(i, w_conn_col, (float) total_weight );
-      m_attributes.setValue(i, uw_conn_col, (float) (connectionset[i].m_forward_segconns.size() + connectionset[i].m_back_segconns.size()));
+      m_attributes.setValue(rowid, w_conn_col, (float) total_weight );
+      m_attributes.setValue(rowid, uw_conn_col, (float) (connectionset[i].m_forward_segconns.size() + connectionset[i].m_back_segconns.size()));
 
       // free up connectionset as we go along:
       connectionset.free_at(i);

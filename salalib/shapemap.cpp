@@ -271,7 +271,7 @@ void ShapeMap::clearAll()
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-int ShapeMap::makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape)
+int ShapeMap::makePointShapeWithRef(const Point2f& point, int shape_ref, bool tempshape, const std::map<int, float> &extraAttributes)
 {
    bool bounds_good = true;
 
@@ -295,18 +295,21 @@ int ShapeMap::makePointShapeWithRef(const Point2f& point, int shape_ref, bool te
 
    if (!tempshape) {
       int rowid = m_attributes.insertRow(shape_ref);
+      for ( auto &attr : extraAttributes){
+          m_attributes.setValue(rowid, attr.first, attr.second);
+      }
       m_newshape = true;
    }
 
    return shape_ref;
 }
 
-int ShapeMap::makePointShape(const Point2f& point, bool tempshape)
+int ShapeMap::makePointShape(const Point2f& point, bool tempshape, const std::map<int,float> &extraAttributes)
 {
-    return makePointShapeWithRef(point, getNextShapeKey(), tempshape);
+    return makePointShapeWithRef(point, getNextShapeKey(), tempshape, extraAttributes);
 }
 
-int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui, bool tempshape)
+int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through_ui, bool tempshape, const std::map<int,float> &extraAttributes)
 {
    // note, map must have editable flag on if we are to make a shape through the user interface:
    if (through_ui && !m_editable) {
@@ -335,7 +338,10 @@ int ShapeMap::makeLineShapeWithRef(const Line& line, int shape_ref, bool through
    }
 
    if (!tempshape) {
-      m_attributes.insertRow(shape_ref);
+      int rowIndex = m_attributes.insertRow(shape_ref);
+      for (auto &attr : extraAttributes){
+          m_attributes.setValue(rowIndex, attr.first, attr.second);
+      }
       m_newshape = true;
    }
 
@@ -365,12 +371,12 @@ int ShapeMap::getNextShapeKey() {
     return m_shapes.rbegin()->first + 1;
 }
 
-int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape)
+int ShapeMap::makeLineShape(const Line& line, bool through_ui, bool tempshape, const std::map<int,float> &extraAttributes)
 {
-    return makeLineShapeWithRef(line, getNextShapeKey(), through_ui, tempshape);
+    return makeLineShapeWithRef(line, getNextShapeKey(), through_ui, tempshape, extraAttributes);
 }
 
-int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open, int shape_ref, bool tempshape)
+int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open, int shape_ref, bool tempshape, const std::map<int,float> &extraAttributes)
 {
    bool bounds_good = true;
 
@@ -429,19 +435,22 @@ int ShapeMap::makePolyShapeWithRef(const std::vector<Point2f>& points, bool open
    if (!tempshape) {
       // set centroid now also adds a few other things: as well as area, perimeter
       m_shapes.rbegin()->second.setCentroidAreaPerim();
-      m_attributes.insertRow(shape_ref);
+      int rowIndex = m_attributes.insertRow(shape_ref);
+      for ( auto &attr : extraAttributes){
+          m_attributes.setValue(rowIndex, attr.first, attr.second);
+      }
       m_newshape = true;
    }
 
    return shape_ref;
 }
 
-int ShapeMap::makePolyShape(const std::vector<Point2f>& points, bool open, bool tempshape)
+int ShapeMap::makePolyShape(const std::vector<Point2f>& points, bool open, bool tempshape, const std::map<int,float> &extraAttributes)
 {
-    return makePolyShapeWithRef(points, open, getNextShapeKey(), tempshape);
+    return makePolyShapeWithRef(points, open, getNextShapeKey(), tempshape, extraAttributes);
 }
 
-int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
+int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref, const std::map<int,float> &extraAttributes)
 {
    // overridden shape cannot exist:
    if (override_shape_ref != -1 && m_shapes.find(override_shape_ref) != m_shapes.end()) {
@@ -476,14 +485,11 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref)
       }
    }
 
-   int rowid2 = m_attributes.insertRow(shape_ref);
-
-#ifdef _DEBUG
-   if (rowid1 != rowid2) {
-      // rowids should match, they're both pqmaps, but if someone is stupid enough to change it, they'll know pretty quickly:
-      throw depthmapX::RuntimeException("Arrrrgghhh: important! insertRow does not index in the same way as add shapes, this will badly mess up the system!");
+   int rowIndex = m_attributes.insertRow(shape_ref);
+   for ( auto &attr : extraAttributes){
+       m_attributes.setValue(rowIndex, attr.first, attr.second);
    }
-#endif
+
 
    m_newshape = true;
 
