@@ -82,7 +82,6 @@ public:
           MAKECONVEXMAP, 
           AXIALANALYSIS, SEGMENTANALYSIS, TOPOMETANALYSIS, AGENTANALYSIS };	
 public:
-   void ProcPostMessage(int m, int x, int y);
    CMSCommunicator();
    virtual ~CMSCommunicator();
    virtual void CommPostMessage(int m, int x) const;  // Inline below CWaitDialog
@@ -98,9 +97,6 @@ public:
    { while (which >= m_options.size()) m_options.push_back(-1); m_options[which] = option; }
    int GetOption(size_t which = 0) const
    { return (which >= m_options.size()) ? -1 : m_options[which]; }
-   void ClearOptions()
-   { m_options.clear(); }
-   //
    void SetSeedPoint(const Point2f& p)
    { m_seed_point = p; }
    const Point2f& GetSeedPoint() const 

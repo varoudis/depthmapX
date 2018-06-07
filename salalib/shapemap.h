@@ -27,6 +27,7 @@
 #include "salalib/importtypedefs.h"
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
+#include "salalib/MapInfoData.h"
 #include <set>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,10 +140,10 @@ public:
    //
    pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
-   bool read(istream &stream, int version);
-   bool write(ofstream& stream);
+   bool read(std::istream &stream, int version);
+   bool write(std::ofstream& stream);
 
-   std::vector<Line> getAsLines() {
+   std::vector<Line> getAsLines() const {
        std::vector<Line> lines;
        if (isLine()) {
           lines.push_back(getLine());
@@ -166,16 +167,16 @@ protected:
 public:
    SalaObject() {;}
    //
-   bool read(istream &stream, int version);
-   bool write(ofstream& stream);
+   bool read(std::istream &stream, int version);
+   bool write(std::ofstream& stream);
 };
-inline bool SalaObject::read(istream& stream, int)
+inline bool SalaObject::read(std::istream& stream, int)
 {
    stream.read((char *)&m_centroid,sizeof(m_centroid));
    pvecint::read(stream);
    return true;
 }
-inline bool SalaObject::write(ofstream& stream)
+inline bool SalaObject::write(std::ofstream& stream)
 {
    stream.write((char *)&m_centroid,sizeof(m_centroid));
    pvecint::write(stream);
@@ -243,7 +244,7 @@ protected:
    // for geometric operations
    double m_tolerance;
    // for screen drawing
-   mutable int *m_display_shapes;
+   mutable std::vector<int> m_display_shapes;
    mutable int m_current;
    mutable bool m_invalidate;
    //
@@ -340,7 +341,7 @@ public:
    // this version simply finds the closest vertex to the point
    Point2f getClosestVertex(const Point2f& p) const;
    // Find out which shapes a line cuts through:
-   void getShapeCuts(const Line& li_orig, pvector<ValuePair>& cuts);
+   void getShapeCuts(const Line& li_orig, std::vector<ValuePair> &cuts);
    // Cut a line according to the first shape it cuts
    void cutLine(Line& li);//, short dir);
    // Connect a particular shape into the graph
@@ -442,7 +443,7 @@ public:
       { return m_attributes.getAvgValue( m_displayed_attribute ); }
    //
 protected:
-   bool m_show;              // used when shape map is a drawing layer
+   mutable bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
    std::set<int> m_selection_set;   // note: uses rowids not keys
@@ -464,7 +465,7 @@ public:
    // To showing
    bool isShown() const
    { return m_show; }
-   void setShow(bool on = true)
+   void setShow(bool on = true) const
    { m_show = on; }
    // To all editing
    bool isEditable() const
@@ -472,11 +473,13 @@ public:
    void setEditable(bool on = true) 
    { m_editable = on; }
 protected:
-   MapInfoData *m_mapinfodata;
+   bool m_hasMapInfoData = false;
+   MapInfoData m_mapinfodata;
 public:
-   int loadMifMap(istream& miffile, istream& midfile);
-   bool outputMifMap(ostream& miffile, ostream& midfile) const;
-   const MapInfoData *getMapInfoData() const
+   bool hasMapInfoData() const {return m_hasMapInfoData;}
+   int loadMifMap(std::istream& miffile, std::istream& midfile);
+   bool outputMifMap(std::ostream& miffile, std::ostream& midfile);
+   const MapInfoData& getMapInfoData() const
    { return m_mapinfodata; }
 public:
    // Screen
@@ -509,10 +512,10 @@ public:
    //
 public:
    // file
-   bool read(istream &stream, int version, bool drawinglayer = false );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version, bool drawinglayer = false );
+   bool write( std::ofstream& stream, int version );
    //
-   bool output( ofstream& stream, char delimiter = '\t', bool updated_only = false );
+   bool output( std::ofstream& stream, char delimiter = '\t', bool updated_only = false );
    //
    // links and unlinks
 protected:
@@ -527,7 +530,7 @@ public:
    bool linkShapes(int id1, int dir1, int id2, int dir2, float weight);
    bool unlinkShapes(const Point2f& p);
    bool unlinkShapes(int index1, int index2, bool refresh = true);
-   bool unlinkShapeSet(istream& idset, int refcol);
+   bool unlinkShapeSet(std::istream& idset, int refcol);
 public:
    // generic for all types of graphs
    bool findNextLinkLine() const;
@@ -537,9 +540,9 @@ public:
    bool findNextUnlinkPoint() const;
    Point2f getNextUnlinkPoint() const;
    std::vector<Point2f> getAllUnlinkPoints();
-   void outputUnlinkPoints( ofstream& stream, char delim );
+   void outputUnlinkPoints( std::ofstream& stream, char delim );
 public:
-   std::vector<SimpleLine> getAllShapesAsLines();
+   std::vector<SimpleLine> getAllShapesAsLines() const;
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
@@ -602,8 +605,8 @@ public:
    const size_t getShapeCount() const
    { return prefvec<T>::at(m_displayed_map).m_shapes.size(); }
    //
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version, bool displayedmaponly = false );
+   bool read(std::istream &stream, int version );
+   bool write( std::ofstream& stream, int version, bool displayedmaponly = false );
    //
    const QtRegion& getBoundingBox() const
    { return prefvec<T>::at(m_displayed_map).getRegion(); }
@@ -660,7 +663,7 @@ void ShapeMaps<T>::setDisplayedMapRef(size_t map)
    m_displayed_map = map;
 }
 template <class T>
-bool ShapeMaps<T>::read( istream& stream, int version )
+bool ShapeMaps<T>::read( std::istream& stream, int version )
 {
     prefvec<T>::clear(); // empty existing data
    // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
@@ -679,7 +682,7 @@ bool ShapeMaps<T>::read( istream& stream, int version )
    return true;
 }
 template <class T>
-bool ShapeMaps<T>::write( ofstream& stream, int version, bool displayedmaponly )
+bool ShapeMaps<T>::write( std::ofstream& stream, int version, bool displayedmaponly )
 {
    if (!displayedmaponly) {
       // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems

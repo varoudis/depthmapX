@@ -84,10 +84,10 @@ private:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
-   Point **m_points;    // will contain the graph reference when created
+   std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
-   int m_point_count;
+   int m_filled_point_count;
    double m_spacing;
    Point2f m_offset;
    Point2f m_bottom_left;
@@ -102,19 +102,10 @@ protected:
    AttributeTable m_attributes;
 public:
    PointMap(const std::string& name = std::string("VGA Map"));
-   PointMap(const PointMap& pointdata);
-   PointMap& operator = (const PointMap& pointdata);
-   void construct( const PointMap& pointdata );
-   virtual ~PointMap();
    const std::string& getName() const
    { return m_name; }
-   //
-   // Quick mod - TV
-#if defined(_WIN32)
-   void communicate( __time64_t& atime, Communicator *comm, int record );
-#else
+
    void communicate( time_t& atime, Communicator *comm, int record );
-#endif
    // constrain is constrain to existing rows / cols
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
    Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 
@@ -140,7 +131,7 @@ public:
    bool fillLines();
    void fillLine(const Line& li);
    bool blockLines();
-   void blockLine(int key, const Line& li);
+   void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    void addLineDynamic(LineKey ref,const Line& line);
    void removeLineDynamic(LineKey ref,const Line& line);
@@ -153,9 +144,9 @@ public:
    bool canUndo() const
       { return !m_processed && m_undocounter != 0; }
    //
-   bool importPoints(istream& stream);
-   void outputPoints( ostream& stream, char delim );
-   void outputMergeLines(ostream& stream, char delim);
+   bool importPoints(std::istream& stream);
+   void outputPoints(std::ostream& stream, char delim );
+   void outputMergeLines(std::ostream& stream, char delim);
    //
    void makeConstants();
    int  tagState(bool settag, bool sparkgraph = false);
@@ -182,11 +173,11 @@ public:
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
    //
-   void outputSummary(ostream& myout, char delimiter = '\t');
-   void outputMif( ostream& miffile, ostream& midfile );
-   void outputNet( ostream& netfile );
-   void outputConnections(ostream& myout);
-   void outputBinSummaries(ostream& myout);
+   void outputSummary(std::ostream& myout, char delimiter = '\t');
+   void outputMif(std::ostream& miffile, std::ostream& midfile );
+   void outputNet(std::ostream& netfile );
+   void outputConnections(std::ostream& myout);
+   void outputBinSummaries(std::ostream& myout);
    //
    // scruffy little helper functions
    int u(int i, int x, int s) const
@@ -195,15 +186,17 @@ public:
       { return j + (y * s); }
    int remaining(int i, int j, int x, int y, int q);
    //
-   Point& getPoint(const PixelRef& p) const
-      { return m_points[p.x][p.y]; }
+   const Point& getPoint(const PixelRef& p) const
+      { return m_points[p.x*m_rows + p.y]; }
+   Point& getPoint(const PixelRef& p)
+      { return m_points[p.x*m_rows + p.y]; }
    const int& pointState( const PixelRef& p ) const
-      { return m_points[p.x][p.y].m_state; }
+      { return m_points[p.x*m_rows + p.y].m_state; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
-   int getPointCount() const
-      { return m_point_count; }
+   int getFilledPointCount() const
+      { return m_filled_point_count; }
    //
    void requireIsovistAnalysis()
    {
@@ -328,7 +321,9 @@ public:
    bool findNextPoint() const;
    Point2f getNextPointLocation() const
    { return getPoint(cur).m_location; }
-   Point& getNextPoint() const
+   const Point& getNextPoint() const
+   { return getPoint(cur); }
+   Point& getNextPoint()
    { return getPoint(cur); }
    bool findNextRow() const;
    Line getNextRow() const;
@@ -355,11 +350,11 @@ public:
    // this is an odd helper function, value in range 0 to 1
    PixelRef pickPixel(double value) const;
 public:
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version );
+   bool write(std::ofstream& stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
-   void outputConnectionsAsCSV(ostream &myout, std::string delim = ",");
-   void outputLinksAsCSV(ostream &myout, std::string delim = ",");
+   void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
+   void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
 };
 
 // inlined to make thread safe
