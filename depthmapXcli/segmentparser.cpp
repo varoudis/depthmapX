@@ -151,6 +151,12 @@ void SegmentParser::parse(int argc, char **argv)
     {
         throw CommandLineException("Tulip bins are required for tulip analysis");
     }
+
+    if (getAnalysisType() != AnalysisType::ANGULAR_TULIP
+            && (getTulipBins() != 0 || getRadiusType() != RadiusType::NONE || _includeChoice))
+    {
+        throw CommandLineException("-stb, -srt and -sic can only be used with tulip analysis");
+    }
 }
 
 void SegmentParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
