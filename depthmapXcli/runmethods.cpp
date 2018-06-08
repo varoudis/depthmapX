@@ -304,7 +304,7 @@ namespace dm_runmethods
                 break;
             }
             case SegmentParser::AnalysisType::NONE:
-                break;
+                throw depthmapX::RuntimeException("No segment analysis type given");
         }
         std::cout << "ok\n" << std::flush;
 
