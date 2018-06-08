@@ -200,8 +200,8 @@ public:
    int getLineCount() const
       { return (int)m_lines.size(); }
 public:
-   virtual bool read(istream &stream, int version );
-   virtual bool write( ofstream& stream );
+   virtual bool read(std::istream &stream, int version );
+   virtual bool write( std::ofstream& stream );
    friend bool operator == (const SpacePixel& a, const SpacePixel& b); 
 };
 
@@ -295,7 +295,7 @@ bool SpacePixelGroup<T>::findNextShape(bool& nextlayer) const
    return true;
 }
 template <class T>
-bool SpacePixelGroup<T>::read( istream& stream, int version, bool drawinglayer )
+bool SpacePixelGroup<T>::read( std::istream& stream, int version, bool drawinglayer )
 {
    m_name = dXstring::readString(stream);
    stream.read( (char *) &m_region, sizeof(m_region) );
@@ -312,7 +312,7 @@ bool SpacePixelGroup<T>::read( istream& stream, int version, bool drawinglayer )
    return true;
 }
 template <class T>
-bool SpacePixelGroup<T>::write( ofstream& stream, int version )
+bool SpacePixelGroup<T>::write( std::ofstream& stream, int version )
 {
    dXstring::writeString(stream, m_name);
    stream.write( (char *) &m_region, sizeof(m_region) );

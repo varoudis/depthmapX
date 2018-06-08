@@ -78,10 +78,9 @@ public:
           POINTDEPTH, METRICPOINTDEPTH, ANGULARPOINTDEPTH, TOPOLOGICALPOINTDEPTH,
           MAKEISOVIST, MAKEISOVISTPATH,
           MAKEALLLINEMAP, MAKEFEWESTLINEMAP, MAKEDRAWING,
-          MAKEUSERMAP, MAKEUSERMAPSHAPE, MAKEUSERSEGMAP, MAKEUSERSEGMAPSHAPE, MAKEGATESMAP, MAKEBOUNDARYMAP, MAKESEGMENTMAP, 
-          MAKECONVEXMAP,
-          AXIALANALYSIS, SEGMENTANALYSISTULIP, SEGMENTANALYSISANGULAR, TOPOMETANALYSIS, AGENTANALYSIS, BINDISPLAY };
-	
+          MAKEUSERMAP, MAKEUSERMAPSHAPE, MAKEUSERSEGMAP, MAKEUSERSEGMAPSHAPE, MAKEGATESMAP, MAKEBOUNDARYMAP, MAKESEGMENTMAP,
+          MAKECONVEXMAP, 
+          AXIALANALYSIS, SEGMENTANALYSISTULIP, SEGMENTANALYSISANGULAR, TOPOMETANALYSIS, AGENTANALYSIS };
 public:
    CMSCommunicator();
    virtual ~CMSCommunicator();
@@ -280,27 +279,20 @@ public:
     void OnEditClear();
 	void OnToolsRun();
 	void OnEditUndo();
-	void OnToolsPD();
-	void OnAddGate();
+    void OnToolsPD();
 	void OnPushToLayer();
-    void OnEditGrid();
+	void OnEditGrid();
     void OnToolsMPD();
-	void OnEvoAgent();
-	void OnBinDisplay();
 	void OnToolsMakeFewestLineMap();
 	void OnToolsRunSeg();
-	void OnAddColumn();
-	void OnMagiMif();
-	void OnRemoveColumn();
-	void OnBinDistances();
-	void OnShowBinDistances();
+    void OnAddColumn();
+    void OnRemoveColumn();
 	void OnFileProperties();
 	void OnToolsAPD();
 	void OnViewShowGrid();
-    void OnViewSummary();
-    void OnToolsRunAxa();
+	void OnToolsRunAxa();
 	void OnSwapColours();
-    void OnRedButton();
+	void OnViewSummary();
 	void OnToolsPointConvShapeMap();
 	void OnToolsAxialConvShapeMap();
     void OnUpdateColumn();

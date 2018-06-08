@@ -1033,59 +1033,6 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
    return retvar;
 }
 
-bool MetaGraph::convertPointsToShape()
-{
-   bool retvar = false;
-   int oldstate = m_state;
-
-   m_state &= ~DATAMAPS;
-
-   if (m_dataMaps.empty()) {
-      m_dataMaps.emplace_back("Gates",ShapeMap::DATAMAP);
-   }
-
-   if (getDisplayedDataMap().makeShapeFromPointSet(getDisplayedPointMap()) != -1) {
-      getDisplayedPointMap().clearSel();
-      // override the displayed attribute and redisplay:
-      getDisplayedDataMap().overrideDisplayedAttribute(-2);
-      getDisplayedDataMap().setDisplayedAttribute(-1);
-      // set up a specifc view class to show both layers:
-      m_view_class = VIEWVGA | VIEWBACKDATA;
-      m_state |= DATAMAPS;
-      retvar = true;
-   }
-   else if (!oldstate) {
-      removeDataMap(0);
-   }
-
-   m_state |= oldstate;
-
-   return retvar;
-}
-
-/*
-bool MetaGraph::convertBoundaryGraph( Communicator *communicator )
-{
-   m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload) 
-
-   bool retvar = false;
-
-   try {
-      retvar = m_shape_graphs.convertBoundaryGraph( communicator, (PointMap&) *this );
-   } 
-   catch (Communicator::CancelledException) {
-      retvar = false;
-   }
-
-   if (retvar) {
-      m_state |= SHAPEGRAPHS;
-      setViewClass(SHOWAXIALTOP);
-   }
-
-   return retvar;
-}
-*/
-
 bool MetaGraph::convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval)
 {
    int oldstate = m_state;

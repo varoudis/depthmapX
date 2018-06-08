@@ -430,21 +430,6 @@ void RenderThread::run()
           }
          }
          break;
-
-      case CMSCommunicator::BINDISPLAY:
-         {
-            // Set up for options metric point depth selection
-            Options options;
-            options.global = 0;
-            options.point_depth_selection = 4;
-
-            ok = pDoc->m_meta_graph->analyseGraph( comm, options, comm->simple_version );
-            if (ok) {
-               pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
-            }
-            pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_DATA );
-         }
-         break;
       }
 
       emit closeWaitDialog();
