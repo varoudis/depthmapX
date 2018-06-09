@@ -1689,26 +1689,6 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    // make it!
    usermap.makeNewSegMap();
 
-   // use property that segments are still in same order as input in order to copy
-   // data across from ShapeMap
-   if (copydata) {
-      AttributeTable& input = shapemap.getAttributeTable();
-      AttributeTable& output = usermap.getAttributeTable();
-      //
-      for (int i = 0; i < input.getColumnCount(); i++) {
-         std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++)
-            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
-         int outcol = output.insertColumn(colname);
-         int j = -1;
-         for (auto line: lines) {
-            j++;
-            int inrow = input.getRowid(keys.find(line.first)->second);
-            output.setValue(j,outcol,input.getValue(inrow,i));
-         }
-      }
-   }
-
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
    usermap.setDisplayedAttribute( usermap.m_attributes.getColumnIndex("Connectivity") );
 
