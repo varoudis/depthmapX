@@ -1665,18 +1665,19 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
       }
    }
 
+   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
 
    auto keyIter = keys.begin();
-   int k = 0;
    for (auto& line: lines) {
        if (copydata){
+           int rowid = input.getRowid(keyIter->second);
            for (int i = 0; i < input.getColumnCount(); ++i){
-               extraAttr[attrCols[i]] = input.getValue(k,i);
+               extraAttr[attrCols[i]] = input.getValue(rowid,i);
            }
        }
-      usermap.makeLineShapeWithRef(line.second, keyIter->second);
+       extraAttr[dataMapShapeRefCol] = keyIter->second;
+      usermap.makeLineShape(line.second, false, false, extraAttr);
       ++keyIter;
-      ++k;
    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits
