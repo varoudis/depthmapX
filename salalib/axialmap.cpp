@@ -1353,8 +1353,11 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
    usermap.init(lines.size(),region);  // used to be double density
    usermap.initialiseAttributesAxial();
-   std::map<int, float> extraAttributes;
-   std::vector<int> columns;
+
+   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
+
+   std::map<int, float> extraAttr;
+   std::vector<int> attrCols;
    if (copydata)   {
        AttributeTable& input = shapemap.getAttributeTable();
        AttributeTable& output = usermap.getAttributeTable();
@@ -1363,20 +1366,23 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
           for (size_t k = 1; output.getColumnIndex(colname) != -1; k++){
              colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
           }
-          columns.push_back( output.insertColumn(colname));
+          attrCols.push_back( output.insertColumn(colname));
        }
    }
 
-   for (size_t k = 0; k < lines.size(); k++) {
-      if (copydata){
-          AttributeTable& input = shapemap.getAttributeTable();
-          for ( int i = 0; i < input.getColumnCount(); ++i)
-          {
-              extraAttributes[columns[i]] = input.getValue(k, i);
-          }
-      }
-      usermap.makeLineShapeWithRef(lines[k], keys[k], false, false, extraAttributes);
-   }
+    AttributeTable& input = shapemap.getAttributeTable();
+    auto keyIter = keys.begin();
+    for (auto& line: lines) {
+        if (copydata){
+            int rowid = input.getRowid(keyIter->second);
+            for (int i = 0; i < input.getColumnCount(); ++i){
+                extraAttr[attrCols[i]] = input.getValue(rowid,i);
+            }
+        }
+        extraAttr[dataMapShapeRefCol] = keyIter->second;
+        usermap.makeLineShape(line.second, false, false, extraAttr);
+        ++keyIter;
+    }
 
    // n.b. make connections also initialises attributes
 
