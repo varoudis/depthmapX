@@ -1651,6 +1651,8 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    usermap.init(lines.size(),region);
    usermap.initialiseAttributesSegment();
 
+   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
+   
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;
    AttributeTable& input = shapemap.getAttributeTable();
@@ -1664,8 +1666,6 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
          attrCols.push_back(output.insertColumn(colname));
       }
    }
-
-   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
 
    auto keyIter = keys.begin();
    for (auto& line: lines) {
