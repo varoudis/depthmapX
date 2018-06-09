@@ -335,8 +335,16 @@ void RenderThread::run()
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
-      case CMSCommunicator::SEGMENTANALYSIS:
-         ok = pDoc->m_meta_graph->analyseSegments( comm, pMain->m_options );
+      case CMSCommunicator::SEGMENTANALYSISTULIP:
+         ok = pDoc->m_meta_graph->analyseSegmentsTulip( comm, pMain->m_options );
+         if (ok) {
+            pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
+         }
+         pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
+         break;
+
+      case CMSCommunicator::SEGMENTANALYSISANGULAR:
+         ok = pDoc->m_meta_graph->analyseSegmentsAngular( comm, pMain->m_options );
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
          }

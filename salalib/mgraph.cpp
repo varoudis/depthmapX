@@ -1174,21 +1174,38 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    return retvar;
 }
 
-bool MetaGraph::analyseSegments( Communicator *communicator, Options options ) // <- options copied to keep thread safe
+bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options options ) // <- options copied to keep thread safe
 {
-   m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload) 
+   m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload)
 
    bool retvar = false;
 
    try {
-      if (options.tulip_bins == 0) {
-         retvar = m_shape_graphs.getDisplayedMap().analyseAngular(communicator, options.radius_list);
-      }
-      else {
-         retvar = m_shape_graphs.getDisplayedMap().analyseTulip(communicator, options.tulip_bins, options.choice, 
-                                                                 options.radius_type, options.radius_list, options.weighted_measure_col);
-      }
-   } 
+       retvar = m_shape_graphs.getDisplayedMap().analyseTulip(communicator,
+                                                              options.tulip_bins,
+                                                              options.choice,
+                                                              options.radius_type,
+                                                              options.radius_list,
+                                                              options.weighted_measure_col);
+   }
+   catch (Communicator::CancelledException) {
+      retvar = false;
+   }
+
+   m_state |= SHAPEGRAPHS;
+
+   return retvar;
+}
+
+bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options options ) // <- options copied to keep thread safe
+{
+   m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload)
+
+   bool retvar = false;
+
+   try {
+       retvar = m_shape_graphs.getDisplayedMap().analyseAngular(communicator, options.radius_list);
+   }
    catch (Communicator::CancelledException) {
       retvar = false;
    }
