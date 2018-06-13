@@ -3555,7 +3555,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    tulip_bins /= 2;  // <- actually use semicircle of tulip bins
    tulip_bins += 1;
 
-   pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
+   std::vector<std::vector<SegmentData>> bins(tulip_bins);
 
    AnalysisInfo ***audittrail;
    unsigned int **uncovered;
@@ -3623,7 +3623,11 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
         //EFEF
 
       // setup: direction 0 (both ways), segment i, previous -1, segdepth (step depth) 0, metricdepth 0.5 * rootseglength, bin 0
-      bins[0].add(SegmentData(0,rowid,SegmentRef(),0,0.5*rootseglength,radiusmask));
+      SegmentData segmentData(0,rowid,SegmentRef(),0,0.5*rootseglength,radiusmask);
+      auto it = std::lower_bound(bins[0].begin(), bins[0].end(), segmentData);
+      if(it == bins[0].end() || segmentData != *it) {
+          bins[0].insert(it, segmentData);
+      }
       // this version below is only designed to be used temporarily --
       // could be on an option?
       //bins[0].push_back(SegmentData(0,rowid,SegmentRef(),0,0.0,radiusmask));
@@ -3632,7 +3636,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       double weight = 0.0;
       int depthlevel = 0;
       int opencount = 1;
-      int currentbin = 0;
+      size_t currentbin = 0;
       while (opencount) {
          while (!bins[currentbin].size()) {
             depthlevel++;
@@ -3641,8 +3645,10 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                currentbin = 0;
             }
          }
-         SegmentData lineindex = bins[currentbin].tail();
-         bins[currentbin].pop_back();
+         auto iter = bins[currentbin].end();
+         iter--;
+         SegmentData lineindex = *iter;
+         bins[currentbin].erase(iter);
          //
          opencount--;
 
@@ -3708,9 +3714,11 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                         break;
                      }
                      if ((coverage >> rbin) != 0) {
-                        bins[(currentbin + tulip_bins + extradepth) % tulip_bins].add(
-                           SegmentData(conn,SegmentRef(1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin), paftl::ADD_DUPLICATE);
-                        opencount++;
+                         SegmentData sd(conn,SegmentRef(1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin);
+                         size_t bin = (currentbin + tulip_bins + extradepth) % tulip_bins;
+                         auto it = depthmapX::findBinary(bins[bin], sd);
+                         bins[bin].insert(it, sd);
+                         opencount++;
                      }
                   }
                }
@@ -3749,9 +3757,11 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                         break;
                      }
                      if ((coverage >> rbin) != 0) {
-                        bins[(currentbin + tulip_bins + extradepth) % tulip_bins].add(
-                           SegmentData(conn,SegmentRef(-1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin), paftl::ADD_DUPLICATE);
-                        opencount++;
+                         SegmentData sd(conn,SegmentRef(-1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin);
+                         size_t bin = (currentbin + tulip_bins + extradepth) % tulip_bins;
+                         auto it = depthmapX::findBinary(bins[bin], sd);
+                         bins[bin].insert(it, sd);
+                         opencount++;
                      }
                   }
                }
@@ -3892,7 +3902,6 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                   }
                   delete [] audittrail;
                   delete [] uncovered;
-                  delete [] bins;
                   throw Communicator::CancelledException();
                }
                else {
@@ -3944,7 +3953,6 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    }
    delete [] audittrail;
    delete [] uncovered;
-   delete [] bins;
 
    m_displayed_attribute = -2; // <- override if it's already showing
    if (choice) {
