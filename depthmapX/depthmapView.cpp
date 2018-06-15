@@ -2360,34 +2360,16 @@ void QDepthmapView::OnModeUnjoin()
 
 void QDepthmapView::OnEditCopy()
 {
-    QRect rectin = QRect(0,0,width(),height());
-    int state = m_pDoc.m_meta_graph->getState();
-
-    if (state & MetaGraph::POINTMAPS && (!m_pDoc.m_meta_graph->getDisplayedPointMap().isProcessed() || m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWVGA | MetaGraph::VIEWBACKVGA))) {
-        m_pDoc.m_meta_graph->getDisplayedPointMap().setScreenPixel( m_unit ); // only used by points (at the moment!)
-        m_pDoc.m_meta_graph->getDisplayedPointMap().makeViewportPoints( LogicalViewport(rectin, &m_pDoc) );
-    }
-    if (state & MetaGraph::SHAPEGRAPHS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKAXIAL | MetaGraph::VIEWAXIAL))) {
-        m_pDoc.m_meta_graph->getDisplayedShapeGraph().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-    }
-    if (state & MetaGraph::DATAMAPS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKDATA | MetaGraph::VIEWDATA))) {
-        m_pDoc.m_meta_graph->getDisplayedDataMap().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-    }
-    if (state & MetaGraph::LINEDATA) {
-        m_pDoc.m_meta_graph->SuperSpacePixel::makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
-    }
 
    // Copy to Clipboard
-    QPixmap image(0, 0);
+    QPixmap image(width(), height());
     QPainter painter;
     painter.begin(&image);           // paint in picture
 
     Output(&painter, &m_pDoc, false);
     painter.end();                     // painting done
 
-    QImage img = image.toImage();
     QClipboard *clipboard = QApplication::clipboard();
-//	clipboard->setImage(img);
     clipboard->setPixmap(image);
 
 }
@@ -2806,6 +2788,6 @@ void QDepthmapView::OnViewZoomToRegion(QtRegion regionToZoomAt) {
 
     m_centre = regionToZoomAt.getCentre();
     QRect phys_bounds = this->rect();
-       m_unit =  1.1 * __max( regionToZoomAt.width() / double(phys_bounds.width()),
+       m_unit =  1.0 * __max( regionToZoomAt.width() / double(phys_bounds.width()),
                              regionToZoomAt.height() / double(phys_bounds.height()) );
 }

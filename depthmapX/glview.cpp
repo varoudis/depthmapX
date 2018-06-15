@@ -763,7 +763,9 @@ void GLView::OnEditCopy()
     tmp->show();
     tmp->postLoadFile();
     tmp->OnViewZoomToRegion(QtRegion(topLeftWorld, bottomRightWorld));
+    tmp->repaint();
     tmp->OnEditCopy();
+    tmp->close();
 }
 
 void GLView::OnEditSave()
