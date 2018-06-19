@@ -3716,7 +3716,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                      if ((coverage >> rbin) != 0) {
                          SegmentData sd(conn,SegmentRef(1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin);
                          size_t bin = (currentbin + tulip_bins + extradepth) % tulip_bins;
-                         auto it = depthmapX::findBinary(bins[bin], sd);
+                         auto it = std::lower_bound(bins[bin].begin(), bins[bin].end(), sd);
                          bins[bin].insert(it, sd);
                          opencount++;
                      }
@@ -3759,7 +3759,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                      if ((coverage >> rbin) != 0) {
                          SegmentData sd(conn,SegmentRef(-1,lineindex.ref),lineindex.segdepth+1,lineindex.metricdepth+seglength,(coverage >> rbin) << rbin);
                          size_t bin = (currentbin + tulip_bins + extradepth) % tulip_bins;
-                         auto it = depthmapX::findBinary(bins[bin], sd);
+                         auto it = std::lower_bound(bins[bin].begin(), bins[bin].end(), sd);
                          bins[bin].insert(it, sd);
                          opencount++;
                      }
