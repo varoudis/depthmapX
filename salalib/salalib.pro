@@ -36,6 +36,9 @@ SOURCES += \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
+    attributetable.cpp \
+    layermanagerimpl.cpp \
+    attributetableview.cpp \
     geometrygenerators.cpp \
     importutils.cpp \
     point.cpp \
@@ -64,6 +67,12 @@ HEADERS += \
     gridproperties.h \
     isovistdef.h \
     mgraph_consts.h \
+    attributetable.h \
+    attributetableindex.h \
+    layermanager.h \
+    layermanagerimpl.h \
+    attributetablehelpers.h \
+    attributetableview.h \
     geometrygenerators.h \
     importutils.h \
     importtypedefs.h \
