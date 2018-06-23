@@ -77,6 +77,7 @@ public:
        m_cumangle = p.m_cumangle;
        m_lines = p.m_lines;
        m_processflag = p.m_processflag;
+       return *this;
    }
    Point(const Point& p)
    {
