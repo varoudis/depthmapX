@@ -2360,6 +2360,22 @@ void QDepthmapView::OnModeUnjoin()
 
 void QDepthmapView::OnEditCopy()
 {
+    QRect rectin = QRect(0,0,width(),height());
+    int state = m_pDoc.m_meta_graph->getState();
+
+    if (state & MetaGraph::POINTMAPS && (!m_pDoc.m_meta_graph->getDisplayedPointMap().isProcessed() || m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWVGA | MetaGraph::VIEWBACKVGA))) {
+        m_pDoc.m_meta_graph->getDisplayedPointMap().setScreenPixel( m_unit ); // only used by points (at the moment!)
+        m_pDoc.m_meta_graph->getDisplayedPointMap().makeViewportPoints( LogicalViewport(rectin, &m_pDoc) );
+    }
+    if (state & MetaGraph::SHAPEGRAPHS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKAXIAL | MetaGraph::VIEWAXIAL))) {
+        m_pDoc.m_meta_graph->getDisplayedShapeGraph().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
+    }
+    if (state & MetaGraph::DATAMAPS && (m_pDoc.m_meta_graph->getViewClass() & (MetaGraph::VIEWBACKDATA | MetaGraph::VIEWDATA))) {
+        m_pDoc.m_meta_graph->getDisplayedDataMap().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
+    }
+    if (state & MetaGraph::LINEDATA) {
+        m_pDoc.m_meta_graph->SuperSpacePixel::makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
+    }
 
    // Copy to Clipboard
     QPixmap image(width(), height());
