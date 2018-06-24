@@ -46,19 +46,19 @@ namespace dm_runmethods
         if ( result != MetaGraph::OK)
         {
             std::stringstream message;
-            message << "Failed to load graph from file " << filename << ", error " << result << flush;
+            message << "Failed to load graph from file " << filename << ", error " << result << std::flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
         std::cout << " ok\n" << std::flush;
         return mgraph;
     }
 
-    void importFiles(const CommandLineParser &cmdP, const std::vector<string> &filesToImport, IPerformanceSink &perfWriter)
+    void importFiles(const CommandLineParser &cmdP, const std::vector<std::string> &filesToImport, IPerformanceSink &perfWriter)
     {
         std::ifstream mainFileStream(cmdP.getFileName().c_str());
         if(!mainFileStream.good()) {
             std::stringstream message;
-            message << "File not found: " << cmdP.getFileName() << flush;
+            message << "File not found: " << cmdP.getFileName() << std::flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
 
@@ -67,7 +67,7 @@ namespace dm_runmethods
         if ( result != MetaGraph::OK && result != MetaGraph::NOT_A_GRAPH)
         {
             std::stringstream message;
-            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << flush;
+            message << "Failed to load graph from file " << cmdP.getFileName() << ", error " << result << std::flush;
             throw depthmapX::RuntimeException(message.str().c_str());
         }
 
@@ -75,7 +75,7 @@ namespace dm_runmethods
         {
             // not a graph, try to import the file
             std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 4, cmdP.getFileName().length() - 1);
-            ifstream file(cmdP.getFileName());
+            std::ifstream file(cmdP.getFileName());
 
             std::unique_ptr<Communicator> comm(new ICommunicator());
 
@@ -102,7 +102,7 @@ namespace dm_runmethods
         SimpleTimer t;
         PointMap& currentMap = mgraph->getDisplayedPointMap();
 
-        vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(mergeLines, currentMap);
+        std::vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(mergeLines, currentMap);
         depthmapX::mergePixelPairs(newLinks, currentMap);
 
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
@@ -116,7 +116,7 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
         std::unique_ptr<Options> options(new Options());
 
-        cout << "Getting options..." << std::flush;
+        std::cout << "Getting options..." << std::flush;
         switch(vgaP.getVgaMode())
         {
             case VgaParser::VgaMode::VISBILITY:
@@ -144,7 +144,7 @@ namespace dm_runmethods
             default:
                 throw depthmapX::SetupCheckException("Unsupported VGA mode");
         }
-        cout << " ok\nAnalysing graph..." << std::flush;
+        std::cout << " ok\nAnalysing graph..." << std::flush;
 
         DO_TIMED("Run VGA", mgraph->analyseGraph(comm.get(), *options, cmdP.simpleMode() ))
         std::cout << " ok\nWriting out result..." << std::flush;
@@ -428,13 +428,13 @@ namespace dm_runmethods
                 }
                 case AgentParser::OutputType::GATECOUNTS:
                 {
-                    ofstream gatecountStream(cmdP.getOuputFile().c_str());
+                    std::ofstream gatecountStream(cmdP.getOuputFile().c_str());
                     DO_TIMED("Writing gatecounts", currentMap.outputSummary(gatecountStream, ','))
                     break;
                 }
                 case AgentParser::OutputType::TRAILS:
                 {
-                    ofstream trailStream(cmdP.getOuputFile().c_str());
+                    std::ofstream trailStream(cmdP.getOuputFile().c_str());
                     DO_TIMED("Writing trails", eng.outputTrails(trailStream))
                     break;
                 }
@@ -454,12 +454,12 @@ namespace dm_runmethods
             }
             if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::GATECOUNTS) != resultTypes.end()) {
                 std::string outFile = cmdP.getOuputFile() + "_gatecounts.csv";
-                ofstream gatecountStream(outFile.c_str());
+                std::ofstream gatecountStream(outFile.c_str());
                 DO_TIMED("Writing gatecounts", currentMap.outputSummary(gatecountStream, ','))
             }
             if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::TRAILS) != resultTypes.end()) {
                 std::string outFile = cmdP.getOuputFile() + "_trails.cat";
-                ofstream trailStream(outFile.c_str());
+                std::ofstream trailStream(outFile.c_str());
                  DO_TIMED("Writing trails", eng.outputTrails(trailStream))
             }
         }
@@ -491,19 +491,19 @@ namespace dm_runmethods
         switch(exportP.getExportMode()) {
             case ExportParser::POINTMAP_DATA_CSV:
             {
-                ofstream stream(cmdP.getOuputFile().c_str());
+                std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
                 break;
             }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
-                ofstream stream(cmdP.getOuputFile().c_str());
+                std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
                 break;
             }
             case ExportParser::POINTMAP_LINKS_CSV:
             {
-                ofstream stream(cmdP.getOuputFile().c_str());
+                std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
                 break;
             }

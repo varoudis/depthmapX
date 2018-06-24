@@ -376,7 +376,7 @@ void QGraphDoc::OnVGALinksFileImport()
 
     std::string fileName = infile.toStdString();
 
-    ifstream fileStream(fileName);
+    std::ifstream fileStream(fileName);
     if (fileStream.fail())
     {
       QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
@@ -388,7 +388,7 @@ void QGraphDoc::OnVGALinksFileImport()
         try
         {
             PointMap& currentMap = m_meta_graph->getDisplayedPointMap();
-            vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(
+            std::vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(
                         EntityParsing::parseLines(fileStream, '\t'), currentMap);
             depthmapX::mergePixelPairs(newLinks, currentMap);
             SetRedrawFlag(VIEW_MAP,REDRAW_POINTS, NEW_DEPTHMAPVIEW_SETUP);
@@ -505,7 +505,7 @@ void QGraphDoc::OnFileImport()
       }
    }
    else if (ext == tr("TXT") || ext == tr("CSV")) {
-      ifstream file( infiles[0].toLatin1() );
+      std::ifstream file( infiles[0].toLatin1() );
       if (file.fail()) {
 		 QMessageBox::warning(this, tr("Warning"), tr("Unable to read text file.\nPlease check that another program is not using it."),
              QMessageBox::Ok, QMessageBox::Ok);
@@ -622,7 +622,7 @@ void QGraphDoc::OnFileExport()
 
    if (ext != tr("MIF") && ext != tr("GRAPH") && ext != tr("NET")) 
    {
-       ofstream stream(outfile.toLatin1());
+       std::ofstream stream(outfile.toLatin1());
        char delimiter = '\t';
        if (ext == tr("CSV")) {
           delimiter = ',';
@@ -665,7 +665,7 @@ void QGraphDoc::OnFileExport()
             QMessageBox::warning(this, tr("Notice"), tr("Sorry, depthmapX can only export VGA graphs or shape graphs to Pajek .net files"), QMessageBox::Ok, QMessageBox::Ok);
             return;
          }
-         ofstream stream(outfile.toLatin1());
+         std::ofstream stream(outfile.toLatin1());
          if (!stream) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
          }
@@ -687,13 +687,13 @@ void QGraphDoc::OnFileExport()
          int thedot = outfile.indexOf('.');
          QString outfile2 = outfile.left(thedot+1) + tr("mid");
 
-         ofstream miffile(outfile.toLatin1());
+         std::ofstream miffile(outfile.toLatin1());
          if (miffile.fail() || miffile.bad()) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
             mode = -1;
          }
 
-         ofstream midfile(outfile2.toLatin1());
+         std::ofstream midfile(outfile2.toLatin1());
          if (midfile.fail() || midfile.bad()) {
 	        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open associated .mid file for export"), QMessageBox::Ok, QMessageBox::Ok);
             mode = -1;
@@ -773,7 +773,7 @@ void QGraphDoc::OnFileExportLinks()
     QFilePath filepath(outfile);
     QString ext = filepath.m_ext;
 
-    ofstream stream(outfile.toLatin1());
+    std::ofstream stream(outfile.toLatin1());
     char delimiter = '\t';
     if (ext == "CSV") {
       delimiter = ',';
@@ -845,7 +845,7 @@ void QGraphDoc::OnAxialConnectionsExportAsDot()
     FILE* fp = fopen(outfile.toLatin1(), "wb");
     fclose(fp);
 
-    ofstream stream(outfile.toLatin1());
+    std::ofstream stream(outfile.toLatin1());
 
     if (stream.fail() || stream.bad()) {
        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
@@ -892,7 +892,7 @@ void QGraphDoc::OnAxialConnectionsExportAsPairCSV()
     FILE* fp = fopen(outfile.toLatin1(), "wb");
     fclose(fp);
 
-    ofstream stream(outfile.toLatin1());
+    std::ofstream stream(outfile.toLatin1());
 
     if (stream.fail() || stream.bad()) {
        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
@@ -939,7 +939,7 @@ void QGraphDoc::OnSegmentConnectionsExportAsPairCSV()
     FILE* fp = fopen(outfile.toLatin1(), "wb");
     fclose(fp);
 
-    ofstream stream(outfile.toLatin1());
+    std::ofstream stream(outfile.toLatin1());
 
     if (stream.fail() || stream.bad()) {
        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
@@ -996,7 +996,7 @@ void QGraphDoc::OnPointmapExportConnectionsAsCSV()
     FILE* fp = fopen(outfile.toLatin1(), "wb");
     fclose(fp);
 
-    ofstream stream(outfile.toLatin1());
+    std::ofstream stream(outfile.toLatin1());
 
     if (stream.fail() || stream.bad()) {
        QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok, QMessageBox::Ok);
@@ -2123,7 +2123,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
       }
       else {
          strcpy(text,dlg.m_formula_text.c_str());
-         istringstream stream(text);
+         std::istringstream stream(text);
          SalaProgram proggy(program_context);
          if (!proggy.parse(stream)) {
             QString msg = QString("There was an error parsing your formula:\n\n") + 
@@ -2204,7 +2204,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       std::string multibytetext(((MainWindow*)m_mainFrame)->m_formula_cache.toStdString());
       char *text = new char[multibytetext.length()+1];
       strcpy(text,multibytetext.c_str());
-      istringstream stream(text);
+      std::istringstream stream(text);
       SalaProgram proggy(program_context);
       if (!proggy.parse(stream)) {
          QString msg = QString("There was an error parsing your formula:\n") + 
@@ -2397,7 +2397,7 @@ void QGraphDoc::OnToolsLineLoadUnlinks()
                                options);
    if(outfile.isEmpty()) return;
 
-   ifstream stream(outfile.toLatin1());
+   std::ifstream stream(outfile.toLatin1());
    if (stream.fail()) {
 	  QMessageBox::warning(this, tr("Warning"), tr("There was an error opening the file.\nPlease check the file is not already open"), QMessageBox::Ok, QMessageBox::Ok);
       return;
