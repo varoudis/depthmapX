@@ -205,8 +205,7 @@ bool MetaGraph::setGrid( double spacing, const Point2f& offset )
 {
    m_state &= ~POINTMAPS;
 
-   getDisplayedPointMap().setParent( this );
-   getDisplayedPointMap().setGrid( spacing, offset );
+   getDisplayedPointMap().setGrid( m_region, spacing, offset );
 
    m_state |= POINTMAPS;
 
@@ -222,7 +221,7 @@ bool MetaGraph::makePoints( const Point2f& p, int fill_type , Communicator *comm
 //   m_state &= ~POINTS;
 
    try {
-      getDisplayedPointMap().makePoints( p, fill_type, communicator );
+      getDisplayedPointMap().makePoints( m_drawingLayers, p, fill_type, communicator );
    }
    catch (Communicator::CancelledException) {
 
@@ -253,7 +252,7 @@ bool MetaGraph::makeGraph( Communicator *communicator, int algorithm, double max
    
    try {
       // algorithm is now used for boundary graph option (as a simple boolean)
-      retvar = getDisplayedPointMap().sparkGraph2(communicator, (algorithm != 0), maxdist);
+      retvar = getDisplayedPointMap().sparkGraph2(communicator, m_drawingLayers, (algorithm != 0), maxdist);
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -2214,7 +2213,6 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
    }
    if (type == 'p') {
       readPointMaps( stream, version );
-      for (auto& pointMap: m_pointMaps) pointMap.setParent( this );
       temp_state |= POINTMAPS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2405,7 +2403,6 @@ int MetaGraph::addNewPointMap(const std::string& name)
       }
    }
    m_pointMaps.push_back(PointMap(myname));
-   m_pointMaps.back().setParent( this );
    m_displayed_pointmap = m_pointMaps.size() - 1;
    return m_pointMaps.size() - 1;
 }
@@ -2417,7 +2414,6 @@ bool MetaGraph::readPointMaps(istream& stream, int version)
    stream.read((char *) &count, sizeof(count));
    for (int i = 0; i < count; i++) {
       m_pointMaps.push_back(PointMap());
-      m_pointMaps.back().setParent( this );
       m_pointMaps.back().read( stream, version );
    }
    return true;
