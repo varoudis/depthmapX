@@ -57,7 +57,9 @@ private:
     std::string m_name;
 public:
    std::deque<SpacePixelFile> m_drawingLayers;
-   QtRegion getRegion() { return m_region; }
+   const QtRegion& getRegion() { return m_region; }
+   void setRegion(Point2f& bottomLeft, Point2f& topRight)
+      { m_region.bottom_left = bottomLeft; m_region.top_right = topRight; }
    bool isShown() const
       { for (size_t i = 0; i < m_drawingLayers.size(); i++) if (m_drawingLayers[i].isShown()) return true; return false; }
 
@@ -85,7 +87,7 @@ public:
    std::vector<ShapeMap> m_dataMaps;
    ShapeGraphs m_shape_graphs;
 public:
-   MetaGraph();
+   MetaGraph(std::string name = "");
    ~MetaGraph();
    //
    int getVersion()
@@ -112,10 +114,7 @@ public:
 private:
    std::vector<PointMap> m_pointMaps;
    int m_displayed_pointmap;
-   SuperSpacePixel *m_spacepix;
 
-   void setSpacePixel(SuperSpacePixel *spacepix)
-   { m_spacepix = spacepix; for (auto& pointMap: m_pointMaps) pointMap.setSpacePixel(spacepix); }
    void removePointMap(int i)
    {
        if (m_displayed_pointmap >= i) m_displayed_pointmap--;

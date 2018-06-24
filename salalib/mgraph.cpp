@@ -43,8 +43,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-MetaGraph::MetaGraph()
+MetaGraph::MetaGraph(std::string name)
 { 
+   m_name = name;
    m_state = 0; 
    m_view_class = VIEWNONE;
    m_file_version = -1; // <- if unsaved, file version is -1
@@ -204,7 +205,7 @@ bool MetaGraph::setGrid( double spacing, const Point2f& offset )
 {
    m_state &= ~POINTMAPS;
 
-   getDisplayedPointMap().setSpacePixel( (SuperSpacePixel *) this );
+   getDisplayedPointMap().setParent( this );
    getDisplayedPointMap().setGrid( spacing, offset );
 
    m_state |= POINTMAPS;
@@ -2213,7 +2214,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
    }
    if (type == 'p') {
       readPointMaps( stream, version );
-      setSpacePixel( (SuperSpacePixel *) this );
+      for (auto& pointMap: m_pointMaps) pointMap.setParent( this );
       temp_state |= POINTMAPS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2404,7 +2405,7 @@ int MetaGraph::addNewPointMap(const std::string& name)
       }
    }
    m_pointMaps.push_back(PointMap(myname));
-   m_pointMaps.back().setSpacePixel(m_spacepix);
+   m_pointMaps.back().setParent( this );
    m_displayed_pointmap = m_pointMaps.size() - 1;
    return m_pointMaps.size() - 1;
 }
@@ -2416,7 +2417,7 @@ bool MetaGraph::readPointMaps(istream& stream, int version)
    stream.read((char *) &count, sizeof(count));
    for (int i = 0; i < count; i++) {
       m_pointMaps.push_back(PointMap());
-      m_pointMaps.back().setSpacePixel( (SuperSpacePixel *) this );
+      m_pointMaps.back().setParent( this );
       m_pointMaps.back().read( stream, version );
    }
    return true;

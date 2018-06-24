@@ -46,7 +46,6 @@ PointMap::PointMap(const std::string& name)
    m_rows = 0;
    m_filled_point_count = 0;
 
-   m_spacepix = NULL;
    m_spacing = 0.0;
 
    m_initialised = false;
@@ -82,23 +81,23 @@ void PointMap::communicate( time_t& atime, Communicator *comm, int record )
    }
 }
 
-bool PointMap::setSpacePixel(const SuperSpacePixel *spacepix)
+bool PointMap::setParent(MetaGraph* parent)
 {
-   m_spacepix = (SuperSpacePixel *) spacepix;
+   m_parent = parent;
 
    return true;
 }
 
 bool PointMap::setGrid(double spacing, const Point2f& offset)
 {
-   if (!m_spacepix) {
+   if (!m_parent) {
       return false;
    }
 
    m_spacing = spacing;
    // note, the internal offset is the offset from the bottom left
-   double xoffset = fmod(m_spacepix->m_region.bottom_left.x + offset.x,m_spacing);
-   double yoffset = fmod(m_spacepix->m_region.bottom_left.y + offset.y,m_spacing);
+   double xoffset = fmod(m_parent->getRegion().bottom_left.x + offset.x,m_spacing);
+   double yoffset = fmod(m_parent->getRegion().bottom_left.y + offset.y,m_spacing);
    if (xoffset < m_spacing / 2.0)
       xoffset += m_spacing;
    if (xoffset > m_spacing / 2.0)
@@ -117,11 +116,11 @@ bool PointMap::setGrid(double spacing, const Point2f& offset)
    m_undocounter = 0;  // <- reset the undo counter... sorry... once you've done this you can't undo
 
    // A grid at the required spacing:
-   m_cols = (int) floor((xoffset + m_spacepix->m_region.width()) / m_spacing + 0.5) + 1;
-   m_rows = (int) floor((yoffset + m_spacepix->m_region.height()) / m_spacing + 0.5) + 1;
+   m_cols = (int) floor((xoffset + m_parent->getRegion().width()) / m_spacing + 0.5) + 1;
+   m_rows = (int) floor((yoffset + m_parent->getRegion().height()) / m_spacing + 0.5) + 1;
 
-   m_bottom_left = Point2f(m_spacepix->m_region.bottom_left.x + m_offset.x,
-                           m_spacepix->m_region.bottom_left.y + m_offset.y);
+   m_bottom_left = Point2f(m_parent->getRegion().bottom_left.x + m_offset.x,
+                           m_parent->getRegion().bottom_left.y + m_offset.y);
 
    m_region = QtRegion(
       Point2f(m_bottom_left.x-m_spacing/2.0, m_bottom_left.y-m_spacing/2.0), 
@@ -271,7 +270,7 @@ void PointMap::fillLine(const Line& li)
 
 bool PointMap::blockLines()
 {
-   if (!m_spacepix || !m_initialised || m_points.empty()) {
+   if (!m_parent || !m_initialised || m_points.empty()) {
       return false;
    }
    if (m_blockedlines) {
@@ -286,7 +285,7 @@ bool PointMap::blockLines()
    // would require a key with (file, layer, shaperef, seg) when used with shaperef,
    // so just switched to an integer key:
 
-   for (const auto& pixelGroup: m_spacepix->m_spacePixels) {
+   for (const auto& pixelGroup: m_parent->m_drawingLayers) {
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
          if (pixel.isShown()) {
@@ -376,7 +375,7 @@ bool PointMap::fillPoint(const Point2f& p, bool add)
 //AV TV // semifilled
 bool PointMap::makePoints(const Point2f& seed, int fill_type, Communicator *comm)
 {
-   if (!m_spacepix) {
+   if (!m_parent) {
       return false;
    }
    if (!m_initialised || m_points.empty()) {
@@ -1202,7 +1201,7 @@ int PointMap::tagState(bool settag, bool sparkgraph)
 bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdist )
 {
    // Note, graph must be fixed (i.e., having blocking pixels filled in)
-   if (!m_spacepix) {
+   if (!m_parent) {
       return false;
    }
 

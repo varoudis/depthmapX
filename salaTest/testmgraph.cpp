@@ -21,7 +21,7 @@ TEST_CASE("Test getVisibleLines", "")
 {
     const float EPSILON = 0.001;
 
-    // create a new MetaGraph(SuperSpacePixel)
+    // create a new MetaGraph
     std::unique_ptr<MetaGraph> mgraph(new MetaGraph());
 
     Point2f visibleLineStart(0,0);

@@ -91,7 +91,7 @@ protected:
    double m_spacing;
    Point2f m_offset;
    Point2f m_bottom_left;
-   SuperSpacePixel *m_spacepix;
+   MetaGraph* m_parent;
    bool m_initialised;
    bool m_blockedlines;
    bool m_processed;
@@ -110,7 +110,7 @@ public:
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
    Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
-   bool setSpacePixel(const SuperSpacePixel *spacepix);  // (so different threads can use it... dangermouse!)
+   bool setParent(MetaGraph *parent);  // (so different threads can use it... dangermouse!)
    bool setGrid(double spacing, const Point2f& offset = Point2f());
    std::vector<std::pair<PixelRef, PixelRef>> getMergedPixelPairs()
    {
