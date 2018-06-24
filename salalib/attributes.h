@@ -19,6 +19,7 @@
 #define __ATTRIBUTES_H__
 
 #include "salalib/mgraph_consts.h"
+#include "pafcolor.h"
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable

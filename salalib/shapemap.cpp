@@ -490,7 +490,6 @@ int ShapeMap::makeShape(const SalaShape& poly, int override_shape_ref, const std
        m_attributes.setValue(rowIndex, attr.first, attr.second);
    }
 
-
    m_newshape = true;
 
    return shape_ref;

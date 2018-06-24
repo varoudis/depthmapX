@@ -9,6 +9,7 @@ SOURCES += convertertest.cpp \
     main.cpp \
     dxfptest.cpp \
     teststringutils.cpp \
+    testvectorutils.cpp \
     testbspnode.cpp \
     testcontainerutils.cpp
 
