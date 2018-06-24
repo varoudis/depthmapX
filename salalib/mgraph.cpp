@@ -724,7 +724,7 @@ bool MetaGraph::convertDrawingToAxial(Communicator *comm, std::string layer_name
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDrawingToAxial( comm, layer_name, (SuperSpacePixel&) *this );
+      int mapref = m_shape_graphs.convertDrawingToAxial( comm, layer_name, m_drawingLayers );
       if (mapref != -1) {
          retvar = true;
       }
@@ -790,7 +790,7 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
    try {
       int mapref;
       if (typeflag == -1) {
-         mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, (SuperSpacePixel&) *this );
+         mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, m_drawingLayers );
       }
       else {
          mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) );
@@ -829,7 +829,7 @@ bool MetaGraph::convertDrawingToSegment(Communicator *comm, std::string layer_na
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDrawingToSegment( comm, layer_name, (SuperSpacePixel&) *this );
+      int mapref = m_shape_graphs.convertDrawingToSegment( comm, layer_name, m_drawingLayers );
       if (mapref != -1) {
          retvar = true;
       }
@@ -1112,7 +1112,7 @@ bool MetaGraph::makeAllLineMap( Communicator *communicator, const Point2f& seed 
    bool retvar = false;
 
    try {
-      retvar = m_shape_graphs.makeAllLineMap( communicator, (SuperSpacePixel&) *this, seed );
+      retvar = m_shape_graphs.makeAllLineMap( communicator, m_drawingLayers, seed );
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
