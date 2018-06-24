@@ -19,6 +19,8 @@
 #ifndef __MAPINFODATA_H__
 #define __MAPINFODATA_H__
 
+#include "genlib/p2dpoly.h"
+#include "genlib/paftl.h"
 #include <istream>
 #include <ostream>
 #include <string>
@@ -27,6 +29,10 @@
 // note: this is very basic and designed for axial line import / export only
 
 // MapInfoData is stored with axial map data
+
+class ShapeMap;
+class PointMap;
+class AttributeTable;
 
 class MapInfoData
 {

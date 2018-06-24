@@ -17,6 +17,8 @@
 
 #ifndef __SHAPEGRAPH_H__
 #define __SHAPEGRAPH_H__
+
+#include "salalib/spacepixfile.h"
 #include "spacepix.h"
 #include "connector.h"
 
