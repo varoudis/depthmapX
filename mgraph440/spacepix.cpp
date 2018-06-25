@@ -27,7 +27,7 @@ PixelRef SpacePixel::pixelate( const Point2f& p, bool constrain, int ) const
    return r;
 }
 
-bool SpacePixel::read( ifstream& stream, int version )
+bool SpacePixel::read( std::ifstream& stream, int version )
 {
    // clear anything that was there:
    if (m_pixel_lines)

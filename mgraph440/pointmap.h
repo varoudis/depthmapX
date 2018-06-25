@@ -36,7 +36,7 @@ public:
        { return m_points[p.x][p.y]; }
     bool setSpacePixel(const SuperSpacePixel *spacepix)
     {m_spacepix = (SuperSpacePixel *) spacepix; return true;}
-    bool read( ifstream& stream, int version );
+    bool read( std::ifstream& stream, int version );
     Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below
     void convertAttributes( int which_attributes );
     void addGridConnections(); // adds grid connections where graph does not include them
@@ -51,7 +51,7 @@ public:
     // Note: passed by ref, use with care in multi-threaded app
     const std::set<int>& getSelSet() const
        { return m_selection_set; }
-    bool write(ostream &stream, int version );
+    bool write(std::ostream &stream, int version );
 };
 
 inline Point2f PointMap::depixelate( const PixelRef& p, double scalefactor ) const
@@ -80,7 +80,7 @@ public:
          return m_data_objects.at(var);
       return -1;  // note: not paftl::npos
    }
-   bool read(ifstream& stream, int version)
+   bool read(std::ifstream& stream, int version)
    {
       stream.read((char *) &m_displayed_map, sizeof(m_displayed_map));
       int count;
@@ -92,7 +92,7 @@ public:
       }
       return true;
    }
-   bool write(ostream &stream, int version, bool displayedmaponly = false );
+   bool write(std::ostream &stream, int version, bool displayedmaponly = false );
 };
 
 }
