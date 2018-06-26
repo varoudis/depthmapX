@@ -21,6 +21,8 @@
 #include "salalib/axialmap.h"
 #include <sstream>
 
+// Most of these test cases are adapted from salalib/salascript-tests.txt
+// with some added for completeness
 
 TEST_CASE("Trivial scripts") {
 
@@ -106,7 +108,7 @@ TEST_CASE("Trivial errors") {
     SECTION("simple for with error: i should be uninitialised") {
         script << "x = 0\n"
                << "for i in range(5,10):\n"
-               << "    x = x + i\n"
+               << "    x = i\n"
                << "i\n";
     }
 
