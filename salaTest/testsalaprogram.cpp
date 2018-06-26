@@ -119,6 +119,28 @@ TEST_CASE("Trivial errors") {
 
 }
 
+TEST_CASE("Trivial scripts with unexpected results") {
+    // These are cases where the result is not as expected i.e. for
+    // a pythonesque language
+
+    std::stringstream script;
+    SalaObj expected;
+    SECTION("No access to globabl scope from within a for loop") {
+        script << "x = 5\n"
+               << "for i in range(0,1):\n"
+               << "    x = 100\n"
+               << "x";
+        expected = SalaObj(5);
+    }
+
+    SalaGrf graph;
+    SalaObj context = SalaObj(SalaObj::S_POINTMAPOBJ, graph);
+    SalaProgram program(context);
+    program.parse(script);
+    SalaObj result = program.evaluate();
+    REQUIRE(result == expected);
+}
+
 TEST_CASE("Shapemap scripts") {
 
     const double EPSILON = 0.001;
@@ -162,20 +184,6 @@ TEST_CASE("Shapemap scripts") {
             expectedColVals.push_back(4.0);
     }
 
-    SECTION("for with else and 0 length ranges") {
-            script << "int x = 0\n"
-                   << "for i in range(2,value(\"Ref Number\")):\n"
-                   << "    x = x + i\n"
-                   << "    x\n"
-                   << "else:\n"
-                   << "    0\n";
-            expectedColVals.push_back(0.0);
-            expectedColVals.push_back(0.0);
-            expectedColVals.push_back(0.0);
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
-    }
-
     SECTION("if, function of a function on a range") {
             script << "x = len(range(1,value(\"Ref Number\")))\n"
                    << "if x == 2:\n"
@@ -215,6 +223,71 @@ TEST_CASE("Shapemap scripts") {
             expectedColVals.push_back(1.0);
             expectedColVals.push_back(2.0);
             expectedColVals.push_back(3.0);
+    }
+
+    int newCol = displayedShapeGraph.addAttribute("NewCol");
+    SalaGrf graph;
+    graph.map.shape = &displayedShapeGraph;
+    SalaObj context = SalaObj(SalaObj::S_SHAPEMAPOBJ, graph);
+    SalaProgram program(context);
+    program.parse(script);
+    program.runupdate(newCol);
+
+    REQUIRE(displayedShapeGraph.getAttributeTable().getRowCount() == expectedColVals.size());
+
+    auto iter = expectedColVals.begin();
+    for(int i = 0; i < displayedShapeGraph.getAttributeTable().getRowCount(); i++) {
+        REQUIRE(displayedShapeGraph.getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
+        iter++;
+    }
+}
+
+TEST_CASE("Shapemap scripts with unexpected results") {
+
+    const double EPSILON = 0.001;
+
+    Point2f line1Start(0,0);
+    Point2f line1End  (3,0);
+    Point2f line2Start(1,1);
+    Point2f line2End  (1,-1);
+    Point2f line3Start(2,1);
+    Point2f line3End  (2,-2);
+    Point2f line4Start(2,1);
+    Point2f line4End  (4,1);
+    Point2f line5Start(5,3);
+    Point2f line5End  (3,1);
+
+    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+
+    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
+    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
+
+    spacePixel->tail().tail().makeLineShape(Line(line1Start, line1End));
+    spacePixel->tail().tail().makeLineShape(Line(line2Start, line2End));
+    spacePixel->tail().tail().makeLineShape(Line(line3Start, line3End));
+    spacePixel->tail().tail().makeLineShape(Line(line4Start, line4End));
+    spacePixel->tail().tail().makeLineShape(Line(line5Start, line5End));
+
+    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
+    shapeGraphs->convertDrawingToAxial(0, "Test axial", (*spacePixel));
+    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+
+
+    std::stringstream script;
+    std::vector<double> expectedColVals;
+
+    SECTION("for with else and 0 length ranges") {
+            script << "int x = 0\n"
+                   << "for i in range(2,value(\"Ref Number\")):\n"
+                   << "    x = x + i\n"
+                   << "    x\n"
+                   << "else:\n"
+                   << "    0\n";
+            expectedColVals.push_back(0.0);
+            expectedColVals.push_back(0.0);
+            expectedColVals.push_back(0.0);
+            expectedColVals.push_back(-1.0);
+            expectedColVals.push_back(-1.0);
     }
 
     SECTION("Total Depth Calculation") {
@@ -301,7 +374,9 @@ TEST_CASE("Shapemap scripts") {
         REQUIRE(displayedShapeGraph.getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
         iter++;
     }
+}
 
+TEST_CASE("Performance tests") {
     //# For a graph with 100000 segments for cpu timing:
     //x=value("Angular Connectivity")*value("Angular Step Depth")+value("Axial Line Ref")+value("Connectivity")/value("Segment Length")^value("T1024 Choice R1000 metric")
     //y=value("T1024 Choice R3000 metric")*value("T1024 Choice R4000 metric")/value("T1024 Choice R5000 metric")^value("T1024 Total Depth [Segment Length Wgt] R4000 metric")
