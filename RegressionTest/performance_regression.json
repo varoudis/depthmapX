@@ -4,7 +4,7 @@
   "testbinlocation": "../../../build",
   "performance":{},
   "testcases": {
-    "visibility_global_n": {
+    "visibility_global_n": [{
       "infile": "../../../testdata/gallery_connected.graph",
       "outfile": "out.graph",
       "mode": "VGA",
@@ -13,6 +13,6 @@
         "-vg": "1",
         "-vr": "n"
       }
-    }
+    }]
   }
 }
