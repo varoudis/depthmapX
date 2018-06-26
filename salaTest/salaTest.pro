@@ -3,7 +3,7 @@ TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
-INCLUDEPATH += ../ThirdParty/Catch
+INCLUDEPATH += ../ThirdParty/Catch ../ThirdParty/FakeIt
 
 SOURCES += main.cpp \
     testentityparsing.cpp \
@@ -14,6 +14,12 @@ SOURCES += main.cpp \
     testmgraph.cpp \
     testshapegraphs.cpp \
     teststructsizes.cpp \
+    testsparksieve.cpp \
+    testattributetable.cpp \
+    testattributetableindex.cpp \
+    testlayermanager.cpp \
+    testattributetablehelpers.cpp \
+    testattributetableview.cpp \
     testshapemaps.cpp \
     testgeometrygenerators.cpp \
     testsparksieve.cpp \
