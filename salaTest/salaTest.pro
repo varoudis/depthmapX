@@ -22,7 +22,6 @@ SOURCES += main.cpp \
     testattributetableview.cpp \
     testshapemaps.cpp \
     testgeometrygenerators.cpp \
-    testsparksieve.cpp \
     testmapinfodata.cpp \
     testsalaprogram.cpp
 
