@@ -160,14 +160,14 @@ TEST_CASE("Shapemap scripts") {
 
     std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
 
-    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
-    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
+    spacePixel->m_spacePixels.push_back(SpacePixelFile("Test SpacePixelGroup"));
+    spacePixel->m_spacePixels.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
 
-    spacePixel->tail().tail().makeLineShape(Line(line1Start, line1End));
-    spacePixel->tail().tail().makeLineShape(Line(line2Start, line2End));
-    spacePixel->tail().tail().makeLineShape(Line(line3Start, line3End));
-    spacePixel->tail().tail().makeLineShape(Line(line4Start, line4End));
-    spacePixel->tail().tail().makeLineShape(Line(line5Start, line5End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
     std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
     shapeGraphs->convertDrawingToAxial(0, "Test axial", (*spacePixel));
@@ -261,14 +261,14 @@ TEST_CASE("Shapemap scripts with unexpected results") {
 
     std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
 
-    spacePixel->push_back(SpacePixelFile("Test SpacePixelGroup"));
-    spacePixel->tail().push_back(ShapeMap("Test ShapeMap"));
+    spacePixel->m_spacePixels.push_back(SpacePixelFile("Test SpacePixelGroup"));
+    spacePixel->m_spacePixels.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
 
-    spacePixel->tail().tail().makeLineShape(Line(line1Start, line1End));
-    spacePixel->tail().tail().makeLineShape(Line(line2Start, line2End));
-    spacePixel->tail().tail().makeLineShape(Line(line3Start, line3End));
-    spacePixel->tail().tail().makeLineShape(Line(line4Start, line4End));
-    spacePixel->tail().tail().makeLineShape(Line(line5Start, line5End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
+    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
     std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
     shapeGraphs->convertDrawingToAxial(0, "Test axial", (*spacePixel));
