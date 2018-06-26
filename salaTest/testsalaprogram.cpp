@@ -108,8 +108,8 @@ TEST_CASE("Trivial errors") {
     SECTION("simple for with error: i should be uninitialised") {
         script << "x = 0\n"
                << "for i in range(5,10):\n"
-               << "    x = i\n"
-               << "i\n";
+               << "    x = 1\n"
+               << "x = x + i\n";
     }
 
     SalaGrf graph;
