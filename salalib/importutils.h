@@ -23,8 +23,8 @@
 
 namespace depthmapX {
     bool importFile(MetaGraph &mgraph, std::istream &stream, Communicator *communicator, std::string name, ImportType mapType, ImportFileType fileType);
-    bool importTxt(ShapeMap &shapeMap, istream &stream, char delimiter);
-    depthmapX::Table csvToTable(istream &stream, char delimiter);
+    bool importTxt(ShapeMap &shapeMap, std::istream &stream, char delimiter);
+    depthmapX::Table csvToTable(std::istream &stream, char delimiter);
     std::vector<Line> extractLines(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col);
     std::map<int, Line> extractLinesWithRef(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col, ColumnData &refcol);
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y);

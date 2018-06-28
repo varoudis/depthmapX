@@ -117,7 +117,7 @@ void AttributeTable::setDisplayColumn(int col, bool override) const
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-bool AttributeTable::read( ifstream& stream, int version )
+bool AttributeTable::read( std::ifstream& stream, int version )
 {
    if (version >= VERSION_MAP_LAYERS) {
       m_layers.clear();
@@ -186,7 +186,7 @@ void AttributeColumn::reset()
    m_visible_tot = 0.0;
 }
 
-bool AttributeColumn::read( ifstream& stream, int version )
+bool AttributeColumn::read( std::ifstream& stream, int version )
 {
    m_updated = false;
    m_name = dXstring440::readString(stream);
@@ -331,7 +331,7 @@ int AttributeIndex::makeIndex(const AttributeTable& table, int col, bool setdisp
    return viscount;
 }
 
-bool AttributeTable::write( ostream& stream, int version )
+bool AttributeTable::write( std::ostream& stream, int version )
 {
 
    stream.write((char *)&m_available_layers,sizeof(int64));
@@ -362,7 +362,7 @@ bool AttributeTable::write( ostream& stream, int version )
    return true;
 }
 
-bool AttributeColumn::write( ostream& stream, int version )
+bool AttributeColumn::write( std::ostream& stream, int version )
 {
    m_updated = false;
    dXstring440::writeString(stream, m_name);

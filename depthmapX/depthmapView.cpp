@@ -2378,16 +2378,14 @@ void QDepthmapView::OnEditCopy()
     }
 
    // Copy to Clipboard
-    QPixmap image(0, 0);
+    QPixmap image(width(), height());
     QPainter painter;
     painter.begin(&image);           // paint in picture
 
     Output(&painter, &m_pDoc, false);
     painter.end();                     // painting done
 
-    QImage img = image.toImage();
     QClipboard *clipboard = QApplication::clipboard();
-//	clipboard->setImage(img);
     clipboard->setPixmap(image);
 
 }
@@ -2806,6 +2804,6 @@ void QDepthmapView::OnViewZoomToRegion(QtRegion regionToZoomAt) {
 
     m_centre = regionToZoomAt.getCentre();
     QRect phys_bounds = this->rect();
-       m_unit =  1.1 * __max( regionToZoomAt.width() / double(phys_bounds.width()),
+       m_unit =  1.0 * __max( regionToZoomAt.width() / double(phys_bounds.width()),
                              regionToZoomAt.height() / double(phys_bounds.height()) );
 }

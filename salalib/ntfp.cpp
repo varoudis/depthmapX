@@ -20,8 +20,6 @@
 #include <iostream>
 #include <fstream>
 
-using namespace std;
-
 #include <genlib/paftl.h>
 #include <genlib/p2dpoly.h>
 #include <genlib/comm.h> // for communicator
@@ -97,7 +95,7 @@ Line NtfMap::makeLine(const NtfPoint& a, const NtfPoint& b)
    );
 }
 
-void NtfMap::open(const std::vector<string>& fileset, Communicator *comm)
+void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
 {
    time_t time = 0;
    qtimer( time, 0 );
@@ -116,7 +114,7 @@ void NtfMap::open(const std::vector<string>& fileset, Communicator *comm)
 
    for (size_t i = 0; i < fileset.size(); i++) {
 
-      ifstream stream(fileset[i].c_str());
+      std::ifstream stream(fileset[i].c_str());
 
       int filetype = NTF_UNKNOWN;
 

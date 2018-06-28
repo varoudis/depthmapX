@@ -20,6 +20,7 @@
 #define __SALAPROGRAM_H__
 
 #include "genlib/stringutils.h"
+#include "genlib/paftl.h"
 #include <vector>
 #include <set>
 #include <map>

@@ -120,11 +120,11 @@ public:
 
    prefvec<pvecint> m_keyvertices;       // but still need to return keyvertices here
    int m_keyvertexcount;
-   bool outputMifPolygons(ostream& miffile, ostream& midfile) const;
-   void outputNet(ostream& netfile) const;
-   virtual bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
-   virtual bool write(ostream &stream, int version );
+   bool outputMifPolygons(std::ostream& miffile, std::ostream& midfile) const;
+   void outputNet(std::ostream& netfile) const;
+   virtual bool read( std::ifstream& stream, int version );
+   bool readold( std::ifstream& stream, int version );
+   virtual bool write(std::ostream &stream, int version );
 };
 
 class ShapeGraphs : public ShapeMaps<ShapeGraph>
@@ -138,9 +138,9 @@ public:
    pqvector<RadialLine> m_radial_lines;
    ShapeGraphs() { m_all_line_map = -1; }
    virtual ~ShapeGraphs() {;}
-   bool read( ifstream& stream, int version );
-   bool readold( ifstream& stream, int version );
-   bool write( ostream& stream, int version, bool displayedmaponly = false );
+   bool read( std::ifstream& stream, int version );
+   bool readold( std::ifstream& stream, int version );
+   bool write( std::ostream& stream, int version, bool displayedmaponly = false );
 };
 
 }

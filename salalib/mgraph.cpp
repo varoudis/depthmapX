@@ -486,9 +486,9 @@ int MetaGraph::makeIsovist(Communicator *communicator, const Point2f& p, double 
    return retvar;
 }
 
-static pair<double,double> startendangle( Point2f vec, double fov)
+static std::pair<double,double> startendangle( Point2f vec, double fov)
 {
-   pair<double,double> angles;
+   std::pair<double,double> angles;
    // n.b. you must normalise this before getting the angle!
    vec.normalise();
    angles.first = vec.angle() - fov / 2.0;
@@ -546,7 +546,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
             // now make an isovist:
             Isovist iso;
             // 
-            pair<double,double> angles;
+            std::pair<double,double> angles;
             angles.first = 0.0;
             angles.second = 0.0;
             //
@@ -1066,7 +1066,7 @@ bool MetaGraph::convertAxialToSegment(Communicator *comm, std::string layer_name
    return retvar;
 }
 
-int MetaGraph::loadMifMap(Communicator *comm, istream& miffile, istream& midfile)
+int MetaGraph::loadMifMap(Communicator *comm, std::istream& miffile, std::istream& midfile)
 {
    int oldstate = m_state;
    m_state &= ~DATAMAPS;
@@ -1324,7 +1324,7 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    return 1;
 }
 
-int MetaGraph::loadCat( istream& stream, Communicator *communicator )
+int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
 {
    if (communicator) {
       long size = communicator->GetInfileSize();
@@ -1392,7 +1392,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
    // in MSVC 6, ios::eof remains set and it needs to be cleared.
    // in MSVC 8 it's even worse: it won't even seekg until eof flag has been cleared
    stream.clear();
-   stream.seekg(0, ios::beg);
+   stream.seekg(0, std::ios::beg);
 
    parsing = 0;
    first = true;
@@ -1455,7 +1455,7 @@ int MetaGraph::loadCat( istream& stream, Communicator *communicator )
    return 1;
 }
 
-int MetaGraph::loadRT1(const std::vector<string>& fileset, Communicator *communicator)
+int MetaGraph::loadRT1(const std::vector<std::string>& fileset, Communicator *communicator)
 {
    TigerMap map;
 
@@ -2074,9 +2074,9 @@ int MetaGraph::readFromFile( const std::string& filename )
     }
 
  #ifdef _WIN32
-    ifstream stream( filename.c_str(), ios::binary | ios::in );
+    std::ifstream stream( filename.c_str(), std::ios::binary | std::ios::in );
  #else
-    ifstream stream( filename.c_str(), ios::in );
+    std::ifstream stream( filename.c_str(), std::ios::in );
  #endif
     int result = readFromStream(stream, filename);
     stream.close();
@@ -2243,7 +2243,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
 
 int MetaGraph::write( const std::string& filename, int version, bool currentlayer )
 {
-   ofstream stream;
+   std::ofstream stream;
 
    int oldstate = m_state;
    m_state = 0;   // <- temporarily clear out state, avoids any potential read / write errors
@@ -2251,7 +2251,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
    char type;
 
    // As of MetaGraph version 70 the disk caching has been removed
-   stream.open( filename.c_str(), ios::binary | ios::out | ios::trunc );
+   stream.open( filename.c_str(), std::ios::binary | std::ios::out | std::ios::trunc );
    if (stream.fail()) {
       if (stream.rdbuf()->is_open()) {
          stream.close();
@@ -2337,7 +2337,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
 }
 
 
-streampos MetaGraph::skipVirtualMem(istream& stream, int version)
+std::streampos MetaGraph::skipVirtualMem(std::istream& stream, int version)
 {
    // it's graph virtual memory: skip it
    int nodes = -1;
@@ -2349,7 +2349,7 @@ streampos MetaGraph::skipVirtualMem(istream& stream, int version)
       int connections;
       stream.read( (char *) &connections, sizeof(connections) );
       // This relies on the pvecint storage... hope it don't change!
-      stream.seekg( stream.tellg() + streamoff(connections * sizeof(connections)) );
+      stream.seekg( stream.tellg() + std::streamoff(connections * sizeof(connections)) );
    }
    return (stream.tellg());
 }
@@ -2390,7 +2390,7 @@ int MetaGraph::addNewPointMap(const std::string& name)
    return m_pointMaps.size() - 1;
 }
 
-bool MetaGraph::readPointMaps(istream& stream, int version)
+bool MetaGraph::readPointMaps(std::istream& stream, int version)
 {
    stream.read((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
    int count;
@@ -2403,7 +2403,7 @@ bool MetaGraph::readPointMaps(istream& stream, int version)
    return true;
 }
 
-bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmaponly)
+bool MetaGraph::writePointMaps(std::ofstream& stream, int version, bool displayedmaponly)
 {
    if (!displayedmaponly) {
       stream.write((char *) &m_displayed_pointmap, sizeof(m_displayed_pointmap));
@@ -2427,7 +2427,7 @@ bool MetaGraph::writePointMaps(ofstream& stream, int version, bool displayedmapo
    return true;
 }
 
-bool MetaGraph::readDataMaps(istream& stream, int version )
+bool MetaGraph::readDataMaps(std::istream& stream, int version )
 {
     m_dataMaps.clear(); // empty existing data
     // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
@@ -2446,7 +2446,7 @@ bool MetaGraph::readDataMaps(istream& stream, int version )
     return true;
 }
 
-bool MetaGraph::writeDataMaps( ofstream& stream, int version, bool displayedmaponly )
+bool MetaGraph::writeDataMaps( std::ofstream& stream, int version, bool displayedmaponly )
 {
    if (!displayedmaponly) {
       // n.b. -- do not change to size_t as will cause 32-bit to 64-bit conversion problems
