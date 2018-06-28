@@ -88,7 +88,7 @@ TEST_CASE("Test MetaGraph construction", "")
     }
 
     // construct a sample pointMap
-    PointMap pointMap("Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
 }
 
 TEST_CASE("Test grid filling", "")
@@ -118,12 +118,12 @@ TEST_CASE("Test grid filling", "")
     }
 
     // construct a sample pointMap
-    PointMap pointMap("Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
 
     // set the grid
 
     // create the grid with bounds as set above
-    bool gridIsSet = pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
 
     // check if the grid was set
     REQUIRE(gridIsSet);
@@ -148,7 +148,7 @@ TEST_CASE("Test grid filling", "")
         // at the centre of a central cell
         Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
                          gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
-        bool pointsMade = pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+        bool pointsMade = pointMap.makePoints(midPoint, fill_type);
         REQUIRE(pointsMade);
 
     }
@@ -161,7 +161,7 @@ TEST_CASE("Test grid filling", "")
         // at the edge of a central cell
         Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5)),
                          gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5)));
-        bool pointsMade = pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+        bool pointsMade = pointMap.makePoints(midPoint, fill_type);
         REQUIRE(pointsMade);
     }
 }
@@ -276,8 +276,8 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap("Test PointMap");
-    bool gridIsSet = pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
 
     int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing - 0.5)) + 1;
     int bottomLeftPixelIndexY = int(floor(bottomLeft.y / spacing - 0.5)) + 1;
@@ -304,7 +304,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     int fill_type = 0; // = QDepthmapView::FULLFILL
 
-    bool pointsMade = pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+    bool pointsMade = pointMap.makePoints(midPoint, fill_type);
 
     // check if the grid is filled
     REQUIRE(pointsMade);
@@ -338,7 +338,7 @@ TEST_CASE("PointMap copy, assign and add to vector")
     metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
     metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
                          metaGraph->m_drawingLayers.back().m_region.top_right);
-    PointMap pointMap("Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
@@ -346,16 +346,16 @@ TEST_CASE("PointMap copy, assign and add to vector")
                      gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
 
     int fill_type = 0; // = QDepthmapView::FULLFILL
-    bool gridIsSet = pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
 
-    bool pointsMade = pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+    bool pointsMade = pointMap.makePoints(midPoint, fill_type);
 
     bool boundaryGraph = false;
     double maxDist = -1;
     // a communicator is required in order to create the connections between the pixels
     std::unique_ptr<Communicator> comm(new ICommunicator());
 
-    bool graphMade = pointMap.sparkGraph2(comm.get(), metaGraph->m_drawingLayers, boundaryGraph, maxDist);
+    bool graphMade = pointMap.sparkGraph2(comm.get(), boundaryGraph, maxDist);
 
     REQUIRE(graphMade);
 
@@ -363,7 +363,7 @@ TEST_CASE("PointMap copy, assign and add to vector")
     pointmaps.push_back(pointMap);
     REQUIRE(pointmaps.size() == 1);
 
-    PointMap assignedPointMap("Assigned PointMap");
+    PointMap assignedPointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Assigned PointMap");
     REQUIRE(assignedPointMap.getName() == "Assigned PointMap");
 
     assignedPointMap = pointMap;
@@ -405,7 +405,7 @@ TEST_CASE("Test PointMap connections output", "")
     metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
     metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
                          metaGraph->m_drawingLayers.back().m_region.top_right);
-    PointMap pointMap("Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
@@ -413,16 +413,16 @@ TEST_CASE("Test PointMap connections output", "")
                      gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
 
     int fill_type = 0; // = QDepthmapView::FULLFILL
-    bool gridIsSet = pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
 
-    bool pointsMade = pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+    bool pointsMade = pointMap.makePoints(midPoint, fill_type);
 
     bool boundaryGraph = false;
     double maxDist = -1;
     // a communicator is required in order to create the connections between the pixels
     std::unique_ptr<Communicator> comm(new ICommunicator());
 
-    bool graphMade = pointMap.sparkGraph2(comm.get(), metaGraph->m_drawingLayers, boundaryGraph, maxDist);
+    bool graphMade = pointMap.sparkGraph2(comm.get(), boundaryGraph, maxDist);
 
     REQUIRE(graphMade);
 
@@ -528,12 +528,12 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap("Test PointMap");
-    pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    pointMap.setGrid(spacing, offset);
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
                          gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
-    pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+    pointMap.makePoints(midPoint, fill_type);
 
     std::vector<Line> mergeLines;
 

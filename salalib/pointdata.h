@@ -86,6 +86,8 @@ private:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
+   const QtRegion* m_parentRegion;
+   const std::vector<SpacePixelFile>* m_drawingLayers;
    std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
@@ -102,7 +104,7 @@ protected:
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
-   PointMap(const std::string& name = std::string("VGA Map"));
+   PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingLayers, const std::string& name = std::string("VGA Map"));
    const std::string& getName() const
    { return m_name; }
 
@@ -111,7 +113,7 @@ public:
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
    Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
-   bool setGrid(const QtRegion &bounds, double spacing, const Point2f& offset = Point2f());
+   bool setGrid(double spacing, const Point2f& offset = Point2f());
    std::vector<std::pair<PixelRef, PixelRef>> getMergedPixelPairs()
    {
        // unnecessary converter until the m_merge_lines variable is
@@ -126,13 +128,13 @@ public:
    bool isProcessed() const
    { return m_processed; }
    void fillLine(const Line& li);
-   bool blockLines(const std::vector<SpacePixelFile> &drawingLayers);
+   bool blockLines();
    void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    bool fillPoint(const Point2f& p, bool add = true); // use add = false for remove point
    //bool blockPoint(const Point2f& p, bool add = true); // no longer used
    //
-   bool makePoints(const std::vector<SpacePixelFile> &drawingLayers, const Point2f& seed, int fill_type, Communicator *comm = NULL); // Point2f non-reference deliberate
+   bool makePoints(const Point2f& seed, int fill_type, Communicator *comm = nullptr); // Point2f non-reference deliberate
    bool clearPoints();  // Clear *selected* points
    bool undoPoints();
    bool canUndo() const
@@ -140,7 +142,7 @@ public:
    void outputPoints(std::ostream& stream, char delim );
    void outputMergeLines(std::ostream& stream, char delim);
    int  tagState(bool settag, bool sparkgraph = false);
-   bool sparkGraph2(Communicator *comm, const std::vector<SpacePixelFile> &drawingLayers, bool boundarygraph, double maxdist );
+   bool sparkGraph2(Communicator *comm, bool boundarygraph, double maxdist );
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
    bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);

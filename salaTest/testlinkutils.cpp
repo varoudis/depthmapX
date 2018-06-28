@@ -28,12 +28,12 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap("Test PointMap");
-    pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    pointMap.setGrid(spacing, offset);
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
                          gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
-    pointMap.makePoints(metaGraph->m_drawingLayers, midPoint, fill_type);
+    pointMap.makePoints(midPoint, fill_type);
 
     std::vector<Line> mergeLines;
 
@@ -208,13 +208,13 @@ TEST_CASE("Test linking - half filled grid", "")
     metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
                          metaGraph->m_drawingLayers.back().m_region.top_right);
 
-    PointMap pointMap("Test PointMap");
-    pointMap.setGrid(metaGraph->getRegion(), spacing, offset);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    pointMap.setGrid(spacing, offset);
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f gridTopRight = pointMap.getRegion().top_right;
     Point2f topLeftFillPoint(gridBottomLeft.x+spacing, gridTopRight.y-spacing);
-    pointMap.makePoints(metaGraph->m_drawingLayers, topLeftFillPoint, fill_type);
+    pointMap.makePoints(topLeftFillPoint, fill_type);
 
     std::vector<Line> mergeLines;
 
