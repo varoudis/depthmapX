@@ -30,19 +30,19 @@ TEST_CASE("Test getVisibleLines", "")
     Point2f hiddenLineEnd(3,5);
 
     // push a SpacePixelFile in the MetaGraph
-    mgraph->m_drawingLayers.emplace_back("Test SpacePixelFile");
+    mgraph->m_drawingFiles.emplace_back("Test SpacePixelFile");
 
     // push a ShapeMap in the SpacePixelFile
-    mgraph->m_drawingLayers.back().m_spacePixels.emplace_back("Visible ShapeMap");
+    mgraph->m_drawingFiles.back().m_spacePixels.emplace_back("Visible ShapeMap");
 
     // add a line to the first ShapeMap
-    mgraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(visibleLineStart, visibleLineEnd));
+    mgraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(visibleLineStart, visibleLineEnd));
 
     // push a ShapeMap in the SpacePixelFile
-    mgraph->m_drawingLayers.back().m_spacePixels.emplace_back("Hidden ShapeMap");
+    mgraph->m_drawingFiles.back().m_spacePixels.emplace_back("Hidden ShapeMap");
 
     // add a line to the second ShapeMap
-    mgraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(hiddenLineStart, hiddenLineEnd));
+    mgraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(hiddenLineStart, hiddenLineEnd));
 
     SECTION( "Get visible lines when none is hidden" )
     {
@@ -64,7 +64,7 @@ TEST_CASE("Test getVisibleLines", "")
     SECTION( "Get visible lines when some are hidden" )
     {
         // now hide the second SpacePixelFile
-        mgraph->m_drawingLayers.back().m_spacePixels.back().setShow(false);
+        mgraph->m_drawingFiles.back().m_spacePixels.back().setShow(false);
 
         const std::vector<SimpleLine>& visibleLines = mgraph->getVisibleDrawingLines();
 

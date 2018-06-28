@@ -1218,7 +1218,7 @@ bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<Rad
 
 // convert line layers to an axial map
 
-int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1233,7 +1233,7 @@ int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& na
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (const auto& pixelGroup: drawingLayers) {
+   for (const auto& pixelGroup: drawingFiles) {
       int j = 0;
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          if (pixel.isShown()) {
@@ -1409,7 +1409,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
 // yet more conversions, this time polygons to shape elements
 
-int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles)
 {
    QtRegion region;
    pvecint polygon_refs;
@@ -1421,7 +1421,7 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
    size_t count = 0;
    size_t i = 0;
 
-   for (const auto& pixelGroup: drawingLayers) {
+   for (const auto& pixelGroup: drawingFiles) {
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          if (pixel.isShown()) {
              auto refShapes = pixel.getAllShapes();
@@ -1442,7 +1442,7 @@ int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& n
       return -1;
    }
 
-   for (const auto& pixelGroup: drawingLayers) {
+   for (const auto& pixelGroup: drawingFiles) {
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          pixel.setShow(false);
       }
@@ -1513,7 +1513,7 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name
 
 // create segment map directly from line layers
 
-int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1528,7 +1528,7 @@ int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& 
 
    // add all visible layers to the set of polygon lines...
    int count = 0;
-   for (const auto& pixelGroup: drawingLayers) {
+   for (const auto& pixelGroup: drawingFiles) {
        int j = 0;
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          if (pixel.isShown()) {

@@ -37,8 +37,8 @@
 
 /////////////////////////////////////////////////////////////////////////////////
 
-PointMap::PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingLayers, const std::string& name):
-    m_parentRegion(&parentRegion), m_drawingLayers(&drawingLayers)
+PointMap::PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles, const std::string& name):
+    m_parentRegion(&parentRegion), m_drawingFiles(&drawingFiles)
 {
    m_name = name;
 
@@ -274,7 +274,7 @@ bool PointMap::blockLines()
    // would require a key with (file, layer, shaperef, seg) when used with shaperef,
    // so just switched to an integer key:
 
-   for (const auto& pixelGroup: *m_drawingLayers) {
+   for (const auto& pixelGroup: *m_drawingFiles) {
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
          if (pixel.isShown()) {

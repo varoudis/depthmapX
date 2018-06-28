@@ -56,18 +56,18 @@ private:
     QtRegion m_region;  // easier public for now
     std::string m_name;
 public:
-   std::vector<SpacePixelFile> m_drawingLayers;
+   std::vector<SpacePixelFile> m_drawingFiles;
    const QtRegion& getRegion() { return m_region; }
    void setRegion(Point2f& bottomLeft, Point2f& topRight)
       { m_region.bottom_left = bottomLeft; m_region.top_right = topRight; }
    bool isShown() const
-      { for (size_t i = 0; i < m_drawingLayers.size(); i++) if (m_drawingLayers[i].isShown()) return true; return false; }
+      { for (size_t i = 0; i < m_drawingFiles.size(); i++) if (m_drawingFiles[i].isShown()) return true; return false; }
 
    // TODO: drawing state functions/fields that should be eventually removed
    void makeViewportShapes( const QtRegion& viewport ) const;
    bool findNextShape(bool& nextlayer) const;
    const SalaShape& getNextShape() const
-      { return m_drawingLayers[m_current_layer].getNextShape(); }
+      { return m_drawingFiles[m_current_layer].getNextShape(); }
    mutable int m_current_layer;
 
    enum { ADD = 0x0001, REPLACE = 0x0002, CAT = 0x0010, DXF = 0x0020, NTF = 0x0040, RT1 = 0x0080, GML = 0x0100 };
@@ -253,18 +253,18 @@ public:
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
 
    int getLineFileCount() const
-      { return (int) m_drawingLayers.size(); }
+      { return (int) m_drawingFiles.size(); }
 
    // Quick mod - TV
    const std::string& getLineFileName(int file) const
-      { return m_drawingLayers[file].getName(); }
+      { return m_drawingFiles[file].getName(); }
    int getLineLayerCount(int file) const
-      { return (int) m_drawingLayers[file].m_spacePixels.size(); }
+      { return (int) m_drawingFiles[file].m_spacePixels.size(); }
 
    ShapeMap& getLineLayer(int file, int layer)
-      { return m_drawingLayers[file].m_spacePixels[layer]; }
+      { return m_drawingFiles[file].m_spacePixels[layer]; }
    const ShapeMap& getLineLayer(int file, int layer) const
-      { return m_drawingLayers[file].m_spacePixels[layer]; }
+      { return m_drawingFiles[file].m_spacePixels[layer]; }
    //
    // Some error handling -- the idea is that you catch the error in MetaGraph,
    // return a generic error code and then get your front end to interrogate the 

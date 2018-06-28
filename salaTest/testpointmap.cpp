@@ -52,33 +52,33 @@ TEST_CASE("Test MetaGraph construction", "")
         Point2f topRight(std::max(lineStart.x,lineEnd.x),std::max(lineStart.y,lineEnd.y));
 
         // push a SpacePixelFile in the MetaGraph
-        metaGraph->m_drawingLayers.emplace_back("Test MetaGraph");
+        metaGraph->m_drawingFiles.emplace_back("Test MetaGraph");
 
         // push a ShapeMap in the SpacePixelFile
-        metaGraph->m_drawingLayers.back().m_spacePixels.emplace_back("Test ShapeMap");
+        metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
 
         // add a line to the ShapeMap
-        metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
+        metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
 
         // check if the ShapeMap bounds are set correctly
-        REQUIRE(metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
         // MetaGraph and SpacePixelFile do not automatically grow
         // their region when new shapemaps/files are added to them
         // therefore we have to do this externally
-        metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
+        metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
 
         // check if the SpacePixelFile bounds are set correctly
-        REQUIRE(metaGraph->m_drawingLayers.back().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(metaGraph->m_drawingLayers.back().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
-        metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
-                             metaGraph->m_drawingLayers.back().m_region.top_right);
+        metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                             metaGraph->m_drawingFiles.back().m_region.top_right);
 
         // check if the MetaGraph bounds are set correctly
         REQUIRE(metaGraph->getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
@@ -88,7 +88,7 @@ TEST_CASE("Test MetaGraph construction", "")
     }
 
     // construct a sample pointMap
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 }
 
 TEST_CASE("Test grid filling", "")
@@ -118,7 +118,7 @@ TEST_CASE("Test grid filling", "")
     }
 
     // construct a sample pointMap
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
     // set the grid
 
@@ -276,7 +276,7 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     bool gridIsSet = pointMap.setGrid(spacing, offset);
 
     int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing - 0.5)) + 1;
@@ -329,16 +329,16 @@ TEST_CASE("PointMap copy, assign and add to vector")
     Point2f line3Start(rectSize,0);
     Point2f line3End(0,0);
 
-    metaGraph->m_drawingLayers.emplace_back("Test SpacePixelGroup");
-    metaGraph->m_drawingLayers.back().m_spacePixels.emplace_back("Test ShapeMap");
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
-    metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
-    metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
-                         metaGraph->m_drawingLayers.back().m_region.top_right);
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
+    metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                         metaGraph->m_drawingFiles.back().m_region.top_right);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
@@ -363,7 +363,7 @@ TEST_CASE("PointMap copy, assign and add to vector")
     pointmaps.push_back(pointMap);
     REQUIRE(pointmaps.size() == 1);
 
-    PointMap assignedPointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Assigned PointMap");
+    PointMap assignedPointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Assigned PointMap");
     REQUIRE(assignedPointMap.getName() == "Assigned PointMap");
 
     assignedPointMap = pointMap;
@@ -396,16 +396,16 @@ TEST_CASE("Test PointMap connections output", "")
     Point2f line3Start(rectSize,0);
     Point2f line3End(0,0);
 
-    metaGraph->m_drawingLayers.emplace_back("Test SpacePixelGroup");
-    metaGraph->m_drawingLayers.back().m_spacePixels.emplace_back("Test ShapeMap");
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
-    metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
-    metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
-                         metaGraph->m_drawingLayers.back().m_region.top_right);
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
+    metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                         metaGraph->m_drawingFiles.back().m_region.top_right);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
@@ -528,7 +528,7 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     pointMap.setGrid(spacing, offset);
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),

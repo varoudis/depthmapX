@@ -160,17 +160,17 @@ TEST_CASE("Shapemap scripts") {
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test SuperSpacePixel"));
 
-    metaGraph->m_drawingLayers.push_back(SpacePixelFile("Test SpacePixelGroup"));
-    metaGraph->m_drawingLayers.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
+    metaGraph->m_drawingFiles.push_back(SpacePixelFile("Test SpacePixelGroup"));
+    metaGraph->m_drawingFiles.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
 
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
     std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingLayers);
+    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
     ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
 
 
@@ -261,17 +261,17 @@ TEST_CASE("Shapemap scripts with unexpected results") {
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test SuperSpacePixel"));
 
-    metaGraph->m_drawingLayers.push_back(SpacePixelFile("Test SpacePixelGroup"));
-    metaGraph->m_drawingLayers.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
+    metaGraph->m_drawingFiles.push_back(SpacePixelFile("Test SpacePixelGroup"));
+    metaGraph->m_drawingFiles.back().m_spacePixels.push_back(ShapeMap("Test ShapeMap"));
 
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
     std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingLayers);
+    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
     ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
 
 

@@ -87,7 +87,7 @@ private:
 protected:
    std::string m_name;
    const QtRegion* m_parentRegion;
-   const std::vector<SpacePixelFile>* m_drawingLayers;
+   const std::vector<SpacePixelFile>* m_drawingFiles;
    std::vector<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
@@ -104,7 +104,7 @@ protected:
    // The attributes table replaces AttrHeader / AttrRow data format
    AttributeTable m_attributes;
 public:
-   PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingLayers, const std::string& name = std::string("VGA Map"));
+   PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles, const std::string& name = std::string("VGA Map"));
    const std::string& getName() const
    { return m_name; }
 

@@ -607,7 +607,7 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
    }
 
    std::vector<TaggedLine> partitionlines;
-   for (const auto& pixelGroup: m_drawingLayers) {
+   for (const auto& pixelGroup: m_drawingFiles) {
       for (const auto& pixel: pixelGroup.m_spacePixels) {
          // chooses the first editable layer it can find:
          if (pixel.isShown()) {
@@ -723,7 +723,7 @@ bool MetaGraph::convertDrawingToAxial(Communicator *comm, std::string layer_name
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDrawingToAxial( comm, layer_name, m_drawingLayers );
+      int mapref = m_shape_graphs.convertDrawingToAxial( comm, layer_name, m_drawingFiles );
       if (mapref != -1) {
          retvar = true;
       }
@@ -789,7 +789,7 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
    try {
       int mapref;
       if (typeflag == -1) {
-         mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, m_drawingLayers );
+         mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, m_drawingFiles );
       }
       else {
          mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) );
@@ -828,7 +828,7 @@ bool MetaGraph::convertDrawingToSegment(Communicator *comm, std::string layer_na
    bool retvar = false;
    
    try {
-      int mapref = m_shape_graphs.convertDrawingToSegment( comm, layer_name, m_drawingLayers );
+      int mapref = m_shape_graphs.convertDrawingToSegment( comm, layer_name, m_drawingFiles );
       if (mapref != -1) {
          retvar = true;
       }
@@ -907,7 +907,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       if (typeflag == -1) {
          int layercol = destmap.addAttribute("Drawing Layer");
          // add all visible layers to the set of map:
-         for (const auto& pixelGroup: m_drawingLayers) {
+         for (const auto& pixelGroup: m_drawingFiles) {
             int j = 0;
             for (const auto& pixel: pixelGroup.m_spacePixels) {
                if (pixel.isShown()) {
@@ -985,15 +985,15 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
       //
       if (sourcemap->getShapeCount() != 0) {
          // this is very simple: create a new drawing layer, and add the data...
-         auto group = m_drawingLayers.begin();
-         for (; group != m_drawingLayers.end(); ++group) {
+         auto group = m_drawingFiles.begin();
+         for (; group != m_drawingFiles.end(); ++group) {
             if (group->getName() == "Converted Maps") {
                break;
             }
          }
-         if (group == m_drawingLayers.end()) {
-            m_drawingLayers.emplace_back(std::string("Converted Maps"));
-            group = std::prev(m_drawingLayers.end());
+         if (group == m_drawingFiles.end()) {
+            m_drawingFiles.emplace_back(std::string("Converted Maps"));
+            group = std::prev(m_drawingFiles.end());
          }
          group->m_spacePixels.emplace_back(layer_name);
          group->m_spacePixels.back().copy(*sourcemap, ShapeMap::COPY_GEOMETRY);
@@ -1009,7 +1009,7 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
          else {
             group->m_region = runion(group->m_region, sourcemap->getRegion());
          }
-         if (m_drawingLayers.size() == 1) {
+         if (m_drawingFiles.size() == 1) {
             m_region = group->m_region;
          }
          else {
@@ -1111,7 +1111,7 @@ bool MetaGraph::makeAllLineMap( Communicator *communicator, const Point2f& seed 
    bool retvar = false;
 
    try {
-      retvar = m_shape_graphs.makeAllLineMap( communicator, m_drawingLayers, seed );
+      retvar = m_shape_graphs.makeAllLineMap( communicator, m_drawingFiles, seed );
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1251,10 +1251,10 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    m_bsp_tree = false;
 
    if (load_type & REPLACE) {
-      m_drawingLayers.clear();
+      m_drawingFiles.clear();
    }
 
-   m_drawingLayers.emplace_back(communicator->GetMBInfileName());
+   m_drawingFiles.emplace_back(communicator->GetMBInfileName());
 
    if (load_type & CAT) {
       // separate the stream and the communicator, allowing non-file streams read
@@ -1278,45 +1278,45 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
          map.open(communicator->GetFileSet(), communicator);
       }
       catch (Communicator::CancelledException) {
-         m_drawingLayers.pop_back();
+         m_drawingFiles.pop_back();
          return 0;
       }
       catch (pexception) {
-         m_drawingLayers.pop_back();
+         m_drawingFiles.pop_back();
          return -1;
       }
 
       if (communicator->IsCancelled()) {
-         m_drawingLayers.pop_back();
+         m_drawingFiles.pop_back();
          return 0;
       }
 
-      m_drawingLayers.back().m_region = map.getRegion();;
+      m_drawingFiles.back().m_region = map.getRegion();;
 
       for (size_t i = 0; i < map.size(); i++) {
 
-         m_drawingLayers.back().m_spacePixels.emplace_back(map[i].getName());
-         m_drawingLayers.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
+         m_drawingFiles.back().m_spacePixels.emplace_back(map[i].getName());
+         m_drawingFiles.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
 
          for (size_t j = 0; j < map[i].size(); j++) {
 
             for (size_t k = 0; k < map[i][j].size(); k++) {
 
-               m_drawingLayers.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
+               m_drawingFiles.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
             }
          }
 
          // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
-         m_drawingLayers.back().m_spacePixels[i].setDisplayedAttribute(-2);
-         m_drawingLayers.back().m_spacePixels[i].setDisplayedAttribute(-1);
+         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-2);
+         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-1);
       }
    }
 
-   if (m_drawingLayers.size() == 1) {
-      m_region = m_drawingLayers.back().m_region;
+   if (m_drawingFiles.size() == 1) {
+      m_region = m_drawingFiles.back().m_region;
    }
    else {
-      m_region = runion(m_region, m_drawingLayers.back().m_region);
+      m_region = runion(m_region, m_drawingFiles.back().m_region);
    }
 
    m_state |= LINEDATA;
@@ -1385,9 +1385,9 @@ int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
          }
       }
    }
-   m_drawingLayers.back().m_region = QtRegion(min_point, max_point);
-   m_drawingLayers.back().m_spacePixels.emplace_back();
-   m_drawingLayers.back().m_spacePixels.back().init( numlines, QtRegion(min_point, max_point) );
+   m_drawingFiles.back().m_region = QtRegion(min_point, max_point);
+   m_drawingFiles.back().m_spacePixels.emplace_back();
+   m_drawingFiles.back().m_spacePixels.back().init( numlines, QtRegion(min_point, max_point) );
 
    // in MSVC 6, ios::eof remains set and it needs to be cleared.
    // in MSVC 8 it's even worse: it won't even seekg until eof flag has been cleared
@@ -1417,14 +1417,14 @@ int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
          else if (dXstring::toLower(inputline).substr(0,3) == "end") {
             if (points.size() > 2) {
                if (parsing == 1) { // polygon
-                  m_drawingLayers.back().m_spacePixels.back().makePolyShape(points, false);
+                  m_drawingFiles.back().m_spacePixels.back().makePolyShape(points, false);
                }
                else { // polyline
-                  m_drawingLayers.back().m_spacePixels.back().makePolyShape(points, true);
+                  m_drawingFiles.back().m_spacePixels.back().makePolyShape(points, true);
                }
             }
             else if (points.size() == 2) {
-               m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(points[0],points[1]));
+               m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(points[0],points[1]));
             }
             points.clear();
             parsing = 0;
@@ -1449,8 +1449,8 @@ int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
       }
    }
 
-   m_drawingLayers.back().m_spacePixels.back().setDisplayedAttribute(-2);
-   m_drawingLayers.back().m_spacePixels.back().setDisplayedAttribute(-1);
+   m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-2);
+   m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-1);
 
    return 1;
 }
@@ -1463,20 +1463,20 @@ int MetaGraph::loadRT1(const std::vector<std::string>& fileset, Communicator *co
       map.parse( fileset, communicator );
    }
    catch (Communicator::CancelledException) {
-      m_drawingLayers.pop_back();
+      m_drawingFiles.pop_back();
       return 0;
    }
    catch (pexception) {
-      m_drawingLayers.pop_back();
+      m_drawingFiles.pop_back();
       return -1;
    }
 
    if (communicator->IsCancelled()) {
-      m_drawingLayers.pop_back();
+      m_drawingFiles.pop_back();
       return 0;
    }
 
-   m_drawingLayers.back().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
+   m_drawingFiles.back().m_region = QtRegion(map.getBottomLeft(), map.getTopRight());
 
    // for each category
    for (auto val: map.m_categories) {
@@ -1493,7 +1493,7 @@ int MetaGraph::loadRT1(const std::vector<std::string>& fileset, Communicator *co
 
       shapeMap.setDisplayedAttribute(-2);
       shapeMap.setDisplayedAttribute(-1);
-      m_drawingLayers.back().m_spacePixels.emplace_back(shapeMap);
+      m_drawingFiles.back().m_spacePixels.emplace_back(shapeMap);
    
    }
 
@@ -1504,8 +1504,8 @@ ShapeMap &MetaGraph::createNewShapeMap(depthmapX::ImportType mapType, std::strin
 
     switch(mapType) {
         case depthmapX::ImportType::DRAWINGMAP: {
-            m_drawingLayers.back().m_spacePixels.emplace_back(name);
-            return m_drawingLayers.back().m_spacePixels.back();
+            m_drawingFiles.back().m_spacePixels.emplace_back(name);
+            return m_drawingFiles.back().m_spacePixels.back();
         }
         case depthmapX::ImportType::DATAMAP: {
             m_dataMaps.emplace_back(name,ShapeMap::DATAMAP);
@@ -1521,8 +1521,8 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
             // go through the files to find if the layer is in one of them
             // if it is, remove it and if the remaining file is empty then
             // remove that too
-            auto pixelGroup = m_drawingLayers.begin();
-            for (; pixelGroup != m_drawingLayers.begin(); ++pixelGroup) {
+            auto pixelGroup = m_drawingFiles.begin();
+            for (; pixelGroup != m_drawingFiles.begin(); ++pixelGroup) {
                 auto mapToRemove = pixelGroup->m_spacePixels.end();
                 auto pixel = pixelGroup->m_spacePixels.begin();
                 for (; pixel != pixelGroup->m_spacePixels.end(); ++pixel) {
@@ -1534,7 +1534,7 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
                 if(mapToRemove != pixelGroup->m_spacePixels.end()) {
                     pixelGroup->m_spacePixels.erase(mapToRemove);
                     if(pixelGroup->m_spacePixels.size() == 0) {
-                        m_drawingLayers.erase(pixelGroup);
+                        m_drawingFiles.erase(pixelGroup);
                     }
                     break;
                 }
@@ -1552,15 +1552,15 @@ void MetaGraph::deleteShapeMap(depthmapX::ImportType mapType, ShapeMap &shapeMap
 }
 
 void MetaGraph::updateParentRegions(ShapeMap &shapeMap) {
-    if(m_drawingLayers.back().m_region.atZero()) {
-        m_drawingLayers.back().m_region = shapeMap.getRegion();
+    if(m_drawingFiles.back().m_region.atZero()) {
+        m_drawingFiles.back().m_region = shapeMap.getRegion();
     } else {
-        m_drawingLayers.back().m_region = runion(m_drawingLayers.back().m_region, shapeMap.getRegion());
+        m_drawingFiles.back().m_region = runion(m_drawingFiles.back().m_region, shapeMap.getRegion());
     }
     if(m_region.atZero()) {
-        m_region = m_drawingLayers.back().m_region;
+        m_region = m_drawingFiles.back().m_region;
     } else {
-        m_region = runion(m_region, m_drawingLayers.back().m_region);
+        m_region = runion(m_region, m_drawingFiles.back().m_region);
     }
 }
 
@@ -2194,8 +2194,8 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
          int count;
          stream.read( (char *) &count, sizeof(count) );
          for (int i = 0; i < count; i++) {
-             m_drawingLayers.emplace_back();
-             m_drawingLayers.back().read(stream,version,true);
+             m_drawingFiles.emplace_back();
+             m_drawingFiles.back().read(stream,version,true);
          }
 
          if (m_name.empty()) {
@@ -2325,9 +2325,9 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
          stream.write( (char *) &m_region, sizeof(m_region) );
 
          // Quick mod - TV
-         int count = m_drawingLayers.size();
+         int count = m_drawingFiles.size();
          stream.write( (char *) &count, sizeof(count) );
-         for (auto& spacePixel: m_drawingLayers) {
+         for (auto& spacePixel: m_drawingFiles) {
             spacePixel.write(stream,version);
          }
       }
@@ -2376,7 +2376,7 @@ std::vector<SimpleLine> MetaGraph::getVisibleDrawingLines() {
 
     std::vector<SimpleLine> lines;
 
-    for (const auto& pixelGroup: m_drawingLayers) {
+    for (const auto& pixelGroup: m_drawingFiles) {
        for (const auto& pixel: pixelGroup.m_spacePixels) {
             if (pixel.isShown()) {
                 const std::vector<SimpleLine> &newLines = pixel.getAllShapesAsLines();
@@ -2402,7 +2402,7 @@ int MetaGraph::addNewPointMap(const std::string& name)
          }
       }
    }
-   m_pointMaps.push_back(PointMap(m_region, m_drawingLayers, myname));
+   m_pointMaps.push_back(PointMap(m_region, m_drawingFiles, myname));
    m_displayed_pointmap = m_pointMaps.size() - 1;
    return m_pointMaps.size() - 1;
 }
@@ -2413,7 +2413,7 @@ bool MetaGraph::readPointMaps(std::istream& stream, int version)
    int count;
    stream.read((char *) &count, sizeof(count));
    for (int i = 0; i < count; i++) {
-      m_pointMaps.push_back(PointMap(m_region, m_drawingLayers));
+      m_pointMaps.push_back(PointMap(m_region, m_drawingFiles));
       m_pointMaps.back().read( stream, version );
    }
    return true;
@@ -2493,10 +2493,10 @@ bool MetaGraph::writeDataMaps( std::ofstream& stream, int version, bool displaye
 void MetaGraph::makeViewportShapes( const QtRegion& viewport ) const
 {
    m_current_layer = -1;
-   for (size_t i = m_drawingLayers.size() - 1; i != paftl::npos; i--) {
-      if (m_drawingLayers[i].isShown()) {
+   for (size_t i = m_drawingFiles.size() - 1; i != paftl::npos; i--) {
+      if (m_drawingFiles[i].isShown()) {
          m_current_layer = (int) i;
-         m_drawingLayers[i].makeViewportShapes( (viewport.atZero() ? m_region : viewport) );
+         m_drawingFiles[i].makeViewportShapes( (viewport.atZero() ? m_region : viewport) );
       }
    }
 }
@@ -2505,9 +2505,9 @@ bool MetaGraph::findNextShape(bool& nextlayer) const
 {
    if (m_current_layer == -1)
       return false;
-   while (!m_drawingLayers[m_current_layer].findNextShape(nextlayer)) {
-      while (++m_current_layer < (int)m_drawingLayers.size() && !m_drawingLayers[m_current_layer].isShown());
-      if (m_current_layer == m_drawingLayers.size()) {
+   while (!m_drawingFiles[m_current_layer].findNextShape(nextlayer)) {
+      while (++m_current_layer < (int)m_drawingFiles.size() && !m_drawingFiles[m_current_layer].isShown());
+      if (m_current_layer == m_drawingFiles.size()) {
          m_current_layer = -1;
          return false;
       }

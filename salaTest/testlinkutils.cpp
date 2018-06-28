@@ -28,7 +28,7 @@ TEST_CASE("Test linking - fully filled grid (no geometry)", "")
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
     metaGraph->setRegion(bottomLeft, topRight);
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     pointMap.setGrid(spacing, offset);
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
@@ -201,14 +201,14 @@ TEST_CASE("Test linking - half filled grid", "")
     Point2f topRight(std::max(lineStart.x,lineEnd.x),std::max(lineStart.y,lineEnd.y));
 
     std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
-    metaGraph->m_drawingLayers.emplace_back("Test SpacePixelGroup");
-    metaGraph->m_drawingLayers.back().m_spacePixels.emplace_back("Test ShapeMap");
-    metaGraph->m_drawingLayers.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
-    metaGraph->m_drawingLayers.back().m_region = metaGraph->m_drawingLayers.back().m_spacePixels.back().getRegion();
-    metaGraph->setRegion(metaGraph->m_drawingLayers.back().m_region.bottom_left,
-                         metaGraph->m_drawingLayers.back().m_region.top_right);
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
+    metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
+    metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                         metaGraph->m_drawingFiles.back().m_region.top_right);
 
-    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingLayers, "Test PointMap");
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     pointMap.setGrid(spacing, offset);
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;

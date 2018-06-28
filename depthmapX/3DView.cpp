@@ -363,7 +363,7 @@ void Q3DView::ReloadLineData()
       std::unique_lock<std::mutex> drawLock(m_draw_mutex);
 
       prefvec<Line> lines;
-      for (const auto& pixelGroup: pDoc->m_meta_graph->m_drawingLayers) {
+      for (const auto& pixelGroup: pDoc->m_meta_graph->m_drawingFiles) {
          for (const auto& pixel: pixelGroup.m_spacePixels) {
             if (pixel.isShown()) {
                if (m_region.atZero()) {
