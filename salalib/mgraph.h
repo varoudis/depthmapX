@@ -56,7 +56,7 @@ private:
     QtRegion m_region;  // easier public for now
     std::string m_name;
 public:
-   std::deque<SpacePixelFile> m_drawingLayers;
+   std::vector<SpacePixelFile> m_drawingLayers;
    const QtRegion& getRegion() { return m_region; }
    void setRegion(Point2f& bottomLeft, Point2f& topRight)
       { m_region.bottom_left = bottomLeft; m_region.top_right = topRight; }

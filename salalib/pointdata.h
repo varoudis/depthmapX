@@ -126,13 +126,13 @@ public:
    bool isProcessed() const
    { return m_processed; }
    void fillLine(const Line& li);
-   bool blockLines(const std::deque<SpacePixelFile> &drawingLayers);
+   bool blockLines(const std::vector<SpacePixelFile> &drawingLayers);
    void blockLine(const Line& li);
    void unblockLines(bool clearblockedflag = true);
    bool fillPoint(const Point2f& p, bool add = true); // use add = false for remove point
    //bool blockPoint(const Point2f& p, bool add = true); // no longer used
    //
-   bool makePoints(const std::deque<SpacePixelFile> &drawingLayers, const Point2f& seed, int fill_type, Communicator *comm = NULL); // Point2f non-reference deliberate
+   bool makePoints(const std::vector<SpacePixelFile> &drawingLayers, const Point2f& seed, int fill_type, Communicator *comm = NULL); // Point2f non-reference deliberate
    bool clearPoints();  // Clear *selected* points
    bool undoPoints();
    bool canUndo() const
@@ -140,7 +140,7 @@ public:
    void outputPoints(std::ostream& stream, char delim );
    void outputMergeLines(std::ostream& stream, char delim);
    int  tagState(bool settag, bool sparkgraph = false);
-   bool sparkGraph2(Communicator *comm, const std::deque<SpacePixelFile> &drawingLayers, bool boundarygraph, double maxdist );
+   bool sparkGraph2(Communicator *comm, const std::vector<SpacePixelFile> &drawingLayers, bool boundarygraph, double maxdist );
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
    bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);

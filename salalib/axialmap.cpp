@@ -593,7 +593,7 @@ bool RadialLine::cuts(const Line& l) const
 
 // for this to work, your polygons should not intersect each other!
 
-bool ShapeGraphs::makeAllLineMap(Communicator *comm, std::deque<SpacePixelFile> &drawingLayers, const Point2f& seed)
+bool ShapeGraphs::makeAllLineMap(Communicator *comm, std::vector<SpacePixelFile> &drawingLayers, const Point2f& seed)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 3 );
@@ -1218,7 +1218,7 @@ bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<Rad
 
 // convert line layers to an axial map
 
-int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& name, std::deque<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToAxial(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );
@@ -1403,7 +1403,7 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
 // yet more conversions, this time polygons to shape elements
 
-int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& name, std::deque<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToConvex(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
 {
    QtRegion region;
    pvecint polygon_refs;
@@ -1507,7 +1507,7 @@ int ShapeGraphs::convertDataToConvex(Communicator *comm, const std::string& name
 
 // create segment map directly from line layers
 
-int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& name, std::deque<SpacePixelFile> &drawingLayers)
+int ShapeGraphs::convertDrawingToSegment(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingLayers)
 {
    if (comm) {
       comm->CommPostMessage( Communicator::NUM_STEPS, 2 );

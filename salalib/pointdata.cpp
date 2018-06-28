@@ -256,7 +256,7 @@ void PointMap::fillLine(const Line& li)
    }
 }
 
-bool PointMap::blockLines(const std::deque<SpacePixelFile> &drawingLayers)
+bool PointMap::blockLines(const std::vector<SpacePixelFile> &drawingLayers)
 {
    if (!m_initialised || m_points.empty()) {
       return false;
@@ -361,7 +361,7 @@ bool PointMap::fillPoint(const Point2f& p, bool add)
 // NB --- I've returned to original
 
 //AV TV // semifilled
-bool PointMap::makePoints(const std::deque<SpacePixelFile> &drawingLayers, const Point2f& seed, int fill_type, Communicator *comm)
+bool PointMap::makePoints(const std::vector<SpacePixelFile> &drawingLayers, const Point2f& seed, int fill_type, Communicator *comm)
 {
    if (!m_initialised || m_points.empty()) {
       return false;
@@ -1183,7 +1183,7 @@ int PointMap::tagState(bool settag, bool sparkgraph)
 // Then wouldn't have to 'test twice' for the grid point being blocked...
 // ...perhaps a tweak for a later date!
 
-bool PointMap::sparkGraph2( Communicator *comm, const std::deque<SpacePixelFile> &drawingLayers, bool boundarygraph, double maxdist )
+bool PointMap::sparkGraph2( Communicator *comm, const std::vector<SpacePixelFile> &drawingLayers, bool boundarygraph, double maxdist )
 {
    // Note, graph must be fixed (i.e., having blocking pixels filled in)
 
