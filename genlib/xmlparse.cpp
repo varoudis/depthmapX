@@ -17,8 +17,6 @@
 
 #include <genlib/xmlparse.h>
 
-using namespace std;
-
 enum { STEP_START, STEP_ELEMENT_NAME, 
                    STEP_ATTRIBUTE_NAME,
                    STEP_START_ATTRIBUTE_VALUE, STEP_ATTRIBUTE_VALUE,
@@ -30,14 +28,14 @@ bool iscrlf(char c)
    return (c == 10 || c == 13);
 }
 
-bool xmlelement::parse(ifstream& stream, bool parsesubelements)
+bool xmlelement::parse(std::ifstream& stream, bool parsesubelements)
 {
    bool closed = false;
    bool complete = false;
    int step = STEP_START;
-   string buffer;
-   string attribute;
-   string value;
+   std::string buffer;
+   std::string attribute;
+   std::string value;
    while (!complete && stream) {
       char c = stream.get();
       if (stream) {
@@ -158,30 +156,30 @@ bool xmlelement::parse(ifstream& stream, bool parsesubelements)
       }
    }
    if (!complete && step != STEP_START) {
-      throw xmlerror(string("Unexpected end of element ") + name);
+      throw xmlerror(std::string("Unexpected end of element ") + name);
    }
    return closed;
 }
 
-void xmlelement::badcharacter(char c, const string& location)
+void xmlelement::badcharacter(char c, const std::string& location)
 {
    if (isprint(c)) {
-      throw (string("Found '") + c + string("' while ") + location);
+      throw (std::string("Found '") + c + std::string("' while ") + location);
    }
    else {
-      stringstream s;
+      std::stringstream s;
       s << "Found character " << int(c) << " while " << location;
       throw (s.str());
    }
 }
 
-bool xmlelement::subparse(ifstream& stream)
+bool xmlelement::subparse(std::ifstream& stream)
 {
    bool complete = false;
    while (!complete && stream) {
       subelements.push_back(xmlelement());
       if (!subelements.back().parse(stream,true)) {
-         throw xmlerror(string("Unexplained error"));
+         throw xmlerror(std::string("Unexplained error"));
       }
       if (subelements.back().closetag) {
          if (subelements.back().name == name) {
@@ -189,32 +187,32 @@ bool xmlelement::subparse(ifstream& stream)
             complete = true;
          }
          else {
-            throw xmlerror(string("Element <") + name + string("> closed with </") + subelements.back().name + string(">"));
+            throw xmlerror(std::string("Element <") + name + std::string("> closed with </") + subelements.back().name + std::string(">"));
          }
       }
    }
    if (!complete) {
-      throw xmlerror(string("Unexpected end of element ") + name);
+      throw xmlerror(std::string("Unexpected end of element ") + name);
    }
    return true;
 }
 
-ostream& operator << (ostream& stream, const xmlelement& elem)
+std::ostream& operator << (std::ostream& stream, const xmlelement& elem)
 {
    stream << "<" << elem.name;
-   map<string,string>::const_iterator it;
+   std::map<std::string, std::string>::const_iterator it;
    for (it = elem.attributes.begin(); it != elem.attributes.end(); it++) {
      stream << " " << it->first << "=\"" << it->second << "\" ";
    }
    if (elem.subelements.size() == 0) {
-      stream << " />" << endl;
+      stream << " />" << std::endl;
    }
    else {
-      stream << ">" << endl;
+      stream << ">" << std::endl;
       for (size_t i = 0; i < elem.subelements.size(); i++) {
          stream << elem.subelements[i];
       }
-      stream << "</" << elem.name << ">" << endl;
+      stream << "</" << elem.name << ">" << std::endl;
    }
    return stream;
 }

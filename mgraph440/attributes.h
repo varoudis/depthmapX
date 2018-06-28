@@ -179,8 +179,8 @@ public:
    void reset();
    void setLock(bool lock = true)
    { m_locked = lock; }
-   bool read( ifstream& stream, int version );
-   bool write(ostream &stream, int version );
+   bool read( std::ifstream& stream, int version );
+   bool write(std::ostream &stream, int version );
    friend bool operator == (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator < (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator > (const AttributeColumn& a, const AttributeColumn& b);
@@ -284,8 +284,8 @@ public:
    void clear()  // <- totally destroy, not just clear values
    { m_columns.clear(); pqmap<int,AttributeRow>::clear(); }
 
-   bool read( ifstream& stream, int version );
-   bool write(ostream &stream, int version );
+   bool read( std::ifstream& stream, int version );
+   bool write(std::ostream &stream, int version );
 };
 
 }

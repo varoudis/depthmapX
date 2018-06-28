@@ -24,11 +24,9 @@
 #include <fstream>
 #include <sstream>
 
-using namespace std;
-
-inline string tolower(const string& str)
+inline std::string tolower(const std::string& str)
 {
-   string s = str;
+   std::string s = str;
    for (size_t i = 0; i < s.length(); i++) {
       s[i] = tolower(s[i]);
    }
@@ -37,23 +35,23 @@ inline string tolower(const string& str)
 
 struct xmlelement
 {
-   string name;
+   std::string name;
    bool closetag;
-   map<string,string> attributes;
-   vector<xmlelement> subelements;
+   std::map<std::string, std::string> attributes;
+   std::vector<xmlelement> subelements;
    xmlelement()
    { closetag = false;}
-   bool parse(ifstream& stream, bool parsesubelements = false);
-   friend ostream& operator << (ostream& stream, const xmlelement& elem);
+   bool parse(std::ifstream& stream, bool parsesubelements = false);
+   friend std::ostream& operator << (std::ostream& stream, const xmlelement& elem);
 protected:
-   bool subparse(ifstream& stream);
-   void badcharacter(char c, const string& location);
+   bool subparse(std::ifstream& stream);
+   void badcharacter(char c, const std::string& location);
 };
 
 struct xmlerror
 {
-   string error;
-   xmlerror(const string& e = string())
+   std::string error;
+   xmlerror(const std::string& e = std::string())
    { error = e; }
 };
 

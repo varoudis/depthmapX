@@ -60,11 +60,11 @@ public:
    const std::string& getDescription() const
    { return m_description; }
    //
-   bool read( ifstream& stream, int version );
+   bool read( std::ifstream& stream, int version );
    bool write(std::ostream &stream );
 };
 
-inline bool FileProperties::read(ifstream& stream, int version)
+inline bool FileProperties::read(std::ifstream& stream, int version)
 {
    m_create_person=dXstring440::readString(stream);
    m_create_organization=dXstring440::readString(stream);

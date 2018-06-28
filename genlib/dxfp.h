@@ -50,8 +50,6 @@ class DxfParser;
 
 #include <fstream>
 
-using namespace std;
-
 const double DXF_PI = 3.1415926535897932384626433832795;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,7 +63,7 @@ public:
    std::string data;
    //
    DxfToken();
-   friend istream& operator >> (istream& stream, DxfToken& token);
+   friend std::istream& operator >> (std::istream& stream, DxfToken& token);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -586,12 +584,12 @@ protected:
 public:
    DxfParser(Communicator *comm = NULL);
    //
-   istream& open( istream& stream );
+   std::istream& open( std::istream& stream );
    //
-   void openHeader( istream& stream );
-   void openTables( istream& stream );
-   void openBlocks( istream& stream );
-   void openEntities( istream& stream, DxfToken& token, DxfBlock *block = NULL ); // cannot have a default token: it's a reference.  Removed default to DxfToken() AT 29.04.11
+   void openHeader( std::istream& stream );
+   void openTables( std::istream& stream );
+   void openBlocks( std::istream& stream );
+   void openEntities( std::istream& stream, DxfToken& token, DxfBlock *block = NULL ); // cannot have a default token: it's a reference.  Removed default to DxfToken() AT 29.04.11
    //
    const DxfVertex& getExtMin() const;
    const DxfVertex& getExtMax() const;
@@ -601,7 +599,7 @@ public:
    int numLayers() const;
    int numLineTypes() const;
    //
-   friend istream& operator >> (istream& stream, DxfParser& dxfp);
+   friend std::istream& operator >> (std::istream& stream, DxfParser& dxfp);
 
    std::map<std::string, DxfLayer> getLayers() { return m_layers; }
 };

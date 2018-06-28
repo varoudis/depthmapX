@@ -36,13 +36,13 @@ public:
 
     pqvector<AttrBody> *m_attr_conv_table = NULL;
 
-    streampos skipVirtualMem(ifstream& stream, int version);
+    std::streampos skipVirtualMem(std::ifstream& stream, int version);
     int convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& pointmap);
-    int convertAttributes(ifstream &stream, int version);
-    int convertVirtualMem(ifstream &stream, int version);
+    int convertAttributes(std::ifstream &stream, int version);
+    int convertVirtualMem(std::ifstream &stream, int version);
     int read(const std::string &filename);
     int writeToFile( const std::string& filename, int version, bool currentlayer = false);
-    int writeToStream(ostream &stream, int version, bool currentlayer = false);
+    int writeToStream(std::ostream &stream, int version, bool currentlayer = false);
 };
 
 }

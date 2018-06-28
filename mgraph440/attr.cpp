@@ -187,7 +187,7 @@ double AttrHeader::getAttr(int attr, const AttrVal attributes[]) const
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-AttrBody::AttrBody( streampos p, const AttrHeader& h )
+AttrBody::AttrBody( std::streampos p, const AttrHeader& h )
 {
    pos = p;
    ref = -1;
@@ -230,7 +230,7 @@ AttrBody::~AttrBody()
    }
 }
 
-ostream& operator << (ostream& stream, const AttrBody& attr)
+std::ostream& operator << (std::ostream& stream, const AttrBody& attr)
 {
    stream << attr.ref << "\t";
    stream << attr.origin.x << "\t" << attr.origin.y << "\t" << attr.origin.z;
@@ -249,7 +249,7 @@ ostream& operator << (ostream& stream, const AttrBody& attr)
    return stream;
 }
 
-void AttrBody::write( ostream& stream ) const
+void AttrBody::write( std::ostream& stream ) const
 {
    stream.write( (char *) &pos, sizeof(pos) );
    stream.write( (char *) &ref, sizeof(ref) );
@@ -259,7 +259,7 @@ void AttrBody::write( ostream& stream ) const
    }
 }
 
-void AttrBody::read( ifstream& stream, int attr_count )
+void AttrBody::read( std::ifstream& stream, int attr_count )
 {
    stream.read( (char *) &pos, sizeof(pos) );
    stream.read( (char *) &ref, sizeof(ref) );
@@ -274,9 +274,9 @@ void AttrBody::read( ifstream& stream, int attr_count )
 bool ArVertexList::openwrite( int nodes )
 {
 #ifdef _WIN32
-   m_stream = new fstream( m_filename.c_str(), ios::binary | ios::out | ios::trunc );
+   m_stream = new std::fstream( m_filename.c_str(), std::ios::binary | std::ios::out | std::ios::trunc );
 #else
-   m_stream = new fstream( m_filename.c_str(), ios::out | ios::trunc );
+   m_stream = new std::fstream( m_filename.c_str(), std::ios::out | std::ios::trunc );
 #endif
 
    if (m_stream->fail()) {
@@ -302,9 +302,9 @@ bool ArVertexList::openwrite( int nodes )
 void ArVertexList::openread()
 {
 #ifdef _WIN32
-   m_stream = new fstream( m_filename.c_str(), ios::binary | ios::in );
+   m_stream = new std::fstream( m_filename.c_str(), std::ios::binary | std::ios::in );
 #else
-   m_stream = new fstream( m_filename.c_str(), ios::in );
+   m_stream = new std::fstream( m_filename.c_str(), std::ios::in );
 #endif
 }
 
@@ -341,9 +341,9 @@ void ArVertexList::add( int ref, const ArVertex& node )
 void ArVertexList::commit()                     // Copy
 {
    if (m_cache_ref != -1) {
-      streampos pos = m_stream->tellp();
+      std::streampos pos = m_stream->tellp();
       m_attributes[m_cache_ref].pos = pos;
-      m_cache_data.write( (ofstream&) *m_stream );
+      m_cache_data.write( (std::ofstream&) *m_stream );
       m_cache_data.clear();
       m_stream->flush();
    }
@@ -353,7 +353,7 @@ void ArVertexList::commit()                     // Copy
 void ArVertexList::commit(const Point2f& p, int far_node, float far_dist, float total_dist) // Add
 {
    if (m_cache_ref != -1) {
-      streampos pos = m_stream->tellp();
+      std::streampos pos = m_stream->tellp();
       AttrBody attr(pos, m_attr_header);
       {
          // a few values we know
@@ -366,7 +366,7 @@ void ArVertexList::commit(const Point2f& p, int far_node, float far_dist, float 
          attr.floatval(AttrHeader::TOTAL_DIST) = total_dist;
       }
       m_attributes.push_back( attr );
-      m_cache_data.write( (ofstream&) *m_stream );
+      m_cache_data.write( (std::ofstream&) *m_stream );
       m_cache_data.clear();
       m_stream->flush();
    }
@@ -377,7 +377,7 @@ void ArVertexList::commit(const Point2f& p, int far_node, float far_dist, float 
 // NOTE: ONLY READ AND WRITE ATTRIBUTES!
 // (At the moment, complex virtual mem stuff is handled at the meta graph level)
 
-bool ArVertexList::read( ifstream& stream, int metagraph_version )
+bool ArVertexList::read( std::ifstream& stream, int metagraph_version )
 {
    m_metagraph_version = metagraph_version;
 
@@ -400,7 +400,7 @@ bool ArVertexList::read( ifstream& stream, int metagraph_version )
    return true;
 }
 
-bool ArVertexList::write( ostream& stream )
+bool ArVertexList::write( std::ostream& stream )
 {
    stream.write( (char *) &m_which_attributes, sizeof(m_which_attributes) );
    // I'm phasing this out again for now (attribute header),

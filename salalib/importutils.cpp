@@ -282,7 +282,7 @@ namespace depthmapX {
                 auto strings = dXstring::split(inputline, delimiter);
                 if(strings.size() != columns.size()) {
                     std::stringstream message;
-                    message << "Cells in line " << inputline << "not the same number as the columns" << flush;
+                    message << "Cells in line " << inputline << "not the same number as the columns" << std::flush;
                     throw RuntimeException(message.str().c_str());
                 }
                 if (!strings.size()) {

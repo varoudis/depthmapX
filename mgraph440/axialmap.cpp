@@ -4,7 +4,7 @@
 
 namespace mgraph440 {
 
-bool ShapeGraph::read( ifstream& stream, int version )
+bool ShapeGraph::read( std::ifstream& stream, int version )
 {
    m_attributes.clear();
    m_connectors.clear();
@@ -51,7 +51,7 @@ bool ShapeGraph::read( ifstream& stream, int version )
    return true;
 }
 
-bool ShapeGraph::readold( ifstream& stream, int version )
+bool ShapeGraph::readold( std::ifstream& stream, int version )
 {
    // read in from old base class
    SpacePixel linemap;
@@ -127,7 +127,7 @@ bool ShapeGraph::readold( ifstream& stream, int version )
    return true;
 }
 
-bool ShapeGraphs::read( ifstream& stream, int version )
+bool ShapeGraphs::read( std::ifstream& stream, int version )
 {
    // base class read
    if (version >= VERSION_AXIAL_SHAPES) {
@@ -163,7 +163,7 @@ bool ShapeGraphs::read( ifstream& stream, int version )
 }
 
 // for backward compatibility only:
-bool ShapeGraphs::readold( ifstream& stream, int version )
+bool ShapeGraphs::readold( std::ifstream& stream, int version )
 {
    // this read is based on SpacePixelGroup<ShapeGraph>::read(stream, version);
    dXstring440::readString(stream);
@@ -180,7 +180,7 @@ bool ShapeGraphs::readold( ifstream& stream, int version )
    return true;
 }
 
-bool ShapeGraphs::write(ostream &stream, int version, bool displayedmaponly )
+bool ShapeGraphs::write(std::ostream &stream, int version, bool displayedmaponly )
 {
    // base class write
    ShapeMaps<ShapeGraph>::write(stream, version, displayedmaponly);
@@ -191,7 +191,7 @@ bool ShapeGraphs::write(ostream &stream, int version, bool displayedmaponly )
    return true;
 }
 
-bool ShapeGraph::write( ostream& stream, int version )
+bool ShapeGraph::write( std::ostream& stream, int version )
 {
    // note keyvertexcount and keyvertices are different things!  (length keyvertices not the same as keyvertexcount!)
    stream.write((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));

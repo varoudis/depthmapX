@@ -1353,8 +1353,11 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
 
    usermap.init(lines.size(),region);  // used to be double density
    usermap.initialiseAttributesAxial();
-   std::map<int, float> extraAttributes;
-   std::vector<int> columns;
+
+   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
+
+   std::map<int, float> extraAttr;
+   std::vector<int> attrCols;
    if (copydata)   {
        AttributeTable& input = shapemap.getAttributeTable();
        AttributeTable& output = usermap.getAttributeTable();
@@ -1363,20 +1366,23 @@ int ShapeGraphs::convertDataToAxial(Communicator *comm, const std::string& name,
           for (size_t k = 1; output.getColumnIndex(colname) != -1; k++){
              colname = dXstring::formatString((int)k,input.getColumnName(i) + " %d");
           }
-          columns.push_back( output.insertColumn(colname));
+          attrCols.push_back( output.insertColumn(colname));
        }
    }
 
-   for (size_t k = 0; k < lines.size(); k++) {
-      if (copydata){
-          AttributeTable& input = shapemap.getAttributeTable();
-          for ( int i = 0; i < input.getColumnCount(); ++i)
-          {
-              extraAttributes[columns[i]] = input.getValue(k, i);
-          }
-      }
-      usermap.makeLineShapeWithRef(lines[k], keys[k], false, false, extraAttributes);
-   }
+    AttributeTable& input = shapemap.getAttributeTable();
+    auto keyIter = keys.begin();
+    for (auto& line: lines) {
+        if (copydata){
+            int rowid = input.getRowid(keyIter->second);
+            for (int i = 0; i < input.getColumnCount(); ++i){
+                extraAttr[attrCols[i]] = input.getValue(rowid,i);
+            }
+        }
+        extraAttr[dataMapShapeRefCol] = keyIter->second;
+        usermap.makeLineShape(line.second, false, false, extraAttr);
+        ++keyIter;
+    }
 
    // n.b. make connections also initialises attributes
 
@@ -1651,6 +1657,8 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
    usermap.init(lines.size(),region);
    usermap.initialiseAttributesSegment();
 
+   int dataMapShapeRefCol = usermap.getAttributeTable().insertColumn("Data Map Ref");
+   
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;
    AttributeTable& input = shapemap.getAttributeTable();
@@ -1665,18 +1673,17 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
       }
    }
 
-
    auto keyIter = keys.begin();
-   int k = 0;
    for (auto& line: lines) {
        if (copydata){
+           int rowid = input.getRowid(keyIter->second);
            for (int i = 0; i < input.getColumnCount(); ++i){
-               extraAttr[attrCols[i]] = input.getValue(k,i);
+               extraAttr[attrCols[i]] = input.getValue(rowid,i);
            }
        }
-      usermap.makeLineShapeWithRef(line.second, keyIter->second);
+       extraAttr[dataMapShapeRefCol] = keyIter->second;
+      usermap.makeLineShape(line.second, false, false, extraAttr);
       ++keyIter;
-      ++k;
    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits
@@ -1687,26 +1694,6 @@ int ShapeGraphs::convertDataToSegment(Communicator *comm, const std::string& nam
 
    // make it!
    usermap.makeNewSegMap();
-
-   // use property that segments are still in same order as input in order to copy
-   // data across from ShapeMap
-   if (copydata) {
-      AttributeTable& input = shapemap.getAttributeTable();
-      AttributeTable& output = usermap.getAttributeTable();
-      //
-      for (int i = 0; i < input.getColumnCount(); i++) {
-         std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++)
-            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
-         int outcol = output.insertColumn(colname);
-         int j = -1;
-         for (auto line: lines) {
-            j++;
-            int inrow = input.getRowid(keys.find(line.first)->second);
-            output.setValue(j,outcol,input.getValue(inrow,i));
-         }
-      }
-   }
 
    usermap.m_displayed_attribute = -2; // <- override if it's already showing
    usermap.setDisplayedAttribute( usermap.m_attributes.getColumnIndex("Connectivity") );

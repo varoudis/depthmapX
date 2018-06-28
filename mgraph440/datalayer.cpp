@@ -30,7 +30,7 @@
 
 namespace mgraph440 {
 
-bool DataLayers::read(ifstream& stream, int version)
+bool DataLayers::read(std::ifstream& stream, int version)
 {
    m_layers.clear();
    stream.read( (char *) &m_current_layer_index, sizeof(int) );
@@ -74,7 +74,7 @@ void DataLayer::setDisplayColumn(int i)
    m_display_column = i;
 }
 
-bool DataLayer::read(ifstream& stream, int version)
+bool DataLayer::read(std::ifstream& stream, int version)
 {
    m_data_objects.clear();
    m_column_titles.clear();
@@ -100,13 +100,13 @@ bool DataLayer::read(ifstream& stream, int version)
    return true;
 }
 
-bool DataLayer::output(ofstream& stream)
+bool DataLayer::output(std::ofstream& stream)
 {
    stream << "Ref" << "\t" << "x" << "\t" << "y" << "\t";
    for (size_t i = 0; i < m_column_titles.size(); i++) {
       stream << m_column_titles[i] << "\t";
    }
-   stream << endl;
+   stream << std::endl;
 
    for (size_t j = 0; j < m_data_objects.size(); j++) {
       stream.precision(12);
@@ -115,7 +115,7 @@ bool DataLayer::output(ofstream& stream)
       for (size_t k = 0; k < m_column_titles.size(); k++) {
          stream << m_data_objects[j].m_data_cols[k] << "\t";
       }
-      stream << endl;
+      stream << std::endl;
    }
 
    return true;
@@ -123,7 +123,7 @@ bool DataLayer::output(ofstream& stream)
 
 //////////////////////////////////////////////////////////////
 
-bool DataObject::read(ifstream& stream, int version)
+bool DataObject::read(std::ifstream& stream, int version)
 {
    stream.read( (char *) &m_object_ref, sizeof(int) );
    m_object_name = dXstring440::readString(stream);
@@ -138,7 +138,7 @@ bool DataObject::read(ifstream& stream, int version)
    return true;
 }
 
-bool DataObject::write(ostream& stream)
+bool DataObject::write(std::ostream& stream)
 {
    stream.write( (char *) &m_object_ref, sizeof(int) );
    dXstring440::writeString(stream, m_object_name);

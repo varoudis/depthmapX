@@ -1138,7 +1138,7 @@ void Q3DView::OnToolsImportTraces()
       m_traces.clear();
       m_mannequins.clear();
             //
-      ifstream file(filename.c_str());
+      std::ifstream file(filename.c_str());
       // Eva's XMLs do not have the header yet:
       xmlelement traceset;
       QString elementname;

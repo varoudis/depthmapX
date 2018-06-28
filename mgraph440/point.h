@@ -84,8 +84,8 @@ public:
    void setAttributes(const AttrBody& attr)
       { if (m_attributes) delete m_attributes;
         m_attributes = new AttrBody(attr); }
-   ifstream& read(ifstream& stream, int version, int attr_count);
-   ostream &write(ostream &stream, int version);
+   std::ifstream& read(std::ifstream& stream, int version, int attr_count);
+   std::ostream &write(std::ostream &stream, int version);
    void *m_user_data;
    Node& getNode()
       { return *m_node; }
