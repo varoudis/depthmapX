@@ -22,7 +22,7 @@ MetaGraph::~MetaGraph()
 {
 }
 
-int MetaGraph::convertAttributes( ifstream& stream, int version )
+int MetaGraph::convertAttributes( std::ifstream& stream, int version )
 {
    int ret = 1;
 
@@ -88,7 +88,7 @@ int MetaGraph::convertAttributes( ifstream& stream, int version )
    return ret;
 }
 
-int MetaGraph::convertVirtualMem( ifstream& stream, int version )
+int MetaGraph::convertVirtualMem( std::ifstream& stream, int version )
 {
    if (!m_attr_conv_table) {
       return 0;
@@ -161,9 +161,9 @@ int MetaGraph::read( const std::string& filename )
    }
 
 #ifdef _WIN32
-   ifstream stream( filename.c_str(), ios::binary | ios::in );
+   std::ifstream stream( filename.c_str(), std::ios::binary | std::ios::in );
 #else
-   ifstream stream( filename.c_str(), ios::in );
+   std::ifstream stream( filename.c_str(), std::ios::in );
 #endif
 
    char header[3];
@@ -391,7 +391,7 @@ int MetaGraph::read( const std::string& filename )
    // Note, below version 70, the graph data must be reread:
    if (version < VERSION_NGRAPH_INTROD && conversion_required) {
       // reopen the stream and convert
-      stream.open(filename.c_str(), ios::binary | ios::in );
+      stream.open(filename.c_str(), std::ios::binary | std::ios::in );
       int ok = convertVirtualMem(stream, version);
       stream.close();
       return ok;
@@ -404,7 +404,7 @@ int MetaGraph::read( const std::string& filename )
 
    return OK;
 }
-streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
+std::streampos MetaGraph::skipVirtualMem(std::ifstream& stream, int version)
 {
    // it's graph virtual memory: skip it
    int nodes = -1;
@@ -418,7 +418,7 @@ streampos MetaGraph::skipVirtualMem(ifstream& stream, int version)
       int connections;
       stream.read( (char *) &connections, sizeof(connections) );
       // This relies on the pvecint storage... hope it don't change!
-      stream.seekg( stream.tellg() + streamoff(connections * sizeof(connections)) );
+      stream.seekg( stream.tellg() + std::streamoff(connections * sizeof(connections)) );
    }
    return (stream.tellg());
 }
@@ -497,13 +497,13 @@ int MetaGraph::convertDataLayersToShapeMap(DataLayers& datalayers, PointMap& poi
 
 int MetaGraph::writeToFile( const std::string& filename, int version, bool currentlayer )
 {
-   ofstream stream;
+   std::ofstream stream;
 
    int oldstate = m_state;
    m_state = 0;   // <- temporarily clear out state, avoids any potential read / write errors
 
    // As of MetaGraph version 70 the disk caching has been removed
-   stream.open( filename.c_str(), ios::binary | ios::out | ios::trunc );
+   stream.open( filename.c_str(), std::ios::binary | std::ios::out | std::ios::trunc );
    if (stream.fail()) {
       if (stream.rdbuf()->is_open()) {
          stream.close();

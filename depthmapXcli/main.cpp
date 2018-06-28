@@ -19,8 +19,6 @@
 #include "performancewriter.h"
 #include "modeparserregistry.h"
 
-using namespace std;
-
 int main(int argc, char *argv[])
 {
     ModeParserRegistry registry;
@@ -48,7 +46,7 @@ int main(int argc, char *argv[])
     }
     catch( std::exception &e)
     {
-        cout << e.what() << "\n";
+        std::cout << e.what() << "\n";
         args.printHelp();
         return -1;
     }

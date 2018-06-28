@@ -24,8 +24,6 @@
 #endif
 #include <fstream>
 
-using namespace std;
-
 #include "mgraph440/paftl.h"
 #include "mgraph440/p2dpoly.h"
 #include "mgraph440/mgraph_consts.h"
@@ -118,7 +116,7 @@ struct AttrBody {
    // you can have agents *in* the graph too (helps with looking them up!)
    PafAgent   *myagent;
    //
-   AttrBody(streampos p = -1, const AttrHeader& h = AttrHeader() );
+   AttrBody(std::streampos p = -1, const AttrHeader& h = AttrHeader() );
    AttrBody(const AttrBody& attr);
    ~AttrBody();
    void reset();
@@ -126,8 +124,8 @@ struct AttrBody {
    double getAttr(int attr) const
       { return header->getAttr(attr, attributes); }
    //
-   void write(ostream &stream ) const;
-   void read(  ifstream& stream, int attr_count );
+   void write(std::ostream &stream ) const;
+   void read(  std::ifstream& stream, int attr_count );
    //
    // Save a bit of memory, use integer / floating as appropriate
    int& intval(int i)
@@ -135,7 +133,7 @@ struct AttrBody {
    float& floatval(int i)
       { return attributes[i].floatval; }
    //
-   friend ostream& operator << (ostream& stream, const AttrBody& attr);
+   friend std::ostream& operator << (std::ostream& stream, const AttrBody& attr);
    //
    friend bool operator == (const AttrBody& a, const AttrBody& b);
    friend bool operator != (const AttrBody& a, const AttrBody& b);
@@ -334,7 +332,7 @@ public:
       return (int)((m_nodes.size() + hiword(m_bins[bin]) - loword(m_bins[bin])) % m_nodes.size());
    }
    //
-   ifstream& read( ifstream& stream, streampos offset, int metagraph_version )
+   std::ifstream& read( std::ifstream& stream, std::streampos offset, int metagraph_version )
    {
       if (metagraph_version >= mgraph440::VERSION_BINS_INTROD) {
          m_nodes.read(stream,offset);  // read from offset...
@@ -345,7 +343,7 @@ public:
       }
       return stream;
    }
-   ofstream& write(ofstream& stream )
+   std::ofstream& write(std::ofstream& stream )
    {
       m_nodes.write(stream);
       m_bins.write(stream);
@@ -372,7 +370,7 @@ protected:
    // stored here for ease of use
    int m_metagraph_version;
    ::std::string m_filename;
-   fstream *m_stream;
+   std::fstream *m_stream;
    AttrHeader m_attr_header;
    prefvec<AttrBody> m_attributes;
    int m_cache_ref;
@@ -400,7 +398,7 @@ public:
          return m_mem_data[i];
       }
       else if (i != m_cache_ref && m_stream) { // <- just make sure this doesn't crash
-         m_cache_data.read( (ifstream&) *m_stream, m_attributes[i].pos, m_metagraph_version );
+         m_cache_data.read( (std::ifstream&) *m_stream, m_attributes[i].pos, m_metagraph_version );
          m_cache_ref = i;
       }
       return m_cache_data;
@@ -413,7 +411,7 @@ public:
    void loadmem() {
       for (size_t i = 0; i < m_attributes.size(); i++) {
          m_mem_data.push_back( ArVertex() );
-         m_mem_data.tail().read( (ifstream&) *m_stream, m_attributes[i].pos, m_metagraph_version );
+         m_mem_data.tail().read( (std::ifstream&) *m_stream, m_attributes[i].pos, m_metagraph_version );
       }
       m_mem_loaded = true;
    }
@@ -448,8 +446,8 @@ public:
    void commit();                                                 // when copying
    void commit( const Point2f& p, int far_node, float far_dist, float total_dist ); // when creating new node
    //
-   bool read( ifstream& stream, int metagraph_version );
-   bool write(ostream &stream );
+   bool read( std::ifstream& stream, int metagraph_version );
+   bool write(std::ostream &stream );
    //
    const AttrBody& getAttributes(int i) const {
       return m_attributes[i];

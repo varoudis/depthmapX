@@ -52,7 +52,7 @@ PixelRef ShapeMap::pixelate( const Point2f& p, bool constrain, int ) const
    return r;
 }
 
-bool ShapeMap::read( ifstream& stream, int version, bool drawinglayer )
+bool ShapeMap::read( std::ifstream& stream, int version, bool drawinglayer )
 {
    // turn off selection / editable etc
    m_selection = false;
@@ -454,7 +454,7 @@ void ShapeMap::shapePixelBorder(pmap<int,int>& relations, int polyref, int side,
    }
 }
 
-bool SalaShape::read(ifstream& stream, int version)
+bool SalaShape::read(std::ifstream& stream, int version)
 {
    // defaults
    m_draworder = -1;
@@ -1287,7 +1287,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
    return (shapeindex == paftl::npos) ? -1 : int(shapeindex); // note convert to -1
 }
 
-bool ShapeMap::write(ostream &stream, int version )
+bool ShapeMap::write(std::ostream &stream, int version )
 {
    // name
    dXstring440::writeString(stream, m_name);
@@ -1349,7 +1349,7 @@ bool ShapeMap::write(ostream &stream, int version )
    return true;
 }
 
-bool SalaShape::write(ostream &stream)
+bool SalaShape::write(std::ostream &stream)
 {
    stream.write((char *)&m_type,sizeof(m_type));
    stream.write((char *)&m_region,sizeof(m_region));
