@@ -27,7 +27,6 @@
 class MetaGraph;
 class PointMap;
 class PafAgent;
-class DataLayers; // deprecated, but still required for data conversion
 class ShapeMap;
 
 class OldPoint1 {
