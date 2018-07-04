@@ -435,7 +435,7 @@ void QDepthmapView::paintEvent(QPaintEvent *)
          m_pDoc.m_meta_graph->getDisplayedDataMap().makeViewportShapes( LogicalViewport(rect, &m_pDoc) );
       }
       if (state & MetaGraph::LINEDATA) {
-         m_pDoc.m_meta_graph->SuperSpacePixel::makeViewportShapes( LogicalViewport(rect, &m_pDoc) );
+         m_pDoc.m_meta_graph->makeViewportShapes( LogicalViewport(rect, &m_pDoc) );
       }
 
       m_continue_drawing = true;
@@ -1286,7 +1286,7 @@ bool QDepthmapView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
    {
       bool nextlayer = false, first = true;
       pDC->setPen(QPen(QBrush(QColor(m_foreground)), spacer/20+1, Qt::SolidLine, Qt::RoundCap));
-      while ( (b_continue = pDoc->m_meta_graph->SuperSpacePixel::findNextShape(nextlayer)) )
+      while ( (b_continue = pDoc->m_meta_graph->findNextShape(nextlayer)) )
 	  {
 /*       Line l = pDoc->m_meta_graph->SuperSpacePixel::getNextLine();
          if (nextlayer || first) {
@@ -1305,7 +1305,7 @@ bool QDepthmapView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
             nextlayer = false;
          }*/
 
-         const SalaShape& shape = pDoc->m_meta_graph->SuperSpacePixel::getNextShape();
+         const SalaShape& shape = pDoc->m_meta_graph->getNextShape();
 		 spacer = GetSpacer(pDoc);
 		 
          if (shape.isPoint()) {
@@ -1739,7 +1739,7 @@ void QDepthmapView::OutputEPS( std::ofstream& stream, QGraphDoc *pDoc, bool incl
       pDoc->m_meta_graph->getDisplayedDataMap().makeViewportShapes( logicalviewport );
    }
    if (state & MetaGraph::LINEDATA) {
-      pDoc->m_meta_graph->SuperSpacePixel::makeViewportShapes( logicalviewport );
+      pDoc->m_meta_graph->makeViewportShapes( logicalviewport );
    }
 
    double spacer = GetSpacer(pDoc) / 10.0;
@@ -1799,9 +1799,9 @@ void QDepthmapView::OutputEPS( std::ofstream& stream, QGraphDoc *pDoc, bool incl
       bool first = true;
       int style = 0;
 
-      while ( pDoc->m_meta_graph->SuperSpacePixel::findNextShape(nextlayer) ) {
+      while ( pDoc->m_meta_graph->findNextShape(nextlayer) ) {
 
-         const SalaShape& shape = pDoc->m_meta_graph->SuperSpacePixel::getNextShape();
+         const SalaShape& shape = pDoc->m_meta_graph->getNextShape();
 
          Line l;
          if (shape.isPoint()) {
@@ -2374,7 +2374,7 @@ void QDepthmapView::OnEditCopy()
         m_pDoc.m_meta_graph->getDisplayedDataMap().makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
     }
     if (state & MetaGraph::LINEDATA) {
-        m_pDoc.m_meta_graph->SuperSpacePixel::makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
+        m_pDoc.m_meta_graph->makeViewportShapes( LogicalViewport(rectin, &m_pDoc) );
     }
 
    // Copy to Clipboard
@@ -2517,7 +2517,7 @@ void QDepthmapView::OutputSVG( std::ofstream& stream, QGraphDoc *pDoc )
       pDoc->m_meta_graph->getDisplayedDataMap().makeViewportShapes( logicalviewport );
    }
    if (state & MetaGraph::LINEDATA) {
-      pDoc->m_meta_graph->SuperSpacePixel::makeViewportShapes( logicalviewport );
+      pDoc->m_meta_graph->makeViewportShapes( logicalviewport );
    }
 
    if (state & MetaGraph::POINTMAPS && pDoc->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
@@ -2564,8 +2564,8 @@ void QDepthmapView::OutputSVG( std::ofstream& stream, QGraphDoc *pDoc )
       // arbitrary stroke width for now
       stream << "<g stroke-width=\"4\" fill=\"none\" stroke=\"" << SVGColor(m_foreground) << "\">" << std::endl;
       bool nextlayer = false;
-      while ( pDoc->m_meta_graph->SuperSpacePixel::findNextShape(nextlayer) ) {
-         const SalaShape& shape = pDoc->m_meta_graph->SuperSpacePixel::getNextShape();
+      while ( pDoc->m_meta_graph->findNextShape(nextlayer) ) {
+         const SalaShape& shape = pDoc->m_meta_graph->getNextShape();
          Line l;
          if (shape.isPoint()) {
          }

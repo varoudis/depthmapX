@@ -55,7 +55,7 @@ namespace depthmapX {
         // Ideally datamaps and drawingmaps should be more similar.
 
         if(mapType == DRAWINGMAP) {
-            mgraph.m_spacePixels.emplace_back(name);
+            mgraph.m_drawingFiles.emplace_back(name);
         }
 
         bool parsed = false;
