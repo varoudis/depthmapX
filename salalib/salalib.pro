@@ -42,7 +42,8 @@ SOURCES += \
     geometrygenerators.cpp \
     importutils.cpp \
     point.cpp \
-    pafcolor.cpp
+    pafcolor.cpp \
+    spacepixfile.cpp
 
 HEADERS += \
     attributes.h \
@@ -80,7 +81,8 @@ HEADERS += \
     pixelref.h \
     displayparams.h \
     pafcolor.h \
-    options.h
+    options.h \
+    spacepixfile.h
 
 DISTFILES += \
     salascript-tests.txt

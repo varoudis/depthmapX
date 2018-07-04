@@ -27,6 +27,8 @@
 #include "salalib/importtypedefs.h"
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
+#include "salalib/spacepix.h"
+#include "salalib/attributes.h"
 #include "salalib/MapInfoData.h"
 #include <set>
 

@@ -1053,7 +1053,7 @@ void QGraphDoc::OnEditGrid()
       if ( QMessageBox::Yes != QMessageBox::question(this, tr("depthmapX"), tr("This will clear existing points.  Do you want to continue?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
          return;
    }
-   QtRegion r = m_meta_graph->SuperSpacePixel::getRegion();
+   QtRegion r = m_meta_graph->getRegion();
    CGridDialog dlg(__max(r.width(), r.height()));
    if (QDialog::Accepted == dlg.exec())
    {
