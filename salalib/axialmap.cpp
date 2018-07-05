@@ -3632,10 +3632,8 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                currentbin = 0;
             }
          }
-         auto iter = bins[currentbin].end();
-         iter--;
-         SegmentData lineindex = *iter;
-         bins[currentbin].erase(iter);
+         SegmentData lineindex = bins[currentbin].back();
+         bins[currentbin].pop_back();
          //
          opencount--;
 
