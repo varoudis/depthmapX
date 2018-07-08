@@ -1,4 +1,5 @@
-// Copyright (C) 2017 Christian Sailer
+// sala - a component of the depthmapX - spatial network analysis platform
+// Copyright (C) 2018 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,20 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "catch.hpp"
-#include "salalib/axialmap.h"
-#include "salalib/axialpolygons.h"
+#pragma once
 
-/**
- * This seems a bit silly, but this is a list of structs that are serialised by just dumping the memory content
- * into a stream, so the size/layout of these must be the same across all platforms to ensure
- * reading writing of graph files.
- */
-TEST_CASE("Enforce struct sizes")
-{
-    REQUIRE(sizeof(RadialKey) == 16);
-    REQUIRE(sizeof(RadialLine) == 64);
-    REQUIRE(sizeof(PolyConnector) == 56);
-    REQUIRE(sizeof(QtRegion) == 32);
-    REQUIRE(sizeof(Line) == 40);
-}
+static const double TOLERANCE_A = 1e-9;
+static const double TOLERANCE_B = 1e-12;
+static const double TOLERANCE_C = 1e-6;

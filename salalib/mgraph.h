@@ -115,6 +115,9 @@ private:
    std::vector<PointMap> m_pointMaps;
    int m_displayed_pointmap;
 
+   // helpful to know this for creating fewest line maps, although has to be reread at input
+   int m_all_line_map = -1;
+
    void removePointMap(int i)
    {
        if (m_displayed_pointmap >= i) m_displayed_pointmap--;
@@ -187,7 +190,7 @@ public:
    bool analyseTopoMet( Communicator *communicator, Options options ); // <- options copied to keep thread safe
    //
    bool hasAllLineMap()
-   { return m_shape_graphs.hasAllLineMap(); }
+   { return m_all_line_map != -1; }
    //
    enum { PUSH_FUNC_MAX = 0, PUSH_FUNC_MIN = 1, PUSH_FUNC_AVG = 2, PUSH_FUNC_TOT = 3};
    bool pushValuesToLayer(int desttype, int destlayer, int push_func, bool count_col = false);

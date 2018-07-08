@@ -18,6 +18,7 @@
 
 // The meta graph 
 
+#include "alllinemap.h"
 #include <math.h>
 #include <time.h>
 #include <genlib/paftl.h>
@@ -37,6 +38,7 @@
 
 #include "mgraph440/mgraph.h"
 #include <sstream>
+#include <tuple>
 
 // Quick mod - TV
 #pragma warning (disable: 4800)
@@ -1108,10 +1110,20 @@ bool MetaGraph::makeAllLineMap( Communicator *communicator, const Point2f& seed 
    int oldstate = m_state;
    m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload) 
 
-   bool retvar = false;
+   bool retvar = true;
 
    try {
-      retvar = m_shape_graphs.makeAllLineMap( communicator, m_drawingFiles, seed );
+       // this is an index to look up the all line map, used by UI to determine if can make fewest line map
+       // note: it is not saved for historical reasons
+       if (m_all_line_map != -1) {
+          m_shape_graphs.removeMap(size_t(m_all_line_map));
+          m_all_line_map = -1;
+       }
+
+      m_shape_graphs.push_back(AllLineMap( communicator, m_drawingFiles, seed ));
+
+      m_all_line_map = int(m_shape_graphs.size() - 1);
+      m_shape_graphs.setDisplayedMapRef(size_t(m_all_line_map));
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1136,7 +1148,37 @@ bool MetaGraph::makeFewestLineMap( Communicator *communicator, int replace )
    bool retvar = false;
 
    try {
-      retvar = m_shape_graphs.makeFewestLineMap(communicator, (replace != 0));
+       // no all line map
+       if (m_all_line_map == -1) {
+          return false;
+       }
+       ShapeGraph* shp = &m_shape_graphs[size_t(m_all_line_map)];
+       AllLineMap* alllinemap = dynamic_cast<AllLineMap*>(shp);
+
+       // waiting for C++17...
+       ShapeGraph fewestlinemap_subsets, fewestlinemap_minimal;
+       std::tie(fewestlinemap_subsets, fewestlinemap_minimal) = alllinemap->extractFewestLineMaps(communicator);
+
+       if (replace != 0) {
+           int index = int(m_shape_graphs.getMapRef("Fewest-Line Map (Subsets)"));
+           if (index == -1) {
+              // didn't used to have hyphenation, try once more:
+              index = int(m_shape_graphs.getMapRef("Fewest Line Map (Subsets)"));
+           }
+           m_shape_graphs.removeMap(size_t(index));
+
+           index = int(m_shape_graphs.getMapRef("Fewest-Line Map (Minimal)"));
+           if (index == -1) {
+              // didn't used to have hyphenation, try once more:
+              index = int(m_shape_graphs.getMapRef("Fewest Line Map (Minimal)"));
+           }
+           m_shape_graphs.removeMap(size_t(index));
+       }
+       m_shape_graphs.push_back(fewestlinemap_subsets);
+       m_shape_graphs.push_back(fewestlinemap_minimal);
+
+       m_shape_graphs.setDisplayedMapRef(m_shape_graphs.size() - 2);
+
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -2234,6 +2276,35 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
    }
    if (type == 'x') {
       m_shape_graphs.read( stream, version );
+
+      // P.K: temporary functionality until ShapeGraphs is removed
+      // also, ideally this should be read together with the
+      // all-line map, but the way the graph file is structured
+      // this is not possible
+      // TODO: Fix on next graph file update
+
+      for(size_t i = 0; i < m_shape_graphs.size(); i++) {
+          ShapeGraph& shapeGraph = m_shape_graphs[i];
+          if(shapeGraph.getName() == "All-Line Map" ||
+                  shapeGraph.getName() == "All Line Map") {
+              AllLineMap& alllinemap = dynamic_cast<AllLineMap &>(shapeGraph);
+              // these are additional essentially for all line axial maps
+              // should probably be kept *with* the all line axial map...
+              alllinemap.m_poly_connections.clear();
+              alllinemap.m_poly_connections.read(stream);
+              alllinemap.m_radial_lines.clear();
+              alllinemap.m_radial_lines.read(stream);
+
+              // this is an index to look up the all line map, used by UI to determine if can make fewest line map
+              // note: it is not saved for historical reasons
+              // will get confused by more than one all line map
+              m_all_line_map = int(i);
+
+              // there is currently only one:
+              break;
+          }
+      }
+
       temp_state |= SHAPEGRAPHS;
       if (!stream.eof()) {
          stream.read( &type, 1 );         
@@ -2310,6 +2381,19 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
          type = 'x';
          stream.write(&type, 1);
          m_shape_graphs.write( stream, version, true );
+
+         if(m_all_line_map == -1) {
+             prefvec<PolyConnector> temp_poly_connections;
+             pqvector<RadialLine> temp_radial_lines;
+
+             temp_poly_connections.write(stream);
+             temp_radial_lines.write(stream);
+         } else {
+             AllLineMap& alllinemap = dynamic_cast<AllLineMap &>(m_shape_graphs[size_t(m_all_line_map)]);
+
+             alllinemap.m_poly_connections.write(stream);
+             alllinemap.m_radial_lines.write(stream);
+         }
       }
       else if (m_view_class & MetaGraph::VIEWDATA) {
          type = 's';
