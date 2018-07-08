@@ -31,6 +31,10 @@ namespace depthmapX{
       return s.find_first_not_of( "0123456789" ) == std::string::npos;
     }
 
+    inline bool has_only_digits_dots(const std::string &s){
+      return s.find_first_not_of( "0123456789." ) == std::string::npos;
+    }
+
     inline bool has_only_digits_dots_commas(const std::string &s){
         return s.find_first_not_of( "0123456789,.-" ) == std::string::npos;
     }

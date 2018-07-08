@@ -547,4 +547,77 @@ namespace dm_runmethods
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
                 std::cout << " ok" << std::endl;
     }
+
+    void runMapConversion(const CommandLineParser &clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
+
+        int currentMapType = mGraph->getDisplayedMapType();
+
+        if (currentMapType == ShapeMap::EMPTYMAP) {
+            throw depthmapX::RuntimeException("No currently available map to convert from");
+        }
+
+        if (mcp.copyAttributes()) {
+            if(currentMapType == ShapeMap::DATAMAP ||
+                    currentMapType == ShapeMap::AXIALMAP ||
+                    currentMapType == ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(current map type is not of those types)");
+            }
+            if(mcp.outputMapType() == ShapeMap::DATAMAP ||
+                    mcp.outputMapType() == ShapeMap::AXIALMAP ||
+                    mcp.outputMapType() == ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(selected output map type is not of those types)");
+            }
+        }
+        if (mcp.removeStubLength() > 0) {
+            if(currentMapType == ShapeMap::AXIALMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(current map type is not Axial)");
+            }
+            if(mcp.outputMapType() == ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(selected output map type is not Segment)");
+            }
+        }
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        switch(mcp.outputMapType()) {
+        case ShapeMap::DRAWINGMAP:
+            mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType);
+        case ShapeMap::AXIALMAP:
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP:
+                mGraph->convertDrawingToAxial(comm.get(), mcp.outputMapName());
+            case ShapeMap::DATAMAP:
+                mGraph->convertDataToAxial(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), mcp.copyAttributes());
+            default:
+                throw depthmapX::RuntimeException("Unsupported conversion to axial");
+            }
+        case ShapeMap::SEGMENTMAP:
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP:
+                mGraph->convertDrawingToSegment(comm.get(), mcp.outputMapName());
+
+            case ShapeMap::AXIALMAP:
+                mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
+                                              mcp.copyAttributes(), mcp.removeStubLength());
+            case ShapeMap::DATAMAP:
+                mGraph->convertDataToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), mcp.copyAttributes());
+            default:
+                throw depthmapX::RuntimeException("Unsupported conversion to segment");
+            }
+        case ShapeMap::DATAMAP:
+            mGraph->convertToData(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), currentMapType);
+        case ShapeMap::CONVEXMAP:
+            mGraph->convertToConvex(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), currentMapType);
+        }
+    }
 }

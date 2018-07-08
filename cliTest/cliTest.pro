@@ -38,7 +38,9 @@ SOURCES += main.cpp \
     ../depthmapXcli/stepdepthparser.cpp \
     teststepdepthparser.cpp \
     ../depthmapXcli/segmentparser.cpp \
-    testsegmentparser.cpp
+    testsegmentparser.cpp \
+    ../depthmapXcli/mapconvertparser.cpp \
+    testmapconvertparser.cpp
 
 
 HEADERS += \

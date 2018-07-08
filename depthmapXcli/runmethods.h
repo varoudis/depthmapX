@@ -22,6 +22,7 @@
 #include "performancesink.h"
 #include "vgaparser.h"
 #include "axialparser.h"
+#include "mapconvertparser.h"
 #include "segmentparser.h"
 #include "agentparser.h"
 #include "exportparser.h"
@@ -43,5 +44,6 @@ namespace dm_runmethods{
     void runIsovists(const CommandLineParser &cmdP, const std::vector<IsovistDefinition> &isovists, IPerformanceSink &perfWriter );
     void exportData(const CommandLineParser &cmdP, const ExportParser &exportP, IPerformanceSink &perfWriter );
     void runStepDepth(const CommandLineParser &clp, const std::vector<Point2f> &stepDepthPoints, IPerformanceSink &perfWriter);
+    void runMapConversion(const CommandLineParser& clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter);
 }
 #endif // RUNMETHODS_H
