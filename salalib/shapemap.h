@@ -359,6 +359,8 @@ public:
    //
    const std::vector<Connector>& getConnections() const
    { return m_connectors; }
+   std::vector<Connector>& getConnections()
+   { return m_connectors; }
    //
    bool isAllLineMap() const
    { return m_map_type == ALLLINEMAP; }
@@ -553,6 +555,7 @@ public:
    bool importPointsWithRefs(const std::map<int, Point2f> &points, const depthmapX::Table &data);
    bool importPolylines(const std::vector<depthmapX::Polyline> &lines, const depthmapX::Table &data);
    bool importPolylinesWithRefs(const std::map<int, depthmapX::Polyline> &lines, const depthmapX::Table &data);
+   void copyMapInfoBaseData(const ShapeMap& sourceMap);
 private:
    bool importData(const depthmapX::Table &data, std::vector<int> shape_refs);
 };

@@ -1300,15 +1300,15 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
                     break;
                 case 1:
                    if (graph->getViewClass() & MetaGraph::VIEWAXIAL) {
-                      if (graph->getShapeGraphs().getDisplayedMapRef() == entry.m_cat) {
+                      if (graph->getDisplayedShapeGraphRef() == entry.m_cat) {
                          graph->setViewClass(MetaGraph::SHOWHIDEAXIAL);
                       }
                       else {
-                         graph->getShapeGraphs().setDisplayedMapRef(entry.m_cat);
+                         graph->setDisplayedShapeGraphRef(entry.m_cat);
                       }
                    }
                    else {
-                      graph->getShapeGraphs().setDisplayedMapRef(entry.m_cat);
+                      graph->setDisplayedShapeGraphRef(entry.m_cat);
                       graph->setViewClass(MetaGraph::SHOWAXIALTOP);
                    }
                     remenu = true;
@@ -1342,9 +1342,9 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
             else if (entry.m_subcat == -1 && m_indexWidget->isEditableColumn(col)) {
                 // hit editable box
                 if (entry.m_type == 1) {
-                    int type = graph->getShapeGraphs().getMap(entry.m_cat).getMapType();
+                    int type = graph->getShapeGraphs()[entry.m_cat]->getMapType();
                     if (type != ShapeMap::SEGMENTMAP && type != ShapeMap::ALLLINEMAP) {
-                        graph->getShapeGraphs().getMap(entry.m_cat).setEditable(m_indexWidget->isItemSetEditable(hItem));
+                        graph->getShapeGraphs()[entry.m_cat]->setEditable(m_indexWidget->isItemSetEditable(hItem));
                         update = true;
                     }
                 }
@@ -1362,7 +1362,7 @@ void MainWindow::OnSelchangingTree(QTreeWidgetItem* hItem, int col)
                 // They've clicked on the displayed layers
                 if (entry.m_type == 1) {
                    update = true;
-                   graph->getShapeGraphs().getMap(entry.m_cat).setLayerVisible(entry.m_subcat, m_indexWidget->isItemSetVisible(hItem));
+                   graph->getShapeGraphs()[entry.m_cat]->setLayerVisible(entry.m_subcat, m_indexWidget->isItemSetVisible(hItem));
                 }
                 else if (entry.m_type == 2) {
                    update = true;
@@ -1420,11 +1420,11 @@ void MainWindow::SetGraphTreeChecks()
                         }
                         break;
                     case 1:
-                        if (viewclass & MetaGraph::VIEWAXIAL && graph->getShapeGraphs().getDisplayedMapRef() == entry.m_cat) {
+                        if (viewclass & MetaGraph::VIEWAXIAL && graph->getDisplayedShapeGraphRef() == entry.m_cat) {
                             checkstyle = 5;
                             m_topgraph = key;
                         }
-                        else if (viewclass & MetaGraph::VIEWBACKAXIAL && graph->getShapeGraphs().getDisplayedMapRef() == entry.m_cat) {
+                        else if (viewclass & MetaGraph::VIEWBACKAXIAL && graph->getDisplayedShapeGraphRef() == entry.m_cat) {
                             checkstyle = 6;
                             m_backgraph = key;
                         }
@@ -1461,12 +1461,12 @@ void MainWindow::SetGraphTreeChecks()
                         break;
                     case 1:
                         {
-                            int type = graph->getShapeGraphs().getMap(entry.m_cat).getMapType();
+                            int type = graph->getShapeGraphs()[entry.m_cat]->getMapType();
                             if (type == ShapeMap::SEGMENTMAP || type == ShapeMap::ALLLINEMAP) {
                                 editable = MetaGraph::NOT_EDITABLE;
                             }
                             else {
-                                editable = graph->getShapeGraphs().getMap(entry.m_cat).isEditable() ? MetaGraph::EDITABLE_ON : MetaGraph::EDITABLE_OFF;
+                                editable = graph->getShapeGraphs()[entry.m_cat]->isEditable() ? MetaGraph::EDITABLE_ON : MetaGraph::EDITABLE_OFF;
                             }
                         }
                         break;
@@ -1491,7 +1491,7 @@ void MainWindow::SetGraphTreeChecks()
                 // do not currently have layers supported
                 bool show = false;
                 if (entry.m_type == 1) {
-                    show = graph->getShapeGraphs().getMap(entry.m_cat).isLayerVisible(entry.m_subcat);
+                    show = graph->getShapeGraphs()[entry.m_cat]->isLayerVisible(entry.m_subcat);
                 }
                 else if (entry.m_type == 2) {
                     show = graph->getDataMaps()[entry.m_cat].isLayerVisible(entry.m_subcat);
@@ -1582,14 +1582,14 @@ void MainWindow::MakeGraphTree()
             m_treegraphmap[hItem] = entry;
             m_treeroots[1] = hItem;
         }
-        for (size_t i = 0; i < m_treeDoc->m_meta_graph->getShapeGraphs().getMapCount(); i++) {
-            QString name = QString(m_treeDoc->m_meta_graph->getShapeGraphs().getMap(i).getName().c_str());
+        for (size_t i = 0; i < m_treeDoc->m_meta_graph->getShapeGraphs().size(); i++) {
+            QString name = QString(m_treeDoc->m_meta_graph->getShapeGraphs()[i]->getName().c_str());
             QTreeWidgetItem* hItem = m_indexWidget->addNewItem(name, m_treeroots[1]);
             m_indexWidget->setItemVisibility(hItem, Qt::Unchecked);
             m_indexWidget->setItemEditability(hItem, Qt::Unchecked);
             ItemTreeEntry entry(1,(short)i,-1);
             m_treegraphmap.insert(std::make_pair(hItem,entry));
-            AttributeTable& table = m_treeDoc->m_meta_graph->getShapeGraphs().getMap(i).getAttributeTable();
+            AttributeTable& table = m_treeDoc->m_meta_graph->getShapeGraphs()[i]->getAttributeTable();
             if(table.getLayerCount() > 1) {
                 for (int j = 0; j < table.getLayerCount(); j++) {
                     QString name = QString(table.getLayerName(j).c_str());

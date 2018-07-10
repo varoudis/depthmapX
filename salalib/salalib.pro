@@ -47,7 +47,8 @@ SOURCES += \
     alllinemap.cpp \
     axialminimiser.cpp \
     axialpolygons.cpp \
-    tidylines.cpp
+    tidylines.cpp \
+    mapconverter.cpp
 
 HEADERS += \
     attributes.h \
@@ -91,7 +92,8 @@ HEADERS += \
     axialminimiser.h \
     tolerances.h \
     axialpolygons.h \
-    tidylines.h
+    tidylines.h \
+    mapconverter.h
 
 DISTFILES += \
     salascript-tests.txt

@@ -10,6 +10,8 @@ public:
                std::vector<SpacePixelFile> &drawingLayers,
                const Point2f& seed,
                const std::string& name = "All-Line Map");
+    AllLineMap(const std::string& name = "All-Line Map"):
+        ShapeGraph(name, ShapeMap::ALLLINEMAP) {};
     AxialPolygons m_polygons;
     prefvec<PolyConnector> m_poly_connections;
     pqvector<RadialLine> m_radial_lines;

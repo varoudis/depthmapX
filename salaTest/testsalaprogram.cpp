@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "../salalib/mapconverter.h"
 #include "catch.hpp"
 #include "genlib/paftl.h"
 #include "salalib/salaprogram.h"
@@ -169,9 +170,7 @@ TEST_CASE("Shapemap scripts") {
     metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
     metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
-    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
-    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+    auto shapeGraph = MapConverter::convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
 
 
     std::stringstream script;
@@ -227,19 +226,19 @@ TEST_CASE("Shapemap scripts") {
             expectedColVals.push_back(3.0);
     }
 
-    int newCol = displayedShapeGraph.addAttribute("NewCol");
+    int newCol = shapeGraph->addAttribute("NewCol");
     SalaGrf graph;
-    graph.map.shape = &displayedShapeGraph;
+    graph.map.shape = shapeGraph.get();
     SalaObj context = SalaObj(SalaObj::S_SHAPEMAPOBJ, graph);
     SalaProgram program(context);
     program.parse(script);
     program.runupdate(newCol);
 
-    REQUIRE(displayedShapeGraph.getAttributeTable().getRowCount() == expectedColVals.size());
+    REQUIRE(shapeGraph->getAttributeTable().getRowCount() == expectedColVals.size());
 
     auto iter = expectedColVals.begin();
-    for(int i = 0; i < displayedShapeGraph.getAttributeTable().getRowCount(); i++) {
-        REQUIRE(displayedShapeGraph.getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
+    for(int i = 0; i < shapeGraph->getAttributeTable().getRowCount(); i++) {
+        REQUIRE(shapeGraph->getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
         iter++;
     }
 }
@@ -270,9 +269,7 @@ TEST_CASE("Shapemap scripts with unexpected results") {
     metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line4Start, line4End));
     metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line5Start, line5End));
 
-    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
-    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+    auto shapeGraph = MapConverter::convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
 
 
     std::stringstream script;
@@ -361,19 +358,19 @@ TEST_CASE("Shapemap scripts with unexpected results") {
 
 
 
-    int newCol = displayedShapeGraph.addAttribute("NewCol");
+    int newCol = shapeGraph->addAttribute("NewCol");
     SalaGrf graph;
-    graph.map.shape = &displayedShapeGraph;
+    graph.map.shape = shapeGraph.get();
     SalaObj context = SalaObj(SalaObj::S_SHAPEMAPOBJ, graph);
     SalaProgram program(context);
     program.parse(script);
     program.runupdate(newCol);
 
-    REQUIRE(displayedShapeGraph.getAttributeTable().getRowCount() == expectedColVals.size());
+    REQUIRE(shapeGraph->getAttributeTable().getRowCount() == expectedColVals.size());
 
     auto iter = expectedColVals.begin();
-    for(int i = 0; i < displayedShapeGraph.getAttributeTable().getRowCount(); i++) {
-        REQUIRE(displayedShapeGraph.getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
+    for(int i = 0; i < shapeGraph->getAttributeTable().getRowCount(); i++) {
+        REQUIRE(shapeGraph->getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
         iter++;
     }
 }

@@ -94,24 +94,14 @@ public:
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
 
-class ShapeGraphs : public ShapeMaps<ShapeGraph>
+class ShapeGraphs
 {
 public:
+
    ShapeGraphs() { }
    virtual ~ShapeGraphs() {;}
    //
    // ShapeGraphs just have extra functionality over ShapeMaps here:
-   int convertDrawingToAxial(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles);
-   int convertDataToAxial(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
-   int convertDrawingToConvex(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles);
-   int convertDataToConvex(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
-   int convertDrawingToSegment(Communicator *comm, const std::string& name, std::vector<SpacePixelFile> &drawingFiles);
-   int convertDataToSegment(Communicator *comm, const std::string& name, ShapeMap& shapemap, bool copydata = false);
-   int convertAxialToSegment(Communicator *comm, const std::string& name, bool keeporiginal = true, bool pushvalues = false, double stubremoval = 0.0);
-
-   bool read(std::istream &stream, int version );
-   bool readold( std::istream& stream, int version );
-   bool write( std::ofstream& stream, int version, bool displayedmaponly = false );
 };
 
 #endif
