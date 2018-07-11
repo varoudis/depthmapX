@@ -559,28 +559,28 @@ namespace dm_runmethods
         }
 
         if (mcp.copyAttributes()) {
-            if(currentMapType == ShapeMap::DATAMAP ||
-                    currentMapType == ShapeMap::AXIALMAP ||
-                    currentMapType == ShapeMap::SEGMENTMAP) {
+            if(currentMapType != ShapeMap::DATAMAP &&
+                    currentMapType != ShapeMap::AXIALMAP &&
+                    currentMapType != ShapeMap::SEGMENTMAP) {
                 throw depthmapX::RuntimeException("Copying attributes is only available when "\
                                                   "converting between Data, Axial and Segment maps "\
                                                   "(current map type is not of those types)");
             }
-            if(mcp.outputMapType() == ShapeMap::DATAMAP ||
-                    mcp.outputMapType() == ShapeMap::AXIALMAP ||
-                    mcp.outputMapType() == ShapeMap::SEGMENTMAP) {
+            if(mcp.outputMapType() != ShapeMap::DATAMAP &&
+                    mcp.outputMapType() != ShapeMap::AXIALMAP &&
+                    mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
                 throw depthmapX::RuntimeException("Copying attributes is only available when "\
                                                   "converting between Data, Axial and Segment maps "\
                                                   "(selected output map type is not of those types)");
             }
         }
         if (mcp.removeStubLength() > 0) {
-            if(currentMapType == ShapeMap::AXIALMAP) {
+            if(currentMapType != ShapeMap::AXIALMAP) {
                 throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
                                                   "converting from Axial to Segment maps"\
                                                   "(current map type is not Axial)");
             }
-            if(mcp.outputMapType() == ShapeMap::SEGMENTMAP) {
+            if(mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
                 throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
                                                   "converting from Axial to Segment maps"\
                                                   "(selected output map type is not Segment)");
