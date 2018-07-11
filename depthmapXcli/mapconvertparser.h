@@ -26,9 +26,7 @@ public:
         m_removeInputMap(false),
         m_copyAttributes(false),
         m_removeStubLengthPRC(0)
-    {
-
-    }
+    {}
 
     // IModeParser interface
 public:
