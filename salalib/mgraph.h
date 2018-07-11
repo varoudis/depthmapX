@@ -87,7 +87,7 @@ public:
    std::vector<ShapeMap> m_dataMaps;
 
    std::vector<std::unique_ptr<ShapeGraph>> m_shapeGraphs;
-   int m_displayed_shapegraph;
+   int m_displayed_shapegraph = -1;
 
 public:
    MetaGraph(std::string name = "");
@@ -252,8 +252,12 @@ public:
    { return *m_shapeGraphs[m_displayed_shapegraph].get(); }
    const ShapeGraph& getDisplayedShapeGraph() const
    { return *m_shapeGraphs[m_displayed_shapegraph].get(); }
-   void setDisplayedShapeGraphRef(int i)
-   { m_displayed_shapegraph = i; }
+   void setDisplayedShapeGraphRef(int map)
+   {
+       if (m_displayed_shapegraph != -1 && m_displayed_shapegraph != map)
+          m_shapeGraphs[size_t(m_displayed_shapegraph)]->clearSel();
+       m_displayed_shapegraph = map;
+   }
    int getDisplayedShapeGraphRef() const
    { return m_displayed_shapegraph; }
 
