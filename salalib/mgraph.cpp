@@ -2605,8 +2605,7 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
         }
     }
 
-    // P.K: temporary functionality until ShapeGraphs is removed
-    // also, ideally this should be read together with the
+    // P.K: ideally this should be read together with the
     // all-line map, but the way the graph file is structured
     // this is not possible
     // TODO: Fix on next graph file update

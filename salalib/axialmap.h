@@ -52,7 +52,6 @@ class MapInfoData;
 
 class ShapeGraph : public ShapeMap
 {
-   friend class ShapeGraphs;
    friend class AxialMinimiser;
    friend class MapInfoData;
 protected:
@@ -92,16 +91,6 @@ public:
    void writeSegmentConnectionsAsPairsCSV(std::ostream &stream);
    //
    void unlinkFromShapeMap(const ShapeMap& shapemap);
-};
-
-class ShapeGraphs
-{
-public:
-
-   ShapeGraphs() { }
-   virtual ~ShapeGraphs() {;}
-   //
-   // ShapeGraphs just have extra functionality over ShapeMaps here:
 };
 
 #endif
