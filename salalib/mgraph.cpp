@@ -1174,7 +1174,7 @@ bool MetaGraph::makeFewestLineMap( Communicator *communicator, int replace )
    int oldstate= m_state;
    m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload) 
 
-   bool retvar = false;
+   bool retvar = true;
 
    try {
        // no all line map
