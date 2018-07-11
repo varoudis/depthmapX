@@ -547,4 +547,117 @@ namespace dm_runmethods
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
                 std::cout << " ok" << std::endl;
     }
+
+    void runMapConversion(const CommandLineParser &clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
+
+        int currentMapType = mGraph->getDisplayedMapType();
+
+        if (currentMapType == ShapeMap::EMPTYMAP) {
+            throw depthmapX::RuntimeException("No currently available map to convert from");
+        }
+
+        if (mcp.copyAttributes()) {
+            if(currentMapType != ShapeMap::DATAMAP &&
+                    currentMapType != ShapeMap::AXIALMAP &&
+                    currentMapType != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(current map type is not of those types)");
+            }
+            if(mcp.outputMapType() != ShapeMap::DATAMAP &&
+                    mcp.outputMapType() != ShapeMap::AXIALMAP &&
+                    mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(selected output map type is not of those types)");
+            }
+        }
+        if (mcp.removeStubLength() > 0) {
+            if(currentMapType != ShapeMap::AXIALMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(current map type is not Axial)");
+            }
+            if(mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(selected output map type is not Segment)");
+            }
+        }
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        switch(mcp.outputMapType()) {
+        case ShapeMap::DRAWINGMAP: {
+            DO_TIMED("Converting to drawing",
+                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType));
+            break;
+        }
+        case ShapeMap::AXIALMAP: {
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to axial",
+                         mGraph->convertDrawingToAxial(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to axial",
+                         mGraph->convertDataToAxial(comm.get(), mcp.outputMapName(),
+                                                    !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
+                throw depthmapX::RuntimeException("Unsupported conversion to axial");
+            }
+            }
+            break;
+        }
+        case ShapeMap::SEGMENTMAP: {
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to segment",
+                         mGraph->convertDrawingToSegment(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::AXIALMAP: {
+                DO_TIMED("Converting from axial to segment",
+                         mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
+                                                       mcp.copyAttributes(), mcp.removeStubLength()));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to segment",
+                         mGraph->convertDataToSegment(comm.get(), mcp.outputMapName(),
+                                                      !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
+                throw depthmapX::RuntimeException("Unsupported conversion to segment");
+            }
+            }
+            break;
+        }
+        case ShapeMap::DATAMAP: {
+            DO_TIMED("Converting to data",
+                     mGraph->convertToData(comm.get(), mcp.outputMapName(),
+                                           !mcp.removeInputMap(), currentMapType));
+            break;
+        }
+        case ShapeMap::CONVEXMAP: {
+            DO_TIMED("Converting to convex",
+                     mGraph->convertToConvex(comm.get(), mcp.outputMapName(),
+                                             !mcp.removeInputMap(), currentMapType));
+            break;
+        }
+        default: {
+            throw depthmapX::RuntimeException("Unsupported conversion");
+        }
+        }
+
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
+    }
 }
