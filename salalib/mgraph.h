@@ -116,7 +116,7 @@ public:
 
 private:
    std::vector<PointMap> m_pointMaps;
-   int m_displayed_pointmap;
+   int m_displayed_pointmap = -1;
 
    // helpful to know this for creating fewest line maps, although has to be reread at input
    int m_all_line_map = -1;
