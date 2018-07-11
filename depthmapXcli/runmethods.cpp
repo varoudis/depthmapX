@@ -619,5 +619,9 @@ namespace dm_runmethods
         case ShapeMap::CONVEXMAP:
             mGraph->convertToConvex(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), currentMapType);
         }
+
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
     }
 }
