@@ -171,6 +171,7 @@ public:
    bool polyClose(int shape_ref);
    bool polyCancel(int shape_ref);
    //
+   int addShapeGraph(std::unique_ptr<ShapeGraph>& shapeGraph);
    int addShapeGraph(const std::string& name, int type);
    int addShapeMap(const std::string& name);
    void removeDisplayedMap();

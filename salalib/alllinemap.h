@@ -18,7 +18,7 @@ public:
     void setKeyVertexCount(int keyvertexcount) {
         m_keyvertexcount = keyvertexcount;
     }
-    std::tuple<ShapeGraph, ShapeGraph> extractFewestLineMaps(Communicator *comm);
+    std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> extractFewestLineMaps(Communicator *comm);
     void makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey, pvecint> &radialdivisions, std::map<int,pvecint>& axialdividers, Communicator *comm);
 
 };

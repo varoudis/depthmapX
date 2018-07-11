@@ -665,19 +665,24 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
 
 //////////////////////////////////////////////////////////////////
 
+int MetaGraph::addShapeGraph(std::unique_ptr<ShapeGraph>& shapeGraph) {
+    m_shapeGraphs.push_back(std::move(shapeGraph));
+    int mapref= int(m_shapeGraphs.size() - 1);
+    m_state |= SHAPEGRAPHS;
+    setViewClass(SHOWAXIALTOP);
+    return mapref;
+}
+
 int MetaGraph::addShapeGraph(const std::string& name, int type)
 {
-   m_shapeGraphs.push_back(std::unique_ptr<ShapeGraph>(new ShapeGraph(name, type)));
-   int mapref= m_shapeGraphs.size() - 1;
-   m_state |= SHAPEGRAPHS;
-   setViewClass(SHOWAXIALTOP);
-   // add a couple of default columns:
-   AttributeTable& table = m_shapeGraphs[mapref]->getAttributeTable();
-   table.insertLockedColumn("Connectivity");
-   if ((type & ShapeMap::LINEMAP) != 0) {
-      table.insertLockedColumn("Line Length");
-   }
-   return mapref;
+    std::unique_ptr<ShapeGraph> shapeGraph(new ShapeGraph(name, type));
+    int mapref = addShapeGraph(shapeGraph);
+    // add a couple of default columns:
+    AttributeTable& table = m_shapeGraphs[size_t(mapref)]->getAttributeTable();
+    table.insertLockedColumn("Connectivity");
+    if ((type & ShapeMap::LINEMAP) != 0) {
+        table.insertLockedColumn("Line Length");
+    }
 }
 int MetaGraph::addShapeMap(const std::string& name)
 {
@@ -727,8 +732,9 @@ bool MetaGraph::convertDrawingToAxial(Communicator *comm, std::string layer_name
    bool retvar = true;
    
    try {
-      m_shapeGraphs.push_back(MapConverter::convertDrawingToAxial( comm, layer_name, m_drawingFiles ));
-      setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
+      auto shapeGraph = MapConverter::convertDrawingToAxial( comm, layer_name, m_drawingFiles );
+      int mapref = addShapeGraph(shapeGraph);
+      setDisplayedShapeGraphRef(mapref);
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -753,15 +759,14 @@ bool MetaGraph::convertDataToAxial(Communicator *comm, std::string layer_name, b
    bool retvar = true;
    
    try {
-      m_shapeGraphs.push_back(MapConverter::convertDataToAxial( comm, layer_name, getDisplayedDataMap(), pushvalues ));
+       auto shapeGraph = MapConverter::convertDataToAxial( comm, layer_name, getDisplayedDataMap(), pushvalues );
+       addShapeGraph(shapeGraph);
 
+       m_shapeGraphs.back()->overrideDisplayedAttribute(-2); // <- override if it's already showing
+       m_shapeGraphs.back()->setDisplayedAttribute(
+                   m_shapeGraphs.back()->getAttributeTable().getColumnIndex("Connectivity") );
 
-      m_shapeGraphs.back()->overrideDisplayedAttribute(-2); // <- override if it's already showing
-      m_shapeGraphs.back()->setDisplayedAttribute(
-                  m_shapeGraphs.back()->getAttributeTable().getColumnIndex("Connectivity") );
-
-      setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
-
+       setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -796,10 +801,12 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
    try {
       int mapref;
       if (typeflag == -1) {
-         m_shapeGraphs.push_back(MapConverter::convertDrawingToConvex( comm, layer_name, m_drawingFiles ));
+          auto shapeGraph = MapConverter::convertDrawingToConvex( comm, layer_name, m_drawingFiles );
+          addShapeGraph(shapeGraph);
       }
       else {
-         m_shapeGraphs.push_back(MapConverter::convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) ));
+          auto shapeGraph = MapConverter::convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) );
+          addShapeGraph(shapeGraph );
       }
 
       m_shapeGraphs.back()->overrideDisplayedAttribute( -2 ); // <- override if it's already showing
@@ -840,9 +847,10 @@ bool MetaGraph::convertDrawingToSegment(Communicator *comm, std::string layer_na
    bool retvar = true;
    
    try {
-      m_shapeGraphs.push_back(MapConverter::convertDrawingToSegment( comm, layer_name, m_drawingFiles ));
+       auto shapeGraph = MapConverter::convertDrawingToSegment( comm, layer_name, m_drawingFiles );
+       addShapeGraph(shapeGraph);
 
-      setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
+       setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -867,11 +875,12 @@ bool MetaGraph::convertDataToSegment(Communicator *comm, std::string layer_name,
    bool retvar = true;
    
    try {
-      m_shapeGraphs.push_back(MapConverter::convertDataToSegment( comm, layer_name, getDisplayedDataMap(), pushvalues ));
+       auto shapeGraph = MapConverter::convertDataToSegment( comm, layer_name, getDisplayedDataMap(), pushvalues );
+       addShapeGraph(shapeGraph);
 
-      m_shapeGraphs.back()->overrideDisplayedAttribute( -2 ); // <- override if it's already showing
-      m_shapeGraphs.back()->setDisplayedAttribute( -1 );
-      setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
+       m_shapeGraphs.back()->overrideDisplayedAttribute( -2 ); // <- override if it's already showing
+       m_shapeGraphs.back()->setDisplayedAttribute( -1 );
+       setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 1));
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1060,9 +1069,10 @@ bool MetaGraph::convertAxialToSegment(Communicator *comm, std::string layer_name
           return false;
        }
 
-       m_shapeGraphs.push_back(MapConverter::convertAxialToSegment(comm, getDisplayedShapeGraph(),
-                                                                  layer_name, keeporiginal,
-                                                                  pushvalues, stubremoval));
+       auto shapeGraph = MapConverter::convertAxialToSegment(comm, getDisplayedShapeGraph(),
+                                                             layer_name, keeporiginal,
+                                                             pushvalues, stubremoval);
+       addShapeGraph(shapeGraph);
 
        m_shapeGraphs.back()->overrideDisplayedAttribute(-2); // <- override if it's already showing
        m_shapeGraphs.back()->setDisplayedAttribute(
@@ -1175,7 +1185,7 @@ bool MetaGraph::makeFewestLineMap( Communicator *communicator, int replace )
        AllLineMap* alllinemap = dynamic_cast<AllLineMap*>(m_shapeGraphs[size_t(m_all_line_map)].get());
 
        // waiting for C++17...
-       ShapeGraph fewestlinemap_subsets, fewestlinemap_minimal;
+       std::unique_ptr<ShapeGraph> fewestlinemap_subsets, fewestlinemap_minimal;
        std::tie(fewestlinemap_subsets, fewestlinemap_minimal) = alllinemap->extractFewestLineMaps(communicator);
 
        if (replace != 0) {
@@ -1203,8 +1213,8 @@ bool MetaGraph::makeFewestLineMap( Communicator *communicator, int replace )
                removeShapeGraph(index);
            }
        }
-       m_shapeGraphs.push_back(std::unique_ptr<ShapeGraph>(new ShapeGraph(fewestlinemap_subsets)));
-       m_shapeGraphs.push_back(std::unique_ptr<ShapeGraph>(new ShapeGraph(fewestlinemap_minimal)));
+       addShapeGraph(fewestlinemap_subsets);
+       addShapeGraph(fewestlinemap_minimal);
 
        setDisplayedShapeGraphRef(int(m_shapeGraphs.size() - 2));
 

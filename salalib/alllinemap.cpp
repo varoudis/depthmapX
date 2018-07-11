@@ -134,7 +134,7 @@ AllLineMap::AllLineMap(Communicator *comm,
    setKeyVertexCount(m_polygons.m_vertex_possibles.size());
 }
 
-std::tuple<ShapeGraph, ShapeGraph> AllLineMap::extractFewestLineMaps(Communicator *comm)
+std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap::extractFewestLineMaps(Communicator *comm)
 {
 
    if (comm) {
@@ -255,28 +255,28 @@ std::tuple<ShapeGraph, ShapeGraph> AllLineMap::extractFewestLineMaps(Communicato
 
    delete [] keyvertexcounts;
 
-   ShapeGraph fewestlinemap_subsets("Fewest-Line Map (Subsets)", ShapeMap::AXIALMAP);
-   fewestlinemap_subsets.clearAll();
-   fewestlinemap_subsets.init(int(lines_s.size()),m_polygons.getRegion());
+   std::unique_ptr<ShapeGraph> fewestlinemap_subsets(new ShapeGraph("Fewest-Line Map (Subsets)", ShapeMap::AXIALMAP));
+   fewestlinemap_subsets->clearAll();
+   fewestlinemap_subsets->init(int(lines_s.size()),m_polygons.getRegion());
 
-   fewestlinemap_subsets.initialiseAttributesAxial();
+   fewestlinemap_subsets->initialiseAttributesAxial();
    for (size_t k = 0; k < lines_s.size(); k++) {
-      fewestlinemap_subsets.makeLineShape(lines_s[k]);
+      fewestlinemap_subsets->makeLineShape(lines_s[k]);
    }
-   fewestlinemap_subsets.makeConnections();
+   fewestlinemap_subsets->makeConnections();
 
 
-   ShapeGraph fewestlinemap_minimal("Fewest-Line Map (Minimal)", ShapeMap::AXIALMAP);
-   fewestlinemap_minimal.clearAll();
-   fewestlinemap_minimal.init(int(lines_m.size()),m_polygons.getRegion()); // used to have a '2' for double pixel density
+   std::unique_ptr<ShapeGraph> fewestlinemap_minimal(new ShapeGraph("Fewest-Line Map (Minimal)", ShapeMap::AXIALMAP));
+   fewestlinemap_minimal->clearAll();
+   fewestlinemap_minimal->init(int(lines_m.size()),m_polygons.getRegion()); // used to have a '2' for double pixel density
 
-   fewestlinemap_minimal.initialiseAttributesAxial();
+   fewestlinemap_minimal->initialiseAttributesAxial();
    for (size_t k = 0; k < lines_m.size(); k++) {
-      fewestlinemap_minimal.makeLineShape(lines_m[k]);
+      fewestlinemap_minimal->makeLineShape(lines_m[k]);
    }
-   fewestlinemap_minimal.makeConnections();
+   fewestlinemap_minimal->makeConnections();
 
-   return std::make_tuple(fewestlinemap_subsets, fewestlinemap_minimal);
+   return std::make_tuple(std::move(fewestlinemap_subsets), std::move(fewestlinemap_minimal));
 }
 
 void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
