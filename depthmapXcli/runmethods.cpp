@@ -590,34 +590,70 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
 
         switch(mcp.outputMapType()) {
-        case ShapeMap::DRAWINGMAP:
-            mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType);
-        case ShapeMap::AXIALMAP:
+        case ShapeMap::DRAWINGMAP: {
+            DO_TIMED("Converting to drawing",
+                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType));
+            break;
+        }
+        case ShapeMap::AXIALMAP: {
             switch(currentMapType) {
-            case ShapeMap::DRAWINGMAP:
-                mGraph->convertDrawingToAxial(comm.get(), mcp.outputMapName());
-            case ShapeMap::DATAMAP:
-                mGraph->convertDataToAxial(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), mcp.copyAttributes());
-            default:
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to axial",
+                         mGraph->convertDrawingToAxial(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to axial",
+                         mGraph->convertDataToAxial(comm.get(), mcp.outputMapName(),
+                                                    !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
                 throw depthmapX::RuntimeException("Unsupported conversion to axial");
             }
-        case ShapeMap::SEGMENTMAP:
+            }
+            break;
+        }
+        case ShapeMap::SEGMENTMAP: {
             switch(currentMapType) {
-            case ShapeMap::DRAWINGMAP:
-                mGraph->convertDrawingToSegment(comm.get(), mcp.outputMapName());
-
-            case ShapeMap::AXIALMAP:
-                mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
-                                              mcp.copyAttributes(), mcp.removeStubLength());
-            case ShapeMap::DATAMAP:
-                mGraph->convertDataToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), mcp.copyAttributes());
-            default:
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to segment",
+                         mGraph->convertDrawingToSegment(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::AXIALMAP: {
+                DO_TIMED("Converting from axial to segment",
+                         mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
+                                                       mcp.copyAttributes(), mcp.removeStubLength()));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to segment",
+                         mGraph->convertDataToSegment(comm.get(), mcp.outputMapName(),
+                                                      !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
                 throw depthmapX::RuntimeException("Unsupported conversion to segment");
             }
-        case ShapeMap::DATAMAP:
-            mGraph->convertToData(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), currentMapType);
-        case ShapeMap::CONVEXMAP:
-            mGraph->convertToConvex(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(), currentMapType);
+            }
+            break;
+        }
+        case ShapeMap::DATAMAP: {
+            DO_TIMED("Converting to data",
+                     mGraph->convertToData(comm.get(), mcp.outputMapName(),
+                                           !mcp.removeInputMap(), currentMapType));
+            break;
+        }
+        case ShapeMap::CONVEXMAP: {
+            DO_TIMED("Converting to convex",
+                     mGraph->convertToConvex(comm.get(), mcp.outputMapName(),
+                                             !mcp.removeInputMap(), currentMapType));
+            break;
+        }
+        default: {
+            throw depthmapX::RuntimeException("Unsupported conversion");
+        }
         }
 
         std::cout << " ok\nWriting out result..." << std::flush;
