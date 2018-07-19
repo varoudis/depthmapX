@@ -65,6 +65,14 @@
                 "-em": "pointmap-data-csv"
             }
         }],
+        "pointmap_export_links": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-links-csv"
+            }
+        }],
         "visibility_global_n": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
