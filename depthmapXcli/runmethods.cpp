@@ -596,7 +596,7 @@ namespace dm_runmethods
         switch(mcp.outputMapType()) {
         case ShapeMap::DRAWINGMAP: {
             DO_TIMED("Converting to drawing",
-                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType));
+                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType == ShapeMap::DATAMAP));
             break;
         }
         case ShapeMap::AXIALMAP: {
@@ -646,13 +646,13 @@ namespace dm_runmethods
         case ShapeMap::DATAMAP: {
             DO_TIMED("Converting to data",
                      mGraph->convertToData(comm.get(), mcp.outputMapName(),
-                                           !mcp.removeInputMap(), currentMapType));
+                                           !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
         case ShapeMap::CONVEXMAP: {
             DO_TIMED("Converting to convex",
                      mGraph->convertToConvex(comm.get(), mcp.outputMapName(),
-                                             !mcp.removeInputMap(), currentMapType));
+                                             !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
         default: {
