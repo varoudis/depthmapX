@@ -54,9 +54,6 @@ struct RadialKey {
    { vertex = v; ang = a; segend = se; }
    RadialKey(const RadialKey& rk) : pad1(0), pad2(0)
    { vertex = rk.vertex; ang = rk.ang; segend = rk.segend; }
-   friend bool operator < (const RadialKey& a, const RadialKey& b);
-   friend bool operator > (const RadialKey& a, const RadialKey& b);
-   friend bool operator == (const RadialKey& a, const RadialKey& b);
 };
 inline bool operator < (const RadialKey& a, const RadialKey& b)
 { return a.vertex < b.vertex || (a.vertex == b.vertex && (a.ang < b.ang || (a.ang == b.ang && a.segend < b.segend))); }
