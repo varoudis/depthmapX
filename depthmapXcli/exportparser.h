@@ -32,7 +32,8 @@ public:
         return    "Mode options for EXPORT:\n"\
                   "-em <export mode> one of:\n"\
                   "    pointmap-data-csv\n"\
-                  "    pointmap-connections-csv\n";
+                  "    pointmap-connections-csv\n"\
+                  "    pointmap-links-csv\n";
     }
 
 public:
