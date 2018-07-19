@@ -1874,16 +1874,26 @@ int MetaGraph::getDisplayedMapRef() const
 
 int MetaGraph::getDisplayedMapType()
 {
-   int type = ShapeMap::EMPTYMAP;
    switch (m_view_class & VIEWFRONT) {
+   case VIEWVGA:
+      return ShapeMap::POINTMAP;
    case VIEWAXIAL:
-      type = m_shape_graphs.getDisplayedMap().getMapType();
-      break;
+      return m_shape_graphs.getDisplayedMap().getMapType();
    case VIEWDATA:
-      type = getDisplayedDataMap().getMapType();
-      break;
+      return getDisplayedDataMap().getMapType();
    }
-   return type;
+   return ShapeMap::EMPTYMAP;
+}
+
+bool MetaGraph::hasVisibleDrawingLayers() {
+    if(!m_drawingFiles.empty()) {
+        for (const auto& pixelGroup: m_drawingFiles) {
+           for (const auto& pixel: pixelGroup.m_spacePixels) {
+              if (pixel.isShown()) return true;
+           }
+        }
+    }
+    return false;
 }
 
 // note: 0 is not at all editable, 1 is editable off and 2 is editable on

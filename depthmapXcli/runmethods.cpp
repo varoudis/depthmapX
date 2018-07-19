@@ -555,7 +555,11 @@ namespace dm_runmethods
         int currentMapType = mGraph->getDisplayedMapType();
 
         if (currentMapType == ShapeMap::EMPTYMAP) {
-            throw depthmapX::RuntimeException("No currently available map to convert from");
+            if(mGraph->hasVisibleDrawingLayers()) {
+                currentMapType = ShapeMap::DRAWINGMAP;
+            } else {
+                throw depthmapX::RuntimeException("No currently available map to convert from");
+            }
         }
 
         if (mcp.copyAttributes()) {
