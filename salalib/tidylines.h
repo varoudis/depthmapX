@@ -7,8 +7,6 @@
 class TidyLines : public SpacePixel
 {
 public:
-   TidyLines() {;}
-   virtual ~TidyLines() {;}
    void tidy(std::vector<Line> &lines, const QtRegion& region);
    void quicktidy(std::map<int, Line> &lines, const QtRegion& region);
 };
