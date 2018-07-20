@@ -8,7 +8,7 @@
             "outfile": "out.graph",
             "mode": "LINK",
             "extraArgs": {
-               "-lnk": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
+               "-lnk": "1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"
             }
         }],
         "links_pointmap_file": [{
@@ -27,7 +27,7 @@
                "-lmt": "shapegraphs",
                "-lm": "unlink",
                "-lt": "coords",
-               "-lnk": ["530797,184255"]
+               "-lnk": "530797,184255"
             }
         }],
         "unlinks_shapegraph_refs": [{
@@ -38,7 +38,7 @@
                "-lmt": "shapegraphs",
                "-lm": "unlink",
                "-lt": "refs",
-               "-lnk": ["18,24"]
+               "-lnk": "18,24"
             }
         }],
         "links_shapegraph_coords": [{
@@ -49,7 +49,7 @@
                "-lmt": "shapegraphs",
                "-lm": "link",
                "-lt": "coords",
-               "-lnk": ["530684,184098,531388,184353"]
+               "-lnk": "530684,184098,531388,184353"
             }
         }],
         "links_shapegraph_refs": [{
@@ -60,7 +60,7 @@
                "-lmt": "shapegraphs",
                "-lm": "link",
                "-lt": "refs",
-               "-lnk": ["1,41"]
+               "-lnk": "1,41"
             }
         }],
         "links_shapegraph_refs_non_cont_keys": [{
@@ -71,7 +71,7 @@
                "-lmt": "shapegraphs",
                "-lm": "link",
                "-lt": "refs",
-               "-lnk": ["17,11"]
+               "-lnk": "17,11"
             }
         }],
         "visibility_local": [{
