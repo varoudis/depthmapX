@@ -221,7 +221,7 @@ public:
    void writeAxialConnectionsAsDotGraph(std::ostream &stream);
    void writeAxialConnectionsAsPairsCSV(std::ostream &stream);
    void writeSegmentConnectionsAsPairsCSV(std::ostream &stream);
-   //
+   void unlinkAtPoint(const Point2f& unlinkPoint);
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
 
