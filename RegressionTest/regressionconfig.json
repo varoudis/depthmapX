@@ -83,7 +83,7 @@
         }],
         "axial_export_map_mif": [{
             "infile": "../../../testdata/barnsbury_axial.graph",
-            "outfile": "out",
+            "outfile": "out.mif",
             "mode": "EXPORT",
             "extraArgs": {
                 "-em": "shapegraph-map-mif"
