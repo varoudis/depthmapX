@@ -34,8 +34,8 @@ public:
                   "    pointmap-data-csv\n"\
                   "    pointmap-connections-csv\n"\
                   "    pointmap-links-csv\n"\
-                  "    shapegraphs-data-csv\n"\
-                  "    shapegraphs-data-mif\n";
+                  "    shapegraph-map-csv\n"\
+                  "    shapegraph-map-mif\n";
     }
 
 public:
