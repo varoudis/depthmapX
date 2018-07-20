@@ -524,12 +524,12 @@ namespace dm_runmethods
                 if (0 == fileName.compare(fileName.length() - 4, 4, ".mif")) {
                     // we are given the .mif
                     mifFile = fileName;
-                    mifFile = fileName.substr(0,  fileName.length() - 4) + ".mid";
+                    midFile = fileName.substr(0,  fileName.length() - 4) + ".mid";
 
                 } else if (0 == fileName.compare(fileName.length() - 4, 4, ".mid")) {
                     // we are given the .mid
                     mifFile = fileName.substr(0, fileName.length() - 4) + ".mif";
-                    mifFile = fileName;
+                    midFile = fileName;
                 }
                 std::ofstream mifStream(mifFile);
                 std::ofstream midStream(midFile);
