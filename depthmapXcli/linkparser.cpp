@@ -15,7 +15,6 @@
 
 #include "linkparser.h"
 #include "salalib/mgraph.h"
-#include "salalib/entityparsing.h"
 #include "exceptions.h"
 #include "runmethods.h"
 #include "parsingutils.h"
@@ -27,27 +26,72 @@ using namespace depthmapX;
 
 void LinkParser::parse(int argc, char *argv[])
 {
-    std::string linksFile;
-    std::vector<std::string> manualLinks;
-
     for ( int i = 1; i < argc;  )
     {
-        if ( std::strcmp ("-lf", argv[i]) == 0)
+        if ( std::strcmp ("-lmt", argv[i]) == 0)
         {
-            if (!linksFile.empty())
+            ENFORCE_ARGUMENT("-lmt", i)
+            if ( std::strcmp(argv[i], "pointmaps") == 0 )
+            {
+                _mapTypeGroup = MapTypeGroup::POINTMAPS;
+            }
+            else if ( std::strcmp(argv[i], "shapegraphs") == 0 )
+            {
+                _mapTypeGroup = MapTypeGroup::SHAPEGRAPHS;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid LINK map type group: ") + argv[i]);
+            }
+        }
+        else if ( std::strcmp ("-lm", argv[i]) == 0)
+        {
+            ENFORCE_ARGUMENT("-lm", i)
+            if ( std::strcmp(argv[i], "link") == 0 )
+            {
+                _linkMode = LinkMode::LINK;
+            }
+            else if ( std::strcmp(argv[i], "unlink") == 0 )
+            {
+                _linkMode = LinkMode::UNLINK;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid LINK mode: ") + argv[i]);
+            }
+        }
+        else if ( std::strcmp ("-lt", argv[i]) == 0)
+        {
+            ENFORCE_ARGUMENT("-lt", i)
+            if ( std::strcmp(argv[i], "coords") == 0 )
+            {
+                _linkType = LinkType::COORDS;
+            }
+            else if ( std::strcmp(argv[i], "refs") == 0 )
+            {
+                _linkType = LinkType::REFS;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid LINK type: ") + argv[i]);
+            }
+        }
+        else if ( std::strcmp ("-lf", argv[i]) == 0)
+        {
+            if (!_linksFile.empty())
             {
                 throw CommandLineException("-lf can only be used once at the moment");
             }
-            else if (manualLinks.size() != 0)
+            else if (_manualLinks.size() != 0)
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
             ENFORCE_ARGUMENT("-lf", i)
-            linksFile = argv[i];
+            _linksFile = argv[i];
         }
         else if ( std::strcmp ("-lnk", argv[i]) == 0)
         {
-            if (!linksFile.empty())
+            if (!_linksFile.empty())
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
@@ -61,43 +105,21 @@ void LinkParser::parse(int argc, char *argv[])
                         << std::flush;
                 throw CommandLineException(message.str().c_str());
             }
-            manualLinks.push_back(argv[i]);
+            _manualLinks.push_back(argv[i]);
         }
         ++i;
     }
-    if ( manualLinks.size() == 0 && linksFile.empty())
+    if ( _manualLinks.size() == 0 && _linksFile.empty())
     {
         throw CommandLineException("one of -lf or -lnk must be provided");
     }
-
-    if(!linksFile.empty())
+    if (_mapTypeGroup == MapTypeGroup::POINTMAPS && _linkMode == LinkMode::UNLINK)
     {
-        std::ifstream linksStream(linksFile);
-        if (!linksStream)
-        {
-            std::stringstream message;
-            message << "Failed to load file " << linksFile << ", error " << std::flush;
-            throw depthmapX::RuntimeException(message.str().c_str());
-        }
-        std::vector<Line> lines = EntityParsing::parseLines(linksStream, '\t');
-        _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
-    }
-    else if(!manualLinks.empty())
-    {
-        std::stringstream linksStream;
-        linksStream << "x1,y1,x2,y2";
-        std::vector<std::string>::iterator iter = manualLinks.begin(), end =
-        manualLinks.end();
-        for ( ; iter != end; ++iter )
-        {
-            linksStream << "\n" << *iter;
-        }
-        std::vector<Line> lines = EntityParsing::parseLines(linksStream, ',');
-        _mergeLines.insert(std::end(_mergeLines), std::begin(lines), std::end(lines));
+        throw CommandLineException("unlinking is not supported for pointmaps");
     }
 }
 
 void LinkParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
-    dm_runmethods::linkGraph(clp, _mergeLines, perfWriter);
+    dm_runmethods::linkGraph(clp, *this, perfWriter);
 }

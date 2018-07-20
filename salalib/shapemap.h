@@ -528,9 +528,11 @@ protected:
 public:
    bool clearLinks();
    bool linkShapes(const Point2f& p);
+   bool linkShapesFromRefs(int ref1, int ref2, bool refresh = true);
    bool linkShapes(int index1, int index2, bool refresh = true);
    bool linkShapes(int id1, int dir1, int id2, int dir2, float weight);
    bool unlinkShapes(const Point2f& p);
+   bool unlinkShapesFromRefs(int index1, int index2, bool refresh = true);
    bool unlinkShapes(int index1, int index2, bool refresh = true);
    bool unlinkShapeSet(std::istream& idset, int refcol);
 public:
