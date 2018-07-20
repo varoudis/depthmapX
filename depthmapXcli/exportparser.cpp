@@ -49,6 +49,14 @@ void ExportParser::parse(int argc, char *argv[])
             {
                 _exportMode = ExportMode::POINTMAP_LINKS_CSV;
             }
+            else if ( std::strcmp(argv[i], "shapegraph-map-csv") == 0 )
+            {
+                _exportMode = ExportMode::SHAPEGRAPH_MAP_CSV;
+            }
+            else if ( std::strcmp(argv[i], "shapegraph-map-mif") == 0 )
+            {
+                _exportMode = ExportMode::SHAPEGRAPH_MAP_MIF;
+            }
             else
             {
                 throw CommandLineException(std::string("Invalid EXPORT mode: ") + argv[i]);

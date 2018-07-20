@@ -33,7 +33,9 @@ public:
                   "-em <export mode> one of:\n"\
                   "    pointmap-data-csv\n"\
                   "    pointmap-connections-csv\n"\
-                  "    pointmap-links-csv\n";
+                  "    pointmap-links-csv\n"\
+                  "    shapegraphs-data-csv\n"\
+                  "    shapegraphs-data-mif\n";
     }
 
 public:
@@ -45,7 +47,9 @@ public:
         NONE,
         POINTMAP_DATA_CSV,
         POINTMAP_CONNECTIONS_CSV,
-        POINTMAP_LINKS_CSV
+        POINTMAP_LINKS_CSV,
+        SHAPEGRAPH_MAP_CSV,
+        SHAPEGRAPH_MAP_MIF
     };
     ExportMode getExportMode() const { return _exportMode; }
 

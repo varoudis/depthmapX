@@ -486,25 +486,55 @@ namespace dm_runmethods
 
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
-        PointMap& currentMap = mgraph->getDisplayedPointMap();
-
         switch(exportP.getExportMode()) {
             case ExportParser::POINTMAP_DATA_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
                 break;
             }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
                 break;
             }
             case ExportParser::POINTMAP_LINKS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap connections", currentMap.output(stream, ','))
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_MIF:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::string fileName = cmdP.getOuputFile().c_str();
+                std::ofstream mifStream;
+                std::ofstream midStream;
+                if (0 == fileName.compare(fileName.length() - 4, 4, ".mif")) {
+                    // we are given the .mif
+                    mifStream = std::ofstream(fileName);
+                    midStream = std::ofstream(fileName.substr(0,  fileName.length() - 4) + ".mid");
+
+                } else if (0 == fileName.compare(fileName.length() - 4, 4, ".mid")) {
+                    // we are given the .mid
+                    mifStream = std::ofstream(fileName.substr(0, fileName.length() - 4) + ".mif");
+                    midStream = std::ofstream(fileName);
+                } else {
+                    mifStream = std::ofstream(fileName + ".mif");
+                    midStream = std::ofstream(fileName + ".mid");
+                }
+                DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
                 break;
             }
             default:
