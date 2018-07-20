@@ -519,21 +519,20 @@ namespace dm_runmethods
             {
                 ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
                 std::string fileName = cmdP.getOuputFile().c_str();
-                std::ofstream mifStream;
-                std::ofstream midStream;
+                std::string mifFile = fileName + ".mif";
+                std::string midFile = fileName + ".mid";
                 if (0 == fileName.compare(fileName.length() - 4, 4, ".mif")) {
                     // we are given the .mif
-                    mifStream = std::ofstream(fileName);
-                    midStream = std::ofstream(fileName.substr(0,  fileName.length() - 4) + ".mid");
+                    mifFile = fileName;
+                    mifFile = fileName.substr(0,  fileName.length() - 4) + ".mid";
 
                 } else if (0 == fileName.compare(fileName.length() - 4, 4, ".mid")) {
                     // we are given the .mid
-                    mifStream = std::ofstream(fileName.substr(0, fileName.length() - 4) + ".mif");
-                    midStream = std::ofstream(fileName);
-                } else {
-                    mifStream = std::ofstream(fileName + ".mif");
-                    midStream = std::ofstream(fileName + ".mid");
+                    mifFile = fileName.substr(0, fileName.length() - 4) + ".mif";
+                    mifFile = fileName;
                 }
+                std::ofstream mifStream(mifFile);
+                std::ofstream midStream(midFile);
                 DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
                 break;
             }
