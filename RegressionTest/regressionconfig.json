@@ -73,6 +73,22 @@
                 "-em": "pointmap-links-csv"
             }
         }],
+        "axial_export_map_csv": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-csv"
+            }
+        }],
+        "axial_export_map_mif": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-mif"
+            }
+        }],
         "visibility_global_n": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
