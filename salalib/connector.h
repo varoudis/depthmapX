@@ -33,10 +33,6 @@ struct SegmentRef
    int ref;
    SegmentRef(char d = 0, int r = -1): pad1(0), pad2(0)
    { dir = d; ref = r; }
-   friend bool operator < (SegmentRef a, SegmentRef b);
-   friend bool operator > (SegmentRef a, SegmentRef b);
-   friend bool operator == (SegmentRef a, SegmentRef b);
-   friend bool operator != (SegmentRef a, SegmentRef b);
 };
 // note, the dir is only a direction indicator, the ref should always be unique
 inline bool  operator < (SegmentRef a, SegmentRef b) { return a.ref < b.ref; }
