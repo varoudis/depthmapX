@@ -3087,12 +3087,12 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
 {
    m_connectors.clear();
 
-   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
-   int leng_col = m_attributes.getColumnIndex("Segment Length");
-
    // note, expects these in alphabetical order to preserve numbering:
    int w_conn_col = m_attributes.insertColumn("Angular Connectivity");
    int uw_conn_col = m_attributes.insertLockedColumn("Connectivity");
+
+   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
+   int leng_col = m_attributes.getColumnIndex("Segment Length");
 
    int i = -1;
    for (auto shape: m_shapes) {
