@@ -628,7 +628,7 @@ namespace dm_runmethods
             case ShapeMap::AXIALMAP: {
                 DO_TIMED("Converting from axial to segment",
                          mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
-                                                       mcp.copyAttributes(), mcp.removeStubLength()));
+                                                       mcp.copyAttributes(), mcp.removeStubLength() / 100.0));
                 break;
             }
             case ShapeMap::DATAMAP: {
