@@ -20,6 +20,11 @@
 #ifndef __NAGENT_H__
 #define __NAGENT_H__
 
+#include "salalib/pixelref.h"
+#include "salalib/point.h"
+
+#include "genlib/paftl.h"
+
 const char g_col_total_counts[] = "Gate Counts";
 const char g_col_gate_counts[] = "__Internal_Gate_Counts";
 const char g_col_gate[] = "__Internal_Gate";

@@ -19,7 +19,11 @@
 #define __ATTRIBUTES_H__
 
 #include "salalib/mgraph_consts.h"
-#include "pafcolor.h"
+#include "salalib/pafcolor.h"
+
+// for scripting object
+#include "salalib/salaprogram.h"
+
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable
@@ -129,8 +133,6 @@ inline bool operator > (const OrderedIntPair& x, const OrderedIntPair& y)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// for scripting object
-#include <salalib/salaprogram.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 

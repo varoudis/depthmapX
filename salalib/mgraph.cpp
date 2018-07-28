@@ -20,24 +20,23 @@
 
 #include "salalib/alllinemap.h"
 #include "salalib/mapconverter.h"
-#include <math.h>
-#include <time.h>
-#include <genlib/paftl.h>
-#include <genlib/pafmath.h>
-#include <genlib/p2dpoly.h>
-#include <genlib/dxfp.h>
-#include <genlib/comm.h>
-
-#include "isovist.h"
-#include "ntfp.h"
-#include "tigerp.h"
-#include <salalib/mgraph.h>
-
-// shouldn't really include this -- required for node in PushValuesToLayer
-#include <salalib/ngraph.h>
-#include <salalib/importutils.h>
+#include "salalib/isovist.h"
+#include "salalib/ntfp.h"
+#include "salalib/tigerp.h"
+#include "salalib/mgraph.h"
+#include "salalib/importutils.h"
 
 #include "mgraph440/mgraph.h"
+
+#include "genlib/paftl.h"
+#include "genlib/pafmath.h"
+#include "genlib/p2dpoly.h"
+#include "genlib/dxfp.h"
+#include "genlib/comm.h"
+
+#include "math.h"
+#include "time.h"
+
 #include <sstream>
 #include <tuple>
 
@@ -2232,7 +2231,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
        return readFromStream(tempstream, filename);
    }
    if (type == 'x') {
-      FileProperties::read(stream,version);
+      FileProperties::read(stream);
       if (stream.eof()) {
          // erk... this shouldn't happen
          return DAMAGED_FILE;

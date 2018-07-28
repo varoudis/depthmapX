@@ -15,32 +15,30 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __MGRAPH_H__
-#define __MGRAPH_H__
+#pragma once
 
 // Interface: the meta graph loads and holds all sorts of arbitrary data...
 
-#include "mgraph_consts.h"
+#include "salalib/mgraph_consts.h"
+#include "salalib/displayparams.h"
+#include "salalib/fileproperties.h"
+#include "salalib/importtypedefs.h"
 
-#include <genlib/paftl.h>
-#include <genlib/p2dpoly.h>
+// still call paftl:
+#include "salalib/attributes.h"
+#include "salalib/connector.h"
+#include "salalib/spacepix.h"
+#include "salalib/nagent.h" // for agent engine interface
 
-#include <salalib/displayparams.h>
-#include <salalib/fileproperties.h>
-#include <salalib/spacepix.h>
-#include <salalib/attributes.h>
+// still need paftl:
+#include "salalib/shapemap.h"
+#include "salalib/pointdata.h"
+#include "salalib/axialmap.h"
 
-#include <salalib/pointdata.h>
-#include <salalib/connector.h>
-#include <salalib/shapemap.h>
-#include <salalib/axialmap.h>
+
+#include "genlib/p2dpoly.h"
 
 #include <mutex>
-
-// for agent engine interface
-#include <salalib/nagent.h>
-#include <salalib/importtypedefs.h>
-
 #include <vector>
 #include <memory>
 
@@ -487,7 +485,3 @@ public:
 protected:
    std::streampos skipVirtualMem(std::istream &stream, int version);
 };
-
-///////////////////////////////////////////////////////////////////////////////
-
-#endif

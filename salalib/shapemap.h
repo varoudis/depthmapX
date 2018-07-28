@@ -17,24 +17,24 @@
 
 // This is my code to make a set of axial lines from a set of boundary lines
 
-#ifndef __SHAPEMAP_H__
-#define __SHAPEMAP_H__
+#pragma once
 
-#include "genlib/p2dpoly.h"
-#include "genlib/stringutils.h"
-#include <vector>
-#include <string>
 #include "salalib/importtypedefs.h"
+#include "salalib/attributes.h"
+#include "salalib/spacepix.h"
+#include "salalib/MapInfoData.h"
+
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
-#include "salalib/spacepix.h"
-#include "salalib/attributes.h"
-#include "salalib/MapInfoData.h"
+#include "genlib/p2dpoly.h"
+#include "genlib/stringutils.h"
+
+#include <vector>
+#include <string>
 #include <set>
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include <map>
+
+
 // each pixel has various lists of information:
 
 struct ShapeRef
@@ -559,5 +559,3 @@ public:
 private:
    bool importData(const depthmapX::Table &data, std::vector<int> shape_refs);
 };
-
-#endif
