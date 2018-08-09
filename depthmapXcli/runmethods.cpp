@@ -536,6 +536,16 @@ namespace dm_runmethods
                 DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
                 break;
             }
+            case ExportParser::SHAPEGRAPH_CONNECTIONS_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing shapegraph connections",
+                         currentMap.isAxialMap() ? currentMap.writeAxialConnectionsAsPairsCSV(stream) :
+                                                   currentMap.writeSegmentConnectionsAsPairsCSV(stream))
+                stream.close();
+                break;
+            }
             default:
             {
                 throw depthmapX::SetupCheckException("Error, unsupported export mode");
