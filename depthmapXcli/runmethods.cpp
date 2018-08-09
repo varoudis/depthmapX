@@ -492,6 +492,7 @@ namespace dm_runmethods
                 PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
@@ -499,6 +500,7 @@ namespace dm_runmethods
                 PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_LINKS_CSV:
@@ -506,6 +508,7 @@ namespace dm_runmethods
                 PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
+                stream.close();
                 break;
             }
             case ExportParser::SHAPEGRAPH_MAP_CSV:
@@ -513,6 +516,7 @@ namespace dm_runmethods
                 ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.output(stream, ','))
+                stream.close();
                 break;
             }
             case ExportParser::SHAPEGRAPH_MAP_MIF:
@@ -534,6 +538,8 @@ namespace dm_runmethods
                 std::ofstream mifStream(mifFile);
                 std::ofstream midStream(midFile);
                 DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
+                mifStream.close();
+                midStream.close();
                 break;
             }
             case ExportParser::SHAPEGRAPH_CONNECTIONS_CSV:
