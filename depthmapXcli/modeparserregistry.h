@@ -31,13 +31,13 @@ public:
         populateParsers();
     }
 
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
+    const ModeParserVec &getModeParsers() const {return m_availableParsers;}
 private:
     void populateParsers();
-    ModeParserVec _availableParsers;
+    ModeParserVec m_availableParsers;
 };
 
 #define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
+    m_availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
 
 #endif // MODEPARSERREGISTRY_H
