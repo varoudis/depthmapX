@@ -2970,6 +2970,13 @@ bool ShapeMap::linkShapes(const Point2f& p)
    return true;
 }
 
+bool ShapeMap::linkShapesFromRefs(int ref1, int ref2, bool refresh)
+{
+    int index1 = depthmapX::findIndexFromKey(m_shapes, ref1);
+    int index2 = depthmapX::findIndexFromKey(m_shapes, ref2);
+    return linkShapes(index1, index2, refresh);
+}
+
 bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
 {
    int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
@@ -3052,6 +3059,13 @@ bool ShapeMap::unlinkShapes(const Point2f& p)
    unlinkShapes(index1,index2);
 
    return true;
+}
+
+bool ShapeMap::unlinkShapesFromRefs(int ref1, int ref2, bool refresh)
+{
+    int index1 = depthmapX::findIndexFromKey(m_shapes, ref1);
+    int index2 = depthmapX::findIndexFromKey(m_shapes, ref2);
+    return unlinkShapes(index1, index2, refresh);
 }
 
 // note: uses rowids rather than shape key

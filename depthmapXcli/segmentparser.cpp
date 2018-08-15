@@ -23,8 +23,8 @@
 
 using namespace depthmapX;
 
-SegmentParser::SegmentParser() :  _analysisType(AnalysisType::NONE), _radiusType(RadiusType::NONE), _includeChoice(false),
-    _tulipBins(0)
+SegmentParser::SegmentParser() :  m_analysisType(AnalysisType::NONE), m_radiusType(RadiusType::NONE), m_includeChoice(false),
+    m_tulipBins(0)
 {
 
 }
@@ -57,26 +57,26 @@ void SegmentParser::parse(int argc, char **argv)
     {
         if ( std::strcmp ("-st", argv[i]) == 0)
         {
-            if (_analysisType != AnalysisType::NONE)
+            if (m_analysisType != AnalysisType::NONE)
             {
                 throw CommandLineException("-st can only be used once, modes are mutually exclusive");
             }
             ENFORCE_ARGUMENT("-st", i)
             if ( std::strcmp(argv[i], "tulip") == 0 )
             {
-                _analysisType = AnalysisType::ANGULAR_TULIP;
+                m_analysisType = AnalysisType::ANGULAR_TULIP;
             }
             else if ( std::strcmp(argv[i], "angular") == 0 )
             {
-                _analysisType = AnalysisType::ANGULAR_FULL;
+                m_analysisType = AnalysisType::ANGULAR_FULL;
             }
             else if ( std::strcmp(argv[i], "topological") == 0 )
             {
-                _analysisType = AnalysisType::TOPOLOGICAL;
+                m_analysisType = AnalysisType::TOPOLOGICAL;
             }
             else if ( std::strcmp(argv[i], "metric") == 0 )
             {
-                _analysisType = AnalysisType::METRIC;
+                m_analysisType = AnalysisType::METRIC;
             }
             else
             {
@@ -85,22 +85,22 @@ void SegmentParser::parse(int argc, char **argv)
         }
         else if (std::strcmp(argv[i], "-srt") == 0)
         {
-            if (_radiusType != RadiusType::NONE)
+            if (m_radiusType != RadiusType::NONE)
             {
                 throw CommandLineException("-srt can only be used once, modes are mutually exclusive");
             }
             ENFORCE_ARGUMENT("-srt", i)
             if ( std::strcmp(argv[i], "steps") == 0 )
             {
-                _radiusType = RadiusType::SEGMENT_STEPS;
+                m_radiusType = RadiusType::SEGMENT_STEPS;
             }
             else if ( std::strcmp(argv[i], "angular") == 0 )
             {
-                _radiusType = RadiusType::ANGULAR;
+                m_radiusType = RadiusType::ANGULAR;
             }
             else if ( std::strcmp(argv[i], "metric") == 0 )
             {
-                _radiusType = RadiusType::METRIC;
+                m_radiusType = RadiusType::METRIC;
             }
             else
             {
@@ -109,12 +109,12 @@ void SegmentParser::parse(int argc, char **argv)
         }
         else if(std::strcmp(argv[i], "-sic") == 0)
         {
-            _includeChoice = true;
+            m_includeChoice = true;
         }
         else if (std::strcmp(argv[i], "-sr") == 0)
         {
             ENFORCE_ARGUMENT("-sr", i)
-            _radii = depthmapX::parseRadiusList(argv[i]);
+            m_radii = depthmapX::parseRadiusList(argv[i]);
         }
         else if (std::strcmp(argv[i], "-stb") == 0)
         {
@@ -124,8 +124,8 @@ void SegmentParser::parse(int argc, char **argv)
             {
                 throw CommandLineException(std::string("-stb must be a number between 4 and 1024, got ") + argv[i]);
             }
-            _tulipBins = std::atoi(argv[i]);
-            if (_tulipBins < 4 || _tulipBins > 1024)
+            m_tulipBins = std::atoi(argv[i]);
+            if (m_tulipBins < 4 || m_tulipBins > 1024)
             {
                 throw CommandLineException(std::string("-stb must be a number between 4 and 1024, got ") + argv[i]);
             }
@@ -153,7 +153,7 @@ void SegmentParser::parse(int argc, char **argv)
     }
 
     if (getAnalysisType() != AnalysisType::ANGULAR_TULIP
-            && (getTulipBins() != 0 || getRadiusType() != RadiusType::NONE || _includeChoice))
+            && (getTulipBins() != 0 || getRadiusType() != RadiusType::NONE || m_includeChoice))
     {
         throw CommandLineException("-stb, -srt and -sic can only be used with tulip analysis");
     }

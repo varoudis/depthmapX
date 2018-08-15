@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RUNMETHODS_H
-#define RUNMETHODS_H
+#pragma once
+
 #include <string>
 #include "commandlineparser.h"
 #include "radiusconverter.h"
@@ -26,6 +26,7 @@
 #include "segmentparser.h"
 #include "agentparser.h"
 #include "exportparser.h"
+#include "linkparser.h"
 #include "salalib/isovistdef.h"
 #include "salalib/topomet.h"
 #include <vector>
@@ -35,7 +36,7 @@ class Point2f;
 
 namespace dm_runmethods{
     void importFiles(const CommandLineParser &cmdP, const std::vector<std::string> &filesToImport, IPerformanceSink &perfWriter);
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter );
+    void linkGraph(const CommandLineParser &cmdP, const LinkParser &parser, IPerformanceSink &perfWriter );
     void runVga(const CommandLineParser &cmdP, const VgaParser &vgaP, const IRadiusConverter &converter, IPerformanceSink &perfWriter );
     void runVisualPrep(const CommandLineParser &clp, double gridSize, const std::vector<Point2f> &fillPoints, double maxVisibility, bool boundaryGraph, IPerformanceSink &perfWriter);
     void runAxialAnalysis(const CommandLineParser& clp, const AxialParser &ap, IPerformanceSink &perfWriter);
@@ -46,4 +47,3 @@ namespace dm_runmethods{
     void runStepDepth(const CommandLineParser &clp, const std::vector<Point2f> &stepDepthPoints, IPerformanceSink &perfWriter);
     void runMapConversion(const CommandLineParser& clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter);
 }
-#endif // RUNMETHODS_H

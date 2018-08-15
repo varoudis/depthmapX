@@ -13,10 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-#ifndef MODEPARSERREGISTRY_H
-#define MODEPARSERREGISTRY_H
+#pragma once
 
 #include "imodeparser.h"
 #include "imodeparserfactory.h"
@@ -31,13 +28,11 @@ public:
         populateParsers();
     }
 
-    const ModeParserVec &getModeParsers() const {return _availableParsers;}
+    const ModeParserVec &getModeParsers() const {return m_availableParsers;}
 private:
     void populateParsers();
-    ModeParserVec _availableParsers;
+    ModeParserVec m_availableParsers;
 };
 
 #define REGISTER_PARSER(parser)\
-    _availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));
-
-#endif // MODEPARSERREGISTRY_H
+    m_availableParsers.push_back(std::unique_ptr<IModeParser>(new parser));

@@ -87,36 +87,36 @@ public:
     };
 
     // agent options
-    AgentMode getAgentMode() const { return _agentMode; }
+    AgentMode getAgentMode() const { return m_agentMode; }
 
-    int totalSystemTimestemps() const { return _totalSystemTimestemps; }
-    double releaseRate() const { return _releaseRate; }
-    int recordTrailsForAgents() const { return _recordTrailsForAgents; }
-    int randomReleaseLocationSeed() const { return _randomReleaseLocationSeed; }
+    int totalSystemTimestemps() const { return m_totalSystemTimestemps; }
+    double releaseRate() const { return m_releaseRate; }
+    int recordTrailsForAgents() const { return m_recordTrailsForAgents; }
+    int randomReleaseLocationSeed() const { return m_randomReleaseLocationSeed; }
 
-    int agentFOV() const { return _agentFOV; }
-    int agentStepsBeforeTurnDecision() const { return _agentStepsBeforeTurnDecision; }
-    int agentLifeTimesteps() const { return _agentLifeTimesteps; }
+    int agentFOV() const { return m_agentFOV; }
+    int agentStepsBeforeTurnDecision() const { return m_agentStepsBeforeTurnDecision; }
+    int agentLifeTimesteps() const { return m_agentLifeTimesteps; }
 
-    std::vector<Point2f> getReleasePoints() const { return _releasePoints; }
+    std::vector<Point2f> getReleasePoints() const { return m_releasePoints; }
 
-    std::vector<OutputType> outputTypes() const { return _outputTypes; }
+    std::vector<OutputType> outputTypes() const { return m_outputTypes; }
 
 private:
     // agent options
-    AgentMode _agentMode;
+    AgentMode m_agentMode;
 
-    int _totalSystemTimestemps = 0;
-    double _releaseRate = 0.0;
-    int _recordTrailsForAgents = -1;
+    int m_totalSystemTimestemps = 0;
+    double m_releaseRate = 0.0;
+    int m_recordTrailsForAgents = -1;
 
-    int _agentFOV = 0; // Field of view (bins)
-    int _agentStepsBeforeTurnDecision = 0; // Steps before turn decision
-    int _agentLifeTimesteps = 0; // Timesteps in system
+    int m_agentFOV = 0; // Field of view (bins)
+    int m_agentStepsBeforeTurnDecision = 0; // Steps before turn decision
+    int m_agentLifeTimesteps = 0; // Timesteps in system
 
-    int _randomReleaseLocationSeed = -1;
-    std::vector<Point2f> _releasePoints;
+    int m_randomReleaseLocationSeed = -1;
+    std::vector<Point2f> m_releasePoints;
 
-    std::vector<OutputType> _outputTypes;
+    std::vector<OutputType> m_outputTypes;
 };
 

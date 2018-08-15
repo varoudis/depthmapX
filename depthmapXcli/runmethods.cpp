@@ -23,6 +23,7 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include "salalib/entityparsing.h"
 #include <salalib/gridproperties.h>
 #include <genlib/legacyconverters.h>
 #include <salalib/importutils.h>
@@ -96,14 +97,95 @@ namespace dm_runmethods
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
 
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter)
+    void linkGraph(const CommandLineParser &cmdP, const LinkParser &parser, IPerformanceSink &perfWriter)
     {
-        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
-        SimpleTimer t;
-        PointMap& currentMap = mgraph->getDisplayedPointMap();
 
-        std::vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(mergeLines, currentMap);
-        depthmapX::mergePixelPairs(newLinks, currentMap);
+        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
+
+        if (parser.getLinkMode() == LinkParser::LinkMode::UNLINK
+                && mgraph->getShapeGraphs().getDisplayedMap().getMapType() != ShapeMap::AXIALMAP) {
+            throw depthmapX::RuntimeException("Unlinking is only available for axial maps");
+        }
+
+        char delimiter = '\t';
+        std::stringstream linksStream;
+        if(!parser.getLinksFile().empty())
+        {
+            std::ifstream fileStream(parser.getLinksFile());
+            if (!linksStream)
+            {
+                std::stringstream message;
+                message << "Failed to load file " << parser.getLinksFile() << ", error " << std::flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+            linksStream << fileStream.rdbuf();
+            fileStream.close();
+        }
+        else if(!parser.getManualLinks().empty())
+        {
+            delimiter = ',';
+            std::string header = "x1,y1,x2,y2";
+            if(parser.getLinkType() == LinkParser::LinkType::REFS) {
+                header = "reffrom,refto";
+            } else if(parser.getLinkMode() == LinkParser::LinkMode::UNLINK) {
+                header = "x,y";
+            }
+            linksStream << header;
+            auto iter = parser.getManualLinks().begin(),
+                    end = parser.getManualLinks().end();
+            for ( ; iter != end; ++iter )
+            {
+                linksStream << "\n" << *iter;
+            }
+        }
+
+        SimpleTimer t;
+        if(parser.getLinkMode() == LinkParser::LinkMode::LINK) {
+            if(parser.getMapTypeGroup() == LinkParser::MapTypeGroup::SHAPEGRAPHS) {
+                auto& shapeGraph = mgraph->getDisplayedShapeGraph();
+                if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                    std::vector<Line> mergeLines = EntityParsing::parseLines(linksStream, delimiter);
+                    for(auto line: mergeLines) {
+                        QtRegion region(line.start(), line.start());
+                        shapeGraph.setCurSel(region);
+                        shapeGraph.linkShapes(line.end());
+                    }
+                } else {
+                    auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                    for(auto pair: mergePairs) {
+                        // apparently this also unlinks if already linked or crossing
+                        shapeGraph.linkShapesFromRefs(pair.first, pair.second);
+                    }
+                }
+            } else {
+                std::vector<PixelRefPair> newLinks;
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
+                if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                    std::vector<Line> mergeLines = EntityParsing::parseLines(linksStream, delimiter);
+                    std::vector<PixelRefPair> linkPairsFromCoords = depthmapX::pixelateMergeLines(mergeLines, currentMap);
+                    newLinks.insert(newLinks.end(), linkPairsFromCoords.begin(), linkPairsFromCoords.end());
+                } else {
+                    auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                    for(auto pair: mergePairs) {
+                        newLinks.push_back(PixelRefPair(pair.first, pair.second));
+                    }
+                }
+                depthmapX::mergePixelPairs(newLinks, currentMap);
+            }
+        } else {
+            auto& shapeGraph = mgraph->getDisplayedShapeGraph();
+            if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                auto mergePoints = EntityParsing::parsePoints(linksStream, delimiter);
+                for(auto point: mergePoints) {
+                    shapeGraph.unlinkAtPoint(point);
+                }
+            } else {
+                auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                for(auto pair: mergePairs) {
+                    shapeGraph.unlinkShapesFromRefs(pair.first, pair.second);
+                }
+            }
+        }
 
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)

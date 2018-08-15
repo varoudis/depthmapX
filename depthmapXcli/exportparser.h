@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include <string>
 #include "imodeparser.h"
 #include "commandlineparser.h"
+#include <string>
 
 class ExportParser : public IModeParser
 {
@@ -53,9 +53,9 @@ public:
         SHAPEGRAPH_MAP_MIF,
         SHAPEGRAPH_CONNECTIONS_CSV
     };
-    ExportMode getExportMode() const { return _exportMode; }
+    ExportMode getExportMode() const { return m_exportMode; }
 
 private:
-    ExportMode _exportMode;
+    ExportMode m_exportMode;
 };
 

@@ -304,4 +304,81 @@ namespace EntityParsing {
         message << "Failed to parse '" << isovist << "' to an isovist definition";
         throw EntityParseException(message.str());
     }
+
+    std::vector<std::pair<int, int> > parseRefPairs(std::istream& stream, char delimiter = '\t') {
+
+        std::vector<std::pair<int, int> > pairs;
+
+        std::string inputline;
+        std::getline(stream, inputline);
+
+        std::vector<std::string> strings = dXstring::split(inputline, delimiter);
+
+        if (strings.size() < 2)
+        {
+            throw EntityParseException("Badly formatted header (should contain reffrom and refto)");
+        }
+
+        size_t i;
+        for (i = 0; i < strings.size(); i++)
+        {
+           if (!strings[i].empty())
+           {
+               std::transform(strings[i].begin(), strings[i].end(), strings[i].begin(), ::tolower);
+               //strings[i].ltrim('\"');
+               //strings[i].rtrim('\"');
+           }
+        }
+
+        int fromcol = -1, tocol = -1;
+        for (i = 0; i < strings.size(); i++) {
+            if (strings[i] == "reffrom")
+            {
+                fromcol = int(i);
+            }
+            else if (strings[i] == "refto")
+            {
+                tocol = int(i);
+            }
+        }
+
+        if(fromcol == -1 || tocol == -1)
+        {
+            throw EntityParseException("Badly formatted header (should contain reffrom and refto)");
+        }
+
+
+        while (!stream.eof()) {
+            std::getline(stream, inputline);
+            if (!inputline.empty()) {
+                strings = dXstring::split(inputline, delimiter);
+                if (!strings.size())
+                {
+                    continue;
+                }
+                if (strings.size() < 2)
+                {
+                    std::stringstream message;
+                    message << "Error parsing line: " << inputline << std::flush;
+                    throw EntityParseException(message.str().c_str());
+                }
+                int from, to;
+                for (i = 0; i < strings.size(); i++)
+                {
+                    if (i == size_t(fromcol))
+                    {
+                        from = std::atoi(strings[i].c_str());
+                    }
+                    else if (i == size_t(tocol))
+                    {
+                        to = std::atoi(strings[i].c_str());
+                    }
+                }
+                pairs.push_back(std::make_pair(from, to));
+            }
+        }
+        return pairs;
+    }
+
+
 }
