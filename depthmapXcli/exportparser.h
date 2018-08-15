@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include <string>
 #include "imodeparser.h"
 #include "commandlineparser.h"
+#include <string>
 
 class ExportParser : public IModeParser
 {

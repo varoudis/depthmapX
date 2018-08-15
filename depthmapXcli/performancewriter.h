@@ -12,8 +12,8 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#ifndef PERFORMANCEWRITER_H
-#define PERFORMANCEWRITER_H
+
+#pragma once
 
 #include "performancesink.h"
 #include <vector>
@@ -31,4 +31,3 @@ public:
     void write() const;
 };
 
-#endif // PERFORMANCEWRITER_H

@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SIMPLETIMER_H
-#define SIMPLETIMER_H
+#pragma once
+
 #include <chrono>
 
 class SimpleTimer
@@ -38,5 +38,3 @@ public:
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
 };
-
-#endif // SIMPLETIMER_H

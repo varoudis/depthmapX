@@ -13,8 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef LINKPARSER_H
-#define LINKPARSER_H
+#pragma once
 
 #include "salalib/mgraph.h"
 #include "imodeparser.h"
@@ -77,5 +76,3 @@ private:
     LinkMode m_linkMode;
     LinkType m_linkType;
 };
-
-#endif // LINKPARSER_H

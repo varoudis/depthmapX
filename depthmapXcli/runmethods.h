@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RUNMETHODS_H
-#define RUNMETHODS_H
+#pragma once
+
 #include <string>
 #include "commandlineparser.h"
 #include "radiusconverter.h"
@@ -47,4 +47,3 @@ namespace dm_runmethods{
     void runStepDepth(const CommandLineParser &clp, const std::vector<Point2f> &stepDepthPoints, IPerformanceSink &perfWriter);
     void runMapConversion(const CommandLineParser& clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter);
 }
-#endif // RUNMETHODS_H

@@ -13,8 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COMMANDLINEPARSER_H
-#define COMMANDLINEPARSER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -57,5 +56,3 @@ private:
     IModeParser * _modeParser;
 
 };
-
-#endif // COMMANDLINEPARSER_H
