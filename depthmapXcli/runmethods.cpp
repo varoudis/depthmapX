@@ -486,25 +486,70 @@ namespace dm_runmethods
 
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
-        PointMap& currentMap = mgraph->getDisplayedPointMap();
-
         switch(exportP.getExportMode()) {
             case ExportParser::POINTMAP_DATA_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_LINKS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
+                stream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap connections", currentMap.output(stream, ','))
+                stream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_MIF:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::string fileName = cmdP.getOuputFile().c_str();
+                std::string mifFile = fileName + ".mif";
+                std::string midFile = fileName + ".mid";
+                if (0 == fileName.compare(fileName.length() - 4, 4, ".mif")) {
+                    // we are given the .mif
+                    mifFile = fileName;
+                    midFile = fileName.substr(0,  fileName.length() - 4) + ".mid";
+
+                } else if (0 == fileName.compare(fileName.length() - 4, 4, ".mid")) {
+                    // we are given the .mid
+                    mifFile = fileName.substr(0, fileName.length() - 4) + ".mif";
+                    midFile = fileName;
+                }
+                std::ofstream mifStream(mifFile);
+                std::ofstream midStream(midFile);
+                DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
+                mifStream.close();
+                midStream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_CONNECTIONS_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing shapegraph connections",
+                         currentMap.isAxialMap() ? currentMap.writeAxialConnectionsAsPairsCSV(stream) :
+                                                   currentMap.writeSegmentConnectionsAsPairsCSV(stream))
+                stream.close();
                 break;
             }
             default:
