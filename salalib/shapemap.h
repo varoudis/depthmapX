@@ -150,9 +150,12 @@ public:
        if (isLine()) {
           lines.push_back(getLine());
        }
-       else if (isPolyLine()) {
+       else if (isPolyLine() || isPolygon()) {
           for (size_t j = 0; j < m_points.size() - 1; j++) {
              lines.push_back(Line(m_points[j], m_points[j+1]));
+          }
+          if(isClosed()) {
+              lines.push_back(Line(m_points[m_points.size() - 1], m_points[0]));
           }
        }
        return lines;
