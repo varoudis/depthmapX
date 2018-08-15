@@ -778,7 +778,7 @@ bool MetaGraph::convertDataToAxial(Communicator *comm, std::string layer_name, b
 }
 
 // typeflag: -1 convert drawing to convex, 0 or 1, convert data to convex (1 is pushvalues)
-bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag)
+bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata)
 {
    int oldstate = m_state;
 
@@ -787,12 +787,12 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
    bool retvar = false;
    
    try {
-      int mapref;
-      if (typeflag == -1) {
+      int mapref = - 1;
+      if (shapeMapType == ShapeMap::DRAWINGMAP) {
          mapref = m_shape_graphs.convertDrawingToConvex( comm, layer_name, m_drawingFiles );
       }
-      else {
-         mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, getDisplayedDataMap(), (typeflag != 0) );
+      else if (shapeMapType == ShapeMap::DATAMAP) {
+         mapref = m_shape_graphs.convertDataToConvex( comm, layer_name, getDisplayedDataMap(), copydata);
       }
       if (mapref != -1) {
          retvar = true;
@@ -805,7 +805,7 @@ bool MetaGraph::convertToConvex(Communicator *comm, std::string layer_name, bool
    m_state |= oldstate;
 
    if (retvar) {
-      if (typeflag != -1 && !keeporiginal) {
+      if (shapeMapType != ShapeMap::DRAWINGMAP && !keeporiginal) {
          removeDataMap( getDisplayedDataMapRef() );
          if (m_dataMaps.empty()) {
             setViewClass(SHOWHIDESHAPE);
@@ -884,7 +884,7 @@ bool MetaGraph::convertDataToSegment(Communicator *comm, std::string layer_name,
 
 // note: type flag says whether this is graph to data map or drawing to data map
 
-bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag)
+bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata)
 {
    int oldstate = m_state;
 
@@ -904,7 +904,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       int count = 0;
       //
       // drawing to data
-      if (typeflag == -1) {
+      if (shapeMapType == ShapeMap::DRAWINGMAP) {
          int layercol = destmap.addAttribute("Drawing Layer");
          // add all visible layers to the set of map:
          for (const auto& pixelGroup: m_drawingFiles) {
@@ -928,7 +928,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
          ShapeGraph& sourcemap = getDisplayedShapeGraph();
          count = sourcemap.getShapeCount();
          // take viewed graph and push all geometry to it (since it is *all* geometry, pushing is easy)
-         int copyflag = (typeflag == 0) ? (ShapeMap::COPY_GEOMETRY) : (ShapeMap::COPY_GEOMETRY | ShapeMap::COPY_ATTRIBUTES);
+         int copyflag = copydata ? (ShapeMap::COPY_GEOMETRY | ShapeMap::COPY_ATTRIBUTES) : (ShapeMap::COPY_GEOMETRY);
          destmap.copy(sourcemap, copyflag);
       }
       //
@@ -952,7 +952,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
    m_state |= oldstate;
 
    if (retvar) {
-      if (typeflag != -1 && !keeporiginal) {
+      if (shapeMapType != ShapeMap::DRAWINGMAP && !keeporiginal) {
          m_shape_graphs.removeMap( m_shape_graphs.getDisplayedMapRef() );
          if (m_shape_graphs.getMapCount() == 0) {
             setViewClass(SHOWHIDEAXIAL);
@@ -966,7 +966,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
    return retvar;
 }
 
-bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int typeflag)
+bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, bool fromDisplayedDataMap)
 {
    bool retvar = false;
 
@@ -976,7 +976,7 @@ bool MetaGraph::convertToDrawing(Communicator *comm, std::string layer_name, int
 
    try {
       const ShapeMap *sourcemap;
-      if (typeflag == 0) {
+      if (fromDisplayedDataMap) {
          sourcemap = &(getDisplayedDataMap());
       }
       else {
@@ -1874,16 +1874,26 @@ int MetaGraph::getDisplayedMapRef() const
 
 int MetaGraph::getDisplayedMapType()
 {
-   int type = ShapeMap::EMPTYMAP;
    switch (m_view_class & VIEWFRONT) {
+   case VIEWVGA:
+      return ShapeMap::POINTMAP;
    case VIEWAXIAL:
-      type = m_shape_graphs.getDisplayedMap().getMapType();
-      break;
+      return m_shape_graphs.getDisplayedMap().getMapType();
    case VIEWDATA:
-      type = getDisplayedDataMap().getMapType();
-      break;
+      return getDisplayedDataMap().getMapType();
    }
-   return type;
+   return ShapeMap::EMPTYMAP;
+}
+
+bool MetaGraph::hasVisibleDrawingLayers() {
+    if(!m_drawingFiles.empty()) {
+        for (const auto& pixelGroup: m_drawingFiles) {
+           for (const auto& pixel: pixelGroup.m_spacePixels) {
+              if (pixel.isShown()) return true;
+           }
+        }
+    }
+    return false;
 }
 
 // note: 0 is not at all editable, 1 is editable off and 2 is editable on

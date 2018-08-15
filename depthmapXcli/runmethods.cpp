@@ -682,7 +682,11 @@ namespace dm_runmethods
         int currentMapType = mGraph->getDisplayedMapType();
 
         if (currentMapType == ShapeMap::EMPTYMAP) {
-            throw depthmapX::RuntimeException("No currently available map to convert from");
+            if(mGraph->hasVisibleDrawingLayers()) {
+                currentMapType = ShapeMap::DRAWINGMAP;
+            } else {
+                throw depthmapX::RuntimeException("No currently available map to convert from");
+            }
         }
 
         if (mcp.copyAttributes()) {
@@ -719,7 +723,7 @@ namespace dm_runmethods
         switch(mcp.outputMapType()) {
         case ShapeMap::DRAWINGMAP: {
             DO_TIMED("Converting to drawing",
-                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType));
+                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType == ShapeMap::DATAMAP));
             break;
         }
         case ShapeMap::AXIALMAP: {
@@ -751,7 +755,7 @@ namespace dm_runmethods
             case ShapeMap::AXIALMAP: {
                 DO_TIMED("Converting from axial to segment",
                          mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
-                                                       mcp.copyAttributes(), mcp.removeStubLength()));
+                                                       mcp.copyAttributes(), mcp.removeStubLength() / 100.0));
                 break;
             }
             case ShapeMap::DATAMAP: {
@@ -769,13 +773,13 @@ namespace dm_runmethods
         case ShapeMap::DATAMAP: {
             DO_TIMED("Converting to data",
                      mGraph->convertToData(comm.get(), mcp.outputMapName(),
-                                           !mcp.removeInputMap(), currentMapType));
+                                           !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
         case ShapeMap::CONVEXMAP: {
             DO_TIMED("Converting to convex",
                      mGraph->convertToConvex(comm.get(), mcp.outputMapName(),
-                                             !mcp.removeInputMap(), currentMapType));
+                                             !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
         default: {
