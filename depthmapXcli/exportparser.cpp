@@ -51,15 +51,15 @@ void ExportParser::parse(int argc, char *argv[])
             }
             else if ( std::strcmp(argv[i], "shapegraph-map-csv") == 0 )
             {
-                _exportMode = ExportMode::SHAPEGRAPH_MAP_CSV;
+                m_exportMode = ExportMode::SHAPEGRAPH_MAP_CSV;
             }
             else if ( std::strcmp(argv[i], "shapegraph-map-mif") == 0 )
             {
-                _exportMode = ExportMode::SHAPEGRAPH_MAP_MIF;
+                m_exportMode = ExportMode::SHAPEGRAPH_MAP_MIF;
             }
             else if ( std::strcmp(argv[i], "shapegraph-connections-csv") == 0 )
             {
-                _exportMode = ExportMode::SHAPEGRAPH_CONNECTIONS_CSV;
+                m_exportMode = ExportMode::SHAPEGRAPH_CONNECTIONS_CSV;
             }
             else
             {
