@@ -3,7 +3,7 @@
     "basebinlocation": "../../BaselineBinaries",
     "testbinlocation": "../../../build",
     "testcases": {
-        "links_manual": [{
+        "links_pointmap_manual": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "LINK",
@@ -11,12 +11,67 @@
                "-lnk": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
             }
         }],
-        "links_file": [{
+        "links_pointmap_file": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "LINK",
             "extraArgs": {
                 "-lf": "../../../testdata/gallery_connected_merge_links.txt"
+            }
+        }],
+        "unlinks_shapegraph_coords": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lmt": "shapegraphs",
+               "-lm": "unlink",
+               "-lt": "coords",
+               "-lnk": "530797,184255"
+            }
+        }],
+        "unlinks_shapegraph_refs": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lmt": "shapegraphs",
+               "-lm": "unlink",
+               "-lt": "refs",
+               "-lnk": "18,24"
+            }
+        }],
+        "links_shapegraph_coords": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lmt": "shapegraphs",
+               "-lm": "link",
+               "-lt": "coords",
+               "-lnk": "530684,184098,531388,184353"
+            }
+        }],
+        "links_shapegraph_refs": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lmt": "shapegraphs",
+               "-lm": "link",
+               "-lt": "refs",
+               "-lnk": "1,41"
+            }
+        }],
+        "links_shapegraph_refs_non_cont_keys": [{
+            "infile": "../../../testdata/axmap_noncont_keys.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lmt": "shapegraphs",
+               "-lm": "link",
+               "-lt": "refs",
+               "-lnk": "17,11"
             }
         }],
         "visibility_local": [{
@@ -63,6 +118,38 @@
             "mode": "EXPORT",
             "extraArgs": {
                 "-em": "pointmap-data-csv"
+            }
+        }],
+        "pointmap_export_links": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-links-csv"
+            }
+        }],
+        "axial_export_map_csv": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-csv"
+            }
+        }],
+        "axial_export_map_mif_given_mif": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.mif",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-mif"
+            }
+        }],
+        "axial_export_map_mif_given_mid": [{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.mid",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-mif"
             }
         }],
         "visibility_global_n": [{
@@ -355,6 +442,231 @@
             "extraArgs": {
                 "-pg": "0.02",
                 "-pp": "0.5,0.5"
+            }
+        }],
+        "convert_drawing_axial":[{
+            "infile": "../../../testdata/barnsbury_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "axial",
+                "-con": "Axial Map Test"
+            }
+        }],
+        "convert_drawing_segment":[{
+            "infile": "../../../testdata/barnsbury_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "segment",
+                "-con": "Segment Map Test"
+            }
+        }],
+        "convert_drawing_convex":[{
+            "infile": "../../../testdata/polygons_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "convex",
+                "-con": "Convex Map Test"
+            }
+        }],
+        "convert_drawing_data_convex":[{
+            "infile": "../../../testdata/polygons_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "convex",
+                "-con": "Convex Map Test"
+            }
+        }],
+        "convert_drawing_data_drawing_polygons":[{
+            "infile": "../../../testdata/polygons_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "drawing",
+                "-con": "Drawing Map Test"
+            }
+        }],
+        "convert_drawing_data_drawing_lines":[{
+            "infile": "../../../testdata/barnsbury_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "drawing",
+                "-con": "Drawing Map Test"
+            }
+        }],
+        "convert_axial_data":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        }],
+        "convert_axial_data_copy_attributes":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test",
+                "-coc":""
+            }
+        }],
+        "convert_axial_drawing":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "drawing",
+                "-con": "Drawing Map Test"
+            }
+        }],
+        "convert_axial_segment":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "segment",
+                "-con": "Segment Map Test"
+            }
+        }],
+        "convert_axial_segment_remove_input":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "segment",
+                "-con": "Segment Map Test",
+                "-cir":""
+            }
+        }],
+        "convert_axial_segment_trim_lines":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "segment",
+                "-con": "Segment Map Test",
+                "-crsl":"40"
+            }
+        }],
+        "convert_axial_data_axial":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "axial",
+                "-con": "Axial Map Test"
+            }
+        }],
+        "convert_axial_data_axial_copy_attributes":[{
+            "infile": "../../../testdata/barnsbury_axial.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test",
+                "-coc": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "axial",
+                "-con": "Axial Map Test",
+                "-coc": ""
+            }
+        }],
+        "convert_segment_data":[{
+            "infile": "../../../testdata/barnsbury_segment.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        }],
+        "convert_segment_data_segment":[{
+            "infile": "../../../testdata/barnsbury_segment.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "axial",
+                "-con": "Segment Map Test"
+            }
+        }],
+        "convert_segment_data_segment_copy_attributes":[{
+            "infile": "../../../testdata/barnsbury_segment.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "data",
+                "-con": "Data Map Test",
+                "-coc": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "axial",
+                "-con": "Segment Map Test",
+                "-coc": ""
+            }
+        }],
+        "convert_segment_drawing":[{
+            "infile": "../../../testdata/barnsbury_segment.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "drawing",
+                "-con": "Drawing Map Test"
             }
         }]
     }

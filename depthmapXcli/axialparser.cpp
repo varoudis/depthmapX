@@ -39,7 +39,6 @@ std::string AxialParser::getHelp() const
     return  "Mode options for Axial Analysis:\n"\
             "  -xl <x>,<y> Calculate all lines map from this seed point (can be used more than once)\n"
             "  -xf Calculate fewest lines map from all lines map\n"\
-            "  -xu Process unlink data (not yet supported)\n"\
             "  -xa run axial anlysis\n"\
             " All modes expect to find the required input in the in graph\n"\
             " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n"\
@@ -61,10 +60,6 @@ void AxialParser::parse(int argc, char **argv)
         else if(std::strcmp(argv[i], "-xf") == 0)
         {
             m_runFewestLines = true;
-        }
-        else if(std::strcmp(argv[i], "-xu") == 0)
-        {
-            ENFORCE_ARGUMENT("-xu", i)
         }
         else if (std::strcmp(argv[i], "-xa") == 0)
         {

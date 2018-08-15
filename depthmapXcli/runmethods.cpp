@@ -23,6 +23,7 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include "salalib/entityparsing.h"
 #include <salalib/gridproperties.h>
 #include <genlib/legacyconverters.h>
 #include <salalib/importutils.h>
@@ -96,14 +97,95 @@ namespace dm_runmethods
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
 
-    void linkGraph(const CommandLineParser &cmdP, const std::vector<Line> &mergeLines, IPerformanceSink &perfWriter)
+    void linkGraph(const CommandLineParser &cmdP, const LinkParser &parser, IPerformanceSink &perfWriter)
     {
-        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
-        SimpleTimer t;
-        PointMap& currentMap = mgraph->getDisplayedPointMap();
 
-        std::vector<PixelRefPair> newLinks = depthmapX::pixelateMergeLines(mergeLines, currentMap);
-        depthmapX::mergePixelPairs(newLinks, currentMap);
+        auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
+
+        if (parser.getLinkMode() == LinkParser::LinkMode::UNLINK
+                && mgraph->getShapeGraphs().getDisplayedMap().getMapType() != ShapeMap::AXIALMAP) {
+            throw depthmapX::RuntimeException("Unlinking is only available for axial maps");
+        }
+
+        char delimiter = '\t';
+        std::stringstream linksStream;
+        if(!parser.getLinksFile().empty())
+        {
+            std::ifstream fileStream(parser.getLinksFile());
+            if (!linksStream)
+            {
+                std::stringstream message;
+                message << "Failed to load file " << parser.getLinksFile() << ", error " << std::flush;
+                throw depthmapX::RuntimeException(message.str().c_str());
+            }
+            linksStream << fileStream.rdbuf();
+            fileStream.close();
+        }
+        else if(!parser.getManualLinks().empty())
+        {
+            delimiter = ',';
+            std::string header = "x1,y1,x2,y2";
+            if(parser.getLinkType() == LinkParser::LinkType::REFS) {
+                header = "reffrom,refto";
+            } else if(parser.getLinkMode() == LinkParser::LinkMode::UNLINK) {
+                header = "x,y";
+            }
+            linksStream << header;
+            auto iter = parser.getManualLinks().begin(),
+                    end = parser.getManualLinks().end();
+            for ( ; iter != end; ++iter )
+            {
+                linksStream << "\n" << *iter;
+            }
+        }
+
+        SimpleTimer t;
+        if(parser.getLinkMode() == LinkParser::LinkMode::LINK) {
+            if(parser.getMapTypeGroup() == LinkParser::MapTypeGroup::SHAPEGRAPHS) {
+                auto& shapeGraph = mgraph->getDisplayedShapeGraph();
+                if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                    std::vector<Line> mergeLines = EntityParsing::parseLines(linksStream, delimiter);
+                    for(auto line: mergeLines) {
+                        QtRegion region(line.start(), line.start());
+                        shapeGraph.setCurSel(region);
+                        shapeGraph.linkShapes(line.end());
+                    }
+                } else {
+                    auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                    for(auto pair: mergePairs) {
+                        // apparently this also unlinks if already linked or crossing
+                        shapeGraph.linkShapesFromRefs(pair.first, pair.second);
+                    }
+                }
+            } else {
+                std::vector<PixelRefPair> newLinks;
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
+                if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                    std::vector<Line> mergeLines = EntityParsing::parseLines(linksStream, delimiter);
+                    std::vector<PixelRefPair> linkPairsFromCoords = depthmapX::pixelateMergeLines(mergeLines, currentMap);
+                    newLinks.insert(newLinks.end(), linkPairsFromCoords.begin(), linkPairsFromCoords.end());
+                } else {
+                    auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                    for(auto pair: mergePairs) {
+                        newLinks.push_back(PixelRefPair(pair.first, pair.second));
+                    }
+                }
+                depthmapX::mergePixelPairs(newLinks, currentMap);
+            }
+        } else {
+            auto& shapeGraph = mgraph->getDisplayedShapeGraph();
+            if(parser.getLinkType() == LinkParser::LinkType::COORDS) {
+                auto mergePoints = EntityParsing::parsePoints(linksStream, delimiter);
+                for(auto point: mergePoints) {
+                    shapeGraph.unlinkAtPoint(point);
+                }
+            } else {
+                auto mergePairs = EntityParsing::parseRefPairs(linksStream, delimiter);
+                for(auto pair: mergePairs) {
+                    shapeGraph.unlinkShapesFromRefs(pair.first, pair.second);
+                }
+            }
+        }
 
         perfWriter.addData("Linking graph", t.getTimeInSeconds());
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
@@ -486,25 +568,70 @@ namespace dm_runmethods
 
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
-        PointMap& currentMap = mgraph->getDisplayedPointMap();
-
         switch(exportP.getExportMode()) {
             case ExportParser::POINTMAP_DATA_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap data", currentMap.outputSummary(stream, ','))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_CONNECTIONS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputConnectionsAsCSV(stream, ","))
+                stream.close();
                 break;
             }
             case ExportParser::POINTMAP_LINKS_CSV:
             {
+                PointMap& currentMap = mgraph->getDisplayedPointMap();
                 std::ofstream stream(cmdP.getOuputFile().c_str());
                 DO_TIMED("Writing pointmap connections", currentMap.outputLinksAsCSV(stream, ","))
+                stream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing pointmap connections", currentMap.output(stream, ','))
+                stream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_MAP_MIF:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::string fileName = cmdP.getOuputFile().c_str();
+                std::string mifFile = fileName + ".mif";
+                std::string midFile = fileName + ".mid";
+                if (0 == fileName.compare(fileName.length() - 4, 4, ".mif")) {
+                    // we are given the .mif
+                    mifFile = fileName;
+                    midFile = fileName.substr(0,  fileName.length() - 4) + ".mid";
+
+                } else if (0 == fileName.compare(fileName.length() - 4, 4, ".mid")) {
+                    // we are given the .mid
+                    mifFile = fileName.substr(0, fileName.length() - 4) + ".mif";
+                    midFile = fileName;
+                }
+                std::ofstream mifStream(mifFile);
+                std::ofstream midStream(midFile);
+                DO_TIMED("Writing pointmap connections", currentMap.outputMifMap(mifStream, midStream))
+                mifStream.close();
+                midStream.close();
+                break;
+            }
+            case ExportParser::SHAPEGRAPH_CONNECTIONS_CSV:
+            {
+                ShapeGraph& currentMap = mgraph->getDisplayedShapeGraph();
+                std::ofstream stream(cmdP.getOuputFile().c_str());
+                DO_TIMED("Writing shapegraph connections",
+                         currentMap.isAxialMap() ? currentMap.writeAxialConnectionsAsPairsCSV(stream) :
+                                                   currentMap.writeSegmentConnectionsAsPairsCSV(stream))
+                stream.close();
                 break;
             }
             default:
@@ -542,6 +669,123 @@ namespace dm_runmethods
         std::unique_ptr<Communicator> comm(new ICommunicator());
 
         DO_TIMED("Calculating step-depth", mGraph->analyseGraph( comm.get(), options, false))
+
+        std::cout << " ok\nWriting out result..." << std::flush;
+        DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
+                std::cout << " ok" << std::endl;
+    }
+
+    void runMapConversion(const CommandLineParser &clp, const MapConvertParser &mcp, IPerformanceSink &perfWriter)
+    {
+        auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
+
+        int currentMapType = mGraph->getDisplayedMapType();
+
+        if (currentMapType == ShapeMap::EMPTYMAP) {
+            if(mGraph->hasVisibleDrawingLayers()) {
+                currentMapType = ShapeMap::DRAWINGMAP;
+            } else {
+                throw depthmapX::RuntimeException("No currently available map to convert from");
+            }
+        }
+
+        if (mcp.copyAttributes()) {
+            if(currentMapType != ShapeMap::DATAMAP &&
+                    currentMapType != ShapeMap::AXIALMAP &&
+                    currentMapType != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(current map type is not of those types)");
+            }
+            if(mcp.outputMapType() != ShapeMap::DATAMAP &&
+                    mcp.outputMapType() != ShapeMap::AXIALMAP &&
+                    mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Copying attributes is only available when "\
+                                                  "converting between Data, Axial and Segment maps "\
+                                                  "(selected output map type is not of those types)");
+            }
+        }
+        if (mcp.removeStubLength() > 0) {
+            if(currentMapType != ShapeMap::AXIALMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(current map type is not Axial)");
+            }
+            if(mcp.outputMapType() != ShapeMap::SEGMENTMAP) {
+                throw depthmapX::RuntimeException("Removing stubs (-crsl) is only available when"\
+                                                  "converting from Axial to Segment maps"\
+                                                  "(selected output map type is not Segment)");
+            }
+        }
+
+        std::unique_ptr<Communicator> comm(new ICommunicator());
+
+        switch(mcp.outputMapType()) {
+        case ShapeMap::DRAWINGMAP: {
+            DO_TIMED("Converting to drawing",
+                     mGraph->convertToDrawing(comm.get(), mcp.outputMapName(), currentMapType == ShapeMap::DATAMAP));
+            break;
+        }
+        case ShapeMap::AXIALMAP: {
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to axial",
+                         mGraph->convertDrawingToAxial(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to axial",
+                         mGraph->convertDataToAxial(comm.get(), mcp.outputMapName(),
+                                                    !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
+                throw depthmapX::RuntimeException("Unsupported conversion to axial");
+            }
+            }
+            break;
+        }
+        case ShapeMap::SEGMENTMAP: {
+            switch(currentMapType) {
+            case ShapeMap::DRAWINGMAP: {
+                DO_TIMED("Converting from drawing to segment",
+                         mGraph->convertDrawingToSegment(comm.get(), mcp.outputMapName()));
+                break;
+            }
+            case ShapeMap::AXIALMAP: {
+                DO_TIMED("Converting from axial to segment",
+                         mGraph->convertAxialToSegment(comm.get(), mcp.outputMapName(), !mcp.removeInputMap(),
+                                                       mcp.copyAttributes(), mcp.removeStubLength() / 100.0));
+                break;
+            }
+            case ShapeMap::DATAMAP: {
+                DO_TIMED("Converting from data to segment",
+                         mGraph->convertDataToSegment(comm.get(), mcp.outputMapName(),
+                                                      !mcp.removeInputMap(), mcp.copyAttributes()));
+                break;
+            }
+            default: {
+                throw depthmapX::RuntimeException("Unsupported conversion to segment");
+            }
+            }
+            break;
+        }
+        case ShapeMap::DATAMAP: {
+            DO_TIMED("Converting to data",
+                     mGraph->convertToData(comm.get(), mcp.outputMapName(),
+                                           !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
+            break;
+        }
+        case ShapeMap::CONVEXMAP: {
+            DO_TIMED("Converting to convex",
+                     mGraph->convertToConvex(comm.get(), mcp.outputMapName(),
+                                             !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
+            break;
+        }
+        default: {
+            throw depthmapX::RuntimeException("Unsupported conversion");
+        }
+        }
 
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))

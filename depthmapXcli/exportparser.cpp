@@ -22,7 +22,7 @@
 
 using namespace depthmapX;
 
-ExportParser::ExportParser() : _exportMode(ExportMode::NONE)
+ExportParser::ExportParser() : m_exportMode(ExportMode::NONE)
 {}
 
 void ExportParser::parse(int argc, char *argv[])
@@ -32,22 +32,34 @@ void ExportParser::parse(int argc, char *argv[])
 
         if ( std::strcmp ("-em", argv[i]) == 0)
         {
-            if (_exportMode != ExportParser::NONE)
+            if (m_exportMode != ExportParser::NONE)
             {
                 throw CommandLineException("-em can only be used once, modes are mutually exclusive");
             }
             ENFORCE_ARGUMENT("-em", i)
             if ( std::strcmp(argv[i], "pointmap-data-csv") == 0 )
             {
-                _exportMode = ExportMode::POINTMAP_DATA_CSV;
+                m_exportMode = ExportMode::POINTMAP_DATA_CSV;
             } 
             else if ( std::strcmp(argv[i], "pointmap-connections-csv") == 0 )
             {
-                _exportMode = ExportMode::POINTMAP_CONNECTIONS_CSV;
+                m_exportMode = ExportMode::POINTMAP_CONNECTIONS_CSV;
             }
             else if ( std::strcmp(argv[i], "pointmap-links-csv") == 0 )
             {
-                _exportMode = ExportMode::POINTMAP_LINKS_CSV;
+                m_exportMode = ExportMode::POINTMAP_LINKS_CSV;
+            }
+            else if ( std::strcmp(argv[i], "shapegraph-map-csv") == 0 )
+            {
+                m_exportMode = ExportMode::SHAPEGRAPH_MAP_CSV;
+            }
+            else if ( std::strcmp(argv[i], "shapegraph-map-mif") == 0 )
+            {
+                m_exportMode = ExportMode::SHAPEGRAPH_MAP_MIF;
+            }
+            else if ( std::strcmp(argv[i], "shapegraph-connections-csv") == 0 )
+            {
+                m_exportMode = ExportMode::SHAPEGRAPH_CONNECTIONS_CSV;
             }
             else
             {

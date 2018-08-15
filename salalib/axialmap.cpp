@@ -924,6 +924,42 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
         }
     }
 }
+
+void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
+    pqvector<Point2f> closepoints;
+    prefvec<IntPair> intersections;
+    PixelRef pix = pixelate(unlinkPoint);
+    std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+    auto iter = pix_shapes.begin();
+    for (; iter != pix_shapes.end(); ++iter) {
+       for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
+          auto aIter = m_shapes.find(int(iter->m_shape_ref));
+          auto bIter = m_shapes.find(int(jter->m_shape_ref));
+          int a = int(std::distance(m_shapes.begin(), aIter));
+          int b = int(std::distance(m_shapes.begin(), bIter));
+          if (aIter != m_shapes.end() && bIter != m_shapes.end()
+                  && aIter->second.isLine() && bIter->second.isLine()
+                  && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
+             closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
+             intersections.push_back( IntPair(a,b) );
+          }
+       }
+    }
+    double mindist = -1.0;
+    int minpair = -1;
+    for (size_t j = 0; j < closepoints.size(); j++) {
+       if (minpair == -1 || dist(unlinkPoint,closepoints[j]) < mindist) {
+          mindist = dist(unlinkPoint,closepoints[j]);
+          minpair = int(j);
+       }
+    }
+    if (minpair != -1) {
+       unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
+    }
+    else {
+       std::cerr << "eek!";
+    }
+}
 ////////////////////////////////////////////////////////////////////////////
 
 // this unlink options was originally excised on the version 7 recode
@@ -940,39 +976,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
    for (auto polygon: polygons) {
       // just use the points:
       if (polygon.second.isPoint()) {
-         pqvector<Point2f> closepoints;
-         prefvec<IntPair> intersections;
-         PixelRef pix = pixelate(polygon.second.getPoint());
-         std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
-         auto iter = pix_shapes.begin();
-         for (; iter != pix_shapes.end(); ++iter) {
-            for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
-               auto aIter = m_shapes.find(int(iter->m_shape_ref));
-               auto bIter = m_shapes.find(int(jter->m_shape_ref));
-               int a = int(std::distance(m_shapes.begin(), aIter));
-               int b = int(std::distance(m_shapes.begin(), bIter));
-               if (aIter != m_shapes.end() && bIter != m_shapes.end()
-                       && aIter->second.isLine() && bIter->second.isLine()
-                       && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
-                  closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-                  intersections.push_back( IntPair(a,b) );
-               }
-            }
-         }
-         double mindist = -1.0;
-         int minpair = -1;
-         for (size_t j = 0; j < closepoints.size(); j++) {
-            if (minpair == -1 || dist(polygon.second.getPoint(),closepoints[j]) < mindist) {
-               mindist = dist(polygon.second.getPoint(),closepoints[j]);
-               minpair = int(j);
-            }
-         }
-         if (minpair != -1) {
-            unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
-         }
-         else {
-            std::cerr << "eek!";
-         }
+         unlinkAtPoint(polygon.second.getPoint());
       }
    }
 
@@ -1242,12 +1246,12 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
 {
    m_connectors.clear();
 
-   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
-   int leng_col = m_attributes.getColumnIndex("Segment Length");
-
    // note, expects these in alphabetical order to preserve numbering:
    int w_conn_col = m_attributes.insertColumn("Angular Connectivity");
    int uw_conn_col = m_attributes.insertLockedColumn("Connectivity");
+
+   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
+   int leng_col = m_attributes.getColumnIndex("Segment Length");
 
    int i = -1;
    for (auto shape: m_shapes) {

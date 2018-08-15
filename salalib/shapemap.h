@@ -150,9 +150,12 @@ public:
        if (isLine()) {
           lines.push_back(getLine());
        }
-       else if (isPolyLine()) {
+       else if (isPolyLine() || isPolygon()) {
           for (size_t j = 0; j < m_points.size() - 1; j++) {
              lines.push_back(Line(m_points[j], m_points[j+1]));
+          }
+          if(isClosed()) {
+              lines.push_back(Line(m_points[m_points.size() - 1], m_points[0]));
           }
        }
        return lines;
@@ -530,9 +533,11 @@ protected:
 public:
    bool clearLinks();
    bool linkShapes(const Point2f& p);
+   bool linkShapesFromRefs(int ref1, int ref2, bool refresh = true);
    bool linkShapes(int index1, int index2, bool refresh = true);
    bool linkShapes(int id1, int dir1, int id2, int dir2, float weight);
    bool unlinkShapes(const Point2f& p);
+   bool unlinkShapesFromRefs(int index1, int index2, bool refresh = true);
    bool unlinkShapes(int index1, int index2, bool refresh = true);
    bool unlinkShapeSet(std::istream& idset, int refcol);
 public:

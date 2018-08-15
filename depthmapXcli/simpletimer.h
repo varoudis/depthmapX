@@ -13,30 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SIMPLETIMER_H
-#define SIMPLETIMER_H
+#pragma once
+
 #include <chrono>
 
 class SimpleTimer
 {
 public:
-    SimpleTimer() : _startTime(std::chrono::high_resolution_clock::now())
+    SimpleTimer() : m_startTime(std::chrono::high_resolution_clock::now())
     {
     }
 
     double getTimeInSeconds() const
     {
          auto t2 = std::chrono::high_resolution_clock::now();
-        return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(t2-_startTime).count()) / 1000.0;
+        return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(t2-m_startTime).count()) / 1000.0;
     }
 
     void reset()
     {
-        _startTime = std::chrono::high_resolution_clock::now();
+        m_startTime = std::chrono::high_resolution_clock::now();
     }
 
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_startTime;
 };
-
-#endif // SIMPLETIMER_H

@@ -179,9 +179,9 @@ public:
    bool convertDataToAxial(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
    bool convertDrawingToSegment(Communicator *comm, std::string layer_name);
    bool convertDataToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
-   bool convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag);  // -1 signifies convert from drawing layer, else convert from data map
-   bool convertToDrawing(Communicator *comm, std::string layer_name, int typeflag); // 0 signifies convert from data map, else convert from graph
-   bool convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int typeflag); // -1 signifies convert from drawing layer, else convert from data map
+   bool convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata);
+   bool convertToDrawing(Communicator *comm, std::string layer_name, bool fromDisplayedDataMap);
+   bool convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata);
    bool convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval);
    int loadMifMap(Communicator *comm, std::istream& miffile, std::istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
@@ -277,7 +277,7 @@ public:
 
    //
    int getDisplayedMapType();
-   //
+   bool hasVisibleDrawingLayers();
    QtRegion getBoundingBox() const;
    //
    int getDisplayedAttribute() const;

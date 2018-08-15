@@ -19,7 +19,7 @@
 #include <algorithm>
 
 
-PerformanceWriter::PerformanceWriter(const std::string &filename) : _filename(filename)
+PerformanceWriter::PerformanceWriter(const std::string &filename) : m_filename(filename)
 {
 }
 
@@ -28,16 +28,16 @@ void PerformanceWriter::addData(const std::string &message, double timeInSeconds
 {
     std::stringstream ss;
     ss << "\"" << message << "\"," << timeInSeconds << "\n";
-    _data.push_back(ss.str());
+    m_data.push_back(ss.str());
 }
 
 void PerformanceWriter::write() const
 {
-    if (!_filename.empty())
+    if (!m_filename.empty())
     {
-        std::ofstream outfile(_filename);
+        std::ofstream outfile(m_filename);
         outfile << "\"action\",\"duration\"\n";
-        std::for_each(_data.begin(), _data.end(), [&outfile](const std::string& line)mutable ->void{(outfile) << line;});
+        std::for_each(m_data.begin(), m_data.end(), [&outfile](const std::string& line)mutable ->void{(outfile) << line;});
         outfile << std::flush;
     }
 }
