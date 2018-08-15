@@ -30,7 +30,7 @@ public:
     void parse(int argc, char **argv);
     void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const;
 
-    const std::vector<IsovistDefinition> &getIsovists() const{ return mIsovists;}
+    const std::vector<IsovistDefinition> &getIsovists() const{ return m_isovists;}
 private:
-    std::vector<IsovistDefinition> mIsovists;
+    std::vector<IsovistDefinition> m_isovists;
 };

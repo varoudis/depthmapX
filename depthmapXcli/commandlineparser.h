@@ -31,12 +31,12 @@ public:
     CommandLineParser(const IModeParserFactory &parserFactory);
     void parse(size_t argc, char *argv[]);
 
-    const std::string &getFileName() const { return _fileName; }
-    const std::string &getOuputFile() const {return _outputFile;}
-    const std::string &getTimingFile() const {return _timingFile;}
-    bool isValid() const { return _valid; }
-    bool printVersionMode() const { return _printVersionMode; }
-    bool simpleMode() const { return _simpleMode; }
+    const std::string &getFileName() const { return m_fileName; }
+    const std::string &getOuputFile() const {return m_outputFile;}
+    const std::string &getTimingFile() const {return m_timingFile;}
+    bool isValid() const { return m_valid; }
+    bool printVersionMode() const { return m_printVersionMode; }
+    bool simpleMode() const { return m_simpleMode; }
     const IModeParser& modeOptions() const{ return *_modeParser;};
 
 
@@ -46,12 +46,12 @@ public:
 
 
 private:
-    std::string _fileName;
-    std::string _outputFile;
-    std::string _timingFile;
-    bool _valid;
-    bool _printVersionMode;
-    bool _simpleMode;
+    std::string m_fileName;
+    std::string m_outputFile;
+    std::string m_timingFile;
+    bool m_valid;
+    bool m_printVersionMode;
+    bool m_simpleMode;
 
     const IModeParserFactory &_parserFactory;
     IModeParser * _modeParser;

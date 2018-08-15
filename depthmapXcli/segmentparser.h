@@ -44,20 +44,20 @@ public:
         METRIC
     };
 
-    AnalysisType getAnalysisType() const { return _analysisType; }
+    AnalysisType getAnalysisType() const { return m_analysisType; }
 
-    RadiusType getRadiusType() const { return _radiusType; }
+    RadiusType getRadiusType() const { return m_radiusType; }
 
-    bool includeChoice() const { return _includeChoice; }
+    bool includeChoice() const { return m_includeChoice; }
 
-    int getTulipBins() const { return _tulipBins; }
+    int getTulipBins() const { return m_tulipBins; }
 
-    const std::vector<double> getRadii() const { return _radii;}
+    const std::vector<double> getRadii() const { return m_radii;}
 
 private:
-    AnalysisType _analysisType;
-    RadiusType _radiusType;
-    bool _includeChoice;
-    int _tulipBins;
-    std::vector<double> _radii;
+    AnalysisType m_analysisType;
+    RadiusType m_radiusType;
+    bool m_includeChoice;
+    int m_tulipBins;
+    std::vector<double> m_radii;
 };

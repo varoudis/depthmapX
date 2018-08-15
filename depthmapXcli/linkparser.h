@@ -30,9 +30,9 @@ public:
     enum LinkType { COORDS, REFS };
 
     LinkParser():
-        _mapTypeGroup(POINTMAPS),
-        _linkMode(LINK),
-        _linkType(COORDS)
+        m_mapTypeGroup(POINTMAPS),
+        m_linkMode(LINK),
+        m_linkType(COORDS)
     {}
 
     virtual std::string getModeName() const
@@ -65,17 +65,17 @@ public:
     virtual void run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const;
 
     //link options
-    const std::string & getLinksFile() const { return _linksFile; }
-    const std::vector<std::string> & getManualLinks() const { return _manualLinks; }
-    const MapTypeGroup& getMapTypeGroup() const { return _mapTypeGroup; }
-    const LinkMode& getLinkMode() const { return _linkMode; }
-    const LinkType& getLinkType() const { return _linkType; }
+    const std::string & getLinksFile() const { return m_linksFile; }
+    const std::vector<std::string> & getManualLinks() const { return m_manualLinks; }
+    const MapTypeGroup& getMapTypeGroup() const { return m_mapTypeGroup; }
+    const LinkMode& getLinkMode() const { return m_linkMode; }
+    const LinkType& getLinkType() const { return m_linkType; }
 private:
-    std::string _linksFile;
-    std::vector<std::string> _manualLinks;
-    MapTypeGroup _mapTypeGroup;
-    LinkMode _linkMode;
-    LinkType _linkType;
+    std::string m_linksFile;
+    std::vector<std::string> m_manualLinks;
+    MapTypeGroup m_mapTypeGroup;
+    LinkMode m_linkMode;
+    LinkType m_linkType;
 };
 
 #endif // LINKPARSER_H

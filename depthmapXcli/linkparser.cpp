@@ -33,11 +33,11 @@ void LinkParser::parse(int argc, char *argv[])
             ENFORCE_ARGUMENT("-lmt", i)
             if ( std::strcmp(argv[i], "pointmaps") == 0 )
             {
-                _mapTypeGroup = MapTypeGroup::POINTMAPS;
+                m_mapTypeGroup = MapTypeGroup::POINTMAPS;
             }
             else if ( std::strcmp(argv[i], "shapegraphs") == 0 )
             {
-                _mapTypeGroup = MapTypeGroup::SHAPEGRAPHS;
+                m_mapTypeGroup = MapTypeGroup::SHAPEGRAPHS;
             }
             else
             {
@@ -49,11 +49,11 @@ void LinkParser::parse(int argc, char *argv[])
             ENFORCE_ARGUMENT("-lm", i)
             if ( std::strcmp(argv[i], "link") == 0 )
             {
-                _linkMode = LinkMode::LINK;
+                m_linkMode = LinkMode::LINK;
             }
             else if ( std::strcmp(argv[i], "unlink") == 0 )
             {
-                _linkMode = LinkMode::UNLINK;
+                m_linkMode = LinkMode::UNLINK;
             }
             else
             {
@@ -65,11 +65,11 @@ void LinkParser::parse(int argc, char *argv[])
             ENFORCE_ARGUMENT("-lt", i)
             if ( std::strcmp(argv[i], "coords") == 0 )
             {
-                _linkType = LinkType::COORDS;
+                m_linkType = LinkType::COORDS;
             }
             else if ( std::strcmp(argv[i], "refs") == 0 )
             {
-                _linkType = LinkType::REFS;
+                m_linkType = LinkType::REFS;
             }
             else
             {
@@ -78,20 +78,20 @@ void LinkParser::parse(int argc, char *argv[])
         }
         else if ( std::strcmp ("-lf", argv[i]) == 0)
         {
-            if (!_linksFile.empty())
+            if (!m_linksFile.empty())
             {
                 throw CommandLineException("-lf can only be used once at the moment");
             }
-            else if (_manualLinks.size() != 0)
+            else if (m_manualLinks.size() != 0)
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
             ENFORCE_ARGUMENT("-lf", i)
-            _linksFile = argv[i];
+            m_linksFile = argv[i];
         }
         else if ( std::strcmp ("-lnk", argv[i]) == 0)
         {
-            if (!_linksFile.empty())
+            if (!m_linksFile.empty())
             {
                 throw CommandLineException("-lf can not be used in conjunction with -lnk");
             }
@@ -105,15 +105,15 @@ void LinkParser::parse(int argc, char *argv[])
                         << std::flush;
                 throw CommandLineException(message.str().c_str());
             }
-            _manualLinks.push_back(argv[i]);
+            m_manualLinks.push_back(argv[i]);
         }
         ++i;
     }
-    if ( _manualLinks.size() == 0 && _linksFile.empty())
+    if ( m_manualLinks.size() == 0 && m_linksFile.empty())
     {
         throw CommandLineException("one of -lf or -lnk must be provided");
     }
-    if (_mapTypeGroup == MapTypeGroup::POINTMAPS && _linkMode == LinkMode::UNLINK)
+    if (m_mapTypeGroup == MapTypeGroup::POINTMAPS && m_linkMode == LinkMode::UNLINK)
     {
         throw CommandLineException("unlinking is not supported for pointmaps");
     }
