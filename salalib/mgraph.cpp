@@ -2619,10 +2619,12 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
     // this is not possible
     // TODO: Fix on next graph file update
 
+    bool foundAllLineMap = false;
     for(size_t i = 0; i < m_shapeGraphs.size(); i++) {
         ShapeGraph* shapeGraph = m_shapeGraphs[i].get();
         if(shapeGraph->getName() == "All-Line Map" ||
                 shapeGraph->getName() == "All Line Map") {
+            foundAllLineMap = true;
             AllLineMap* alllinemap = dynamic_cast<AllLineMap *>(shapeGraph);
             // these are additional essentially for all line axial maps
             // should probably be kept *with* the all line axial map...
@@ -2639,6 +2641,16 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
             // there is currently only one:
             break;
         }
+    }
+    if(!foundAllLineMap) {
+        // P.K. This is just a dummy read to cover cases where there is no All-Line Map
+        // The below is taken from pmemvec<T>::read
+
+        // READ / WRITE USES 32-bit LENGTHS (number of elements)
+        // n.b., do not change this to size_t as it will cause 32-bit to 64-bit conversion problems
+        unsigned int length;
+        stream.read( (char *) &length, sizeof(unsigned int) );
+        stream.read( (char *) &length, sizeof(unsigned int) );
     }
     return true;
 }
