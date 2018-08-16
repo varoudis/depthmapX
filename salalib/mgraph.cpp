@@ -1183,6 +1183,10 @@ bool MetaGraph::makeFewestLineMap( Communicator *communicator, int replace )
 
        AllLineMap* alllinemap = dynamic_cast<AllLineMap*>(m_shapeGraphs[size_t(m_all_line_map)].get());
 
+       if(alllinemap == nullptr) {
+           throw depthmapX::RuntimeException("Failed to cast from ShapeGraph to AllLineMap");
+       }
+
        // waiting for C++17...
        std::unique_ptr<ShapeGraph> fewestlinemap_subsets, fewestlinemap_minimal;
        std::tie(fewestlinemap_subsets, fewestlinemap_minimal) = alllinemap->extractFewestLineMaps(communicator);
@@ -2626,6 +2630,9 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
                 shapeGraph->getName() == "All Line Map") {
             foundAllLineMap = true;
             AllLineMap* alllinemap = dynamic_cast<AllLineMap *>(shapeGraph);
+            if(alllinemap == nullptr) {
+                throw depthmapX::RuntimeException("Failed to cast from ShapeGraph to AllLineMap");
+            }
             // these are additional essentially for all line axial maps
             // should probably be kept *with* the all line axial map...
             alllinemap->m_poly_connections.clear();
@@ -2689,6 +2696,10 @@ bool MetaGraph::writeShapeGraphs( std::ofstream& stream, int version, bool displ
         temp_radial_lines.write(stream);
     } else {
         AllLineMap* alllinemap = dynamic_cast<AllLineMap *>(m_shapeGraphs[size_t(m_all_line_map)].get());
+
+        if(alllinemap == nullptr) {
+            throw depthmapX::RuntimeException("Failed to cast from ShapeGraph to AllLineMap");
+        }
 
         alllinemap->m_poly_connections.write(stream);
         alllinemap->m_radial_lines.write(stream);
