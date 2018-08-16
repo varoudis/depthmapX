@@ -220,15 +220,15 @@ void QGraphDoc::OnLayerNew()
       }
       else if (dlg.m_layer_type == 1) {
          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
-         map = &(m_meta_graph->getShapeGraphs().getMap(ref));
+         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 2) {
          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
-         map = &(m_meta_graph->getShapeGraphs().getMap(ref));
+         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 3) {
          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
-         map = &(m_meta_graph->getShapeGraphs().getMap(ref));
+         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();
@@ -1326,11 +1326,7 @@ void QGraphDoc::OnToolsMakeFewestLineMap()
    int replace = 0;
 
    // check for existing axial maps and warn user if necessary:
-   ShapeGraphs& axialmaps = m_meta_graph->getShapeGraphs();
-   if (axialmaps.getMapRef("Fewest-Line Map (Subsets)") != paftl::npos ||
-       axialmaps.getMapRef("Fewest Line Map (Subsets)") != paftl::npos ||
-       axialmaps.getMapRef("Fewest-Line Map (Minimal)") != paftl::npos ||
-       axialmaps.getMapRef("Fewest Line Map (Minimal)") != paftl::npos) {
+   if (m_meta_graph->hasFewestLineMaps()) {
       CPromptReplace dlg;
       dlg.m_message = tr("There is already a fewest line axial map, would you like to add to it or replace it?");
       int result = dlg.exec();
@@ -1949,10 +1945,11 @@ void QGraphDoc::OnPushToLayer()
             names.insert(std::make_pair(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps[i].getName()));
          }
       }
-      ShapeGraphs& shapegraphs = m_meta_graph->getShapeGraphs();
-      for (i = 0; i < shapegraphs.getMapCount(); i++) {
-         if (toplayerclass != MetaGraph::VIEWAXIAL || i != shapegraphs.getDisplayedMapRef()) {
-            names.insert(std::make_pair(IntPair(MetaGraph::VIEWAXIAL,int(i)),std::string("Shape Graphs: ") + shapegraphs.getMap(i).getName()));
+      auto& shapegraphs = m_meta_graph->getShapeGraphs();
+      for (i = 0; i < shapegraphs.size(); i++) {
+         if (toplayerclass != MetaGraph::VIEWAXIAL || i != m_meta_graph->getDisplayedShapeGraphRef()) {
+            names.insert(std::make_pair(IntPair(MetaGraph::VIEWAXIAL,int(i)),
+                                        std::string("Shape Graphs: ") + shapegraphs[i]->getName()));
          }
       }
       for (i = 0; i < m_meta_graph->getPointMaps().size(); i++) {

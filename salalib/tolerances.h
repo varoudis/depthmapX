@@ -1,4 +1,5 @@
-// Copyright (C) 2017 Petros Koutsolampros
+// sala - a component of the depthmapX - spatial network analysis platform
+// Copyright (C) 2018 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,28 +16,6 @@
 
 #pragma once
 
-#include "genlib/p2dpoly.h"
-#include <vector>
-#include <map>
-
-namespace depthmapX {
-    typedef std::vector<std::string> ColumnData;
-    typedef std::map<std::string, ColumnData> Table;
-
-    class Polyline : public QtRegion
-    {
-    public:
-        std::vector<Point2f> m_vertices;
-        bool m_closed = false;
-        Polyline(std::vector<Point2f> vertices, bool closed) : m_vertices(vertices), m_closed(closed) {
-        }
-    };
-
-    enum ImportType {
-        DRAWINGMAP, DATAMAP
-    };
-
-    enum ImportFileType {
-        CSV, TSV, DXF
-    };
-}
+static const double TOLERANCE_A = 1e-9;
+static const double TOLERANCE_B = 1e-12;
+static const double TOLERANCE_C = 1e-6;

@@ -15,8 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __CONNECTOR_H__
-#define __CONNECTOR_H__
+#pragma once
+
+#include "genlib/paftl.h"
 
 #include <istream>
 #include <ostream>
@@ -95,5 +96,3 @@ struct Connector
    void first() const { m_cursor = 0; }
    void next() const { m_cursor++; } 
 };
-
-#endif

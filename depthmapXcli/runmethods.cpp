@@ -103,7 +103,7 @@ namespace dm_runmethods
         auto mgraph = loadGraph(cmdP.getFileName().c_str(), perfWriter);
 
         if (parser.getLinkMode() == LinkParser::LinkMode::UNLINK
-                && mgraph->getShapeGraphs().getDisplayedMap().getMapType() != ShapeMap::AXIALMAP) {
+                && mgraph->getDisplayedShapeGraph().getMapType() != ShapeMap::AXIALMAP) {
             throw depthmapX::RuntimeException("Unlinking is only available for axial maps");
         }
 

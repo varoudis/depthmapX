@@ -2918,6 +2918,13 @@ PixelRef ShapeMap::pixelate( const Point2f& p, bool constrain, int ) const
    return r;
 }
 
+void ShapeMap::copyMapInfoBaseData(const ShapeMap& sourceMap) {
+    m_mapinfodata = MapInfoData();
+    m_mapinfodata.m_coordsys = sourceMap.getMapInfoData().m_coordsys;
+    m_mapinfodata.m_bounds = sourceMap.getMapInfoData().m_bounds;
+    m_hasMapInfoData = true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 int ShapeMap::loadMifMap(std::istream& miffile, std::istream& midfile)

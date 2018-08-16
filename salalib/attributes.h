@@ -19,7 +19,11 @@
 #define __ATTRIBUTES_H__
 
 #include "salalib/mgraph_consts.h"
-#include "pafcolor.h"
+#include "salalib/pafcolor.h"
+
+// for scripting object
+#include "salalib/salaprogram.h"
+
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable
@@ -91,10 +95,44 @@ struct OrderedIntPair
    friend bool operator >  (const OrderedIntPair& x, const OrderedIntPair& y);
 };
 
+// note: these are unordered, but in 'a' takes priority over 'b'
+inline bool operator == (const IntPair& x, const IntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const IntPair& x, const IntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const IntPair& x, const IntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const IntPair& x, const IntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
+}
+
+// note: these are made with a is always less than b
+inline bool operator == (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
-// for scripting object
-#include <salalib/salaprogram.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
