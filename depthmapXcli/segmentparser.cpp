@@ -48,7 +48,8 @@ std::string SegmentParser::getHelp() const
             "       metric\n"\
             "       angular\n"\
             "  -sic to include choice (only for Tulip)\n"\
-            "  -stb <tulip bins> (4 to 1024, 1024 approximates full angular)\n";
+            "  -stb <tulip bins> (4 to 1024, 1024 approximates full angular)\n"\
+            "  -swa <map attribute name> perform weighted analysis using this attribute (only for Tulip)\n";
 }
 
 void SegmentParser::parse(int argc, char **argv)
@@ -129,6 +130,11 @@ void SegmentParser::parse(int argc, char **argv)
             {
                 throw CommandLineException(std::string("-stb must be a number between 4 and 1024, got ") + argv[i]);
             }
+        }
+        else if (std::strcmp(argv[i], "-swa") == 0)
+        {
+            ENFORCE_ARGUMENT("-swa", i)
+            m_attribute = argv[i];
         }
     }
 

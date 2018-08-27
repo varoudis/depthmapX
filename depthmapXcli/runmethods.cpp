@@ -350,6 +350,22 @@ namespace dm_runmethods
         options.radius_list = genshim::toPVector(sp.getRadii());
         options.choice = sp.includeChoice();
         options.tulip_bins = sp.getTulipBins();
+        options.weighted_measure_col = -1;
+
+        if(!sp.getAttribute().empty()) {
+            const ShapeGraph& map = mGraph->getDisplayedShapeGraph();
+            const AttributeTable& table = map.getAttributeTable();
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                if(sp.getAttribute() == table.getColumnName(i).c_str()) {
+                    options.weighted_measure_col = i;
+                }
+            }
+            if(options.weighted_measure_col == -1) {
+                throw depthmapX::RuntimeException("Given attribute (" + sp.getAttribute() +
+                                                  ") does not exist in currently selected map");
+            }
+        }
+
         switch(sp.getRadiusType()) {
             case SegmentParser::RadiusType::SEGMENT_STEPS: {
                 options.radius_type = Options::RADIUS_STEPS;

@@ -34,7 +34,8 @@ TEST_CASE("Test segment mode and help")
                                 "       metric\n"\
                                 "       angular\n"\
                                 "  -sic to include choice (only for Tulip)\n"\
-                                "  -stb <tulip bins> (4 to 1024, 1024 approximates full angular)\n");
+                                "  -stb <tulip bins> (4 to 1024, 1024 approximates full angular)\n"\
+                                "  -swa <map attribute name> perform weighted analysis using this attribute (only for Tulip)\n");
 
 }
 
