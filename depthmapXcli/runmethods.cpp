@@ -377,12 +377,12 @@ namespace dm_runmethods
             }
             case SegmentParser::AnalysisType::TOPOLOGICAL: {
                 options.output_type = TOPOMET_METHOD_TOPOLOGICAL;
-                DO_TIMED("Segment topological", mGraph->analyseTopoMet(0, options))
+                DO_TIMED("Segment topological", mGraph->analyseTopoMetMultipleRadii(0, options))
                 break;
             }
             case SegmentParser::AnalysisType::METRIC: {
                 options.output_type = TOPOMET_METHOD_METRIC;
-                DO_TIMED("Segment metric", mGraph->analyseTopoMet(0, options))
+                DO_TIMED("Segment metric", mGraph->analyseTopoMetMultipleRadii(0, options))
                 break;
             }
             case SegmentParser::AnalysisType::NONE:
