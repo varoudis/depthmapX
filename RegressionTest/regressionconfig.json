@@ -331,6 +331,18 @@
                 "-sic": ""
             }
         }],
+        "segment_tulip_1024_rn_steps_weighted": [{
+            "infile": "../../../testdata/barnsbury_segment.graph",
+            "outfile": "out.graph",
+            "mode": "SEGMENT",
+            "extraArgs": {
+                "-st": "tulip",
+                "-stb": "1024",
+                "-sr": "n",
+                "-srt": "steps",
+                "-swa": "Segment Length"
+            }
+        }],
         "segment_tulip_512_rn_steps": [{
             "infile": "../../../testdata/barnsbury_segment.graph",
             "outfile": "out.graph",

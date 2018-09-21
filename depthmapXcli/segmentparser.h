@@ -55,10 +55,13 @@ public:
 
     const std::vector<double> getRadii() const { return m_radii;}
 
+    const std::string getAttribute() const { return m_attribute;}
+
 private:
     AnalysisType m_analysisType;
     RadiusType m_radiusType;
     bool m_includeChoice;
     int m_tulipBins;
     std::vector<double> m_radii;
+    std::string m_attribute;
 };
