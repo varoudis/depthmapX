@@ -1303,11 +1303,10 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
 {
    m_state &= ~SHAPEGRAPHS;      // Clear axial map data flag (stops accidental redraw during reload)
 
-   bool retvar = false;
+   bool retvar = true;
 
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
-      retvar = true;
       for(size_t i = 0; i < options.radius_list.size(); i++) {
           if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, options.radius_list[i], options.sel_only)) {
               retvar = false;
