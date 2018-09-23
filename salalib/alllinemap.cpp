@@ -2,6 +2,7 @@
 #include "salalib/axialminimiser.h"
 #include "salalib/tolerances.h"
 #include "genlib/exceptions.h"
+#include <time.h>
 
 AllLineMap::AllLineMap(Communicator *comm,
                        std::vector<SpacePixelFile> &drawingLayers,
