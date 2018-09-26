@@ -3,13 +3,15 @@ include(../defaults.pri)
 
 QT       -= qt
 QT -= gui
-CONFIG   -= qt
+CONFIG   -= qt warn_on
 
-
-CONFIG += staticlib c++11 console
+CONFIG += staticlib c++11 console warn_off
 CONFIG -= app_bundle
 TARGET = mgraph440
 TEMPLATE = lib
+
+# suppress warning about std::set<int> on MSVC 2015
+win32: QMAKE_CXXFLAGS += -wd4800
 
 DEFINES += MGRAPH440_LIBRARY
 
