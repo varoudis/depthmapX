@@ -443,17 +443,17 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 
       if (local) {
          double control = 0.0;
-         pvecint& connections = m_connectors[i].m_connections;
+         auto& connections = m_connectors[i].m_connections;
          pvecint totalneighbourhood;
-         for (size_t j = 0; j < connections.size(); j++) {
+         for (auto connection: connections) {
             // n.b., as of Depthmap 10.0, connections[j] and i cannot coexist
             // if (connections[j] != i) {
-               totalneighbourhood.add(connections[j]); // <- note add does nothing if member already exists
-               int intersect_size = 0, retro_size = 0;
-               pvecint retconnectors = m_connectors[connections[j]].m_connections;
-               for (size_t k = 0; k < retconnectors.size(); k++) {
+               totalneighbourhood.add(connection); // <- note add does nothing if member already exists
+               int retro_size = 0;
+               auto& retconnectors = m_connectors[size_t(connection)].m_connections;
+               for (auto retconnector: retconnectors) {
                    retro_size++;
-                   totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
+                   totalneighbourhood.add(retconnector); // <- note add does nothing if member already exists
                }
                control += 1.0 / double(retro_size);
             //}
@@ -820,7 +820,7 @@ bool ShapeGraph::readold( std::istream& stream, int version )
       int key;
       stream.read((char *)&key,sizeof(key)); // <- key deprecated
       m_connectors.push_back(Connector());
-      m_connectors[j].read(stream,version,&(m_keyvertices[j]));
+      m_connectors[size_t(j)].read(stream);
    }
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
@@ -869,9 +869,9 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(std::ostream &stream)
     stream.precision(12);
 
     for (size_t i = 0; i < connectors.size(); i++) {
-        pvecint connections = connectors[i].m_connections;
-        for (size_t j = 0; j < connections.size(); j++) {
-            stream << "    " << i << " -- " << connections[j] << std::endl;
+        auto& connections = connectors[i].m_connections;
+        for (auto connection: connections) {
+            stream << "    " << i << " -- " << connection << std::endl;
         }
     }
     stream << "}" << std::endl;
@@ -886,11 +886,11 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(std::ostream &stream)
     stream << "refA,refB" << std::endl;
 
     for (size_t i = 0; i < connectors.size(); i++) {
-        pvecint connections = connectors[i].m_connections;
+        auto& connections = connectors[i].m_connections;
         if (i != 0) stream << std::endl;
-        for (size_t j = 0; j < connections.size(); j++) {
-            if (j != 0) stream << std::endl;
-            stream << i << "," << connections[j];
+        for (auto iter = connections.begin(); iter != connections.end(); ++iter) {
+            if (iter != connections.begin()) stream << std::endl;
+            stream << i << "," << *iter;
         }
     }
 }
@@ -937,9 +937,10 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
           auto bIter = m_shapes.find(int(jter->m_shape_ref));
           int a = int(std::distance(m_shapes.begin(), aIter));
           int b = int(std::distance(m_shapes.begin(), bIter));
+          auto& connections = m_connectors[size_t(a)].m_connections;
           if (aIter != m_shapes.end() && bIter != m_shapes.end()
                   && aIter->second.isLine() && bIter->second.isLine()
-                  && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
+                  && std::find(connections.begin(), connections.end(), b) != connections.end()) {
              closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
              intersections.push_back( IntPair(a,b) );
           }
@@ -1098,7 +1099,7 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
       // if the line is ascending or decending
       int parity = (axis == XAXIS) ? 1 : line.sign();
 
-      pvecint& connections = m_connectors[i].m_connections;
+      auto& connections = m_connectors[i].m_connections;
       for (size_t j = 0; j < connections.size(); j++) {
          // find the intersection point and add...
          // note: more than one break at the same place allowed

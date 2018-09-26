@@ -1742,7 +1742,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
    }
 
    if (sourcetype & VIEWDATA) {
-      pvecint gatelist;
+      std::vector<int> gatelist;
       for (int i = 0; i < table_out.getRowCount(); i++) {
          if (!table_out.isVisible(i)) {
             continue;
@@ -1791,7 +1791,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          vals[i] = -1;
       }
 
-      pvecint gatelist;
+      std::vector<int> gatelist;
       if (sourcetype & VIEWVGA) {
          for (int i = 0; i < table_in.getRowCount(); i++) {
             if (!table_in.isVisible(i)) {

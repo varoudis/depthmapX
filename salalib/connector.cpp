@@ -15,23 +15,23 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#include <salalib/connector.h>
+
+#include "genlib/vectorhelpers.h"
+#include <genlib/comm.h> // for communicator
+
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <genlib/paftl.h>
-#include <genlib/comm.h> // for communicator
 
-#include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
-#include <salalib/connector.h>
-
-bool Connector::read( std::istream& stream, int version, pvecint *keyvertices )
+bool Connector::read( std::istream& stream)
 {
    m_connections.clear();
    m_forward_segconns.clear();
    m_back_segconns.clear();
 
    // n.b., must set displayed attribute as soon as loaded...
-   m_connections.read(stream);
+   dXvector::readIntoVector(stream, m_connections);
 
    stream.read((char *)&m_segment_axialref, sizeof(m_segment_axialref));
    m_forward_segconns.read(stream);
@@ -43,8 +43,7 @@ bool Connector::read( std::istream& stream, int version, pvecint *keyvertices )
 bool Connector::write( std::ofstream& stream )
 {
    // n.b., must set displayed attribute as soon as loaded...
-   m_connections.write(stream);
-   // m_keyvertices.write(stream);
+   dXvector::writeVector(stream, m_connections);
    stream.write((char *)&m_segment_axialref, sizeof(m_segment_axialref));
    m_forward_segconns.write(stream);
    m_back_segconns.write(stream);

@@ -21,6 +21,7 @@
 
 #include <istream>
 #include <ostream>
+#include <vector>
 /////////////////////////////////////////////////////////////////////////////
 
 // Additional for segment analysis
@@ -74,7 +75,7 @@ struct Connector
    //  if this is a segment, this is the key for the axial line:
    int m_segment_axialref;
    // use one or other of these
-   pvecint m_connections;
+   std::vector<int> m_connections;
    //
    pmap<SegmentRef,float> m_back_segconns;
    pmap<SegmentRef,float> m_forward_segconns;
@@ -84,7 +85,7 @@ struct Connector
    void clear()
    { m_connections.clear(); m_back_segconns.clear(); m_forward_segconns.clear(); }
    //
-   bool read(std::istream &stream, int version, pvecint *keyvertices = NULL );
+   bool read(std::istream &stream);
    bool write( std::ofstream& stream );
    //
    // Cursor extras
