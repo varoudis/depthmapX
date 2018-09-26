@@ -22,6 +22,7 @@
 #include <istream>
 #include <ostream>
 #include <vector>
+#include <map>
 /////////////////////////////////////////////////////////////////////////////
 
 // Additional for segment analysis
@@ -70,18 +71,16 @@ inline bool operator != (SegmentData a, SegmentData b) { return a.metricdepth !=
 
 struct Connector
 {
-   // cursor included purely to make this compatible with DLL functionality
-   mutable int m_cursor;
    //  if this is a segment, this is the key for the axial line:
    int m_segment_axialref;
    // use one or other of these
    std::vector<int> m_connections;
    //
-   pmap<SegmentRef,float> m_back_segconns;
-   pmap<SegmentRef,float> m_forward_segconns;
+   std::map<SegmentRef, float> m_back_segconns;
+   std::map<SegmentRef, float> m_forward_segconns;
    //
    Connector(int axialref = -1)
-   { m_segment_axialref = axialref; m_cursor = -1; }
+   { m_segment_axialref = axialref; }
    void clear()
    { m_connections.clear(); m_back_segconns.clear(); m_forward_segconns.clear(); }
    //
@@ -90,10 +89,13 @@ struct Connector
    //
    // Cursor extras
    enum { CONN_ALL, SEG_CONN_ALL, SEG_CONN_FW, SEG_CONN_BK };
+
+   // PK: These functions have been stripped of state and left
+   // here for salaprogram which seems to be the only place they
+   // are used. salaprogram seems to also be the only place where
+   // the last two modes (SEG_CONN_FW, SEG_CONN_BK) are used
    int count(int mode = CONN_ALL) const;
-   int cursor(int mode = CONN_ALL) const;
-   int direction(int mode = SEG_CONN_ALL) const;
-   float weight(int mode = SEG_CONN_ALL) const;
-   void first() const { m_cursor = 0; }
-   void next() const { m_cursor++; } 
+   int getConnectedRef(int cursor, int mode = CONN_ALL) const;
+   int direction(int cursor, int mode = SEG_CONN_ALL) const;
+   float weight(int cursor, int mode = SEG_CONN_ALL) const;
 };

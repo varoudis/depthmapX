@@ -3028,16 +3028,17 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
 // note it only links one way!
 bool ShapeMap::linkShapes(int id1, int dir1, int id2, int dir2, float weight)
 {
-   int success = -1;
+   bool success = false;
+   Connector& connector = m_connectors[size_t(id1)];
    if (dir1 == 1) {
-      success = m_connectors[id1].m_forward_segconns.add(SegmentRef(dir2,id2),weight);
+       success = depthmapX::addIfNotExists(connector.m_forward_segconns, SegmentRef(dir2,id2), weight);
    }
    else {
-      success = m_connectors[id1].m_back_segconns.add(SegmentRef(dir2,id2),weight);
+       success = depthmapX::addIfNotExists(connector.m_back_segconns, SegmentRef(dir2,id2), weight);
    }
 
    // checking success != -1 avoids duplicate entries adding to connectivity
-   if (success != -1) {
+   if (success) {
       int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
       m_attributes.incrValue(id1, conn_col);
       int weight_col = m_attributes.getOrInsertLockedColumnIndex("Weighted Connectivity");

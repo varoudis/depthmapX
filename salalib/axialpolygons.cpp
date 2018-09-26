@@ -182,10 +182,9 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
-         for (size_t j = 0; j < connectionset[i].m_back_segconns.size(); j++) {
-            const SegmentRef& segref = connectionset[i].m_back_segconns.key(j);
-            int forwback = (segref.dir == 1) ? 0 : 1;
-            found[forwback][segref.ref] = found[0][i];
+         for (auto& segconn: connectionset[i].m_back_segconns) {
+            int forwback = (segconn.first.dir == 1) ? 0 : 1;
+            found[forwback][segconn.first.ref] = found[0][i];
          }
       }
       if (found[1][i] == -1) {
@@ -193,10 +192,9 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
-         for (size_t j = 0; j < connectionset[i].m_forward_segconns.size(); j++) {
-            const SegmentRef& segref = connectionset[i].m_forward_segconns.key(j);
-            int forwback = (segref.dir == 1) ? 0 : 1;
-            found[forwback][segref.ref] = found[1][i];
+         for (auto& segconn: connectionset[i].m_forward_segconns) {
+            int forwback = (segconn.first.dir == 1) ? 0 : 1;
+            found[forwback][segconn.first.ref] = found[1][i];
          }
       }
    }

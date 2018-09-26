@@ -33,6 +33,17 @@ void addIfNotExists(std::vector<T> &vec, T element) {
         vec.push_back(element);
 }
 
+
+template<typename K, typename V>
+bool addIfNotExists(std::map<K, V> &map, const K &key, const V &value) {
+    auto it = map.find(key);
+    if(it == map.end()) {
+        map[key] = value;
+        return true;
+    }
+    return false;
+}
+
 template<typename K, typename V>
 typename std::map<K, V>::const_iterator getMapAtIndex(const std::map<K, V> &m, int idx) {
     auto iter = m.begin();
