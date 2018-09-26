@@ -233,19 +233,18 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       if (!presumedvital) {
          m_removed[j] = true;
          auto& affectedconnections = m_axialconns[size_t(j)].m_connections;
-         size_t k;
          for (auto affectedconnection: affectedconnections) {
             if (!m_removed[affectedconnection]) {
                auto& connections = m_axialconns[size_t(affectedconnection)].m_connections;
                depthmapX::findAndErase(connections, int(j));
-               m_affected[affectedconnections[k]] = true;
+               m_affected[affectedconnection] = true;
             }
          }
-         for (k = 0; k < axSegCut.size(); k++) {
+         for (size_t k = 0; k < axSegCut.size(); k++) {
             m_radialsegcounts[axSegCut[k]] -= 1;
          }
          // vital connections
-         for (k = 0; k < keyvertexconns[j].size(); k++) {
+         for (size_t k = 0; k < keyvertexconns[j].size(); k++) {
             keyvertexcounts[keyvertexconns[j][k]] -= 1;
          }
       }
