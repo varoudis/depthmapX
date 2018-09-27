@@ -140,9 +140,19 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
          int connected_cursor = -1;
 
          auto iter = axline.m_back_segconns.begin();
-         connected_cursor = iter->first.ref;
+         bool backsegs = true;
 
          while (connected_cursor != -1) {
+             if(backsegs && iter == axline.m_back_segconns.end()) {
+                 iter = axline.m_forward_segconns.begin();
+                 backsegs = false;
+             }
+             if(!backsegs && iter == axline.m_forward_segconns.end()) {
+                 break;
+             }
+
+             connected_cursor = iter->first.ref;
+
             if (seen[connected_cursor] > segdepth && connected_cursor != cursor) {
                bool seenalready = (seen[connected_cursor] == 0xffffffff) ? false : true;
                float length = seglengths[connected_cursor];
@@ -183,13 +193,6 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
                }
             }
             iter++;
-            if (iter == axline.m_back_segconns.end()) {
-                iter = axline.m_forward_segconns.begin();
-            }
-            if (iter == axline.m_forward_segconns.end()) {
-                break;
-            }
-            connected_cursor = iter->first.ref;
          }
       }
       // also put in mean depth:
@@ -325,9 +328,18 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
       int connected_cursor = -1;
 
       auto iter = axline.m_back_segconns.begin();
-      connected_cursor = iter->first.ref;
+      bool backsegs = true;
 
       while (connected_cursor != -1) {
+          if(backsegs && iter == axline.m_back_segconns.end()) {
+              iter = axline.m_forward_segconns.begin();
+              backsegs = false;
+          }
+          if(!backsegs && iter == axline.m_forward_segconns.end()) {
+              break;
+          }
+
+          connected_cursor = iter->first.ref;
          if (seen[connected_cursor] > segdepth) {
             float length = seglengths[connected_cursor];
             int axialref = axialrefs[connected_cursor];
@@ -354,13 +366,6 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
             }
          }
          iter++;
-         if (iter == axline.m_back_segconns.end()) {
-             iter = axline.m_forward_segconns.begin();
-         }
-         if (iter == axline.m_forward_segconns.end()) {
-             break;
-         }
-         connected_cursor = iter->first.ref;
       }
    }
 
