@@ -47,4 +47,5 @@ HEADERS += \
     vectorhelpers.h \
     containerutils.h \
     linreg.h \
-    bsptree.h
+    bsptree.h \
+    pflipper.h
