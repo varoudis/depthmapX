@@ -17,7 +17,7 @@
 #include "attributetable.h"
 #include "displayparams.h"
 #include <genlib/stringutils.h>
-#include <genlib/vectorhelpers.h>
+#include <genlib/readwritehelpers.h>
 
 #include <sstream>
 
@@ -185,13 +185,13 @@ void dXreimpl::AttributeRowImpl::removeColumn(size_t index)
 void dXreimpl::AttributeRowImpl::read(std::istream &stream, int version)
 {
     stream.read((char *)&m_layerKey, sizeof(m_layerKey));
-    dXvector::readIntoVector(stream, m_data);
+    dXreadwrite::readIntoVector(stream, m_data);
 }
 
 void dXreimpl::AttributeRowImpl::write(std::ostream &stream)
 {
     stream.write((char *)&m_layerKey, sizeof(m_layerKey));
-    dXvector::writeVector(stream, m_data);
+    dXreadwrite::writeVector(stream, m_data);
 }
 
 void dXreimpl::AttributeRowImpl::checkIndex(size_t index) const

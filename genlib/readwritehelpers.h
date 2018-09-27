@@ -19,7 +19,7 @@
 #include <iostream>
 #include "exceptions.h"
 
-namespace dXvector
+namespace dXreadwrite
 {
     // The read/write methods can only be used for vectors of stack allocated types (basic data, POD)
     // read in vector data and write to an existing vector (overwriting its previous contents)

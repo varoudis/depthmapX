@@ -14,14 +14,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <catch.hpp>
-#include <genlib/vectorhelpers.h>
+#include <genlib/readwritehelpers.h>
 #include <cliTest/selfcleaningfile.h>
 #include <fstream>
 #include <genlib/paftl.h>
 
 TEST_CASE("vector reading and writing")
 {
-    using namespace dXvector;
+    using namespace dXreadwrite;
     std::vector<int> intVec{1, 5, 34, -2, 5};
     SelfCleaningFile intFile("integers.bin");
     {
@@ -59,7 +59,7 @@ TEST_CASE("Comaptibility between vector pvector streaming")
     SelfCleaningFile intFile("integers.bin");
     {
         std::ofstream outfile(intFile.Filename());
-        dXvector::writeVector(outfile, intVec);
+        dXreadwrite::writeVector(outfile, intVec);
     }
 
     pvector<int> pveci;
@@ -83,7 +83,7 @@ TEST_CASE("Comaptibility between vector pvector streaming")
     std::vector<int> copyVec;
     {
         std::ifstream infile(intFile.Filename());
-        dXvector::readIntoVector(infile, copyVec);
+        dXreadwrite::readIntoVector(infile, copyVec);
     }
 
     comparePvecAndStdVec(intPvec, copyVec);

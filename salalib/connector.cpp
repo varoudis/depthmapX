@@ -18,7 +18,7 @@
 #include "salalib/connector.h"
 
 #include "genlib/containerutils.h"
-#include "genlib/vectorhelpers.h"
+#include "genlib/readwritehelpers.h"
 #include "genlib/legacyconverters.h"
 #include "genlib/comm.h" // for communicator
 
@@ -33,7 +33,7 @@ bool Connector::read( std::istream& stream)
    m_back_segconns.clear();
 
    // n.b., must set displayed attribute as soon as loaded...
-   dXvector::readIntoVector(stream, m_connections);
+   dXreadwrite::readIntoVector(stream, m_connections);
 
    stream.read((char *)&m_segment_axialref, sizeof(m_segment_axialref));
 
@@ -51,7 +51,7 @@ bool Connector::read( std::istream& stream)
 bool Connector::write( std::ofstream& stream )
 {
    // n.b., must set displayed attribute as soon as loaded...
-   dXvector::writeVector(stream, m_connections);
+   dXreadwrite::writeVector(stream, m_connections);
    stream.write((char *)&m_segment_axialref, sizeof(m_segment_axialref));
    genshim::toPMap(m_forward_segconns).write(stream);
    genshim::toPMap(m_back_segconns).write(stream);
