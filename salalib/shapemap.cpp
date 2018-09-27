@@ -62,9 +62,7 @@ bool SalaShape::read(std::istream& stream, int version)
    stream.read((char *)&m_area,sizeof(m_area));
    stream.read((char *)&m_perimeter,sizeof(m_perimeter));
 
-   pqvector<Point2f> pqv;
-   pqv.read(stream);
-   m_points = genshim::toSTLVector<Point2f>(pqv);
+   dXvector::readIntoVector(stream, m_points);
 
    return true;
 }
@@ -76,7 +74,7 @@ bool SalaShape::write(std::ofstream& stream)
    stream.write((char *)&m_centroid,sizeof(m_centroid));
    stream.write((char *)&m_area,sizeof(m_area));
    stream.write((char *)&m_perimeter,sizeof(m_perimeter));
-   genshim::toPQVector(m_points).write(stream);
+   dXvector::writeVector(stream, m_points);
    return true;
 }
 
