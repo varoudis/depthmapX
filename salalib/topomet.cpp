@@ -137,7 +137,7 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
          total += 1;
          //
          Connector& axline = m_connectors.at(here.ref);
-         int connected_cursor = -1;
+         int connected_cursor = -2;
 
          auto iter = axline.m_back_segconns.begin();
          bool backsegs = true;
@@ -325,7 +325,7 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
       }
 
       Connector& axline = m_connectors.at(here.ref);
-      int connected_cursor = -1;
+      int connected_cursor = -2;
 
       auto iter = axline.m_back_segconns.begin();
       bool backsegs = true;
