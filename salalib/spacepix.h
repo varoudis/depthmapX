@@ -1,5 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,17 +18,14 @@
 
 // This is my code to make a set of axial lines from a set of boundary lines
 
-#ifndef __SPATIALDATA_H__
-#define __SPATIALDATA_H__
+#pragma once
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
 #include "genlib/pafmath.h"
 #include "genlib/p2dpoly.h"
 
 #include "genlib/stringutils.h"
 #include "salalib/pixelref.h"
 #include "salalib/pafcolor.h"
-#include "genlib/paftl.h"
 #include <map>
 #include <deque>
 
@@ -142,8 +140,7 @@ public:
    //
    bool intersect(const Line& l, double tolerance = 0.0);
    bool intersect_exclude(const Line& l, double tolerance = 0.0);
-   //
-   // Point2f getFirstCrossingPoint(const Line& l, int fromend, pvecint& ignorelist = pvecint());
+
    void cutLine(Line& l, short dir);
 
    QtRegion& getRegion() const
@@ -191,5 +188,3 @@ inline bool operator == (const SpacePixel& a, const SpacePixel& b)
 {
    return a.m_name == b.m_name;
 }
-
-#endif
