@@ -2843,9 +2843,9 @@ const SalaShape& ShapeMap::getNextShape() const
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-pqvector<SalaEdgeU> SalaShape::getClippingSet(QtRegion& clipframe) const
+std::vector<SalaEdgeU> SalaShape::getClippingSet(QtRegion& clipframe) const
 {
-   pqvector<SalaEdgeU> edgeset;
+   std::vector<SalaEdgeU> edgeset;
    bool last_inside = (clipframe.contains_touch(m_points[0])) ? true : false;
    bool found_inside = last_inside;
    for (size_t i = 1; i < m_points.size(); i++) {

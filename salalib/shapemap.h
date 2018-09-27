@@ -141,7 +141,7 @@ public:
    //
    double getAngDev() const;
    //
-   pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
+   std::vector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
    bool read(std::istream &stream, int version);
    bool write(std::ofstream& stream);
