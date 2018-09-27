@@ -186,6 +186,9 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
             if (iter == axline.m_back_segconns.end()) {
                 iter = axline.m_forward_segconns.begin();
             }
+            if (iter == axline.m_forward_segconns.end()) {
+                break;
+            }
             connected_cursor = iter->first.ref;
          }
       }
@@ -353,6 +356,9 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
          iter++;
          if (iter == axline.m_back_segconns.end()) {
              iter = axline.m_forward_segconns.begin();
+         }
+         if (iter == axline.m_forward_segconns.end()) {
+             break;
          }
          connected_cursor = iter->first.ref;
       }
