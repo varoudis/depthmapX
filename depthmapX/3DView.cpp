@@ -1168,7 +1168,7 @@ void Q3DView::OnToolsImportTraces()
                }
             }
             if (m_traces.tail().events.size() >= 1) {
-               m_traces.tail().endtime = m_traces.tail().events.tail().t;
+               m_traces.tail().endtime = m_traces.tail().events.back().t;
                Point2f p = m_traces.tail().events[0];
                p.normalScale(m_region);
                m_mannequins.push_back( QMannequin(p,m_traces.size()-1,true) );

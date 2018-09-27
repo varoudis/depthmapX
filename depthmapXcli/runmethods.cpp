@@ -423,67 +423,67 @@ namespace dm_runmethods
         AgentEngine& eng = mgraph->getAgentEngine();
 
         // set up eng here...
-        if (!eng.size()) {
-           eng.push_back(AgentSet());
+        if (!eng.agentSets.size()) {
+           eng.agentSets.push_back(AgentSet());
         }
 
         eng.m_timesteps = agentP.totalSystemTimestemps();
-        eng.tail().m_release_rate = agentP.releaseRate();
-        eng.tail().m_lifetime = agentP.agentLifeTimesteps();
+        eng.agentSets.back().m_release_rate = agentP.releaseRate();
+        eng.agentSets.back().m_lifetime = agentP.agentLifeTimesteps();
         if (agentP.agentFOV() == 32) {
-           eng.tail().m_vbin = -1;
+           eng.agentSets.back().m_vbin = -1;
         }
         else {
-           eng.tail().m_vbin = (agentP.agentFOV() - 1) / 2;
+           eng.agentSets.back().m_vbin = (agentP.agentFOV() - 1) / 2;
         }
-        eng.tail().m_steps = agentP.agentStepsBeforeTurnDecision();
+        eng.agentSets.back().m_steps = agentP.agentStepsBeforeTurnDecision();
         switch(agentP.getAgentMode()) {
             case AgentParser::NONE:
             case AgentParser::STANDARD:
-                eng.tail().m_sel_type = AgentProgram::SEL_STANDARD;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_STANDARD;
                 break;
             case AgentParser::LOS_LENGTH:
-                eng.tail().m_sel_type = AgentProgram::SEL_LOS;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_LOS;
                 break;
             case AgentParser::OCC_LENGTH:
-                eng.tail().m_sel_type = AgentProgram::SEL_LOS_OCC;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_LOS_OCC;
                 break;
             case AgentParser::OCC_ANY:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_ALL;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_ALL;
                 break;
             case AgentParser::OCC_GROUP_45:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_BIN45;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_BIN45;
                 break;
             case AgentParser::OCC_GROUP_60:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_BIN60;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_BIN60;
                 break;
             case AgentParser::OCC_FURTHEST:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_STANDARD;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_STANDARD;
                 break;
             case AgentParser::BIN_FAR_DIST:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_DIST;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_DIST;
                 break;
             case AgentParser::BIN_ANGLE:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_ANG;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_ANG;
                 break;
             case AgentParser::BIN_FAR_DIST_ANGLE:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_DIST_ANG;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_WEIGHT_DIST_ANG;
                 break;
             case AgentParser::BIN_MEMORY:
-                eng.tail().m_sel_type = AgentProgram::SEL_OCC_MEMORY;
+                eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCC_MEMORY;
                 break;
         }
 
         // if the m_release_locations is not set the locations are
         // set later by picking random pixels
         if(agentP.randomReleaseLocationSeed() >= 0) {
-            eng.tail().m_release_locations_seed = agentP.randomReleaseLocationSeed();
+            eng.agentSets.back().m_release_locations_seed = agentP.randomReleaseLocationSeed();
         }
         else {
-            eng.tail().m_release_locations.clear();
+            eng.agentSets.back().m_release_locations.clear();
             for_each(agentP.getReleasePoints().begin(), agentP.getReleasePoints().end(),
                      [&eng, &currentMap](const Point2f &point)
-                     ->void{eng.tail().m_release_locations.push_back(currentMap.pixelate(point, false));});
+                     ->void{eng.agentSets.back().m_release_locations.push_back(currentMap.pixelate(point, false));});
         }
 
         // the ui and code suggest that the results can be put on a separate
