@@ -1434,17 +1434,17 @@ int ShapeMap::pointInPoly(const Point2f& p) const
    if (!m_region.contains(p)) {
       return -1;
    }
-   pvecint testedshapes;
-   pvecint testnodes;
+   std::vector<int> testedshapes;
    PixelRef pix = pixelate(p);
    const std::vector<ShapeRef> &shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
    int drawlast = -1;
    int draworder = -1;
    for (const ShapeRef& shape: shapes) {
-      if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
+      auto iter = std::upper_bound( testedshapes.begin(), testedshapes.end(), shape.m_shape_ref );
+      if (iter != testedshapes.end()) {
          continue;
       }
-      testedshapes.add(shape.m_shape_ref,paftl::ADD_HERE);
+      testedshapes.insert(iter, int(shape.m_shape_ref));
 
       int shapeindex = testPointInPoly(p,shape);
 
