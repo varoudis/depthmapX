@@ -136,13 +136,6 @@ public:
    //
    int addLineDynamic(const Line& l);
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   bool removeLineDynamic(int ref, Line& line = Line() ); // fills in line if it finds it
-#else
-   bool removeLineDynamic(int ref, Line& line); // fills in line if it finds it
-#endif
-   //
    virtual void makeViewportLines( const QtRegion& viewport ) const;
    virtual bool findNextLine(bool&) const;
    virtual const Line& getNextLine() const;
@@ -152,13 +145,7 @@ public:
    //
    // Point2f getFirstCrossingPoint(const Line& l, int fromend, pvecint& ignorelist = pvecint());
    void cutLine(Line& l, short dir);
-   // Quick mod - TV
-#if defined(_WIN32)
-   pvecdouble getCrossingPoints(const Line& l, int ignore1, pvecint& ignorelist = pvecint() );
-#else
-   pvecdouble getCrossingPoints(const Line& l, int ignore1, pvecint& ignorelist);
-#endif
-   //
+
    QtRegion& getRegion() const
       { return (QtRegion&) m_region; }
    //

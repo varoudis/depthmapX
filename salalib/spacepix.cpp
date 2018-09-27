@@ -528,35 +528,6 @@ int SpacePixel::addLineDynamic(const Line& line)
    return m_ref;
 }
 
-bool SpacePixel::removeLineDynamic(int ref, Line& line)   // fills in line if it finds it
-{
-   bool retvar = true;
-
-   auto lineref = m_lines.find(ref);
-
-   if (lineref == m_lines.end()) {
-      return false;
-   }
-
-   line = lineref->second.line;
-   PixelRefVector list = pixelateLine( line );
-
-   for (size_t i = 0; i < list.size(); i++) {
-      // note: dynamic lines could be dodgy... only pixelate bits that fall in range
-      if (list[i].x >= 0 && list[i].y >= 0 && list[i].x < m_cols && list[i].y < m_rows) {
-         // note: m_pixel_lines will be reordered by sortPixelLines
-         depthmapX::findAndErase(m_pixel_lines[size_t(list[i].x * m_rows + list[i].y)], ref);
-      }
-   }
-
-   m_lines.erase(lineref);
-
-   // just flag up if true
-   m_newline = true;
-
-   return retvar;
-}
-
 void SpacePixel::sortPixelLines()
 {
    for (int i = 0; i < m_cols; i++) {
@@ -783,43 +754,6 @@ void SpacePixel::cutLine(Line& l, short dir)
          }
       }
    }
-}
-
-pvecdouble SpacePixel::getCrossingPoints(const Line& l, int axis, pvecint& ignorelist )
-{
-   pvecdouble cross_list;
-   pvecint checked_list = ignorelist;
-
-   PixelRefVector list = pixelateLine( l );
-
-   for (size_t i = 0; i < list.size(); i++) {
-      for (int lineref: m_pixel_lines[ size_t(list[i].x * m_rows + list[i].y) ]) {
-         if (checked_list.searchindex( lineref ) == paftl::npos) {
-            checked_list.add( lineref, paftl::ADD_HERE );
-            auto line = m_lines.find(lineref)->second.line;
-            if ( intersect_region(line, l) ) {
-               double c;
-               if ( l.intersect_line(line, axis, c) ) {
-                  if (_finite(c)) {
-                     cross_list.add( c );
-                  }
-                  // if lines are coincident, just chuck on the start and the end
-                  // of the crossing line: hope that there are no points actually on the 
-                  // line (otherwise these will be confused)
-                  else if (axis == XAXIS) {
-                     cross_list.add( line.ax() );
-                     cross_list.add( line.bx() );
-                  }
-                  else /* if (axis == YAXIS) */ {
-                     cross_list.add( line.ay() );
-                     cross_list.add( line.by() );
-                  }
-               }
-            }
-         }
-      }
-   }
-   return cross_list;
 }
 
 bool SpacePixel::read( std::istream& stream, int version )
