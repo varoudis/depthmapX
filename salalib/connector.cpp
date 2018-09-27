@@ -37,13 +37,16 @@ bool Connector::read( std::istream& stream)
 
    stream.read((char *)&m_segment_axialref, sizeof(m_segment_axialref));
 
-   pmap<SegmentRef, float> forward_segconns;
-   forward_segconns.read(stream);
-   m_forward_segconns = genshim::toSTLMap(forward_segconns);
+   dXreadwrite::readIntoMap(stream, m_forward_segconns);
+   dXreadwrite::readIntoMap(stream, m_back_segconns);
 
-   pmap<SegmentRef, float> back_segconns;
-   back_segconns.read(stream);
-   m_back_segconns = genshim::toSTLMap(back_segconns);
+//   pmap<SegmentRef, float> forward_segconns;
+//   forward_segconns.read(stream);
+//   m_forward_segconns = genshim::toSTLMap(forward_segconns);
+
+//   pmap<SegmentRef, float> back_segconns;
+//   back_segconns.read(stream);
+//   m_back_segconns = genshim::toSTLMap(back_segconns);
 
    return true;
 }
@@ -53,8 +56,12 @@ bool Connector::write( std::ofstream& stream )
    // n.b., must set displayed attribute as soon as loaded...
    dXreadwrite::writeVector(stream, m_connections);
    stream.write((char *)&m_segment_axialref, sizeof(m_segment_axialref));
-   genshim::toPMap(m_forward_segconns).write(stream);
-   genshim::toPMap(m_back_segconns).write(stream);
+
+   dXreadwrite::writeMap(stream, m_forward_segconns);
+   dXreadwrite::writeMap(stream, m_back_segconns);
+
+//   genshim::toPMap(m_forward_segconns).write(stream);
+//   genshim::toPMap(m_back_segconns).write(stream);
 
    return true;
 }

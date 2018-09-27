@@ -1,4 +1,5 @@
 // Copyright (C) 2017 Christian Sailer
+// Copyright (C) 2018 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,9 +16,10 @@
 
 #pragma once
 
+#include "exceptions.h"
 #include <vector>
 #include <iostream>
-#include "exceptions.h"
+#include <map>
 
 namespace dXreadwrite
 {
@@ -58,4 +60,46 @@ namespace dXreadwrite
             stream.write((char *)vec.data(), sizeof(T) * std::streamsize(length));
         }
     }
+
+
+    // read in map data and write to an existing map (overwriting its previous contents)
+    template<typename K, typename V> size_t readIntoMap(std::istream& stream, std::map<K, V>& map)
+    {
+        map.clear();
+        unsigned int size;
+        stream.read((char *) &size, sizeof(size));
+        for(size_t i = 0; i < size; ++i) {
+            K key;
+            V value;
+            stream.read((char *) &key, sizeof(K));
+            stream.read((char *) &value, sizeof(V));
+            map.insert(std::make_pair(key, value));
+        }
+        return size;
+    }
+    // read in a map into a new map
+    template<typename K, typename V> std::map<K, V> readMap(std::istream& stream)
+    {
+        std::map<K, V> map;
+        readIntoMap(stream, map);
+        return map;
+    }
+
+    template<typename K, typename V> void writeMap(std::ostream& stream, const std::map<K, V>& map)
+    {
+        // READ / WRITE USES 32-bit LENGTHS (number of elements) for compatibility reasons
+
+        if ( map.size() > size_t(uint(-1)))
+        {
+            throw new depthmapX::RuntimeException("Map exceeded max size for streaming");
+        }
+        unsigned int length = uint(map.size());
+        stream.write((char *) &length, sizeof(length));
+        for(auto& pair: map)
+        {
+            stream.write((char *) &pair.first, sizeof(K));
+            stream.write((char *) &pair.second, sizeof(V));
+        }
+    }
+
 }

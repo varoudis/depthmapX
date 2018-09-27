@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include "genlib/paftl.h"
-
 #include <istream>
 #include <ostream>
 #include <vector>
