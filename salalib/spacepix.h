@@ -106,18 +106,13 @@ protected:
    std::string m_name;
    bool m_show;
    bool m_edit;
-   pvecint **m_pixel_lines;
-//   int m_rows;
-//   int m_cols;
-//
-//   double m_pixel_height;
-//   double m_pixel_width;
-   //
+   std::vector<std::vector<int> > m_pixel_lines;
+
    int m_ref;
    std::map<int,LineTest> m_lines;
    //
    // for screen drawing
-   mutable int *m_display_lines;
+   mutable std::vector<int> m_display_lines;
    mutable int m_current;
    //
    // for line testing
@@ -125,7 +120,6 @@ protected:
    //
 public:
    SpacePixel(const std::string& name = std::string("Default"));
-   virtual ~SpacePixel();
    //
    SpacePixel(const SpacePixel& spacepixel);
    SpacePixel& operator = (const SpacePixel& spacepixel);
