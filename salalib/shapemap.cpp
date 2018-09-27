@@ -1803,10 +1803,10 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
          }
          // and now the pig -- it's somewhere in the middle of the poly:
          else if (shape.m_tags & ShapeRef::SHAPE_INTERNAL_EDGE) {
-            pvecint testnodes;
+            std::vector<int> testnodes;
             size_t j;
             for (j = 0; j < size_t(shape.m_polyrefs.size()); j++) { // <- note, polyrefs is a subvec and has maximum number according to sizeof(T)
-               testnodes.add(shape.m_polyrefs[j]);
+               depthmapX::addIfNotExists(testnodes, int(shape.m_polyrefs[j]));
             }
             PixelRef pix2 = pixelate(p);
             const std::vector<ShapeRef> &pixelShapes = m_pixel_shapes[pix2.x + pix2.y*m_cols];
@@ -1817,7 +1817,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
                                   shape.m_shape_ref);
             while (iter != pixelShapes.end()) {
                for (int k = 0; k < iter->m_polyrefs.size(); k++) {
-                  testnodes.add(iter->m_polyrefs[k]);
+                  depthmapX::addIfNotExists(testnodes, int(iter->m_polyrefs[k]));
                }
                pix2.move(PixelRef::NEGVERTICAL); // move pix2 down, search for this shape...
                if (includes(pix2)) {
@@ -2013,7 +2013,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
       axis = XAXIS;
    }
    PixelRefVector pixels = pixelateLine(li);
-   pvector<IntPair> tested;
+   std::vector<IntPair> tested;
    for (size_t i = 0; i < pixels.size(); i++) {
       PixelRef& pix = pixels[i];
       if (includes(pix)) { // <- note, for some reason, this pixel may be off edge (line crop problem?)
@@ -2022,37 +2022,43 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
             if (!shaperef.m_polyrefs.isEmpty()) {
                int len = shaperef.m_polyrefs.size();
                for (int k = 0; k < len; k++) {
-                  int x = shaperef.m_polyrefs[k];
-                  if (tested.searchindex(IntPair(shaperef.m_shape_ref,x)) == paftl::npos) {
-                     SalaShape& poly = m_shapes.find(shaperef.m_shape_ref)->second;
+                  int x = int(shaperef.m_polyrefs[k]);
+                  IntPair pair(int(shaperef.m_shape_ref),x);
+                  auto iter = std::upper_bound( tested.begin(), tested.end(), pair );
+                  if (iter == tested.end()) {
+                     SalaShape& poly = m_shapes.find(int(shaperef.m_shape_ref))->second;
 
                      // Quick mod - TV
-             Line li2(poly.m_points[x], poly.m_points[(x+1) % poly.m_points.size()]);
+             Line li2(poly.m_points[size_t(x)], poly.m_points[size_t(x+1) % poly.m_points.size()]);
                      if (intersect_region(li,li2)) {
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,li2)) {
                            // find intersection point and add:
-                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(li2,axis,1e-9)));  // note: added key not rowid
+                           cuts.push_back(ValuePair(int(shaperef.m_shape_ref),
+                                                    li.intersection_point(li2,axis,1e-9)));  // note: added key not rowid
                         }
                      }
-                     tested.add(IntPair(shaperef.m_shape_ref,x),paftl::ADD_HERE);
+                     tested.insert(iter, pair);
                   }
                }
             }
             else {
                // this is a non-poly, so check just the shape_ref:
-               if (tested.searchindex(IntPair(shaperef.m_shape_ref,-1)) == paftl::npos) {
-                  SalaShape& poly = m_shapes[shaperef.m_shape_ref];
+               IntPair pair(int(shaperef.m_shape_ref),-1);
+               auto iter = std::upper_bound( tested.begin(), tested.end(), pair );
+               if (iter == tested.end()) {
+                  SalaShape& poly = m_shapes[int(shaperef.m_shape_ref)];
                   // n.b. points cannot be intersected (and since we won't return to the pix, don't need to be added to the tested list
                   if (poly.isLine()) {
                      if (intersect_region(li,poly.m_region)) {
                         // note: in this case m_region is stored as a line:
                         if (intersect_line(li,poly.m_region)) {
                            // find intersection point and add:
-                           cuts.push_back(ValuePair(shaperef.m_shape_ref,li.intersection_point(poly.m_region,axis,1e-9)));  // note: added key not rowid
+                           cuts.push_back(ValuePair(int(shaperef.m_shape_ref),
+                                                    li.intersection_point(poly.m_region,axis,1e-9)));  // note: added key not rowid
                         }
                      }
-                     tested.add(IntPair(shaperef.m_shape_ref,-1),paftl::ADD_HERE);
+                     tested.insert(iter, pair);
                   }
                }
             }
@@ -2133,7 +2139,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    }
    const Line& l = poly.getLine();
 
-   pvecint testedshapes;
+   std::vector<int> testedshapes;
 
    // As of version 10, self-connections are *not* added
    // In the past:
@@ -2141,7 +2147,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    // (apparently! -- this needs checking, as most of the time it is then checked to exclude self again!) </exclude>
    // <exclude> connections.add(m_shapes.searchindex(lineref)); </exclude>
 
-   testedshapes.add(lineref);
+   depthmapX::addIfNotExists(testedshapes, lineref);
 
    int num_intersections = 0;
 
@@ -2150,13 +2156,14 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    for (size_t i = 0; i < list.size(); i++) {
       const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(list[i].x + list[i].y*m_cols)];
       for (const ShapeRef& shape: shapeRefs) {
-         if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
+         auto iter = std::upper_bound(testedshapes.begin(), testedshapes.end(), shape.m_shape_ref);
+         if (iter != testedshapes.end()) {
             continue;
          }
-         testedshapes.add(shape.m_shape_ref,paftl::ADD_HERE);
+         testedshapes.insert(iter, int(shape.m_shape_ref));
          if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == ShapeRef::SHAPE_OPEN) {
             try {
-               const Line& line = m_shapes.find(shape.m_shape_ref)->second.getLine();
+               const Line& line = m_shapes.find(int(shape.m_shape_ref))->second.getLine();
                if ( intersect_region(line, l, line.length() * tolerance) ) {
                   // n.b. originally this followed the logic that we must normalise intersect_line properly: tolerance * line length one * line length two
                   // in fact, works better if it's just line.length() * tolerance...
