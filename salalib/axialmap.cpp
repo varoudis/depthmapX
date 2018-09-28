@@ -35,6 +35,7 @@
 
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+#include "genlib/readwritehelpers.h"
 
 #ifndef _WIN32
 #define _finite finite
@@ -100,7 +101,7 @@ void ShapeGraph::initialiseAttributesAxial()
 
 }
 
-void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
+void ShapeGraph::makeConnections(const std::vector<std::vector<int> > &keyvertices)
 {
    m_connectors.clear();
    m_links.clear();
@@ -765,8 +766,8 @@ bool ShapeGraph::read(std::istream &stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int i = 0; i < size; i++) {
-      m_keyvertices.push_back(pvecint());
-      m_keyvertices[i].read(stream);
+      m_keyvertices.push_back(std::vector<int>());
+      dXreadwrite::readIntoVector(stream, m_keyvertices.back());
    }
    // now base class read:
    ShapeMap::read(stream,version);
@@ -816,7 +817,7 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int j = 0; j < size; j++) {
-      m_keyvertices.push_back(pvecint());    // <- these were stored with the connector
+      m_keyvertices.push_back(std::vector<int>());    // <- these were stored with the connector
       int key;
       stream.read((char *)&key,sizeof(key)); // <- key deprecated
       m_connectors.push_back(Connector());
@@ -851,7 +852,7 @@ bool ShapeGraph::write( std::ofstream& stream, int version )
    int size = m_keyvertices.size();
    stream.write((char *)&size,sizeof(size));
    for (size_t i = 0; i < m_keyvertices.size(); i++) {
-      m_keyvertices[i].write(stream);
+      dXreadwrite::writeVector(stream, m_keyvertices[i]);
    }
 
    // now simply run base class write:

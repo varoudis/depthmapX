@@ -333,7 +333,7 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
 
 // adds any axial lines from this point to the list of lines, adds any unhandled visible vertices it finds to the openvertices list
 // axial lines themselves are added to the lines list - the axial line is only there to record the key vertices that comprise the line
-void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, prefvec<pvecint>& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
+void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, std::vector<std::vector<int> >& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
 {
    AxialVertex vertex = openvertices.tail();
    openvertices.pop_back();
@@ -420,12 +420,12 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
                if (possible && next_vertex.m_axial) {
                   // axial line
                   lines.push_back(line);
-                  keyvertices.push_back(pvecint());
+                  keyvertices.push_back(std::vector<int>());
                   if (vertex.m_convex) {
-                     keyvertices.tail().add(vertex.m_ref_key);
+                     depthmapX::addIfNotExists(keyvertices.back(), vertex.m_ref_key);
                   }
                   if (next_vertex.m_convex) {
-                     keyvertices.tail().add(next_vertex.m_ref_key);
+                     depthmapX::addIfNotExists(keyvertices.back(), next_vertex.m_ref_key);
                   }
                }
             }
