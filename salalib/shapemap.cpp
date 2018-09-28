@@ -1438,7 +1438,7 @@ int ShapeMap::pointInPoly(const Point2f& p) const
    int drawlast = -1;
    int draworder = -1;
    for (const ShapeRef& shape: shapes) {
-      auto iter = std::upper_bound( testedshapes.begin(), testedshapes.end(), shape.m_shape_ref );
+      auto iter = depthmapX::findBinary( testedshapes, shape.m_shape_ref );
       if (iter != testedshapes.end()) {
          continue;
       }
@@ -2024,7 +2024,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
                for (int k = 0; k < len; k++) {
                   int x = int(shaperef.m_polyrefs[k]);
                   IntPair pair(int(shaperef.m_shape_ref),x);
-                  auto iter = std::upper_bound( tested.begin(), tested.end(), pair );
+                  auto iter = depthmapX::findBinary( tested, pair );
                   if (iter == tested.end()) {
                      SalaShape& poly = m_shapes.find(int(shaperef.m_shape_ref))->second;
 
@@ -2045,7 +2045,7 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
             else {
                // this is a non-poly, so check just the shape_ref:
                IntPair pair(int(shaperef.m_shape_ref),-1);
-               auto iter = std::upper_bound( tested.begin(), tested.end(), pair );
+               auto iter = depthmapX::findBinary( tested, pair );
                if (iter == tested.end()) {
                   SalaShape& poly = m_shapes[int(shaperef.m_shape_ref)];
                   // n.b. points cannot be intersected (and since we won't return to the pix, don't need to be added to the tested list
@@ -2156,7 +2156,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    for (size_t i = 0; i < list.size(); i++) {
       const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(list[i].x + list[i].y*m_cols)];
       for (const ShapeRef& shape: shapeRefs) {
-         auto iter = std::upper_bound(testedshapes.begin(), testedshapes.end(), shape.m_shape_ref);
+         auto iter = depthmapX::findBinary(testedshapes, shape.m_shape_ref);
          if (iter != testedshapes.end()) {
             continue;
          }
