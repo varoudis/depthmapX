@@ -111,7 +111,11 @@ AllLineMap::AllLineMap(Communicator *comm,
          double maxdim = __max(region.width(),region.height());
          if (approxeq(axiallines[j].start(), axiallines[k].start(), maxdim * TOLERANCE_B) && approxeq(axiallines[j].end(), axiallines[k].end(), maxdim * TOLERANCE_B)) {
             for (size_t m = 0; m < preaxialdata[k].size(); m++) {
-               depthmapX::addIfNotExists(preaxialdata[j], preaxialdata[k][m]);
+                auto res = std::lower_bound(preaxialdata[j].begin(), preaxialdata[j].end(), preaxialdata[k][m]);
+                if (res  == preaxialdata[j].end() || preaxialdata[k][m] < *res )
+                {
+                    preaxialdata[j].insert(res, preaxialdata[k][m]);
+                }
             }
             preaxialdata.erase(preaxialdata.begin() + k);
             axiallines.remove_at(k);
