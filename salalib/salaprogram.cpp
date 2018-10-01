@@ -48,11 +48,11 @@
 
 bool g_sala_loaded = false;
 
-prefvec<SalaFuncLabel> g_sala_math_ops;
-prefvec<SalaFuncLabel> g_sala_comp_ops;
-prefvec<SalaFuncLabel> g_sala_logical_ops;
-prefvec<SalaFuncLabel> g_sala_global_funcs;
-prefvec<SalaMemberFuncLabel> g_sala_member_funcs;
+std::vector<SalaFuncLabel> g_sala_math_ops;
+std::vector<SalaFuncLabel> g_sala_comp_ops;
+std::vector<SalaFuncLabel> g_sala_logical_ops;
+std::vector<SalaFuncLabel> g_sala_global_funcs;
+std::vector<SalaMemberFuncLabel> g_sala_member_funcs;
 
 void loadSalaProgram()
 {
