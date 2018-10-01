@@ -32,10 +32,12 @@
 // User defined functions are not included yet, but should be fairly easy using a global function stack
 // alongside the global variable stack
 
-#include <salalib/salaprogram.h>
-
-#include <salalib/mgraph.h>
-#include <salalib/ngraph.h>
+#include "salalib/salaprogram.h"
+#include "salalib/ngraph.h"
+#include "salalib/attributes.h"
+#include "salalib/shapemap.h"
+#include "salalib/pointdata.h"
+#include "salalib/connector.h"
 
 #include <math.h>
 #include <float.h>
