@@ -62,6 +62,13 @@ inline bool operator < (const ShapeRef& a, const ShapeRef& b)
 inline bool operator > (const ShapeRef& a, const ShapeRef& b)
 { return a.m_shape_ref > b.m_shape_ref; }
 
+struct ShapeRefHash {
+public:
+    size_t operator()(const ShapeRef & shapeRef) const {
+        return shapeRef.m_shape_ref;
+    }
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // this is a helper for cutting polygons to fit a viewport / cropping frame
