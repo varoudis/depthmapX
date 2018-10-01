@@ -34,6 +34,7 @@
 #include "MapInfoData.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 #ifndef _WIN32
 #define _finite finite
@@ -2139,7 +2140,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    }
    const Line& l = poly.getLine();
 
-   std::vector<int> testedshapes;
+   std::unordered_set<int> testedshapes;
 
    // As of version 10, self-connections are *not* added
    // In the past:
@@ -2147,7 +2148,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    // (apparently! -- this needs checking, as most of the time it is then checked to exclude self again!) </exclude>
    // <exclude> connections.add(m_shapes.searchindex(lineref)); </exclude>
 
-   depthmapX::addIfNotExists(testedshapes, lineref);
+   testedshapes.insert(lineref);
 
    int num_intersections = 0;
 
@@ -2156,11 +2157,10 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    for (size_t i = 0; i < list.size(); i++) {
       const std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(list[i].x + list[i].y*m_cols)];
       for (const ShapeRef& shape: shapeRefs) {
-         auto iter = depthmapX::findBinary(testedshapes, shape.m_shape_ref);
-         if (iter != testedshapes.end()) {
+         if (testedshapes.find(int(shape.m_shape_ref)) != testedshapes.end()) {
             continue;
          }
-         testedshapes.insert(iter, int(shape.m_shape_ref));
+         testedshapes.insert(int(shape.m_shape_ref));
          if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == ShapeRef::SHAPE_OPEN) {
             try {
                const Line& line = m_shapes.find(int(shape.m_shape_ref))->second.getLine();
