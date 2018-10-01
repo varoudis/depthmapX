@@ -32,13 +32,15 @@
 // User defined functions are not included yet, but should be fairly easy using a global function stack
 // alongside the global variable stack
 
+#include <salalib/salaprogram.h>
+
+#include <salalib/mgraph.h>
+#include <salalib/ngraph.h>
+
 #include <math.h>
 #include <float.h>
 #include <time.h>
 
-#include <salalib/mgraph.h>
-#include <salalib/ngraph.h>
-#include <salalib/salaprogram.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -193,7 +195,7 @@ bool SalaProgram::parse(std::istream& program)
 
          parent->m_children.push_back(SalaCommand(this,parent,indent));
 
-         SalaCommand &thiscommand = parent->m_children.tail();
+         SalaCommand &thiscommand = parent->m_children.back();
 
          try {
             line = thiscommand.parse(program,line);
@@ -381,7 +383,7 @@ bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& se
 
 std::string SalaProgram::getLastErrorMessage() const
 { 
-   const SalaError& error = m_error_stack.tail();
+   const SalaError& error = m_error_stack.back();
    if (error.lineno == -1) {
       return error.message; 
    }
@@ -732,10 +734,10 @@ int SalaCommand::parse(std::istream& program, int line)
    }
    // push remaining functions onto eval stack:
    while (m_func_stack.size()) {
-      if (m_func_stack.tail().type & SalaObj::S_BRACKET) {
+      if (m_func_stack.back().type & SalaObj::S_BRACKET) {
          throw SalaError("Unmatched brackets",m_line);
       }
-      m_eval_stack.push_back(m_func_stack.tail());
+      m_eval_stack.push_back(m_func_stack.back());
       m_func_stack.pop_back();
    }
 
@@ -957,53 +959,53 @@ void SalaCommand::pushFunc(const SalaObj& func)
    // note comma is part of the "Bracket" class of things:
    if (func.type & SalaObj::S_BRACKET) {
       if (func.type == SalaObj::S_CLOSE_BRACKET) {
-         while (m_func_stack.size() && m_func_stack.tail().type != SalaObj::S_OPEN_BRACKET) {
-            m_eval_stack.push_back(m_func_stack.tail());
+         while (m_func_stack.size() && m_func_stack.back().type != SalaObj::S_OPEN_BRACKET) {
+            m_eval_stack.push_back(m_func_stack.back());
             m_func_stack.pop_back();
          }
          if (m_func_stack.size()) {
             // don't necessarily pop it... if it's a group marker, we want to hang onto it:
-            if (m_func_stack.tail().data.count > 1) {
-               m_func_stack.tail().type = SalaObj::S_CONST_TUPLE;
-               m_eval_stack.push_back(m_func_stack.tail());
+            if (m_func_stack.back().data.count > 1) {
+               m_func_stack.back().type = SalaObj::S_CONST_TUPLE;
+               m_eval_stack.push_back(m_func_stack.back());
             }
             m_func_stack.pop_back(); // remove opening bracket
          }
       }
       else if (func.type == SalaObj::S_CLOSE_SQR_BRACKET) {
-         while (m_func_stack.size() && (m_func_stack.tail().type & SalaObj::S_OPEN_SQR_BRACKET) == 0) {
-            m_eval_stack.push_back(m_func_stack.tail());
+         while (m_func_stack.size() && (m_func_stack.back().type & SalaObj::S_OPEN_SQR_BRACKET) == 0) {
+            m_eval_stack.push_back(m_func_stack.back());
             m_func_stack.pop_back();
          }
          if (m_func_stack.size()) {
             // don't pop it, always make a list from a make list command, even if it's only one item long:
-            if (m_func_stack.tail().type == SalaObj::S_OPEN_SQR_BRACKET_LIST || m_func_stack.tail().data.count > 1) {
-               m_func_stack.tail().type = SalaObj::S_CONST_LIST;
-               m_eval_stack.push_back(m_func_stack.tail());
+            if (m_func_stack.back().type == SalaObj::S_OPEN_SQR_BRACKET_LIST || m_func_stack.back().data.count > 1) {
+               m_func_stack.back().type = SalaObj::S_CONST_LIST;
+               m_eval_stack.push_back(m_func_stack.back());
             }
             m_func_stack.pop_back();
          }
       }
       else if (func.type == SalaObj::S_COMMA) {
          // go and increment your associated group / list
-         while (m_func_stack.size() && m_func_stack.tail().type != SalaObj::S_OPEN_BRACKET && (m_func_stack.tail().type & SalaObj::S_OPEN_SQR_BRACKET) == 0) {
-            m_eval_stack.push_back(m_func_stack.tail());
+         while (m_func_stack.size() && m_func_stack.back().type != SalaObj::S_OPEN_BRACKET && (m_func_stack.back().type & SalaObj::S_OPEN_SQR_BRACKET) == 0) {
+            m_eval_stack.push_back(m_func_stack.back());
             m_func_stack.pop_back();
          }
          if (m_func_stack.size()) {
-            m_func_stack.tail().data.count++;
+            m_func_stack.back().data.count++;
          }
       }      
       else {
          m_func_stack.push_back( func );
       }
    }
-   else if (!m_func_stack.size() || func.precedence() > m_func_stack.tail().precedence()) {    // original: >
+   else if (!m_func_stack.size() || func.precedence() > m_func_stack.back().precedence()) {    // original: >
       m_func_stack.push_back(func);
    }
    else {
-      while (m_func_stack.size() && func.precedence() <= m_func_stack.tail().precedence()) {     // original <=
-         m_eval_stack.push_back(m_func_stack.tail());
+      while (m_func_stack.size() && func.precedence() <= m_func_stack.back().precedence()) {     // original <=
+         m_eval_stack.push_back(m_func_stack.back());
          m_func_stack.pop_back();
       }
       m_func_stack.push_back(func);
@@ -1495,18 +1497,18 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      throw SalaError("List is empty", m_line);
                   }
                   if (param.type == SalaObj::S_NONE) {
-                     data = obj.data.list.list->tail();
+                     data = obj.data.list.list->back();
                      obj.data.list.list->pop_back();
                   }
                   else {
-                     pvector<SalaObj>& list = *(obj.data.list.list);
+                     std::vector<SalaObj>& list = *(obj.data.list.list);
                      int i = param.toInt();
                      if (i < 0) 
                         i += list.size();
                      if (i < 0 || i >= (int)list.size()) 
                         throw SalaError("Index out of range");
-                     data = list.at(i);
-                     list.remove_at(i);
+                     data = list[i];
+                     list.erase(list.begin() + i);
                   }
                   break;
                case SalaObj::S_FCLEAR:
@@ -1659,7 +1661,7 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       }
    }
    else {
-      const Connector& connector = graphobj.data.graph.map.shape->getConnections().at(graphobj.data.graph.node);
+      const Connector& connector = graphobj.data.graph.map.shape->getConnections()[graphobj.data.graph.node];
       int mode = Connector::CONN_ALL;
       if (graphobj.data.graph.map.shape->isSegmentMap()) {
          const std::string& str = param.toStringRef();

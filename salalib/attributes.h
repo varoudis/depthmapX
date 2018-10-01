@@ -23,6 +23,7 @@
 
 // for scripting object
 #include "salalib/salaprogram.h"
+#include "genlib/paftl.h"
 
 #include <string>
 
