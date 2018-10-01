@@ -246,6 +246,7 @@ public:
    //
    // operations for graphs / graph nodes:
    AttributeTable *getTable();
+   std::map<int, SalaObj> marks;
    //
    const std::string getTypeStr() const;
    const std::string getTypeIndefArt() const;
@@ -307,7 +308,6 @@ class SalaProgram
    SalaObj m_thisobj;
    //
    bool m_marked; // this is used to tell the program that a node has been "marked" -- all marks are cleared at the end of the execution
-   //
 public:
    SalaProgram(SalaObj context);
    ~SalaProgram();
