@@ -29,6 +29,7 @@
 #include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
 #include "genlib/vectorhelpers.h"
+#include "genlib/psubvec.h"
 
 #include <vector>
 #include <string>
