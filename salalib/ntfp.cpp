@@ -1,5 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2018 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -124,10 +126,11 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
         dXstring::safeGetline(stream, line);
          if (line.length() > 2) {
             if (dXstring::beginsWith<std::string>(line, "02")) {
-               if (dXstring::beginsWith<std::string>(line, "02Land-Line")) {
+               std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+               if (dXstring::beginsWith<std::string>(line, "02land-line")) {
                   filetype = NTF_LANDLINE;
                }
-               else if (dXstring::beginsWith<std::string>(line, "02Meridian")) {
+               else if (dXstring::beginsWith<std::string>(line, "02meridian")) {
                   filetype = NTF_MERIDIAN;
                }
             }
@@ -142,31 +145,9 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
          continue;
       }
       else if (filetype == NTF_LANDLINE) {
-         if (depthmapX::addIfNotExists(featcodes, 1))
-            layers.push_back( NtfLayer("Building outline") );
-         if (depthmapX::addIfNotExists(featcodes, 4))
-            layers.push_back( NtfLayer("Building outline (overhead)") );
-         if (depthmapX::addIfNotExists(featcodes, 21))
-            layers.push_back( NtfLayer("Road (public) edge") );
-         if (depthmapX::addIfNotExists(featcodes, 30))
-            layers.push_back( NtfLayer("General line / minor building") );
-         if (depthmapX::addIfNotExists(featcodes, 32))
-            layers.push_back( NtfLayer("General ground level / minor o'head detail") );
-         if (depthmapX::addIfNotExists(featcodes, 52))
-            layers.push_back( NtfLayer("Minor detail") );
-         if (depthmapX::addIfNotExists(featcodes, 98))
-            layers.push_back( NtfLayer("Road centreline") );
          precision = 6;
       }
       else if (filetype == NTF_MERIDIAN) {
-         if (depthmapX::addIfNotExists(featcodes, 3000))
-            layers.push_back( NtfLayer("Motorway") );
-         if (depthmapX::addIfNotExists(featcodes, 3001))
-            layers.push_back( NtfLayer("A-Road") );
-         if (depthmapX::addIfNotExists(featcodes, 3002))
-            layers.push_back( NtfLayer("B-Road") );
-         if (depthmapX::addIfNotExists(featcodes, 3004))
-            layers.push_back( NtfLayer("Minor Road") );
          precision = 5;
       }
 
@@ -189,6 +170,28 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                std::string northing =line.substr(56,10);
                m_offset.a = stoi(easting);
                m_offset.b = stoi(northing);
+            }
+            if (parsing == 0 && dXstring::beginsWith<std::string>(line, "05")) {
+               // Grab the feature codes
+               // Example without continuation:
+               // 050001                              Building outline\0%
+               // Example with continuation:
+               // 050001                              Building ou1%
+               // tline\0%
+               std::stringstream fullLine;
+               fullLine << line;
+               while(line.substr(line.length()-2,2) == "1%") {
+                   // the last line had 1% so remove it
+                   fullLine.seekp(-2, std::ios_base::end);
+                   dXstring::safeGetline(stream, line);
+                   fullLine << line;
+               }
+               line = fullLine.str();
+               line = line.substr(0, line.length()-3);
+               std::string code = line.substr(2,4);
+               std::string name = line.substr(36);
+               if (depthmapX::addIfNotExists(featcodes, stoi(code)))
+                  layers.push_back( NtfLayer(name) );
             }
             if (parsing == 0 && dXstring::beginsWith<std::string>(line, "23")) {
                geom.lines.clear();
