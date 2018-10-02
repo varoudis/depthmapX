@@ -14,43 +14,46 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
 
-
-#ifndef __NTFP_H__
-#define __NTFP_H__
+#include "genlib/p2dpoly.h"
 
 struct NtfPoint {
-   char m_chars;
+   int m_chars;
    int a;
    int b;
-   NtfPoint(char chars = 10)  // apparently 10 is NTF default
-   { m_chars = chars; };
+   NtfPoint(int chars = 10)  // apparently 10 is NTF default
+   { m_chars = chars; }
    int parse(const std::string& token, bool secondhalf = false);
 };
 
-class NtfGeometry : public prefvec<Line>
+class NtfGeometry
 {
 public:
+   std::vector<Line> lines;
    NtfGeometry() {;}
 };
 
-class NtfLayer : public prefvec<NtfGeometry> {
+class NtfLayer {
    friend class NtfMap;
 protected:
    std::string m_name;
    int m_line_count;
 public:
+   int pad1 : 32;
+   std::vector<NtfGeometry> geometries;
    NtfLayer(const std::string& name = std::string())
-      { m_name = name; m_line_count = 0; };
+      { m_name = name; m_line_count = 0; }
    int getLineCount()
       { return m_line_count; }
    std::string getName()
       { return m_name; }
 };
 
-class NtfMap : public prefvec<NtfLayer>
+class NtfMap
 {
 public:
+   std::vector<NtfLayer> layers;
    enum {NTF_UNKNOWN, NTF_LANDLINE, NTF_MERIDIAN};
 protected:
    NtfPoint m_offset;      // note: in metres
@@ -67,7 +70,5 @@ public:
    { return m_line_count; }
 protected:
    void fitBounds(const Line& li);
-   void addGeom(int layer, NtfGeometry& geom);
+   void addGeom(NtfLayer &layer, NtfGeometry& geom);
 };
-
-#endif

@@ -17,15 +17,16 @@
 
 // Quick OS land-line NTF parser
 
+
+#include "salalib/ntfp.h"
+
+#include "genlib/p2dpoly.h"
+#include "genlib/comm.h" // for communicator
+#include "genlib/stringutils.h"
+#include "genlib/containerutils.h"
+
 #include <iostream>
 #include <fstream>
-
-#include <genlib/paftl.h>
-#include <genlib/p2dpoly.h>
-#include <genlib/comm.h> // for communicator
-
-#include "genlib/stringutils.h"
-#include "ntfp.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -73,15 +74,15 @@ void NtfMap::fitBounds(const Line& li)
    }
 }
 
-void NtfMap::addGeom(int layer, NtfGeometry& geom)
+void NtfMap::addGeom(NtfLayer& layer, NtfGeometry& geom)
 { 
-   m_line_count += geom.size();
-   at(layer).m_line_count += geom.size();
-   at(layer).push_back( geom );
-   for (size_t i = 0; i < geom.size(); i++) {
-      fitBounds(geom[i]);
+   m_line_count += geom.lines.size();
+   layer.m_line_count += geom.lines.size();
+   layer.geometries.push_back( geom );
+   for (size_t i = 0; i < geom.lines.size(); i++) {
+      fitBounds(geom.lines[i]);
    }
-   geom.clear();
+   geom.lines.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
    time_t time = 0;
    qtimer( time, 0 );
 
-   pvecint featcodes;
+   std::vector<int> featcodes;
 /*
    m_bottom_left.a =  2147483647;   // 2^31 - 1
    m_bottom_left.b =  2147483647;
@@ -108,8 +109,8 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
    m_top_right.b   = -2147483647;
 */
    m_line_count = 0;
-   if (size()) {
-      clear();
+   if (!layers.empty()) {
+      layers.clear();
    }
 
    for (size_t i = 0; i < fileset.size(); i++) {
@@ -120,7 +121,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
 
       while (!stream.eof() && filetype == NTF_UNKNOWN) {
         std::string line;
-        std::getline(stream, line);
+        dXstring::safeGetline(stream, line);
          if (line.length() > 2) {
             if (dXstring::beginsWith<std::string>(line, "02")) {
                if (dXstring::beginsWith<std::string>(line, "02Land-Line")) {
@@ -141,45 +142,45 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
          continue;
       }
       else if (filetype == NTF_LANDLINE) {
-         if (featcodes.add(1) != -1) 
-            push_back( NtfLayer("Building outline") );
-         if (featcodes.add(4) != -1)
-            push_back( NtfLayer("Building outline (overhead)") );
-         if (featcodes.add(21) != -1)
-            push_back( NtfLayer("Road (public) edge") );
-         if (featcodes.add(30) != -1)
-            push_back( NtfLayer("General line / minor building") );
-         if (featcodes.add(32) != -1)
-            push_back( NtfLayer("General ground level / minor o'head detail") );
-         if (featcodes.add(52) != -1)
-            push_back( NtfLayer("Minor detail") );
-         if (featcodes.add(98) != -1)
-            push_back( NtfLayer("Road centreline") );
+         if (depthmapX::addIfNotExists(featcodes, 1))
+            layers.push_back( NtfLayer("Building outline") );
+         if (depthmapX::addIfNotExists(featcodes, 4))
+            layers.push_back( NtfLayer("Building outline (overhead)") );
+         if (depthmapX::addIfNotExists(featcodes, 21))
+            layers.push_back( NtfLayer("Road (public) edge") );
+         if (depthmapX::addIfNotExists(featcodes, 30))
+            layers.push_back( NtfLayer("General line / minor building") );
+         if (depthmapX::addIfNotExists(featcodes, 32))
+            layers.push_back( NtfLayer("General ground level / minor o'head detail") );
+         if (depthmapX::addIfNotExists(featcodes, 52))
+            layers.push_back( NtfLayer("Minor detail") );
+         if (depthmapX::addIfNotExists(featcodes, 98))
+            layers.push_back( NtfLayer("Road centreline") );
          precision = 6;
       }
       else if (filetype == NTF_MERIDIAN) {
-         if (featcodes.add(3000) != -1)
-            push_back( NtfLayer("Motorway") );
-         if (featcodes.add(3001) != -1) 
-            push_back( NtfLayer("A-Road") );
-         if (featcodes.add(3002) != -1)
-            push_back( NtfLayer("B-Road") );
-         if (featcodes.add(3004) != -1)
-            push_back( NtfLayer("Minor Road") );
+         if (depthmapX::addIfNotExists(featcodes, 3000))
+            layers.push_back( NtfLayer("Motorway") );
+         if (depthmapX::addIfNotExists(featcodes, 3001))
+            layers.push_back( NtfLayer("A-Road") );
+         if (depthmapX::addIfNotExists(featcodes, 3002))
+            layers.push_back( NtfLayer("B-Road") );
+         if (depthmapX::addIfNotExists(featcodes, 3004))
+            layers.push_back( NtfLayer("Minor Road") );
          precision = 5;
       }
 
       NtfGeometry geom;
       NtfPoint lastpoint(precision), currpoint(precision);
       int parsing = 0;
-      int currpos = -1;
+      std::vector<int>::iterator currpos;
       int currtoken = 0;
       std::vector<std::string> tokens;
 
       while (!stream.eof())
       {
          std::string line;
-         stream >> line;
+         dXstring::safeGetline(stream, line);
 
          if (line.length()) {
             if (parsing == 0 && dXstring::beginsWith<std::string>(line, "07")) {
@@ -190,13 +191,13 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                m_offset.b = stoi(northing);
             }
             if (parsing == 0 && dXstring::beginsWith<std::string>(line, "23")) {
-               geom.clear();
+               geom.lines.clear();
                // In Landline, check to see if it's a code we recognise:
                if (filetype == NTF_LANDLINE) {
                   std::string featcodestr = line.substr(16,4);
-                  size_t pos = featcodes.searchindex( stoi(featcodestr) );
-                  if (pos != paftl::npos) {
-                     at(pos).push_back( NtfGeometry() );
+                  auto pos = std::find(featcodes.begin(), featcodes.end(), stoi(featcodestr) );
+                  if (pos != featcodes.end()) {
+                     layers[size_t(std::distance(featcodes.begin(), pos))].geometries.push_back( NtfGeometry() );
                      parsing = 1;
                      currpos = pos;
                   }
@@ -231,9 +232,9 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                   // (goodness knows how we are supposed to know in advance what sort of feature we are given)
                   if (line.length() > 25 && line.substr(23,2) == "FC") { 
                      std::string featcodestr = line.substr(25,4);
-                     size_t pos = featcodes.searchindex( stoi(featcodestr) );
-                     if (pos != std::string::npos) {
-                        addGeom(pos,geom);
+                     auto pos = std::find(featcodes.begin(), featcodes.end(), stoi(featcodestr) );
+                     if (pos != featcodes.end()) {
+                        addGeom(layers[size_t(std::distance(featcodes.begin(), pos))], geom);
                      }
                   }
                   parsing = 0;
@@ -243,7 +244,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                if (parsing == 2) {  // hanging half point:
                   currpoint.parse(tokens[0], true);
                   Line li = makeLine(lastpoint, currpoint);
-                  geom.push_back(li);
+                  geom.lines.push_back(li);
                   lastpoint = currpoint;
                   currtoken = 1;
                }
@@ -251,7 +252,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                   int numbersparsed = currpoint.parse(tokens[i]);
                   if (numbersparsed == 2) {
                      Line li = makeLine(lastpoint, currpoint);
-                     geom.push_back(li);
+                     geom.lines.push_back(li);
                      lastpoint = currpoint;
                   }
                   else if (numbersparsed == 1) {
@@ -263,7 +264,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                }
                if (tokens.back()[tokens.back().length()-2] == '0') { // 0 here indicates no continuation
                   if (filetype == NTF_LANDLINE) {
-                     addGeom(currpos,geom);
+                     addGeom(layers[size_t(std::distance(featcodes.begin(), currpos))],geom);
                      parsing = 0;
                   }
                }

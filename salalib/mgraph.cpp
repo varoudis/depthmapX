@@ -1400,22 +1400,20 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 
       m_drawingFiles.back().m_region = map.getRegion();;
 
-      for (size_t i = 0; i < map.size(); i++) {
+      for (auto layer: map.layers) {
 
-         m_drawingFiles.back().m_spacePixels.emplace_back(map[i].getName());
-         m_drawingFiles.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
+         m_drawingFiles.back().m_spacePixels.emplace_back(layer.getName());
+         m_drawingFiles.back().m_spacePixels.back().init(layer.getLineCount(), map.getRegion());
 
-         for (size_t j = 0; j < map[i].size(); j++) {
-
-            for (size_t k = 0; k < map[i][j].size(); k++) {
-
-               m_drawingFiles.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
+         for (auto geometry: layer.geometries) {
+            for (auto& line: geometry.lines) {
+               m_drawingFiles.back().m_spacePixels.back().makeLineShape( line );
             }
          }
 
          // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-2);
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-1);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-2);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-1);
       }
    }
 
