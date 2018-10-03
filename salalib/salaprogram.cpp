@@ -1678,11 +1678,14 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       }
       int count = connector.count(mode);
       list = SalaObj( SalaObj::S_LIST, count);
-      connector.first();
+      int cursor = 0;
       for (int i = 0; i < count; i++) {
-         graphobj.data.graph.node = connector.cursor(mode);
+         graphobj.data.graph.node = connector.getConnectedRef(cursor, mode);
+         if (graphobj.data.graph.node == -1) {
+            cursor = -1;
+         }
          list.data.list.list->at(i) = graphobj;
-         connector.next();
+         cursor++;
       }
    }
    return list;

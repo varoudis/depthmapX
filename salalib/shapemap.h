@@ -333,10 +333,10 @@ public:
    // test if point is inside a particular shape
    bool pointInPoly(const Point2f& p, int shaperef) const;
    // retrieve lists of polys point intersects:
-   void pointInPolyList(const Point2f& p, pvecint& shapeindexlist) const;
-   void lineInPolyList(const Line& li, pvecint& shapeindexlist, int lineref = -1, double tolerance = 0.0) const;
-   void polyInPolyList(int polyref, pvecint& shapeindexlist, double tolerance = 0.0) const;
-   void shapeInPolyList(const SalaShape& shape, pvecint& shapeindexlist);
+   void pointInPolyList(const Point2f& p, std::vector<int> &shapeindexlist) const;
+   void lineInPolyList(const Line& li, std::vector<int> &shapeindexlist, int lineref = -1, double tolerance = 0.0) const;
+   void polyInPolyList(int polyref, std::vector<int> &shapeindexlist, double tolerance = 0.0) const;
+   void shapeInPolyList(const SalaShape& shape, std::vector<int> &shapeindexlist);
    // helper to make actual test of point in shape:
    int testPointInPoly(const Point2f& p, const ShapeRef& shape) const;
    // also allow look for a close polyline:
@@ -352,9 +352,9 @@ public:
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
-   int getLineConnections(int lineref, pvecint& connections, double tolerance);
+   std::vector<int> getLineConnections(int lineref, double tolerance);
    // Get arbitrary shape connections for a particular shape
-   int getShapeConnections(int polyref, pvecint& connections, double tolerance);
+   std::vector<int> getShapeConnections(int polyref, double tolerance);
    // Make all connections
    void makeShapeConnections();
    //
