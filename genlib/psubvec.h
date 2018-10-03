@@ -93,28 +93,11 @@ psubvec<T>::~psubvec()
 template <class T>
 psubvec<T>& psubvec<T>::operator = (const psubvec<T>& v)
 {
-   if (this != &v) {
-      if (v.m_data) {
-         T length = v.m_data[0];
-         T count = 0;
-         while (length >>= 1) // find bit length (note: cannot assume int)
-            count++;
-         m_data = new T [2 << count];
-         if (m_data == NULL) {
-             std::stringstream message;
-             message << "Memory allocation error: " << (sizeof(T) * size_t(2 << count));
-             throw depthmapX::RuntimeException(message.str());
-         }
-         length = v.m_data[0];
-         for (T i = 0; i < length + 1; i++) {
-            m_data[i] = v.m_data[i];
-         }
-      }
-      else {
-         m_data = NULL;
-      }
-   }
-   return *this;
+    if ( this != &v){
+        psubvec<T> temp(v);
+        m_data = temp.m_data;
+    }
+    return *this;
 }
 
 template <class T>
