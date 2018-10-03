@@ -50,12 +50,14 @@ struct AnalysisInfo
 
 class MapInfoData;
 
+typedef std::vector<std::set<int>> KeyVertices;
+
 class ShapeGraph : public ShapeMap
 {
    friend class AxialMinimiser;
    friend class MapInfoData;
 protected:
-   prefvec<pvecint> m_keyvertices;       // but still need to return keyvertices here
+   KeyVertices m_keyvertices;       // but still need to return keyvertices here
    int m_keyvertexcount;
 protected:
 public:
@@ -65,7 +67,7 @@ public:
    ShapeGraph(const std::string& name = "<axial map>", int type = ShapeMap::AXIALMAP);
    virtual ~ShapeGraph() {;}
    void initialiseAttributesAxial();
-   void makeConnections(const prefvec<pvecint>& keyvertices = prefvec<pvecint>());
+   void makeConnections(const KeyVertices &keyvertices = KeyVertices());
    //void initAttributes();
    bool integrate(Communicator *comm = NULL, const pvecint& radius = pvecint(), bool choice = false, bool local = false, bool fulloutput = false, int weighting_col = -1, bool simple_version = true);
    bool stepdepth(Communicator *comm = NULL);

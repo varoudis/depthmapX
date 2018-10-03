@@ -35,6 +35,7 @@
 
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+#include "genlib/readwritehelpers.h"
 
 #ifndef _WIN32
 #define _finite finite
@@ -100,7 +101,7 @@ void ShapeGraph::initialiseAttributesAxial()
 
 }
 
-void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
+void ShapeGraph::makeConnections(const KeyVertices &keyvertices)
 {
    m_connectors.clear();
    m_links.clear();
@@ -118,9 +119,9 @@ void ShapeGraph::makeConnections(const prefvec<pvecint>& keyvertices)
       int rowid = m_attributes.getRowid(key);
       // all indices should match...
       m_connectors.push_back( Connector() );
-      int connectivity = getLineConnections( key, m_connectors[i].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-      m_attributes.setValue(rowid, conn_col, (float) connectivity );
-      m_attributes.setValue(rowid, leng_col, (float) shape.second.getLine().length() );
+      m_connectors[i].m_connections = getLineConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+      m_attributes.setValue(rowid, conn_col, float(m_connectors[i].m_connections.size()) );
+      m_attributes.setValue(rowid, leng_col, float(shape.second.getLine().length()) );
       if (keyvertices.size()) {
          // note: depends on lines being recorded in same order as keyvertices...
          m_keyvertices.push_back( keyvertices[i] );
@@ -184,14 +185,14 @@ void ShapeGraph::outputNet(std::ostream& netfile) const
       // it works for an automatically converted axial map, I'm not sure it works for others...
       for (size_t j = 0; j < m_connectors.size(); j++) {
          const Connector& conn = m_connectors[j];
-         for (size_t k1 = 0; k1 < conn.m_forward_segconns.size(); k1++) {
-            SegmentRef ref = conn.m_forward_segconns.key(k1);
-            float weight = conn.m_forward_segconns.value(k1);
+         for (auto& segconn: conn.m_forward_segconns) {
+            SegmentRef ref = segconn.first;
+            float weight = segconn.second;
             netfile << (j * 2 + 1) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << std::endl;
          }
-         for (size_t k2 = 0; k2 < conn.m_back_segconns.size(); k2++) {
-            SegmentRef ref = conn.m_back_segconns.key(k2);
-            float weight = conn.m_back_segconns.value(k2);
+         for (auto& segconn: conn.m_back_segconns) {
+            SegmentRef ref = segconn.first;
+            float weight = segconn.second;
             netfile << (j * 2 + 2) << " " << (ref.ref * 2 + ((ref.dir == 1) ? 1 : 2)) << " " << weight << std::endl;
          }
       }
@@ -443,17 +444,17 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 
       if (local) {
          double control = 0.0;
-         pvecint& connections = m_connectors[i].m_connections;
+         const std::vector<int>& connections = m_connectors[i].m_connections;
          pvecint totalneighbourhood;
-         for (size_t j = 0; j < connections.size(); j++) {
+         for (int connection: connections) {
             // n.b., as of Depthmap 10.0, connections[j] and i cannot coexist
             // if (connections[j] != i) {
-               totalneighbourhood.add(connections[j]); // <- note add does nothing if member already exists
-               int intersect_size = 0, retro_size = 0;
-               pvecint retconnectors = m_connectors[connections[j]].m_connections;
-               for (size_t k = 0; k < retconnectors.size(); k++) {
+               totalneighbourhood.add(connection); // <- note add does nothing if member already exists
+               int retro_size = 0;
+               auto& retconnectors = m_connectors[size_t(connection)].m_connections;
+               for (auto retconnector: retconnectors) {
                    retro_size++;
-                   totalneighbourhood.add(retconnectors[k]); // <- note add does nothing if member already exists
+                   totalneighbourhood.add(retconnector); // <- note add does nothing if member already exists
                }
                control += 1.0 / double(retro_size);
             //}
@@ -765,8 +766,9 @@ bool ShapeGraph::read(std::istream &stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int i = 0; i < size; i++) {
-      m_keyvertices.push_back(pvecint());
-      m_keyvertices[i].read(stream);
+      std::vector<int> tempVec;
+      dXreadwrite::readIntoVector(stream, tempVec);
+      m_keyvertices.push_back(std::set<int>(tempVec.begin(), tempVec.end()));
    }
    // now base class read:
    ShapeMap::read(stream,version);
@@ -816,11 +818,11 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int j = 0; j < size; j++) {
-      m_keyvertices.push_back(pvecint());    // <- these were stored with the connector
+      m_keyvertices.push_back(std::set<int>());    // <- these were stored with the connector
       int key;
       stream.read((char *)&key,sizeof(key)); // <- key deprecated
       m_connectors.push_back(Connector());
-      m_connectors[j].read(stream,version,&(m_keyvertices[j]));
+      m_connectors[size_t(j)].read(stream);
    }
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
@@ -851,7 +853,7 @@ bool ShapeGraph::write( std::ofstream& stream, int version )
    int size = m_keyvertices.size();
    stream.write((char *)&size,sizeof(size));
    for (size_t i = 0; i < m_keyvertices.size(); i++) {
-      m_keyvertices[i].write(stream);
+      dXreadwrite::writeVector(stream, std::vector<int>( m_keyvertices[i].begin(), m_keyvertices[i].end() ));
    }
 
    // now simply run base class write:
@@ -869,9 +871,9 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(std::ostream &stream)
     stream.precision(12);
 
     for (size_t i = 0; i < connectors.size(); i++) {
-        pvecint connections = connectors[i].m_connections;
-        for (size_t j = 0; j < connections.size(); j++) {
-            stream << "    " << i << " -- " << connections[j] << std::endl;
+        const std::vector<int>& connections = connectors[i].m_connections;
+        for (int connection: connections) {
+            stream << "    " << i << " -- " << connection << std::endl;
         }
     }
     stream << "}" << std::endl;
@@ -886,11 +888,11 @@ void ShapeGraph::writeAxialConnectionsAsPairsCSV(std::ostream &stream)
     stream << "refA,refB" << std::endl;
 
     for (size_t i = 0; i < connectors.size(); i++) {
-        pvecint connections = connectors[i].m_connections;
+        auto& connections = connectors[i].m_connections;
         if (i != 0) stream << std::endl;
-        for (size_t j = 0; j < connections.size(); j++) {
-            if (j != 0) stream << std::endl;
-            stream << i << "," << connections[j];
+        for (auto iter = connections.begin(); iter != connections.end(); ++iter) {
+            if (iter != connections.begin()) stream << std::endl;
+            stream << i << "," << *iter;
         }
     }
 }
@@ -905,22 +907,20 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
 
     // directed links
     for (size_t i = 0; i < connectors.size(); i++) {
-        size_t cur_size = connectors[i].m_forward_segconns.size();
-        for (size_t j = 0; j < cur_size; j++) {
+        for (auto& segconn: connectors[i].m_forward_segconns) {
             stream << std::endl;
-            stream << i << "," << connectors[i].m_forward_segconns.key(j).ref
-                   << "," << connectors[i].m_forward_segconns.value(j)
+            stream << i << "," << segconn.first.ref
+                   << "," << segconn.second
                    << "," << 0 // forward
-                   << "," << int(connectors[i].m_forward_segconns.key(j).dir);
+                   << "," << int(segconn.first.dir);
         }
 
-        cur_size = connectors[i].m_back_segconns.size();
-        for (size_t j = 0; j < cur_size; j++) {
+        for (auto& segconn: connectors[i].m_back_segconns) {
             stream << std::endl;
-            stream << i << "," << connectors[i].m_back_segconns.key(j).ref
-                   << "," << connectors[i].m_back_segconns.value(j)
+            stream << i << "," << segconn.first.ref
+                   << "," << segconn.second
                    << "," << 1 // back
-                   << "," << int(connectors[i].m_back_segconns.key(j).dir);
+                   << "," << int(segconn.first.dir);
         }
     }
 }
@@ -937,9 +937,10 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
           auto bIter = m_shapes.find(int(jter->m_shape_ref));
           int a = int(std::distance(m_shapes.begin(), aIter));
           int b = int(std::distance(m_shapes.begin(), bIter));
+          auto& connections = m_connectors[size_t(a)].m_connections;
           if (aIter != m_shapes.end() && bIter != m_shapes.end()
                   && aIter->second.isLine() && bIter->second.isLine()
-                  && int(m_connectors[size_t(a)].m_connections.searchindex(b)) != -1) {
+                  && std::find(connections.begin(), connections.end(), b) != connections.end()) {
              closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
              intersections.push_back( IntPair(a,b) );
           }
@@ -1026,13 +1027,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(1,seg_a),x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_back_segconns, SegmentRef(1,seg_b), x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(1,seg_a), x);
             }
             if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[size_t(seg_a)].m_back_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(1,seg_a),x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_back_segconns, SegmentRef(-1,seg_b), x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_forward_segconns, SegmentRef(1,seg_a), x);
             }
          }
       }
@@ -1048,13 +1049,13 @@ void ShapeGraph::makeNewSegMap()
             beta.normalise();
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(1,seg_b),x);
-               connectionset[size_t(seg_b)].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_b), x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_a), x);
             }
             if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
                float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               connectionset[size_t(seg_a)].m_forward_segconns.add(SegmentRef(-1,seg_b),x);
-               connectionset[size_t(seg_b)].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(-1,seg_b), x);
+               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_forward_segconns, SegmentRef(-1,seg_a), x);
             }
          }
       }
@@ -1098,7 +1099,7 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
       // if the line is ascending or decending
       int parity = (axis == XAXIS) ? 1 : line.sign();
 
-      pvecint& connections = m_connectors[i].m_connections;
+      auto& connections = m_connectors[i].m_connections;
       for (size_t j = 0; j < connections.size(); j++) {
          // find the intersection point and add...
          // note: more than one break at the same place allowed
@@ -1175,42 +1176,42 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
                   int seg_2 = segIter->second.b;
                   if (seg_a != -1) {
                      if (seg_1 != -1) {
-                        Point2f alpha = lineset[seg_a].start() - lineset[seg_a].end();
-                        Point2f beta  = lineset[seg_1].start() - lineset[seg_1].end();
+                        Point2f alpha = lineset[size_t(seg_a)].start() - lineset[size_t(seg_a)].end();
+                        Point2f beta  = lineset[size_t(seg_1)].start() - lineset[size_t(seg_1)].end();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        connectionset[seg_a].m_forward_segconns.add(SegmentRef(-1,seg_1),x);
-                        connectionset[seg_1].m_forward_segconns.add(SegmentRef(-1,seg_a),x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(-1,seg_1), x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_1)].m_forward_segconns, SegmentRef(-1,seg_a), x);
                      }
                      if (seg_2 != -1) {
-                        Point2f alpha = lineset[seg_a].start() - lineset[seg_a].end();
-                        Point2f beta  = lineset[seg_2].end() - lineset[seg_2].start();
+                        Point2f alpha = lineset[size_t(seg_a)].start() - lineset[size_t(seg_a)].end();
+                        Point2f beta  = lineset[size_t(seg_2)].end() - lineset[size_t(seg_2)].start();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_2),x);
-                        connectionset[seg_2].m_back_segconns.add(SegmentRef(-1,seg_a),x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_2), x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_2)].m_back_segconns, SegmentRef(-1,seg_a), x);
                      }
                   }
                   if (seg_b != -1) {
                      if (seg_1 != -1) {
-                        Point2f alpha = lineset[seg_b].end() - lineset[seg_b].start();
-                        Point2f beta  = lineset[seg_1].start() - lineset[seg_1].end();
+                        Point2f alpha = lineset[size_t(seg_b)].end() - lineset[size_t(seg_b)].start();
+                        Point2f beta  = lineset[size_t(seg_1)].start() - lineset[size_t(seg_1)].end();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_1),x);
-                        connectionset[seg_1].m_forward_segconns.add(SegmentRef(1,seg_b),x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_1), x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_1)].m_forward_segconns, SegmentRef(1,seg_b), x);
                      }
                      if (seg_2 != -1) {
-                        Point2f alpha = lineset[seg_b].end() - lineset[seg_b].start();
-                        Point2f beta  = lineset[seg_2].end() - lineset[seg_2].start();
+                        Point2f alpha = lineset[size_t(seg_b)].end() - lineset[size_t(seg_b)].start();
+                        Point2f beta  = lineset[size_t(seg_2)].end() - lineset[size_t(seg_2)].start();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        connectionset[seg_b].m_back_segconns.add(SegmentRef(1,seg_2),x);
-                        connectionset[seg_2].m_back_segconns.add(SegmentRef(1,seg_b),x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(1,seg_2), x);
+                        depthmapX::addIfNotExists(connectionset[size_t(seg_2)].m_back_segconns, SegmentRef(1,seg_b), x);
                      }
                   }
                }
@@ -1222,8 +1223,8 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
             }
          }
          if (seg_a != -1 && seg_b != -1) {
-            connectionset[seg_a].m_forward_segconns.add(SegmentRef(1,seg_b),0.0f);
-            connectionset[seg_b].m_back_segconns.add(SegmentRef(-1,seg_a),0.0f);
+            depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_b), 0.0f);
+            depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_a), 0.0f);
          }
          seg_a = seg_b;
       }
@@ -1256,22 +1257,23 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
    int i = -1;
    for (auto shape: m_shapes) {
        i++;
+       Connector& connector = connectionset[size_t(i)];
       int rowid = m_attributes.getRowid(shape.first);
 
-      m_attributes.setValue(rowid, ref_col, (float) connectionset[i].m_segment_axialref );
-      m_attributes.setValue(rowid, leng_col, (float) shape.second.getLine().length() );
+      m_attributes.setValue(rowid, ref_col, float(connector.m_segment_axialref));
+      m_attributes.setValue(rowid, leng_col, float(shape.second.getLine().length()));
 
       // all indices should match... (including lineset/connectionset versus m_shapes)
-      m_connectors.push_back( connectionset[i] );
+      m_connectors.push_back( connector );
       float total_weight = 0.0f;
-      for (size_t j = 0; j < connectionset[i].m_forward_segconns.size(); j++) {
-         total_weight += connectionset[i].m_forward_segconns.value(j);
+      for (auto iter = connector.m_forward_segconns.begin(); iter != connector.m_forward_segconns.end(); ++iter) {
+         total_weight += iter->second;
       }
-      for (size_t k = 0; k < connectionset[i].m_back_segconns.size(); k++) {
-         total_weight += connectionset[i].m_back_segconns.value(k);
+      for (auto iter = connector.m_back_segconns.begin(); iter != connector.m_back_segconns.end(); ++iter) {
+         total_weight += iter->second;
       }
-      m_attributes.setValue(rowid, w_conn_col, (float) total_weight );
-      m_attributes.setValue(rowid, uw_conn_col, (float) (connectionset[i].m_forward_segconns.size() + connectionset[i].m_back_segconns.size()));
+      m_attributes.setValue(rowid, w_conn_col, float(total_weight));
+      m_attributes.setValue(rowid, uw_conn_col, float(connector.m_forward_segconns.size() + connector.m_back_segconns.size()));
 
       // free up connectionset as we go along:
       connectionset.free_at(i);
@@ -1385,29 +1387,29 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
             anglebins.remove_at(0);
             Connector& line = m_connectors[lineindex.ref];
             if (lineindex.dir != -1) {
-               for (size_t k = 0; k < line.m_forward_segconns.size(); k++) {
-                  if (!covered[line.m_forward_segconns.key(k).ref]) {
-                     double angle = depth_to_line + line.m_forward_segconns.value(k);
+               for (auto& segconn: line.m_forward_segconns) {
+                  if (!covered[segconn.first.ref]) {
+                     double angle = depth_to_line + segconn.second;
                      int rbin = lineindex.coverage;
                      while (rbin != radius.size() && radius[rbin] != -1 && angle > radius[rbin]) {
                         rbin++;
                      }
                      if (rbin != radius.size()) {
-                        anglebins.add(angle, SegmentData(line.m_forward_segconns.key(k),SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
                      }
                   }
                }
             }
             if (lineindex.dir != 1) {
-               for (size_t k = 0; k < line.m_back_segconns.size(); k++) {
-                  if (!covered[line.m_back_segconns.key(k).ref]) {
-                     double angle = depth_to_line + line.m_back_segconns.value(k);
+               for (auto& segconn: line.m_back_segconns) {
+                  if (!covered[segconn.first.ref]) {
+                     double angle = depth_to_line + segconn.second;
                      int rbin = lineindex.coverage;
                      while (rbin != radius.size() && radius[rbin] != -1 && angle > radius[rbin]) {
                         rbin++;
                      }
                      if (rbin != radius.size()) {
-                        anglebins.add(angle, SegmentData(line.m_back_segconns.key(k),SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
                      }
                   }
                }
@@ -1825,19 +1827,19 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             float seglength;
             register int extradepth;
             if (lineindex.dir != -1) {
-               for (size_t k = 0; k < line.m_forward_segconns.size(); k++) {
+               for (auto& segconn: line.m_forward_segconns) {
                   rbin = rbinbase;
-                  SegmentRef conn = line.m_forward_segconns.key(k);
+                  SegmentRef conn = segconn.first;
                   if ((uncovered[conn.ref][(conn.dir == 1 ? 0 : 1)] & coverage) != 0) {
                             //EF routeweight*
                             if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
                                                     //note that the content of the routeweights array is scaled between 0 and 1 and is reversed
                                                     // such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
-                                extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);
+                                extradepth = (int) floor(segconn.second * tulip_bins * 0.5 * routeweights[conn.ref]);
                             }
                             //*EF routeweight
                             else {
-                                extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5);
+                                extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
                             }
                             seglength = lengths[conn.ref];
                      switch (radius_type) {
@@ -1867,19 +1869,19 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
                }
             }
             if (lineindex.dir != 1) {
-               for (size_t k = 0; k < line.m_back_segconns.size(); k++) {
+               for (auto& segconn: line.m_back_segconns) {
                   rbin = rbinbase;
-                  SegmentRef conn = line.m_back_segconns.key(k);
+                  SegmentRef conn = segconn.first;
                   if ((uncovered[conn.ref][(conn.dir == 1 ? 0 : 1)] & coverage) != 0) {
                             //EF routeweight*
                             if (routeweight_col != -1) {  //EF here we do the weighting of the angular cost by the weight of the next segment
                                                     //note that the content of the routeweights array is scaled between 0 and 1 and is reversed
                                                     // such that: = 1.0-(m_attributes.getValue(i, routeweight_col)/max_value)
-                                extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5 * routeweights[conn.ref]);
+                                extradepth = (int) floor(segconn.second * tulip_bins * 0.5 * routeweights[conn.ref]);
                             }
                             //*EF routeweight
                             else {
-                                extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5);
+                                extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
                             }
                      seglength = lengths[conn.ref];
                      switch (radius_type) {
@@ -2165,21 +2167,21 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
          m_attributes.setValue(lineindex.ref,stepdepth_col,depth_to_line);
          register int extradepth;
          if (lineindex.dir != -1) {
-            for (size_t k = 0; k < line.m_forward_segconns.size(); k++) {
-               if (!covered[line.m_forward_segconns.key(k).ref]) {
-                  extradepth = (int) floor(line.m_forward_segconns.value(k) * tulip_bins * 0.5);
+            for (auto& segconn: line.m_forward_segconns) {
+               if (!covered[segconn.first.ref]) {
+                  extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
                   bins[(currentbin + tulip_bins + extradepth) % tulip_bins].push_back(
-                      SegmentData(line.m_forward_segconns.key(k),lineindex.ref,lineindex.segdepth+1,0.0,0));
+                      SegmentData(segconn.first,lineindex.ref,lineindex.segdepth+1,0.0,0));
                   opencount++;
                }
             }
          }
          if (lineindex.dir != 1) {
-            for (size_t k = 0; k < line.m_back_segconns.size(); k++) {
-               if (!covered[line.m_back_segconns.key(k).ref]) {
-                  extradepth = (int) floor(line.m_back_segconns.value(k) * tulip_bins * 0.5);
+            for (auto& segconn: line.m_back_segconns) {
+               if (!covered[segconn.first.ref]) {
+                  extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
                   bins[(currentbin + tulip_bins + extradepth) % tulip_bins].push_back(
-                      SegmentData(line.m_back_segconns.key(k),lineindex.ref,lineindex.segdepth+1,0.0,0));
+                      SegmentData(segconn.first,lineindex.ref,lineindex.segdepth+1,0.0,0));
                   opencount++;
                 }
             }

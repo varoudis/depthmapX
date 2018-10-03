@@ -146,24 +146,20 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
             // if not, remove it...
             if (!m_vital[removeindex]) {
                m_removed[removeindex] = true;
-               pvecint& affectedconnections = m_axialconns[removeindex].m_connections;
-               size_t k;
-               for (k = 0; k < affectedconnections.size(); k++) {
-                  if (!m_removed[affectedconnections[k]]) {
-                     pvecint& connections = m_axialconns[affectedconnections[k]].m_connections;
-                     size_t index = connections.searchindex(removeindex);
-                     if (index != paftl::npos) {
-                        connections.remove_at(index);
-                     }
-                     m_affected[affectedconnections[k]] = true;
+               auto& affectedconnections = m_axialconns[removeindex].m_connections;
+               for (auto affectedconnection: affectedconnections) {
+                  if (!m_removed[affectedconnection]) {
+                     auto& connections = m_axialconns[affectedconnection].m_connections;
+                     depthmapX::findAndErase(connections, int(removeindex));
+                     m_affected[affectedconnection] = true;
                   }
                }
                removedflag = true;
-               for (k = 0; k < axSegCut.size(); k++) {
+               for (size_t k = 0; k < axSegCut.size(); k++) {
                   m_radialsegcounts[axSegCut[k]] -= 1;
                }
                // vital connections
-               for (k = 0; k < keyvertexconns[removeindex].size(); k++) {
+               for (size_t k = 0; k < keyvertexconns[removeindex].size(); k++) {
                   keyvertexcounts[keyvertexconns[removeindex][k]] -= 1;
                }
             }
@@ -223,10 +219,10 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       }
       if (!presumedvital) {
          // don't let anything this is connected to go down to zero connections
-         pvecint& affectedconnections = m_axialconns[j].m_connections;
-         for (size_t k = 0; k < affectedconnections.size(); k++) {
-            if (!m_removed[affectedconnections[k]]) {
-               pvecint& connections = m_axialconns[affectedconnections[k]].m_connections;
+         auto& affectedconnections = m_axialconns[j].m_connections;
+         for (auto affectedconnection: affectedconnections) {
+            if (!m_removed[affectedconnection]) {
+               auto& connections = m_axialconns[size_t(affectedconnection)].m_connections;
                if (connections.size() <= 2) { // <- note number of connections includes itself... so you and one other
                   presumedvital = true;
                   break;
@@ -236,23 +232,19 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       }
       if (!presumedvital) {
          m_removed[j] = true;
-         pvecint& affectedconnections = m_axialconns[j].m_connections;
-         size_t k;
-         for (k = 0; k < affectedconnections.size(); k++) {
-            if (!m_removed[affectedconnections[k]]) {
-               pvecint& connections = m_axialconns[affectedconnections[k]].m_connections;
-               size_t index = connections.searchindex(j);
-               if (index != paftl::npos) {
-                  connections.remove_at(index);
-               }
-               m_affected[affectedconnections[k]] = true;
+         auto& affectedconnections = m_axialconns[size_t(j)].m_connections;
+         for (auto affectedconnection: affectedconnections) {
+            if (!m_removed[affectedconnection]) {
+               auto& connections = m_axialconns[size_t(affectedconnection)].m_connections;
+               depthmapX::findAndErase(connections, int(j));
+               m_affected[affectedconnection] = true;
             }
          }
-         for (k = 0; k < axSegCut.size(); k++) {
+         for (size_t k = 0; k < axSegCut.size(); k++) {
             m_radialsegcounts[axSegCut[k]] -= 1;
          }
          // vital connections
-         for (k = 0; k < keyvertexconns[j].size(); k++) {
+         for (size_t k = 0; k < keyvertexconns[j].size(); k++) {
             keyvertexcounts[keyvertexconns[j][k]] -= 1;
          }
       }
@@ -287,7 +279,8 @@ bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<Rad
                if (divisorsb[divj] == checkindex || m_removed[divisorsb[divj]]) {
                   continue;
                }
-               if (m_axialconns[divisorsa[divi]].m_connections.searchindex(divisorsb[divj]) != paftl::npos) {
+               auto& connections = m_axialconns[divisorsa[divi]].m_connections;
+               if (std::find(connections.begin(), connections.end(), divisorsb[divj]) != connections.end()) {
                   // as a further challenge, they must link within in the zone of interest, not on the far side of it... arg!
                   Point2f p = intersection_point(axiallines[divisorsa[divi]].getLine(),axiallines[divisorsb[divj]].getLine(),TOLERANCE_A);
                   if (p.insegment(rlinea.keyvertex,rlinea.openspace,rlineb.openspace,TOLERANCE_A)) {

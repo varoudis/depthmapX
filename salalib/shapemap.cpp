@@ -671,81 +671,78 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
    // change connections:
    if (m_hasgraph) {
       //
-      pvecint oldconnections = m_connectors[rowid].m_connections;
-      m_connectors[rowid].m_connections.clear();
-      pvecint& newconnections = m_connectors[rowid].m_connections;
+      const std::vector<int> oldconnections = m_connectors[size_t(rowid)].m_connections;
       //
       int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
       int leng_col = -1;
       //
-      int connectivity = 0;
       if (isAxialMap()) {
          // line connections optimised for line-line intersection
-         connectivity = getLineConnections( shaperef, newconnections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getLineConnections( shaperef, TOLERANCE_B*__max(m_region.height(),m_region.width()));
       }
       else {
-         connectivity = getShapeConnections( shaperef, newconnections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getShapeConnections( shaperef, TOLERANCE_B*__max(m_region.height(),m_region.width()));
       }
-      m_attributes.setValue(rowid, conn_col, (float) connectivity );
+
+      std::vector<int>& newconnections = m_connectors[size_t(rowid)].m_connections;
+      m_attributes.setValue(rowid, conn_col, float(newconnections.size()) );
       if (isAxialMap()) {
          leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
          m_attributes.setValue(rowid, leng_col, (float) depthmapX::getMapAtIndex(m_shapes, rowid)->second.getLength() );
       }
       //
-      size_t k = 0;
       // now go through our old connections, and remove ourself:
-      for (k = 0; k < oldconnections.size(); k++) {
-         int myplace = oldconnections[k];
-         if (myplace != rowid) { // <- exclude self!
-            m_connectors[myplace].m_connections.remove(rowid);
-            m_attributes.decrValue(myplace,conn_col);
+      for (int oldconnection: oldconnections) {
+         if (oldconnection != rowid) { // <- exclude self!
+            auto& connections = m_connectors[size_t(oldconnection)].m_connections;
+            depthmapX::findAndErase(connections, rowid);
+            m_attributes.decrValue(oldconnection,conn_col);
          }
       }
       // now go through our new connections, and add ourself:
-      for (k = 0; k < newconnections.size(); k++) {
-         int myplace = newconnections[k];
-         if (myplace != rowid) { // <- exclude self!
-            m_connectors[myplace].m_connections.add(rowid);
-            m_attributes.incrValue(myplace,conn_col);
+      for (int newconnection: m_connectors[size_t(rowid)].m_connections) {
+         if (newconnection != rowid) { // <- exclude self!
+            depthmapX::insert_sorted(m_connectors[size_t(newconnection)].m_connections, rowid);
+            m_attributes.incrValue(newconnection,conn_col);
          }
       }
       // now check any unlinks still exist in our newconnections are unlinked again (argh...)
-      for (k = m_unlinks.size() - 1; k != paftl::npos; k--) {
+      for (size_t k = m_unlinks.size() - 1; k != paftl::npos; k--) {
          int connb = -1;
          if (m_unlinks[k].a == rowid)
             connb = m_unlinks[k].b;
          else if (m_unlinks[k].b == rowid)
             connb = m_unlinks[k].a;
          if (connb != -1) {
-            if (newconnections.searchindex(connb) == paftl::npos) {
+            if (std::find(newconnections.begin(), newconnections.end(), connb) == newconnections.end()) {
                // no longer required:
                m_unlinks.remove_at(k);
             }
             else {
                // enforce:
-               newconnections.remove(connb);
-               m_connectors[connb].m_connections.remove(rowid);
+               depthmapX::findAndErase(newconnections, connb);
+               depthmapX::findAndErase(m_connectors[size_t(connb)].m_connections, rowid);
                m_attributes.decrValue(connb,conn_col);
                m_attributes.decrValue(rowid,conn_col);
             }
          }
       }
       // now check any links are actually required (argh...)
-      for (k = m_links.size() - 1; k != paftl::npos; k--) {
+      for (size_t k = m_links.size() - 1; k != paftl::npos; k--) {
          int connb = -1;
          if (m_links[k].a == rowid)
             connb = m_links[k].b;
          else if (m_links[k].b == rowid)
             connb = m_links[k].a;
          if (connb != -1) {
-            if (newconnections.searchindex(connb) != paftl::npos) {
+            if (std::find(newconnections.begin(), newconnections.end(), connb) != newconnections.end()) {
                // no longer required:
                m_links.remove_at(k);
             }
             else {
                // enforce:
-               newconnections.add(connb);
-               m_connectors[connb].m_connections.add(rowid);
+               depthmapX::insert_sorted(newconnections, connb);
+               depthmapX::insert_sorted(m_connectors[size_t(connb)].m_connections, rowid);
                m_attributes.incrValue(connb,conn_col);
                m_attributes.incrValue(rowid,conn_col);
             }
@@ -946,20 +943,20 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
             continue;   // it's going to be removed anyway
          }
          for (size_t j = m_connectors[i].m_connections.size() - 1; j != paftl::npos; j--) {
-            if (m_connectors[i].m_connections[j] == rowid) {
-               m_connectors[i].m_connections.remove_at(j);
+            if (m_connectors[i].m_connections[j] == int(rowid)) {
+               m_connectors[i].m_connections.erase(m_connectors[i].m_connections.begin() + int(j));
                if (conn_col != -1) {
-                  m_attributes.decrValue(i,conn_col);
+                  m_attributes.decrValue(int(i),conn_col);
                }
             }
-            else if (m_connectors[i].m_connections[j] > (int)rowid) {
+            else if (m_connectors[i].m_connections[j] > int(rowid)) {
                m_connectors[i].m_connections[j] -= 1;
             }
          }
          // note, you cannot delete from a segment map, it's just too messy!
       }
 
-      m_connectors.erase(m_connectors.begin() + rowid);
+      m_connectors.erase(m_connectors.begin() + int(rowid));
 
       // take out explicit links and unlinks (note, undo won't restore these):
       size_t k;
@@ -1045,10 +1042,10 @@ void ShapeMap::undo()
          }
          //
          // calculate this line's connections
-         int connectivity = getLineConnections(event.m_shape_ref,m_connectors[rowid].m_connections,TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getLineConnections(event.m_shape_ref,TOLERANCE_B*__max(m_region.height(),m_region.width()));
          // update:
          int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
-         m_attributes.setValue(rowid, conn_col, (float) connectivity );
+         m_attributes.setValue(rowid, conn_col, float(m_connectors[rowid].m_connections .size()) );
          //
          if (event.m_geometry.isLine()) {
             int leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
@@ -1056,11 +1053,11 @@ void ShapeMap::undo()
          }
          //
          // now go through our connections, and add ourself:
-         for (size_t k = 0; k < m_connectors[rowid].m_connections.size(); k++) {
-            int myplace = m_connectors[rowid].m_connections[k];
-            if (myplace != rowid) { // <- exclude self!
-               m_connectors[myplace].m_connections.add(rowid);
-               m_attributes.incrValue(myplace,conn_col);
+         const std::vector<int>& connections = m_connectors[size_t(rowid)].m_connections;
+         for (int connection: connections) {
+            if (connection != rowid) { // <- exclude self!
+               depthmapX::insert_sorted(m_connectors[size_t(connection)].m_connections, rowid);
+               m_attributes.incrValue(connection, conn_col);
             }
          }
       }
@@ -1471,7 +1468,7 @@ bool ShapeMap::pointInPoly(const Point2f& p, int polyref) const
 
 // similar to above, but builds a list
 
-void ShapeMap::pointInPolyList(const Point2f& p, pvecint& shapeindexlist) const
+void ShapeMap::pointInPolyList(const Point2f& p, std::vector<int>& shapeindexlist) const
 {
    if (!m_region.contains(p)) {
       return ;
@@ -1489,13 +1486,13 @@ void ShapeMap::pointInPolyList(const Point2f& p, pvecint& shapeindexlist) const
 
       // if there's a shapeindex, then add (note it is an add -- you may be passed a list again to expand)
       if (shapeindex != -1) {
-         shapeindexlist.add(shapeindex);
+         depthmapX::insert_sorted(shapeindexlist, shapeindex);
       }
    }
 }
 
 // note, lineref is only used as an "exclude self" test when called from getShapeConnections
-void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int lineref, double tolerance) const
+void ShapeMap::lineInPolyList(const Line& li_orig, std::vector<int>& shapeindexlist, int lineref, double tolerance) const
 {
    if (!intersect_region(m_region,li_orig)) {
       return;
@@ -1525,7 +1522,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
                   if (intersect_region(li,poly.m_region)) {
                      // note: in this case m_region is stored as a line:
                      if (intersect_line(li,poly.m_region,tolerance)) {
-                        shapeindexlist.add(std::distance(m_shapes.begin(), shapeIter));
+                        depthmapX::insert_sorted(shapeindexlist, int(std::distance(m_shapes.begin(), shapeIter)));
                      }
                   }
                   break;
@@ -1535,7 +1532,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
                         Line lineb = Line(poly.m_points[shape.m_polyrefs[k]],poly.m_points[((shape.m_polyrefs[k]+1)%poly.m_points.size())]);
                         if (intersect_region(li,lineb)) {
                            if (intersect_line(li,lineb,tolerance)) {
-                              shapeindexlist.add(std::distance(m_shapes.begin(), shapeIter));
+                              depthmapX::insert_sorted(shapeindexlist, int(std::distance(m_shapes.begin(), shapeIter)));
                            }
                         }
                      }
@@ -1550,7 +1547,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, pvecint& shapeindexlist, int 
    }
 }
 
-void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double tolerance) const
+void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, double tolerance) const
 {
    auto shapeIter = m_shapes.find(polyref);
    if (shapeIter == m_shapes.end()) {
@@ -1574,7 +1571,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                for (const ShapeRef& shapeRef: shaperefs) {
                   if (*iter != shapeRef && ((iter->m_tags & ShapeRef::SHAPE_CENTRE) || (shapeRef.m_tags & ShapeRef::SHAPE_CENTRE))) {
                      if (testedlist.add(shapeRef.m_shape_ref) != -1) {
-                        shapeindexlist.add(depthmapX::findIndexFromKey(m_shapes, (int) shapeRef.m_shape_ref));
+                        depthmapX::insert_sorted(shapeindexlist, int(depthmapX::findIndexFromKey(m_shapes, int(shapeRef.m_shape_ref))));
                      }
                   }
                }
@@ -1598,13 +1595,13 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                         const SalaShape& polyb = shapeIter->second;
                         if (polyb.isPoint()) {
                            if (testPointInPoly(polyb.getPoint(),shaperef) != -1) {
-                              shapeindexlist.add((int)indexb);
+                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
                            }
                         }
                         else if (polyb.isLine()) {
                            if (testPointInPoly(polyb.getLine().start(),shaperef) != -1 || testPointInPoly(polyb.getLine().end(),shaperef) != -1) {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              shapeindexlist.add((int)indexb);
+                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
@@ -1612,7 +1609,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                                  if (intersect_region(line,polyb.getLine())) {
                                     if (intersect_line(line,polyb.getLine(),tolerance)) {
                                        testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                                       shapeindexlist.add((int)indexb);
+                                       depthmapX::insert_sorted(shapeindexlist, int(indexb));
                                        break;
                                     }
                                  }
@@ -1622,7 +1619,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                         else if (polyb.isPolyLine()) {
                            if (testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1)  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              shapeindexlist.add(indexb);
+                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
@@ -1632,7 +1629,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           if (testedlist.add(shaperefb.m_shape_ref) != -1) {
-                                             shapeindexlist.add(indexb);
+                                             depthmapX::insert_sorted(shapeindexlist, int(indexb));
                                              break;
                                           }
                                        }
@@ -1649,7 +1646,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                            if ((pixelate(polyb.m_points[shaperefb.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1) ||
                                (pixelate(poly.m_points[shaperef.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(poly.m_points[shaperef.m_polyrefs[0]],shaperefb) != -1))  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              shapeindexlist.add(indexb);
+                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
                            }
                            else {
                               // now check crossing
@@ -1661,7 +1658,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                                          shapeindexlist.add(indexb);
+                                          depthmapX::insert_sorted(shapeindexlist, int(indexb));
                                           breakit = true;
                                           break;
                                        }
@@ -1683,7 +1680,7 @@ void ShapeMap::polyInPolyList(int polyref, pvecint& shapeindexlist, double toler
    }
 }
 
-void ShapeMap::shapeInPolyList(const SalaShape& shape, pvecint& shapeindexlist) // note: no const due to poly in poly testing
+void ShapeMap::shapeInPolyList(const SalaShape& shape, std::vector<int>& shapeindexlist) // note: no const due to poly in poly testing
 {
    if (!intersect_region(m_region,shape.m_region)) {
       // quick test that actually coincident
@@ -2110,33 +2107,35 @@ int ShapeMap::connectIntersected(int rowid, bool linegraph)
    while (m_connectors.size() < m_shapes.size()) {
       m_connectors.push_back( Connector() );
    }
-   int connectivity = linegraph ?
-      getLineConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
-      getShapeConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-   m_attributes.setValue(rowid, conn_col, (float) connectivity );
+   m_connectors[size_t(rowid)].m_connections = linegraph ?
+               getLineConnections( shaperefIter->first, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
+               getShapeConnections( shaperefIter->first, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+   m_attributes.setValue(rowid, conn_col, float(m_connectors[size_t(rowid)].m_connections.size()) );
    if (linegraph) {
       m_attributes.setValue(rowid, leng_col, (float) shaperefIter->second.getLength() );
    }
    // now go through our connections, and add ourself:
-   for (size_t k = 0; k < m_connectors[rowid].m_connections.size(); k++) {
-      int myplace = m_connectors[rowid].m_connections[k];
-      if (myplace != rowid) { // <- exclude self!
-         m_connectors[myplace].m_connections.add(rowid);
-         m_attributes.incrValue(myplace,conn_col);
+   const std::vector<int>& connections = m_connectors[size_t(rowid)].m_connections;
+   for (int connection: connections) {
+      if (connection != rowid) { // <- exclude self!
+         depthmapX::insert_sorted(m_connectors[size_t(connection)].m_connections, rowid);
+         m_attributes.incrValue(connection,conn_col);
       }
    }
-   return connectivity;
+   return m_connectors[size_t(rowid)].m_connections.size();
 }
 
 // this assumes this is a line map (to speed up axial map creation)
 // use the other version, getShapeConnections for arbitrary shape-shape connections
 // note, connections are listed by rowid in list, *not* reference number
 // (so they may vary: must be checked carefully when shapes are removed / added)
-int ShapeMap::getLineConnections(int lineref, pvecint& connections, double tolerance)
+std::vector<int> ShapeMap::getLineConnections(int lineref, double tolerance)
 {
+   std::vector<int> connections;
+
    SalaShape& poly = m_shapes.find(lineref)->second;
    if (!poly.isLine()) {
-      return 0;
+      return std::vector<int>();
    }
    const Line& l = poly.getLine();
 
@@ -2149,8 +2148,6 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
    // <exclude> connections.add(m_shapes.searchindex(lineref)); </exclude>
 
    shapesToTest.insert(lineref);
-
-   int num_intersections = 0;
 
    PixelRefVector list = pixelateLine( l );
 
@@ -2168,8 +2165,7 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
                   // n.b. originally this followed the logic that we must normalise intersect_line properly: tolerance * line length one * line length two
                   // in fact, works better if it's just line.length() * tolerance...
                   if ( intersect_line(line, l, line.length() * tolerance) ) {
-                     connections.add(depthmapX::findIndexFromKey(m_shapes, (int) shape.m_shape_ref));
-                     num_intersections++;
+                     depthmapX::insert_sorted(connections, depthmapX::findIndexFromKey(m_shapes, int(shape.m_shape_ref)));
                   }
                }
             }
@@ -2180,14 +2176,16 @@ int ShapeMap::getLineConnections(int lineref, pvecint& connections, double toler
          }
    }
 
-   return num_intersections;
+   return connections;
 }
 
 // this is only problematic as there is lots of legacy code with shape-in-shape testing,
-int ShapeMap::getShapeConnections(int shaperef, pvecint& connections, double tolerance)
+std::vector<int> ShapeMap::getShapeConnections(int shaperef, double tolerance)
 {
    // In versions prior to 10, note that unlike getLineConnections, self-connection is excluded by all of the following functions
    // As of version 10, both getShapeConnections and getLineConnections exclude self-connection
+
+   std::vector<int> connections;
 
    auto shapeIter = m_shapes.find(shaperef);
    if (shapeIter != m_shapes.end()) {
@@ -2213,7 +2211,7 @@ int ShapeMap::getShapeConnections(int shaperef, pvecint& connections, double tol
       }
    }
 
-   return connections.size();
+   return connections;
 }
 
 // for any geometry, not just line to lines
@@ -2235,8 +2233,8 @@ void ShapeMap::makeShapeConnections()
          int rowid = m_attributes.insertRow(key);
          // all indices should match...
          m_connectors.push_back( Connector() );
-         int connectivity = getShapeConnections( key, m_connectors[i].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-         m_attributes.setValue(rowid, conn_col, (float) connectivity );
+         m_connectors[i].m_connections = getShapeConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_attributes.setValue(rowid, conn_col, float(m_connectors[i].m_connections.size()) );
       }
 
       m_displayed_attribute = -1; // <- override if it's already showing
@@ -2482,7 +2480,7 @@ bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
    stream.read((char *)&count,sizeof(count));
    for (int i = 0; i < count; i++) {
       m_connectors.push_back(Connector());
-      m_connectors[i].read(stream,version);
+      m_connectors[size_t(i)].read(stream);
    }
    m_links.read(stream);
    m_unlinks.read(stream);
@@ -3001,9 +2999,11 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
       }
       else {
          // then check not linked already
-         size_t linkindex1 = m_connectors[index1].m_connections.searchindex(index2);
-         size_t linkindex2 = m_connectors[index2].m_connections.searchindex(index1);
-         if (linkindex1 == paftl::npos && linkindex2 == paftl::npos) {
+         auto& connections1 = m_connectors[size_t(index1)].m_connections;
+         auto& connections2 = m_connectors[size_t(index2)].m_connections;
+         auto linkIter1 = std::find(connections1.begin(), connections1.end(), index2);
+         auto linkIter2 = std::find(connections2.begin(), connections2.end(), index1);
+         if (linkIter1 == connections1.end() && linkIter2 == connections2.end()) {
             // finally, link the two lines
             m_links.add(link);
             update = true;
@@ -3012,8 +3012,8 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
    }
 
    if (update) {
-      m_connectors[index1].m_connections.add(index2);
-      m_connectors[index2].m_connections.add(index1);
+      depthmapX::insert_sorted(m_connectors[size_t(index1)].m_connections, index2);
+      depthmapX::insert_sorted(m_connectors[size_t(index2)].m_connections, index1);
       m_attributes.incrValue(index1, conn_col);
       m_attributes.incrValue(index2, conn_col);
       if (refresh && getDisplayedAttribute() == conn_col) {
@@ -3029,16 +3029,17 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
 // note it only links one way!
 bool ShapeMap::linkShapes(int id1, int dir1, int id2, int dir2, float weight)
 {
-   int success = -1;
+   bool success = false;
+   Connector& connector = m_connectors[size_t(id1)];
    if (dir1 == 1) {
-      success = m_connectors[id1].m_forward_segconns.add(SegmentRef(dir2,id2),weight);
+       success = depthmapX::addIfNotExists(connector.m_forward_segconns, SegmentRef(dir2,id2), weight);
    }
    else {
-      success = m_connectors[id1].m_back_segconns.add(SegmentRef(dir2,id2),weight);
+       success = depthmapX::addIfNotExists(connector.m_back_segconns, SegmentRef(dir2,id2), weight);
    }
 
    // checking success != -1 avoids duplicate entries adding to connectivity
-   if (success != -1) {
+   if (success) {
       int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
       m_attributes.incrValue(id1, conn_col);
       int weight_col = m_attributes.getOrInsertLockedColumnIndex("Weighted Connectivity");
@@ -3093,9 +3094,11 @@ bool ShapeMap::unlinkShapes(int index1, int index2, bool refresh)
       }
       else {
          // then check if linked already
-         size_t linkindex1 = m_connectors[index1].m_connections.searchindex(index2);
-         size_t linkindex2 = m_connectors[index2].m_connections.searchindex(index1);
-         if (linkindex1 != paftl::npos && linkindex2 != paftl::npos) {
+         auto& connections1 = m_connectors[size_t(index1)].m_connections;
+         auto& connections2 = m_connectors[size_t(index2)].m_connections;
+         auto linkIter1 = std::find(connections1.begin(), connections1.end(), index2);
+         auto linkIter2 = std::find(connections2.begin(), connections2.end(), index1);
+         if (linkIter1 != connections1.end() && linkIter2 != connections2.end()) {
             // finally, unlink the two shapes
             m_unlinks.add(unlink);
             update = true;
@@ -3104,8 +3107,8 @@ bool ShapeMap::unlinkShapes(int index1, int index2, bool refresh)
    }
 
    if (update && conn_col != -1) {
-      m_connectors[index1].m_connections.remove(index2);
-      m_connectors[index2].m_connections.remove(index1);
+      depthmapX::findAndErase(m_connectors[size_t(index1)].m_connections, index2);
+      depthmapX::findAndErase(m_connectors[size_t(index2)].m_connections, index1);
       m_attributes.decrValue(index1, conn_col);
       m_attributes.decrValue(index2, conn_col);
       if (refresh && getDisplayedAttribute() == conn_col) {
@@ -3120,15 +3123,15 @@ bool ShapeMap::clearLinks()
 {
    for (size_t i = 0; i < m_unlinks.size(); i++) {
       OrderedIntPair link = m_unlinks[i];
-      m_connectors[link.a].m_connections.add(link.b);
-      m_connectors[link.b].m_connections.add(link.a);
+      depthmapX::insert_sorted(m_connectors[size_t(link.a)].m_connections, link.b);
+      depthmapX::insert_sorted(m_connectors[size_t(link.b)].m_connections, link.a);
    }
    m_unlinks.clear();
 
    for (size_t j = 0; j < m_links.size(); j++) {
       OrderedIntPair link = m_links[j];
-      m_connectors[link.a].m_connections.remove(link.b);
-      m_connectors[link.b].m_connections.remove(link.a);
+      depthmapX::findAndErase(m_connectors[size_t(link.a)].m_connections, link.b);
+      depthmapX::findAndErase(m_connectors[size_t(link.b)].m_connections, link.a);
    }
    m_links.clear();
 
