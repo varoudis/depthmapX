@@ -17,7 +17,6 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-
 #include <vector>
 
 class PixelRef
