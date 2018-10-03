@@ -1471,10 +1471,11 @@ bool ShapeMap::pointInPoly(const Point2f& p, int polyref) const
 
 // similar to above, but builds a list
 
-void ShapeMap::pointInPolyList(const Point2f& p, std::vector<int>& shapeindexlist) const
+std::vector<int> ShapeMap::pointInPolyList(const Point2f& p) const
 {
+   std::vector<int> shapeindexlist;
    if (!m_region.contains(p)) {
-      return ;
+      return shapeindexlist;
    }
    pvecint testedshapes;
    PixelRef pix = pixelate(p);
@@ -1489,24 +1490,28 @@ void ShapeMap::pointInPolyList(const Point2f& p, std::vector<int>& shapeindexlis
 
       // if there's a shapeindex, then add (note it is an add -- you may be passed a list again to expand)
       if (shapeindex != -1) {
-         depthmapX::insert_sorted(shapeindexlist, shapeindex);
+         shapeindexlist.push_back(shapeindex);
       }
    }
+   std::sort(shapeindexlist.begin(), shapeindexlist.end());
+   return shapeindexlist;
 }
 
 // note, lineref is only used as an "exclude self" test when called from getShapeConnections
-void ShapeMap::lineInPolyList(const Line& li_orig, std::vector<int>& shapeindexlist, int lineref, double tolerance) const
+std::vector<int> ShapeMap::lineInPolyList(const Line& li_orig, int lineref, double tolerance) const
 {
+   std::vector<int> shapeindexlist;
    if (!intersect_region(m_region,li_orig)) {
-      return;
+      return shapeindexlist;
    }
    Line li = li_orig;
    if (!m_region.contains(li.start()) || !m_region.contains(li.end())) {
       li.crop(m_region);
    }
 
-   pointInPolyList(li.start(),shapeindexlist);
-   pointInPolyList(li.end(),shapeindexlist);
+   shapeindexlist = pointInPolyList(li.start());
+   std::vector<int> endShapeIndexList = pointInPolyList(li.end());
+   shapeindexlist.insert(shapeindexlist.end(), endShapeIndexList.begin(), endShapeIndexList.end());
 
    // only now pixelate and test for any other shapes:
    PixelRefVector list = pixelateLine(li);
@@ -1525,7 +1530,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, std::vector<int>& shapeindexl
                   if (intersect_region(li,poly.m_region)) {
                      // note: in this case m_region is stored as a line:
                      if (intersect_line(li,poly.m_region,tolerance)) {
-                        depthmapX::insert_sorted(shapeindexlist, int(std::distance(m_shapes.begin(), shapeIter)));
+                        shapeindexlist.push_back(int(std::distance(m_shapes.begin(), shapeIter)));
                      }
                   }
                   break;
@@ -1535,7 +1540,7 @@ void ShapeMap::lineInPolyList(const Line& li_orig, std::vector<int>& shapeindexl
                         Line lineb = Line(poly.m_points[shape.m_polyrefs[k]],poly.m_points[((shape.m_polyrefs[k]+1)%poly.m_points.size())]);
                         if (intersect_region(li,lineb)) {
                            if (intersect_line(li,lineb,tolerance)) {
-                              depthmapX::insert_sorted(shapeindexlist, int(std::distance(m_shapes.begin(), shapeIter)));
+                              shapeindexlist.push_back(int(std::distance(m_shapes.begin(), shapeIter)));
                            }
                         }
                      }
@@ -1548,13 +1553,16 @@ void ShapeMap::lineInPolyList(const Line& li_orig, std::vector<int>& shapeindexl
          }
       }
    }
+   std::sort(shapeindexlist.begin(), shapeindexlist.end());
+   return shapeindexlist;
 }
 
-void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, double tolerance) const
+std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
 {
+   std::vector<int> shapeindexlist;
    auto shapeIter = m_shapes.find(polyref);
    if (shapeIter == m_shapes.end()) {
-      return;
+      return shapeindexlist;
    }
    const SalaShape& poly = shapeIter->second;
    if (poly.isClosed()) { // <- it ought to be, you shouldn't be using this function if not!
@@ -1574,7 +1582,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                for (const ShapeRef& shapeRef: shaperefs) {
                   if (*iter != shapeRef && ((iter->m_tags & ShapeRef::SHAPE_CENTRE) || (shapeRef.m_tags & ShapeRef::SHAPE_CENTRE))) {
                      if (testedlist.add(shapeRef.m_shape_ref) != -1) {
-                        depthmapX::insert_sorted(shapeindexlist, int(depthmapX::findIndexFromKey(m_shapes, int(shapeRef.m_shape_ref))));
+                        shapeindexlist.push_back(int(depthmapX::findIndexFromKey(m_shapes, int(shapeRef.m_shape_ref))));
                      }
                   }
                }
@@ -1598,13 +1606,13 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                         const SalaShape& polyb = shapeIter->second;
                         if (polyb.isPoint()) {
                            if (testPointInPoly(polyb.getPoint(),shaperef) != -1) {
-                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                              shapeindexlist.push_back(int(indexb));
                            }
                         }
                         else if (polyb.isLine()) {
                            if (testPointInPoly(polyb.getLine().start(),shaperef) != -1 || testPointInPoly(polyb.getLine().end(),shaperef) != -1) {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                              shapeindexlist.push_back(int(indexb));
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
@@ -1612,7 +1620,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                                  if (intersect_region(line,polyb.getLine())) {
                                     if (intersect_line(line,polyb.getLine(),tolerance)) {
                                        testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                                       depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                                       shapeindexlist.push_back(int(indexb));
                                        break;
                                     }
                                  }
@@ -1622,7 +1630,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                         else if (polyb.isPolyLine()) {
                            if (testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1)  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                              shapeindexlist.push_back(int(indexb));
                            }
                            else {
                               for (int k = 0; k < shaperef.m_polyrefs.size(); k++) {
@@ -1632,7 +1640,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           if (testedlist.add(shaperefb.m_shape_ref) != -1) {
-                                             depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                                             shapeindexlist.push_back(int(indexb));
                                              break;
                                           }
                                        }
@@ -1649,7 +1657,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                            if ((pixelate(polyb.m_points[shaperefb.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1) ||
                                (pixelate(poly.m_points[shaperef.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(poly.m_points[shaperef.m_polyrefs[0]],shaperefb) != -1))  {
                               testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                              depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                              shapeindexlist.push_back(int(indexb));
                            }
                            else {
                               // now check crossing
@@ -1661,7 +1669,7 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
                                           testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
-                                          depthmapX::insert_sorted(shapeindexlist, int(indexb));
+                                          shapeindexlist.push_back(int(indexb));
                                           breakit = true;
                                           break;
                                        }
@@ -1681,35 +1689,39 @@ void ShapeMap::polyInPolyList(int polyref, std::vector<int>& shapeindexlist, dou
    else {
       throw depthmapX::RuntimeException("this function is to be used for polygons only");
    }
+   std::sort(shapeindexlist.begin(), shapeindexlist.end());
+   return shapeindexlist;
 }
 
-void ShapeMap::shapeInPolyList(const SalaShape& shape, std::vector<int>& shapeindexlist) // note: no const due to poly in poly testing
+std::vector<int> ShapeMap::shapeInPolyList(const SalaShape& shape) // note: no const due to poly in poly testing
 {
+   std::vector<int> shapeindexlist;
    if (!intersect_region(m_region,shape.m_region)) {
       // quick test that actually coincident
-      return;
+      return shapeindexlist;
    }
    if (shape.isPoint()) {
-      pointInPolyList(shape.getPoint(),shapeindexlist);
+      shapeindexlist = pointInPolyList(shape.getPoint());
    }
    else if (shape.isLine()) {
-      lineInPolyList(shape.getLine(),shapeindexlist);
+      shapeindexlist = lineInPolyList(shape.getLine());
    }
    else if (shape.isPolyLine()) {
       for (size_t i = 1; i < shape.m_points.size() - 1; i++) {
          Line li(shape.m_points[i], shape.m_points[i-1]);
-         lineInPolyList(li,shapeindexlist);
+         shapeindexlist = lineInPolyList(li);
       }
    }
    else {
       // first *add* the poly temporarily (note this may grow pixel set):
       int ref = makePolyShape(shape.m_points, false, true); // false is closed poly, true is temporary shape
       // do test:
-      polyInPolyList(ref, shapeindexlist);
+      shapeindexlist = polyInPolyList(ref);
       // clean up:
       removePolyPixels(ref);
       m_shapes.erase(m_shapes.find(ref));
    }
+   return shapeindexlist;
 }
 
 // helper for point in poly -- 
@@ -2190,21 +2202,21 @@ std::vector<int> ShapeMap::getShapeConnections(int shaperef, double tolerance)
       SalaShape& shape = shapeIter->second;
       if (shape.isPoint()) {
          // a point is simple, it never intersects itself:
-         pointInPolyList(shape.getPoint(),connections);
+         connections = pointInPolyList(shape.getPoint());
       }
       else if (shape.isPolygon()) {
          // a closed poly is actually quite simple too as we already have code using a polyref:
-         polyInPolyList(shaperef,connections,tolerance);
+         connections = polyInPolyList(shaperef,tolerance);
       }
       else if (shape.isLine()) {
          // line is a bit slow because there's no tested shape as in getLineConnections, but similar:
-         lineInPolyList(shape.getLine(),connections,shaperef,tolerance);
+         connections = lineInPolyList(shape.getLine(),shaperef,tolerance);
       }
       else if (shape.isPolyLine()) {
          // this is the worst for efficiency: potential for many possible retries of the same shape:
          for (size_t i = 1; i < shape.m_points.size() - 1; i++) {
             Line li(shape.m_points[i-1], shape.m_points[i]);
-            lineInPolyList(li,connections,shaperef,tolerance);
+            connections = lineInPolyList(li,shaperef,tolerance);
          }
       }
    }
