@@ -40,14 +40,6 @@ bool Connector::read( std::istream& stream)
    dXreadwrite::readIntoMap(stream, m_forward_segconns);
    dXreadwrite::readIntoMap(stream, m_back_segconns);
 
-//   pmap<SegmentRef, float> forward_segconns;
-//   forward_segconns.read(stream);
-//   m_forward_segconns = genshim::toSTLMap(forward_segconns);
-
-//   pmap<SegmentRef, float> back_segconns;
-//   back_segconns.read(stream);
-//   m_back_segconns = genshim::toSTLMap(back_segconns);
-
    return true;
 }
 
@@ -59,9 +51,6 @@ bool Connector::write( std::ofstream& stream )
 
    dXreadwrite::writeMap(stream, m_forward_segconns);
    dXreadwrite::writeMap(stream, m_back_segconns);
-
-//   genshim::toPMap(m_forward_segconns).write(stream);
-//   genshim::toPMap(m_back_segconns).write(stream);
 
    return true;
 }
