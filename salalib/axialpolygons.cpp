@@ -1,5 +1,4 @@
 #include "salalib/axialpolygons.h"
-#include "salalib/axialmap.h"
 #include "salalib/tidylines.h"
 #include "salalib/tolerances.h"
 #include "genlib/containerutils.h"
@@ -333,7 +332,7 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
 
 // adds any axial lines from this point to the list of lines, adds any unhandled visible vertices it finds to the openvertices list
 // axial lines themselves are added to the lines list - the axial line is only there to record the key vertices that comprise the line
-void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, std::vector<std::vector<int> >& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
+void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, KeyVertices& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
 {
    AxialVertex vertex = openvertices.tail();
    openvertices.pop_back();

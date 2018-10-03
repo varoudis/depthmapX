@@ -101,7 +101,7 @@ void ShapeGraph::initialiseAttributesAxial()
 
 }
 
-void ShapeGraph::makeConnections(const std::vector<std::vector<int> > &keyvertices)
+void ShapeGraph::makeConnections(const KeyVertices &keyvertices)
 {
    m_connectors.clear();
    m_links.clear();
