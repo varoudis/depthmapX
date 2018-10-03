@@ -62,7 +62,7 @@ AllLineMap::AllLineMap(Communicator *comm,
    // test outwards from corner, add other corners to
    // test set...
    prefvec<Line> axiallines;
-   std::vector<std::vector<int> > preaxialdata;
+   KeyVertices preaxialdata;
    // also poly_connections used in fewest line axial map construction:
    m_poly_connections.clear();
    m_radial_lines.clear();
@@ -110,14 +110,10 @@ AllLineMap::AllLineMap(Communicator *comm,
       for (size_t k = axiallines.size() - 1; k > j; k--) {
          double maxdim = __max(region.width(),region.height());
          if (approxeq(axiallines[j].start(), axiallines[k].start(), maxdim * TOLERANCE_B) && approxeq(axiallines[j].end(), axiallines[k].end(), maxdim * TOLERANCE_B)) {
-            for (size_t m = 0; m < preaxialdata[k].size(); m++) {
-                auto res = std::lower_bound(preaxialdata[j].begin(), preaxialdata[j].end(), preaxialdata[k][m]);
-                if (res  == preaxialdata[j].end() || preaxialdata[k][m] < *res )
-                {
-                    preaxialdata[j].insert(res, preaxialdata[k][m]);
-                }
+            for (int preaxiali: preaxialdata[k]) {
+                preaxialdata[j].insert(preaxiali);
             }
-            preaxialdata.erase(preaxialdata.begin() + k);
+            preaxialdata.erase(preaxialdata.begin() + int(k));
             axiallines.remove_at(k);
             removed++;
          }
@@ -221,11 +217,11 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
       keyvertexconns.push_back(pvecint());
       Connector& axa = m_connectors[y];
       for (size_t z = 0; z < axa.m_connections.size(); z++) {
-         std::vector<int>& axb = m_keyvertices[axa.m_connections[z]];
-         for (size_t zz = 0; zz < axb.size(); zz++) {
-            if (keyvertexconns[y].searchindex(axb[zz]) == paftl::npos) {
-               keyvertexconns[y].add(axb[zz],paftl::ADD_HERE);
-               keyvertexcounts[axb[zz]] += 1;
+         std::set<int>& axb = m_keyvertices[axa.m_connections[z]];
+         for (int axbi: axb) {
+            if (keyvertexconns[y].searchindex(axbi) == paftl::npos) {
+               keyvertexconns[y].add(axbi,paftl::ADD_HERE);
+               keyvertexcounts[axbi] += 1;
             }
          }
       }

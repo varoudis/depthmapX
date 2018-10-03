@@ -419,12 +419,12 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
                if (possible && next_vertex.m_axial) {
                   // axial line
                   lines.push_back(line);
-                  keyvertices.push_back(std::vector<int>());
+                  keyvertices.push_back(std::set<int>());
                   if (vertex.m_convex) {
-                     depthmapX::insert_sorted(keyvertices.back(), vertex.m_ref_key);
+                     keyvertices.back().insert(vertex.m_ref_key);
                   }
                   if (next_vertex.m_convex) {
-                     depthmapX::insert_sorted(keyvertices.back(), next_vertex.m_ref_key);
+                     keyvertices.back().insert(next_vertex.m_ref_key);
                   }
                }
             }

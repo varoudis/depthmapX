@@ -50,7 +50,7 @@ struct AnalysisInfo
 
 class MapInfoData;
 
-typedef std::vector<std::vector<int>> KeyVertices;
+typedef std::vector<std::set<int>> KeyVertices;
 
 class ShapeGraph : public ShapeMap
 {

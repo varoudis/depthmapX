@@ -766,8 +766,9 @@ bool ShapeGraph::read(std::istream &stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int i = 0; i < size; i++) {
-      m_keyvertices.push_back(std::vector<int>());
-      dXreadwrite::readIntoVector(stream, m_keyvertices.back());
+      std::vector<int> tempVec;
+      dXreadwrite::readIntoVector(stream, tempVec);
+      m_keyvertices.push_back(std::set<int>(tempVec.begin(), tempVec.end()));
    }
    // now base class read:
    ShapeMap::read(stream,version);
@@ -817,7 +818,7 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int j = 0; j < size; j++) {
-      m_keyvertices.push_back(std::vector<int>());    // <- these were stored with the connector
+      m_keyvertices.push_back(std::set<int>());    // <- these were stored with the connector
       int key;
       stream.read((char *)&key,sizeof(key)); // <- key deprecated
       m_connectors.push_back(Connector());
@@ -852,7 +853,7 @@ bool ShapeGraph::write( std::ofstream& stream, int version )
    int size = m_keyvertices.size();
    stream.write((char *)&size,sizeof(size));
    for (size_t i = 0; i < m_keyvertices.size(); i++) {
-      dXreadwrite::writeVector(stream, m_keyvertices[i]);
+      dXreadwrite::writeVector(stream, std::vector<int>( m_keyvertices[i].begin(), m_keyvertices[i].end() ));
    }
 
    // now simply run base class write:
