@@ -352,9 +352,9 @@ public:
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
-   int getLineConnections(int lineref, std::vector<int> &connections, double tolerance);
+   std::vector<int> getLineConnections(int lineref, double tolerance);
    // Get arbitrary shape connections for a particular shape
-   int getShapeConnections(int polyref, std::vector<int>& connections, double tolerance);
+   std::vector<int> getShapeConnections(int polyref, double tolerance);
    // Make all connections
    void makeShapeConnections();
    //

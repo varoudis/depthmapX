@@ -119,9 +119,9 @@ void ShapeGraph::makeConnections(const KeyVertices &keyvertices)
       int rowid = m_attributes.getRowid(key);
       // all indices should match...
       m_connectors.push_back( Connector() );
-      int connectivity = getLineConnections( key, m_connectors[i].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-      m_attributes.setValue(rowid, conn_col, (float) connectivity );
-      m_attributes.setValue(rowid, leng_col, (float) shape.second.getLine().length() );
+      m_connectors[i].m_connections = getLineConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+      m_attributes.setValue(rowid, conn_col, float(m_connectors[i].m_connections.size()) );
+      m_attributes.setValue(rowid, leng_col, float(shape.second.getLine().length()) );
       if (keyvertices.size()) {
          // note: depends on lines being recorded in same order as keyvertices...
          m_keyvertices.push_back( keyvertices[i] );

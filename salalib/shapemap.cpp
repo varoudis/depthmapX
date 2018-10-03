@@ -674,29 +674,28 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
    // change connections:
    if (m_hasgraph) {
       //
-      auto oldconnections = m_connectors[size_t(rowid)].m_connections;
-      m_connectors[size_t(rowid)].m_connections.clear();
-      auto& newconnections = m_connectors[size_t(rowid)].m_connections;
+      const std::vector<int> oldconnections = m_connectors[size_t(rowid)].m_connections;
       //
       int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
       int leng_col = -1;
       //
-      int connectivity = 0;
       if (isAxialMap()) {
          // line connections optimised for line-line intersection
-         connectivity = getLineConnections( shaperef, newconnections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getLineConnections( shaperef, TOLERANCE_B*__max(m_region.height(),m_region.width()));
       }
       else {
-         connectivity = getShapeConnections( shaperef, newconnections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getShapeConnections( shaperef, TOLERANCE_B*__max(m_region.height(),m_region.width()));
       }
-      m_attributes.setValue(rowid, conn_col, (float) connectivity );
+
+      std::vector<int>& newconnections = m_connectors[size_t(rowid)].m_connections;
+      m_attributes.setValue(rowid, conn_col, float(newconnections.size()) );
       if (isAxialMap()) {
          leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
          m_attributes.setValue(rowid, leng_col, (float) depthmapX::getMapAtIndex(m_shapes, rowid)->second.getLength() );
       }
       //
       // now go through our old connections, and remove ourself:
-      for (auto oldconnection: oldconnections) {
+      for (int oldconnection: oldconnections) {
          if (oldconnection != rowid) { // <- exclude self!
             auto& connections = m_connectors[size_t(oldconnection)].m_connections;
             depthmapX::findAndErase(connections, rowid);
@@ -704,7 +703,7 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
          }
       }
       // now go through our new connections, and add ourself:
-      for (auto newconnection: newconnections) {
+      for (int newconnection: m_connectors[size_t(rowid)].m_connections) {
          if (newconnection != rowid) { // <- exclude self!
             depthmapX::insert_sorted(m_connectors[size_t(newconnection)].m_connections, rowid);
             m_attributes.incrValue(newconnection,conn_col);
@@ -1046,10 +1045,10 @@ void ShapeMap::undo()
          }
          //
          // calculate this line's connections
-         int connectivity = getLineConnections(event.m_shape_ref,m_connectors[rowid].m_connections,TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_connectors[size_t(rowid)].m_connections = getLineConnections(event.m_shape_ref,TOLERANCE_B*__max(m_region.height(),m_region.width()));
          // update:
          int conn_col = m_attributes.getOrInsertLockedColumnIndex("Connectivity");
-         m_attributes.setValue(rowid, conn_col, (float) connectivity );
+         m_attributes.setValue(rowid, conn_col, float(m_connectors[rowid].m_connections .size()) );
          //
          if (event.m_geometry.isLine()) {
             int leng_col = m_attributes.getOrInsertLockedColumnIndex("Line Length");
@@ -2105,10 +2104,10 @@ int ShapeMap::connectIntersected(int rowid, bool linegraph)
    while (m_connectors.size() < m_shapes.size()) {
       m_connectors.push_back( Connector() );
    }
-   int connectivity = linegraph ? 
-      getLineConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
-      getShapeConnections( shaperefIter->first, m_connectors[rowid].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-   m_attributes.setValue(rowid, conn_col, (float) connectivity );
+   m_connectors[size_t(rowid)].m_connections = linegraph ?
+               getLineConnections( shaperefIter->first, TOLERANCE_B*__max(m_region.height(),m_region.width())) :
+               getShapeConnections( shaperefIter->first, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+   m_attributes.setValue(rowid, conn_col, float(m_connectors[size_t(rowid)].m_connections.size()) );
    if (linegraph) {
       m_attributes.setValue(rowid, leng_col, (float) shaperefIter->second.getLength() );
    }
@@ -2120,18 +2119,20 @@ int ShapeMap::connectIntersected(int rowid, bool linegraph)
          m_attributes.incrValue(connection,conn_col);
       }
    }
-   return connectivity;
+   return m_connectors[size_t(rowid)].m_connections.size();
 }
 
 // this assumes this is a line map (to speed up axial map creation)
 // use the other version, getShapeConnections for arbitrary shape-shape connections
 // note, connections are listed by rowid in list, *not* reference number
 // (so they may vary: must be checked carefully when shapes are removed / added)
-int ShapeMap::getLineConnections(int lineref, std::vector<int>& connections, double tolerance)
+std::vector<int> ShapeMap::getLineConnections(int lineref, double tolerance)
 {
+   std::vector<int> connections;
+
    SalaShape& poly = m_shapes.find(lineref)->second;
    if (!poly.isLine()) {
-      return 0;
+      return std::vector<int>();
    }
    const Line& l = poly.getLine();
 
@@ -2144,8 +2145,6 @@ int ShapeMap::getLineConnections(int lineref, std::vector<int>& connections, dou
    // <exclude> connections.add(m_shapes.searchindex(lineref)); </exclude>
 
    testedshapes.add(lineref);
-
-   int num_intersections = 0;
 
    PixelRefVector list = pixelateLine( l );
 
@@ -2164,7 +2163,6 @@ int ShapeMap::getLineConnections(int lineref, std::vector<int>& connections, dou
                   // in fact, works better if it's just line.length() * tolerance...
                   if ( intersect_line(line, l, line.length() * tolerance) ) {
                      depthmapX::insert_sorted(connections, depthmapX::findIndexFromKey(m_shapes, int(shape.m_shape_ref)));
-                     num_intersections++;
                   }
                }
             }
@@ -2176,14 +2174,16 @@ int ShapeMap::getLineConnections(int lineref, std::vector<int>& connections, dou
       }
    }
 
-   return num_intersections;
+   return connections;
 }
 
 // this is only problematic as there is lots of legacy code with shape-in-shape testing,
-int ShapeMap::getShapeConnections(int shaperef, std::vector<int> &connections, double tolerance)
+std::vector<int> ShapeMap::getShapeConnections(int shaperef, double tolerance)
 {
    // In versions prior to 10, note that unlike getLineConnections, self-connection is excluded by all of the following functions
    // As of version 10, both getShapeConnections and getLineConnections exclude self-connection
+
+   std::vector<int> connections;
 
    auto shapeIter = m_shapes.find(shaperef);
    if (shapeIter != m_shapes.end()) {
@@ -2209,7 +2209,7 @@ int ShapeMap::getShapeConnections(int shaperef, std::vector<int> &connections, d
       }
    }
 
-   return connections.size();
+   return connections;
 }
 
 // for any geometry, not just line to lines
@@ -2231,8 +2231,8 @@ void ShapeMap::makeShapeConnections()
          int rowid = m_attributes.insertRow(key);
          // all indices should match...
          m_connectors.push_back( Connector() );
-         int connectivity = getShapeConnections( key, m_connectors[i].m_connections, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-         m_attributes.setValue(rowid, conn_col, (float) connectivity );
+         m_connectors[i].m_connections = getShapeConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
+         m_attributes.setValue(rowid, conn_col, float(m_connectors[i].m_connections.size()) );
       }
 
       m_displayed_attribute = -1; // <- override if it's already showing
