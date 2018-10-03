@@ -444,9 +444,9 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
 
       if (local) {
          double control = 0.0;
-         auto& connections = m_connectors[i].m_connections;
+         const std::vector<int>& connections = m_connectors[i].m_connections;
          pvecint totalneighbourhood;
-         for (auto connection: connections) {
+         for (int connection: connections) {
             // n.b., as of Depthmap 10.0, connections[j] and i cannot coexist
             // if (connections[j] != i) {
                totalneighbourhood.add(connection); // <- note add does nothing if member already exists
@@ -870,8 +870,8 @@ void ShapeGraph::writeAxialConnectionsAsDotGraph(std::ostream &stream)
     stream.precision(12);
 
     for (size_t i = 0; i < connectors.size(); i++) {
-        auto& connections = connectors[i].m_connections;
-        for (auto connection: connections) {
+        const std::vector<int>& connections = connectors[i].m_connections;
+        for (int connection: connections) {
             stream << "    " << i << " -- " << connection << std::endl;
         }
     }

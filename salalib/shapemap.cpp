@@ -1057,8 +1057,8 @@ void ShapeMap::undo()
          }
          //
          // now go through our connections, and add ourself:
-         auto& connections = m_connectors[rowid].m_connections;
-         for (auto connection: connections) {
+         const std::vector<int>& connections = m_connectors[size_t(rowid)].m_connections;
+         for (int connection: connections) {
             if (connection != rowid) { // <- exclude self!
                depthmapX::insert_sorted(m_connectors[size_t(connection)].m_connections, rowid);
                m_attributes.incrValue(connection, conn_col);
@@ -2113,8 +2113,8 @@ int ShapeMap::connectIntersected(int rowid, bool linegraph)
       m_attributes.setValue(rowid, leng_col, (float) shaperefIter->second.getLength() );
    }
    // now go through our connections, and add ourself:
-   auto& connections = m_connectors[rowid].m_connections;
-   for (auto connection: connections) {
+   const std::vector<int>& connections = m_connectors[size_t(rowid)].m_connections;
+   for (int connection: connections) {
       if (connection != rowid) { // <- exclude self!
          depthmapX::insert_sorted(m_connectors[size_t(connection)].m_connections, rowid);
          m_attributes.incrValue(connection,conn_col);
