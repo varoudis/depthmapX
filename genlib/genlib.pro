@@ -48,4 +48,5 @@ HEADERS += \
     containerutils.h \
     linreg.h \
     bsptree.h \
-    psubvec.h
+    psubvec.h \
+    pflipper.h

@@ -1423,22 +1423,22 @@ void QGraphDoc::OnToolsAgentRun()
    AgentEngine& eng = m_meta_graph->getAgentEngine();
 
    // set up eng here...
-   if (!eng.size()) {
-      eng.push_back(AgentSet());
+   if (!eng.agentSets.size()) {
+      eng.agentSets.push_back(AgentSet());
    }
 
    CAgentAnalysisDlg dlg;
    dlg.m_timesteps = eng.m_timesteps;
-   dlg.m_release_rate = eng.tail().m_release_rate;
-   dlg.m_release_location = eng.tail().m_release_locations.size() ? 1 : 0;
-   dlg.m_frames = eng.tail().m_lifetime;
-   if (eng.tail().m_vbin == -1) {
+   dlg.m_release_rate = eng.agentSets.back().m_release_rate;
+   dlg.m_release_location = eng.agentSets.back().m_release_locations.size() ? 1 : 0;
+   dlg.m_frames = eng.agentSets.back().m_lifetime;
+   if (eng.agentSets.back().m_vbin == -1) {
       dlg.m_fov = 32;
    }
    else {
-      dlg.m_fov = eng.tail().m_vbin * 2 + 1;
+      dlg.m_fov = eng.agentSets.back().m_vbin * 2 + 1;
    }
-   dlg.m_steps = eng.tail().m_steps;
+   dlg.m_steps = eng.agentSets.back().m_steps;
    dlg.m_record_trails = eng.m_record_trails;
    dlg.m_trail_count = eng.m_trail_count;
    dlg.m_names.push_back("<None>");
@@ -1452,34 +1452,34 @@ void QGraphDoc::OnToolsAgentRun()
    }
 
    eng.m_timesteps = dlg.m_timesteps;
-   eng.tail().m_release_rate = dlg.m_release_rate;
-   eng.tail().m_lifetime = dlg.m_frames;
+   eng.agentSets.back().m_release_rate = dlg.m_release_rate;
+   eng.agentSets.back().m_lifetime = dlg.m_frames;
    if (dlg.m_fov == 32) {
-      eng.tail().m_vbin = -1;
+      eng.agentSets.back().m_vbin = -1;
    }
    else {
-      eng.tail().m_vbin = (dlg.m_fov - 1) / 2;
+      eng.agentSets.back().m_vbin = (dlg.m_fov - 1) / 2;
    }
-   eng.tail().m_steps = dlg.m_steps;
+   eng.agentSets.back().m_steps = dlg.m_steps;
    if (dlg.m_occlusion == 0) {
-      eng.tail().m_sel_type = AgentProgram::SEL_STANDARD;
+      eng.agentSets.back().m_sel_type = AgentProgram::SEL_STANDARD;
    }
    else if (dlg.m_occlusion == 1) {
-      eng.tail().m_sel_type = AgentProgram::SEL_LOS;
+      eng.agentSets.back().m_sel_type = AgentProgram::SEL_LOS;
    }
    else if (dlg.m_occlusion == 2) {
-      eng.tail().m_sel_type = AgentProgram::SEL_LOS_OCC;
+      eng.agentSets.back().m_sel_type = AgentProgram::SEL_LOS_OCC;
    }
    else {
       // (dlg.m_occlusion - 2) should be from 1...8
-      eng.tail().m_sel_type = AgentProgram::SEL_OCCLUSION + (dlg.m_occlusion - 2);
+      eng.agentSets.back().m_sel_type = AgentProgram::SEL_OCCLUSION + (dlg.m_occlusion - 2);
    }
    if (dlg.m_release_location == 1) {
       std::set<int> selected = m_meta_graph->getSelSet();
-      std::copy(selected.begin(), selected.end(), std::back_inserter(eng.tail().m_release_locations));;
+      std::copy(selected.begin(), selected.end(), std::back_inserter(eng.agentSets.back().m_release_locations));;
    }
    else {
-      eng.tail().m_release_locations.clear();
+      eng.agentSets.back().m_release_locations.clear();
    }
    eng.m_gatelayer = dlg.m_gatelayer;
 

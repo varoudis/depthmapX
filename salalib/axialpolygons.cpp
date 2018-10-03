@@ -441,7 +441,7 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
 // not really used as yet, a feature to make all the polygons from the vertex
 // possibles list
 
-void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
+void AxialPolygons::makePolygons(std::vector<std::vector<Point2f>>& polygons)
 {
    prefvec<pvecint> handled_list;
    for (size_t j = 0; j < m_vertex_possibles.size(); j++) {
@@ -460,7 +460,7 @@ void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
          }
          handled_list[i].push_back(j);
          const Point2f& key = vertPoss.first;
-         pqvector<Point2f> polygon;
+         std::vector<Point2f> polygon;
          polygon.push_back(key);
          Point2f curr = vertPoss.second.at(j);
          Point2f last = key;
