@@ -144,7 +144,7 @@ bool ShapeGraph::outputMifPolygons(std::ostream& miffile, std::ostream& midfile)
    AxialPolygons polygons;
    polygons.init(lines, m_region);
 
-   prefvec<pqvector<Point2f>> newpolygons;
+   std::vector<std::vector<Point2f>> newpolygons;
    polygons.makePolygons(newpolygons);
 
    MapInfoData mapinfodata;

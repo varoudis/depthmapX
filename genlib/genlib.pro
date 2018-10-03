@@ -47,4 +47,5 @@ HEADERS += \
     containerutils.h \
     linreg.h \
     bsptree.h \
-    readwritehelpers.h
+    readwritehelpers.h \
+    pflipper.h

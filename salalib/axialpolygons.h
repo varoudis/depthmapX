@@ -130,5 +130,5 @@ public:
    // make axial lines from corner vertices, visible from openspace
    void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, std::vector<std::vector<int> >& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
-   void makePolygons(prefvec<pqvector<Point2f>>& polygons);
+   void makePolygons(std::vector<std::vector<Point2f> > &polygons);
 };
