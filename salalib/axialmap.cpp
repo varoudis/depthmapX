@@ -2120,7 +2120,7 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    std::string stepdepth_col_text = "Angular Step Depth";
    int stepdepth_col = m_attributes.insertColumn(stepdepth_col_text.c_str());
 
-   int tulip_bins = 1024;
+   size_t tulip_bins = 1024;
    // calc so duplicate code above
    tulip_bins /= 2;  // <- actually use semicircle of tulip bins
    tulip_bins += 1;
@@ -2129,7 +2129,7 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    for (size_t i = 0; i < m_connectors.size(); i++) {
       covered[i] = false;
    }
-   pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
+   std::vector<std::vector<SegmentData> > bins(tulip_bins);
 
    int opencount = 0;
    for (auto& sel: m_selection_set) {
@@ -2140,27 +2140,31 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
       }
    }
    int depthlevel = 0;
+   auto binIter = bins.begin();
    int currentbin = 0;
    while (opencount) {
-      while (!bins[currentbin].size()) {
+      while (binIter->empty()) {
          depthlevel++;
+         binIter++;
          currentbin++;
-         if (currentbin == tulip_bins) {
-            currentbin = 0;
+         if (binIter == bins.end()) {
+            binIter = bins.begin();
          }
       }
       SegmentData lineindex;
-      if (bins[currentbin].size() > 1) {
+      if (binIter->size() > 1) {
          // it is slightly slower to delete from an arbitrary place in the bin,
          // but it is necessary to use random paths to even out the number of times through equal paths
-         int curr = pafrand() % bins[currentbin].size();
-         lineindex = bins[currentbin][curr];
-         bins[currentbin].remove_at(curr);
+         int curr = pafrand() % binIter->size();
+         auto currIter = binIter->begin() + curr;
+         lineindex = *currIter;
+         binIter->erase(currIter);
          // note: do not clear choice values here!
       }
       else {
-         lineindex = bins[currentbin][0];
-         bins[currentbin].pop_back();
+         // PK: Not sure why pick front element but erase last...
+         lineindex = binIter->front();
+         binIter->pop_back();
       }
       opencount--;
       if (!covered[lineindex.ref]) {
@@ -2175,6 +2179,7 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
             for (auto& segconn: line.m_forward_segconns) {
                if (!covered[segconn.first.ref]) {
                   extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
+                  auto currIter = binIter;
                   bins[(currentbin + tulip_bins + extradepth) % tulip_bins].push_back(
                       SegmentData(segconn.first,lineindex.ref,lineindex.segdepth+1,0.0,0));
                   opencount++;
@@ -2194,7 +2199,6 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
       }
    }
    delete [] covered;
-   delete [] bins;
 
    m_displayed_attribute = -2; // <- override if it's already showing
    setDisplayedAttribute(stepdepth_col);
