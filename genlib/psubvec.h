@@ -93,9 +93,9 @@ psubvec<T>::~psubvec()
 template <class T>
 psubvec<T>& psubvec<T>::operator = (const psubvec<T>& v)
 {
-    if ( this != &v){
+    if (this != &v){
         psubvec<T> temp(v);
-        m_data = temp.m_data;
+        std::swap(m_data, temp.m_data);
     }
     return *this;
 }
