@@ -926,8 +926,8 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
 }
 
 void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
-    pqvector<Point2f> closepoints;
-    prefvec<IntPair> intersections;
+    std::vector<Point2f> closepoints;
+    std::vector<IntPair> intersections;
     PixelRef pix = pixelate(unlinkPoint);
     std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
     auto iter = pix_shapes.begin();
@@ -948,14 +948,17 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
     }
     double mindist = -1.0;
     int minpair = -1;
-    for (size_t j = 0; j < closepoints.size(); j++) {
-       if (minpair == -1 || dist(unlinkPoint,closepoints[j]) < mindist) {
-          mindist = dist(unlinkPoint,closepoints[j]);
-          minpair = int(j);
+    int j = 0;
+    for (auto& closepoint: closepoints) {
+       if (minpair == -1 || dist(unlinkPoint,closepoint) < mindist) {
+          mindist = dist(unlinkPoint,closepoint);
+          minpair = j;
        }
+       j++;
     }
     if (minpair != -1) {
-       unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
+       auto& intersection = intersections[size_t(minpair)];
+       unlinkShapes(intersection.a, intersection.b, false);
     }
     else {
        std::cerr << "eek!";
