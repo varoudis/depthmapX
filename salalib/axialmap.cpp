@@ -1368,8 +1368,8 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const std::set<double>& radi
       for (size_t j = 0; j < m_connectors.size(); j++) {
          covered[j] = false;
       }
-      pmap<float,SegmentData> anglebins;
-      anglebins.add(0.0f,SegmentData(0,i,SegmentRef(),0,0.0,0));
+      std::vector<std::pair<float,SegmentData> > anglebins;
+      anglebins.push_back(std::make_pair(0.0f,SegmentData(0,i,SegmentRef(),0,0.0,0)));
       Connector& thisline = m_connectors[i];
       std::vector<double> total_depth;
       std::vector<int> node_count;
@@ -1379,13 +1379,14 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const std::set<double>& radi
       }
       // node_count includes this one, but will be added in next algo:
       while (anglebins.size()) {
-         SegmentData lineindex = anglebins.value(0);
+         auto iter = anglebins.begin();
+         SegmentData lineindex = iter->second;
          if (!covered[lineindex.ref]) {
             covered[lineindex.ref] = true;
-            double depth_to_line = anglebins.key(0);
+            double depth_to_line = iter->first;
             total_depth[lineindex.coverage] += depth_to_line;
             node_count[lineindex.coverage] += 1;
-            anglebins.remove_at(0);
+            anglebins.erase(iter);
             Connector& line = m_connectors[lineindex.ref];
             if (lineindex.dir != -1) {
                for (auto& segconn: line.m_forward_segconns) {
@@ -1396,7 +1397,7 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const std::set<double>& radi
                         rbin++;
                      }
                      if (rbin != radii.size()) {
-                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                        depthmapX::insert_sorted(anglebins, std::make_pair(float(angle), SegmentData(segconn.first,SegmentRef(),0,0.0,rbin)));
                      }
                   }
                }
@@ -1410,14 +1411,14 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const std::set<double>& radi
                         rbin++;
                      }
                      if (rbin != radii.size()) {
-                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                        depthmapX::insert_sorted(anglebins, std::make_pair(float(angle), SegmentData(segconn.first,SegmentRef(),0,0.0,rbin)));
                      }
                   }
                }
             }
          }
          else {
-            anglebins.remove_at(0);
+            anglebins.erase(iter);
          }
       }
       // set the attributes for this node:
