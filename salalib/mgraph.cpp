@@ -1243,11 +1243,12 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    bool retvar = false;
 
    try {
-      pvecint radius;
-      for (size_t i = 0; i < options.radius_list.size(); i++) {
-         radius.push_back( (int) options.radius_list[i] );
+      std::set<int> radii;
+      for (double radius: options.radius_list) {
+          std::cout << radius <<std::endl;
+         radii.insert( int(radius) );
       }
-      retvar = getDisplayedShapeGraph().integrate( communicator, radius, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
+      retvar = getDisplayedShapeGraph().integrate( communicator, radii, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1307,8 +1308,8 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
 
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
-      for(size_t i = 0; i < options.radius_list.size(); i++) {
-          if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, options.radius_list[i], options.sel_only)) {
+      for(double radius: options.radius_list) {
+          if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, radius, options.sel_only)) {
               retvar = false;
           }
       }

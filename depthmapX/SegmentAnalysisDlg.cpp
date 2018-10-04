@@ -179,13 +179,13 @@ void CSegmentAnalysisDlg::OnOK()
 								return;
 							}
 						}
-						mainWin->m_options.radius_list.add((double) radius);
+                        mainWin->m_options.radius_list.insert(double(radius));
 					}
 				}
 			}
 			while (curr_comma != -1);
 			if (mainWin->m_options.radius_list.size() == 0 || add_rn) {
-				mainWin->m_options.radius_list.push_back(-1);
+                mainWin->m_options.radius_list.insert(-1);
 			}
 
 			if (m_tulip_bins % 2 != 0) { 

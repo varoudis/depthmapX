@@ -4,7 +4,6 @@
 #include "salalib/axialmap.h"
 #include "salalib/connector.h"
 #include "genlib/p2dpoly.h"
-#include "genlib/paftl.h"
 
 struct AxialVertexKey
 {

@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <set>
+#include <string>
+
 // Options for mean depth calculations
 struct Options
 {
@@ -36,7 +39,7 @@ struct Options
    int radius_type;
    double radius; // <- n.b. for metric integ radius is floating point
    // radius has to go up to a list (phase out radius as is)
-   pvecdouble radius_list;
+   std::set<double> radius_list;
    //
    int point_depth_selection;
    int tulip_bins;

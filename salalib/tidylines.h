@@ -2,6 +2,8 @@
 
 #include "salalib/spacepix.h"
 
+#include "genlib/p2dpoly.h"
+
 // helpers... a class to tidy up ugly maps people may give me...
 
 class TidyLines : public SpacePixel
