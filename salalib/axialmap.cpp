@@ -827,8 +827,8 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
 
-   m_links.read(stream);
-   m_unlinks.read(stream);
+   dXreadwrite::readIntoVector(stream,m_links);
+   dXreadwrite::readIntoVector(stream,m_unlinks);
 
    char x = stream.get();
    if (x == 'm') {

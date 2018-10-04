@@ -290,8 +290,6 @@ public:
    bool polyClose(int shape_ref);
    bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
-protected:
-   pqvector<Point2f> m_temppoints;
 public:
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
@@ -502,8 +500,8 @@ public:
    //
    // links and unlinks
 protected:
-   pqvector<OrderedIntPair> m_links;
-   pqvector<OrderedIntPair> m_unlinks;
+   std::vector<OrderedIntPair> m_links;
+   std::vector<OrderedIntPair> m_unlinks;
    mutable int m_curlinkline;
    mutable int m_curunlinkpoint;
 public:
