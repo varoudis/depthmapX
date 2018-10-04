@@ -1000,7 +1000,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
 void ShapeGraph::makeNewSegMap()
 {
    // now make a connection set from the ends of lines:
-   prefvec<Connector> connectionset;
+   std::vector<Connector> connectionset;
    std::map<int,Line> lineset;
    for (auto shape: m_shapes) {
       if (shape.second.isLine()) {
@@ -1077,7 +1077,7 @@ void ShapeGraph::makeNewSegMap()
 // identify the original axial line this line segment is
 // associated with
 
-void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
+void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, std::vector<Connector>& connectionset, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
    std::map<OrderedIntPair,IntPair> segmentlist;
@@ -1246,7 +1246,7 @@ void ShapeGraph::initialiseAttributesSegment()
 // now segments and connections are listed separately...
 // put them together in a new map
 
-void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
+void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
 {
    m_connectors.clear();
 
@@ -1279,7 +1279,7 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
       m_attributes.setValue(rowid, uw_conn_col, float(connector.m_forward_segconns.size() + connector.m_back_segconns.size()));
 
       // free up connectionset as we go along:
-      connectionset.free_at(i);
+      connectionset[size_t(i)] = Connector();
    }
 
    m_displayed_attribute = -2; // <- override if it's already showing

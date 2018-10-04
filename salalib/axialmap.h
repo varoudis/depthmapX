@@ -79,9 +79,9 @@ public:
    bool analyseTopoMetPD(Communicator *comm, int analysis_type);
    // lineset and connectionset are filled in by segment map
    void makeNewSegMap();
-   void makeSegmentMap(std::vector<Line> &lineset, prefvec<Connector>& connectionset, double stubremoval);
+   void makeSegmentMap(std::vector<Line> &lineset, std::vector<Connector> &connectionset, double stubremoval);
    void initialiseAttributesSegment();
-   void makeSegmentConnections(prefvec<Connector>& connectionset);
+   void makeSegmentConnections(std::vector<Connector> &connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
    virtual bool read( std::istream& stream, int version );

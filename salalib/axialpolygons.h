@@ -121,7 +121,7 @@ public:
    //
    void clear();
    void init(std::vector<Line> &lines, const QtRegion& region);
-   void makeVertexPossibles(const std::vector<Line> &lines, const prefvec<Connector>& connectionset);
+   void makeVertexPossibles(const std::vector<Line> &lines, const std::vector<Connector> &connectionset);
    void makePixelPolys();
    //
    AxialVertex makeVertex(const AxialVertexKey& vertexkey, const Point2f& openspace);

@@ -135,7 +135,7 @@ void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
    firstpass.makeConnections();
 
    lines.clear();
-   prefvec<Connector> connectionset;
+   std::vector<Connector> connectionset;
 
    // interesting... 1.0 may or may not work as intended
    firstpass.makeSegmentMap(lines, connectionset, 1.0);
@@ -157,7 +157,7 @@ void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
    sortPixelLines();
 }
 
-void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const prefvec<Connector>& connectionset)
+void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const std::vector<Connector>& connectionset)
 {
    m_vertex_possibles.clear();
    m_vertex_polys.clear();

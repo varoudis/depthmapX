@@ -459,7 +459,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertAxialToSegment(Communicator *co
                                                                 bool copydata, double stubremoval)
 {
     std::vector<Line> lines;
-    prefvec<Connector> connectionset;
+    std::vector<Connector> connectionset;
 
     axialMap.makeSegmentMap(lines, connectionset, stubremoval);
 
