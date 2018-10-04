@@ -28,6 +28,8 @@
 #include "genlib/containerutils.h"
 #include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
+#include "genlib/readwritehelpers.h"
+#include "genlib/psubvec.h"
 
 #include <vector>
 #include <string>
@@ -60,6 +62,13 @@ inline bool operator < (const ShapeRef& a, const ShapeRef& b)
 { return a.m_shape_ref < b.m_shape_ref; }
 inline bool operator > (const ShapeRef& a, const ShapeRef& b)
 { return a.m_shape_ref > b.m_shape_ref; }
+
+struct ShapeRefHash {
+public:
+    size_t operator()(const ShapeRef & shapeRef) const {
+        return shapeRef.m_shape_ref;
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -140,7 +149,7 @@ public:
    //
    double getAngDev() const;
    //
-   pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
+   std::vector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
    bool read(std::istream &stream, int version);
    bool write(std::ofstream& stream);
@@ -161,34 +170,6 @@ public:
        return lines;
    }
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-class SalaObject : public pvecint
-{
-   friend class ShapeMap;
-protected:
-   Point2f m_centroid;
-public:
-   SalaObject() {;}
-   //
-   bool read(std::istream &stream, int version);
-   bool write(std::ofstream& stream);
-};
-inline bool SalaObject::read(std::istream& stream, int)
-{
-   stream.read((char *)&m_centroid,sizeof(m_centroid));
-   pvecint::read(stream);
-   return true;
-}
-inline bool SalaObject::write(std::ofstream& stream)
-{
-   stream.write((char *)&m_centroid,sizeof(m_centroid));
-   pvecint::write(stream);
-   return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct Connector;
 
@@ -235,7 +216,6 @@ protected:
    mutable bool m_bsp_tree;
    //
    std::map<int,SalaShape> m_shapes;
-   std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
    std::vector<SalaEvent> m_undobuffer;
    //
@@ -258,10 +238,6 @@ public:
    virtual ~ShapeMap();
    void copy(const ShapeMap& shapemap, int copyflags = 0);
    void clearAll();
-   //
-   // num objects
-   const size_t getObjectCount() const
-   { return m_objects.size(); }
    // num shapes total
    const size_t getShapeCount() const
    { return m_shapes.size(); }

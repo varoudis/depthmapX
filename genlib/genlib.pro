@@ -48,4 +48,5 @@ HEADERS += \
     linreg.h \
     bsptree.h \
     readwritehelpers.h \
+    psubvec.h \
     pflipper.h
