@@ -20,7 +20,7 @@ public:
     }
     std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> extractFewestLineMaps(Communicator *comm);
     void makeDivisions(const prefvec<PolyConnector>& polyconnections, const std::vector<RadialLine> &radiallines,
-                       std::map<RadialKey, pvecint> &radialdivisions, std::map<int,pvecint>& axialdividers,
+                       std::map<RadialKey, std::set<int> > &radialdivisions, std::map<int, std::set<int> > &axialdividers,
                        Communicator *comm);
 
 };

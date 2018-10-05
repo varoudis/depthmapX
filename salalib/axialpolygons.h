@@ -4,7 +4,6 @@
 #include "salalib/axialmap.h"
 #include "salalib/connector.h"
 #include "genlib/p2dpoly.h"
-#include "genlib/paftl.h"
 
 struct AxialVertexKey
 {
@@ -75,8 +74,6 @@ struct RadialLine : public RadialKey
    { openspace = rl.openspace; keyvertex = rl.keyvertex; nextvertex = rl.nextvertex; }
    bool cuts(const Line& l) const;
 };
-
-typedef pqvector<RadialKey> RadialKeyList;
 
 struct RadialSegment : public pvecint
 {
