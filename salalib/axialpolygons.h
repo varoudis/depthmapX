@@ -104,15 +104,12 @@ class AxialPolygons : public SpacePixel
 {
    friend class ShapeGraphs;
 protected:
-   pvecint m_vertex_polys;
-   pvecint **m_pixel_polys;
+   std::vector<int> m_vertex_polys;
+   std::vector<std::vector<int> > m_pixel_polys;
 public:
    pqvector<AxialVertex> m_handled_list;
    std::map<Point2f,pqvector<Point2f>> m_vertex_possibles;
 
-   AxialPolygons();
-   virtual ~AxialPolygons();
-   //
    void clear();
    void init(std::vector<Line> &lines, const QtRegion& region);
    void makeVertexPossibles(const std::vector<Line> &lines, const prefvec<Connector>& connectionset);
