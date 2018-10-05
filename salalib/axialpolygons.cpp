@@ -411,22 +411,24 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
 
 void AxialPolygons::makePolygons(std::vector<std::vector<Point2f>>& polygons)
 {
-   prefvec<pvecint> handled_list;
+   std::vector<std::vector<int> > handled_list;
    for (size_t j = 0; j < m_vertex_possibles.size(); j++) {
-      handled_list.push_back(pvecint());
+      handled_list.push_back(std::vector<int>());
    }
 
    int i = -1;
    for (auto vertPoss: m_vertex_possibles) {
       i++;
+      std::vector<int>& currList = handled_list[size_t(i)];
       if (vertPoss.second.size() == 1) {
          continue;
       }
       for (size_t j = 0; j < vertPoss.second.size(); j++) {
-         if (handled_list[i].findindex(j) != paftl::npos) {
+
+         if (std::find(currList.begin(), currList.end(), j) != currList.end()) {
             continue;
          }
-         handled_list[i].push_back(j);
+         currList.push_back(int(j));
          const Point2f& key = vertPoss.first;
          std::vector<Point2f> polygon;
          polygon.push_back(key);
