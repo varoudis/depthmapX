@@ -150,12 +150,12 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
       found[0][i] = -1;
       found[1][i] = -1;
    }
-   pqvector<Point2f> pointlookup;
+   std::vector<Point2f> pointlookup;
    // three pass operation: (1) stack the lines
    for (i = 0; i < lines.size(); i++) {
       if (found[0][i] == -1) {
          pointlookup.push_back(lines[i].start());
-         m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
+         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
          for (auto& segconn: connectionset[i].m_back_segconns) {
@@ -165,7 +165,7 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
       }
       if (found[1][i] == -1) {
          pointlookup.push_back(lines[i].end());
-         m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
+         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
          for (auto& segconn: connectionset[i].m_forward_segconns) {
@@ -180,14 +180,14 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          // TODO: (CS) What are these integers being thrown?!
          throw 1;
       }
-      auto index0 = m_vertex_possibles.find(pointlookup.at(found[0][i]));
-      auto index1 = m_vertex_possibles.find(pointlookup.at(found[1][i]));
+      auto index0 = m_vertex_possibles.find(pointlookup[size_t(found[0][i])]);
+      auto index1 = m_vertex_possibles.find(pointlookup[size_t(found[1][i])]);
       if (index0 == m_vertex_possibles.end() || index1 == m_vertex_possibles.end()) {
          // TODO: (CS) What are these integers being thrown?!
          throw 2;
       }
-      index0->second.add(pointlookup.at(found[1][i]));
-      index1->second.add(pointlookup.at(found[0][i]));
+      index0->second.add(pointlookup[size_t(found[1][i])]);
+      index1->second.add(pointlookup[size_t(found[0][i])]);
    }
    delete [] found[0];
    delete [] found[1];
