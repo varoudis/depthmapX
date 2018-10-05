@@ -196,18 +196,18 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
    for (i = 0; i < m_vertex_possibles.size(); i++) {
       if (m_vertex_polys[i] == -1) {
          current_poly++;
-         pvecint addlist;
-         addlist.push_back(i);
+         std::vector<int> addlist;
+         addlist.push_back(int(i));
          while (addlist.size()) {
-            m_vertex_polys[addlist.tail()] = current_poly;
-            pqvector<Point2f>& connections = depthmapX::getMapAtIndex(m_vertex_possibles, addlist.tail())->second;
+            m_vertex_polys[size_t(addlist.back())] = current_poly;
+            pqvector<Point2f>& connections = depthmapX::getMapAtIndex(m_vertex_possibles, addlist.back())->second;
             addlist.pop_back();
             for (size_t j = 0; j < connections.size(); j++) {
                int index = depthmapX::findIndexFromKey(m_vertex_possibles, connections[j]);
                if (index == -1) {
                   throw 3;
                }
-               if (m_vertex_polys[index] == -1) {
+               if (m_vertex_polys[size_t(index)] == -1) {
                   addlist.push_back(index);
                }
             }
