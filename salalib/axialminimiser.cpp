@@ -32,7 +32,9 @@ AxialMinimiser::~AxialMinimiser()
 
 // Alan and Bill's algo...
 
-void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds,  pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
+void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                                   std::map<RadialKey,pvecint>& rlds,  std::vector<RadialLine> &radial_lines,
+                                   prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
 {
    bool removedflag = true;
    int counterrors = 0;
@@ -172,7 +174,9 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
 
 // My algo... v. simple... fewest longest
 
-void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey, pvecint> &rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
+void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                                   std::map<RadialKey, pvecint> &rlds, std::vector<RadialLine> &radial_lines,
+                                   prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
 {
    //m_axialconns = m_alllinemap->m_connectors;
    int livecount = 0;
@@ -253,7 +257,8 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey, pvecint> &rlds, pqvector<RadialLine>& radial_lines)
+bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                                std::map<RadialKey, pvecint> &rlds, std::vector<RadialLine>& radial_lines)
 {
    std::map<int,SalaShape>& axiallines = m_alllinemap->m_shapes;
 
@@ -269,8 +274,17 @@ bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<Rad
          RadialSegment& seg = radialSegIter->second;
          pvecint& divisorsa = rlds.find(key)->second;
          pvecint& divisorsb = rlds.find(seg.radial_b)->second;
-         RadialLine& rlinea = radial_lines.search(key);
-         RadialLine& rlineb = radial_lines.search(seg.radial_b);
+         auto iterKey = std::find(radial_lines.begin(), radial_lines.end(), key);
+         if(iterKey == radial_lines.end()) {
+             throw depthmapX::RuntimeException("Out of range");
+         }
+         const RadialLine& rlinea = *iterKey;
+
+         auto iterSegB = std::find(radial_lines.begin(), radial_lines.end(), seg.radial_b);
+         if(iterSegB == radial_lines.end()) {
+             throw depthmapX::RuntimeException("Out of range");
+         }
+         const RadialLine& rlineb = *iterSegB;
          for (size_t divi = 0; divi < divisorsa.size(); divi++) {
             if (divisorsa[divi] == checkindex || m_removed[divisorsa[divi]]) {
                continue;

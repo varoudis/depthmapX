@@ -3,6 +3,7 @@
 #include "salalib/tolerances.h"
 #include "genlib/exceptions.h"
 #include <time.h>
+#include <iomanip>
 
 AllLineMap::AllLineMap(Communicator *comm,
                        std::vector<SpacePixelFile> &drawingLayers,
@@ -148,8 +149,8 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    // make one rld for each radial line...
    std::map<RadialKey,pvecint> radialdivisions;
    size_t i;
-   for (i = 0; i < m_radial_lines.size(); i++) {
-      radialdivisions.insert(std::make_pair( (RadialKey) m_radial_lines[i], pvecint() ));
+   for (auto& radial_line: m_radial_lines) {
+      radialdivisions.insert(std::make_pair( (RadialKey) radial_line, pvecint() ));
    }
 
    // also, a list of radial lines cut by each axial line
@@ -173,16 +174,23 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    std::map<RadialKey,RadialSegment> radialsegs;
 
    // now make radial segments from the radial lines... (note, start at 1)
-   for (i = 1; i < m_radial_lines.size(); i++) {
-      if (m_radial_lines[i].vertex == m_radial_lines[i-1].vertex) {
-         if (m_radial_lines[i].ang == m_radial_lines[i-1].ang) {
+   auto iter = m_radial_lines.begin();
+   auto prevIter = m_radial_lines.begin();
+   ++iter;
+   for (;iter != m_radial_lines.end();) {
+      if (iter->vertex == prevIter->vertex) {
+         if (iter->ang == prevIter->ang) {
+            ++iter;
+            ++prevIter;
             continue;
          }
          else {
-            radialsegs.insert(std::make_pair( (RadialKey)m_radial_lines[i],
-                                              (RadialSegment)m_radial_lines[i-1]));
+            radialsegs.insert(std::make_pair( (RadialKey)(*iter),
+                                              (RadialSegment)(*prevIter)));
          }
       }
+      ++iter;
+      ++prevIter;
    }
 
    // and segment divisors from the axial lines...
@@ -190,10 +198,10 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    auto axIter = ax_radial_cuts.begin();
    auto axSeg = ax_seg_cuts.begin();
    for (i = 0; i < getAllShapes().size(); i++) {
-      for (size_t j = 1; j < axIter->second.size(); j++) {
+      for (size_t j = 1; j < axIter->second.size(); ++j) {
          // note similarity to loop above
-         RadialKey rk_end = m_radial_lines[axIter->second[j]];
-         RadialKey rk_start = m_radial_lines[axIter->second[j-1]];
+         RadialKey& rk_end = m_radial_lines[axIter->second[j]];
+         RadialKey& rk_start = m_radial_lines[axIter->second[j-1]];
          if (rk_start.vertex == rk_end.vertex) {
             auto radialSegIter = radialsegs.find(rk_end);
             if (radialSegIter != radialsegs.end() && rk_start == radialSegIter->second.radial_b) {
@@ -280,7 +288,9 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    return std::make_tuple(std::move(fewestlinemap_subsets), std::move(fewestlinemap_minimal));
 }
 
-void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, const pqvector<RadialLine>& radiallines, std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers, Communicator *comm)
+void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, const std::vector<RadialLine> &radiallines,
+                               std::map<RadialKey,pvecint>& radialdivisions, std::map<int, pvecint> &axialdividers,
+                               Communicator *comm)
 {
    time_t atime = 0;
    if (comm) {

@@ -82,14 +82,10 @@ struct RadialSegment : public pvecint
 {
    RadialKey radial_b;
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   RadialSegment(RadialKey& rb = RadialKey()) : pvecint()
-   { radial_b = rb; }
-#else
    RadialSegment(RadialKey& rb /*= RadialKey()*/) : pvecint()
    { radial_b = rb; }
-#endif
+   RadialSegment(const RadialKey& rb /*= RadialKey()*/) : pvecint()
+   { radial_b = rb; }
 
    // Quick mod - TV
    RadialSegment() : pvecint()
@@ -129,7 +125,9 @@ public:
    // find a polygon corner visible from seed:
    AxialVertexKey seedVertex(const Point2f& seed);
    // make axial lines from corner vertices, visible from openspace
-   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
+   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines,
+                       KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections,
+                       std::vector<RadialLine> &radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
    void makePolygons(std::vector<std::vector<Point2f> > &polygons);
 };
