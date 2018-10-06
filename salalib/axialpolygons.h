@@ -108,7 +108,7 @@ protected:
    std::vector<std::vector<int> > m_pixel_polys;
 public:
    pqvector<AxialVertex> m_handled_list;
-   std::map<Point2f,pqvector<Point2f>> m_vertex_possibles;
+   std::map<Point2f, std::vector<Point2f>> m_vertex_possibles;
 
    void clear();
    void init(std::vector<Line> &lines, const QtRegion& region);

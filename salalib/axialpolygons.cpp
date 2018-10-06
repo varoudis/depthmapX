@@ -9,7 +9,7 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    AxialVertex av(vertexkey, vertPossIter->first, openspace);
 
    // n.b., at this point, vertex key m_a and m_b are unfixed
-   pqvector<Point2f>& pointlist = vertPossIter->second;
+   std::vector<Point2f>& pointlist = vertPossIter->second;
    if (pointlist.size() < 2) {
       return av;
    }
@@ -19,15 +19,17 @@ AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Poi
    // using an anglemap means that there are now no anti-clockwise vertices...
    // TODO: (CS) Double as key is problematic - books have been written about double equality...
    std::map<double,int> anglemap;
-   for (size_t i = 0; i < pointlist.size(); i++) {
-      anglemap.insert(std::make_pair( angle(openspace,av.m_point,pointlist[i]), i ));
+   int i = 0;
+   for (auto& point: pointlist) {
+      anglemap.insert(std::make_pair( angle(openspace,av.m_point, point), i ));
+      i++;
    }
 
    av.m_ref_a = anglemap.begin()->second;
    // TODO: is this supposed to be av.m_ref_b?
    av.m_ref_a = anglemap.rbegin()->second;
-   Point2f a = av.m_point - pointlist.at( anglemap.begin()->second );
-   Point2f b = pointlist.at( anglemap.rbegin()->second ) - av.m_point;
+   Point2f a = av.m_point - pointlist[size_t(anglemap.begin()->second)];
+   Point2f b = pointlist[size_t(anglemap.rbegin()->second)] - av.m_point;
    av.m_a = a;
    av.m_b = b;
    a.normalise();
@@ -126,9 +128,9 @@ void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
    // need to init before making pixel polys...
    makePixelPolys();
    // now also add lines
-   for (auto vertexPoss: m_vertex_possibles) {
-      for (size_t j = 0; j < vertexPoss.second.size(); j++) {
-         addLine(Line(vertexPoss.first,vertexPoss.second.at(j)));
+   for (auto& vertexPoss: m_vertex_possibles) {
+      for (auto poss: vertexPoss.second) {
+         addLine(Line(vertexPoss.first,poss));
       }
    }
    sortPixelLines();
@@ -155,7 +157,7 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
    for (i = 0; i < lines.size(); i++) {
       if (found[0][i] == -1) {
          pointlookup.push_back(lines[i].start());
-         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),pqvector<Point2f>()));
+         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),std::vector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
          for (auto& segconn: connectionset[i].m_back_segconns) {
@@ -165,7 +167,7 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
       }
       if (found[1][i] == -1) {
          pointlookup.push_back(lines[i].end());
-         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),pqvector<Point2f>()));
+         m_vertex_possibles.insert(std::make_pair(pointlookup.back(),std::vector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
          for (auto& segconn: connectionset[i].m_forward_segconns) {
@@ -186,9 +188,15 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          // TODO: (CS) What are these integers being thrown?!
          throw 2;
       }
-      index0->second.add(pointlookup[size_t(found[1][i])]);
-      index1->second.add(pointlookup[size_t(found[0][i])]);
+
+      index0->second.push_back(pointlookup[size_t(found[1][i])]);
+      index1->second.push_back(pointlookup[size_t(found[0][i])]);
    }
+   for(auto& possible: m_vertex_possibles) {
+       sort( possible.second.begin(), possible.second.end() );
+       possible.second.erase( unique( possible.second.begin(), possible.second.end() ), possible.second.end() );
+   }
+
    delete [] found[0];
    delete [] found[1];
    // three pass operation: (3) create vertex poly entries
@@ -200,7 +208,7 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          addlist.push_back(int(i));
          while (addlist.size()) {
             m_vertex_polys[size_t(addlist.back())] = current_poly;
-            pqvector<Point2f>& connections = depthmapX::getMapAtIndex(m_vertex_possibles, addlist.back())->second;
+            std::vector<Point2f>& connections = depthmapX::getMapAtIndex(m_vertex_possibles, addlist.back())->second;
             addlist.pop_back();
             for (size_t j = 0; j < connections.size(); j++) {
                int index = depthmapX::findIndexFromKey(m_vertex_possibles, connections[j]);
