@@ -107,7 +107,7 @@ protected:
    std::vector<int> m_vertex_polys;
    std::vector<std::vector<int> > m_pixel_polys;
 public:
-   pqvector<AxialVertex> m_handled_list;
+   std::vector<AxialVertex> m_handled_list;
    std::map<Point2f, std::vector<Point2f>> m_vertex_possibles;
 
    void clear();
@@ -119,7 +119,7 @@ public:
    // find a polygon corner visible from seed:
    AxialVertexKey seedVertex(const Point2f& seed);
    // make axial lines from corner vertices, visible from openspace
-   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines,
+   void makeAxialLines(std::vector<AxialVertex> &openvertices, prefvec<Line>& lines,
                        KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections,
                        std::vector<RadialLine> &radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles

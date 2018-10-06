@@ -307,14 +307,14 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
 
 // adds any axial lines from this point to the list of lines, adds any unhandled visible vertices it finds to the openvertices list
 // axial lines themselves are added to the lines list - the axial line is only there to record the key vertices that comprise the line
-void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines,
+void AxialPolygons::makeAxialLines(std::vector<AxialVertex>& openvertices, prefvec<Line>& lines,
                                    KeyVertices& keyvertices, prefvec<PolyConnector>& poly_connections,
                                    std::vector<RadialLine>& radial_lines)
 {
-   AxialVertex vertex = openvertices.tail();
+   AxialVertex vertex = openvertices.back();
    openvertices.pop_back();
 
-   m_handled_list.add(vertex);
+   depthmapX::addIfNotExists(m_handled_list, vertex);
 
    int i = -1;
    for (auto vertPoss: m_vertex_possibles) {
@@ -342,8 +342,8 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
          Line line(vertPoss.first,vertex.m_point);
          if (!intersect_exclude(line)) {
             AxialVertex next_vertex = makeVertex(AxialVertexKey(i),vertex.m_point);
-            if (next_vertex.m_initialised && m_handled_list.searchindex(next_vertex) == paftl::npos) {
-               openvertices.add(next_vertex); // <- note, add ignores duplicate adds (each vertex tends to be added multiple times before this vertex is handled itself)
+            if (next_vertex.m_initialised && std::find(m_handled_list.begin(), m_handled_list.end(), next_vertex) == m_handled_list.end()) {
+               depthmapX::addIfNotExists(openvertices, next_vertex); // <- note, add ignores duplicate adds (each vertex tends to be added multiple times before this vertex is handled itself)
                bool shortline_segend = false;
                Line shortline = line;
                if (!vertex.m_convex && possible) {
