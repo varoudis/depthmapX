@@ -314,7 +314,7 @@ void AxialPolygons::makeAxialLines(std::vector<AxialVertex>& openvertices, prefv
    AxialVertex vertex = openvertices.back();
    openvertices.pop_back();
 
-   depthmapX::addIfNotExists(m_handled_list, vertex);
+   m_handled_list.insert(vertex);
 
    int i = -1;
    for (auto vertPoss: m_vertex_possibles) {

@@ -107,7 +107,7 @@ protected:
    std::vector<int> m_vertex_polys;
    std::vector<std::vector<int> > m_pixel_polys;
 public:
-   std::vector<AxialVertex> m_handled_list;
+   std::set<AxialVertex> m_handled_list;
    std::map<Point2f, std::vector<Point2f>> m_vertex_possibles;
 
    void clear();
