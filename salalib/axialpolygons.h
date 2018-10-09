@@ -119,7 +119,7 @@ public:
    // find a polygon corner visible from seed:
    AxialVertexKey seedVertex(const Point2f& seed);
    // make axial lines from corner vertices, visible from openspace
-   void makeAxialLines(std::vector<AxialVertex> &openvertices, prefvec<Line>& lines,
+   void makeAxialLines(std::set<AxialVertex> &openvertices, prefvec<Line>& lines,
                        KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections,
                        std::vector<RadialLine> &radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles

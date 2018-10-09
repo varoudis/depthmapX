@@ -83,8 +83,8 @@ AllLineMap::AllLineMap(Communicator *comm,
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_polygons.m_vertex_possibles.size() );
    }
 
-   std::vector<AxialVertex> openvertices;
-   openvertices.push_back(vertex);
+   std::set<AxialVertex> openvertices;
+   openvertices.insert(vertex);
    while (!openvertices.empty()) {
       m_polygons.makeAxialLines(openvertices, axiallines, preaxialdata, m_poly_connections, m_radial_lines);
       count++;
