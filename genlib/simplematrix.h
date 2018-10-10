@@ -156,12 +156,12 @@ public:
 
     T & operator () (size_t row, size_t column){
         this->access_check(row, column);
-        return m_data[column + row * this->m_columns];
+        return this->m_data[column + row * this->m_columns];
     }
 
     T const & operator ()(size_t row, size_t column) const {
         this->access_check(row, column);
-        return m_data[column + row * this->m_columns];
+        return this->m_data[column + row * this->m_columns];
     }
 };
 
@@ -185,14 +185,12 @@ public:
 
     T & operator () (size_t row, size_t column){
         this->access_check(row, column);
-        return m_data[row + column * this->m_rows];
+        return this->m_data[row + column * this->m_rows];
     }
 
     T const & operator ()(size_t row, size_t column) const {
         this->access_check(row, column);
-        return m_data[row + column * this->m_rows];
+        return this->m_data[row + column * this->m_rows];
     }
 };
-
-
 }
