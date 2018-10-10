@@ -25,22 +25,6 @@ template<typename T> void compareMatrixContent( depthmapX::BaseMatrix<T> const &
     REQUIRE(result == expected);
 }
 
-TEST_CASE("First row matrix test"){
-    depthmapX::RowMatrix<int> matrix(2, 3);
-    matrix(0,0) = 1;
-    matrix(1,2) = -1;
-    matrix(0,1) = 2;
-    matrix(0,2) = 3;
-    matrix(1,0) = -23;
-    matrix(1,1) = 0;
-
-    REQUIRE(matrix(1,2) == -1);
-
-    compareMatrixContent(matrix, std::vector<int>{1, 2, 3, -23, 0, -1});
-}
-
-
-
 TEST_CASE("Row matrix test assignemnt copy and move"){
    depthmapX::RowMatrix<std::string> matrix(2,3);
    matrix(0,0) = "0,0";
@@ -80,6 +64,52 @@ TEST_CASE("Row matrix test exceptions"){
     REQUIRE(matrix(1,2) == -1);
 
     compareMatrixContent(matrix, std::vector<int>{1, 2, 3, -23, 0, -1});
+
+    REQUIRE_THROWS_WITH(matrix(-1, 0), Catch::Contains("row out of range"));
+    REQUIRE_THROWS_WITH(matrix(5, 0), Catch::Contains("row out of range"));
+    REQUIRE_THROWS_WITH(matrix(0, -1), Catch::Contains("column out of range"));
+    REQUIRE_THROWS_WITH(matrix(0, 5), Catch::Contains("column out of range"));
+}
+
+TEST_CASE("Column matrix test assignemnt copy and move"){
+   depthmapX::ColumnMatrix<std::string> matrix(2,3);
+   matrix(0,0) = "0,0";
+   matrix(1,0) = "1,0";
+   matrix(0,1) = "0,1";
+   matrix(1,1) = "1,1";
+   matrix(1,2) = "1,2";
+   matrix(0,2) = "0,2";
+
+   std::vector<std::string> expected{"0,0", "1,0", "0,1", "1,1", "0,2", "1,2"};
+   compareMatrixContent(matrix, expected);
+
+   depthmapX::ColumnMatrix<std::string> copy(matrix);
+   compareMatrixContent(matrix, expected);
+   compareMatrixContent(copy, expected);
+
+   depthmapX::ColumnMatrix<std::string> clone(std::move(copy));
+   compareMatrixContent(clone, expected);
+   REQUIRE(copy.size() == 0);
+
+   copy = clone;
+   compareMatrixContent(copy, expected);
+   REQUIRE(copy.columns() == 3);
+   REQUIRE(copy.rows() == 2);
+   compareMatrixContent(clone, expected);
+}
+
+TEST_CASE("Column matrix test exceptions"){
+    depthmapX::ColumnMatrix<int> matrix(2, 3);
+    matrix(0,0) = 1;
+    matrix(1,2) = -1;
+    matrix(0,1) = 2;
+    matrix(0,2) = 3;
+    matrix(1,0) = -23;
+    matrix(1,1) = 0;
+
+    REQUIRE(matrix(1,2) == -1);
+
+    compareMatrixContent(matrix, std::vector<int>{1, -23, 2, 0, 3, -1});
 
     REQUIRE_THROWS_WITH(matrix(-1, 0), Catch::Contains("row out of range"));
     REQUIRE_THROWS_WITH(matrix(5, 0), Catch::Contains("row out of range"));
