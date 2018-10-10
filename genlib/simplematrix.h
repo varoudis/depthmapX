@@ -148,20 +148,20 @@ public:
 
     RowMatrix<T> & operator= ( RowMatrix<T> const & other){
         RowMatrix tmp(other);
-        std::swap(m_data, tmp.m_data);
-        std::swap(m_rows, tmp.m_rows);
-        std::swap(m_columns, tmp.m_columns);
+        std::swap(this->m_data, tmp.m_data);
+        std::swap(this->m_rows, tmp.m_rows);
+        std::swap(this->m_columns, tmp.m_columns);
         return *this;
     }
 
     T & operator () (size_t row, size_t column){
         this->access_check(row, column);
-        return m_data[column + row * m_columns];
+        return m_data[column + row * this->m_columns];
     }
 
     T const & operator ()(size_t row, size_t column) const {
         this->access_check(row, column);
-        return m_data[column + row * m_columns];
+        return m_data[column + row * this->m_columns];
     }
 };
 
@@ -177,20 +177,20 @@ public:
 
     ColumnMatrix<T> & operator= ( ColumnMatrix<T> const & other){
         ColumnMatrix tmp(other);
-        std::swap(m_data, tmp.m_data);
-        std::swap(m_rows, tmp.m_rows);
-        std::swap(m_columns, tmp.m_columns);
+        std::swap(this->m_data, tmp.m_data);
+        std::swap(this->m_rows, tmp.m_rows);
+        std::swap(this->m_columns, tmp.m_columns);
         return *this;
     }
 
     T & operator () (size_t row, size_t column){
         this->access_check(row, column);
-        return m_data[row + column * m_rows];
+        return m_data[row + column * this->m_rows];
     }
 
     T const & operator ()(size_t row, size_t column) const {
         this->access_check(row, column);
-        return m_data[row + column * m_rows];
+        return m_data[row + column * this->m_rows];
     }
 };
 
