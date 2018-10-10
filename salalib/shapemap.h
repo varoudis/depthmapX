@@ -309,10 +309,10 @@ public:
    // test if point is inside a particular shape
    bool pointInPoly(const Point2f& p, int shaperef) const;
    // retrieve lists of polys point intersects:
-   void pointInPolyList(const Point2f& p, std::vector<int> &shapeindexlist) const;
-   void lineInPolyList(const Line& li, std::vector<int> &shapeindexlist, int lineref = -1, double tolerance = 0.0) const;
-   void polyInPolyList(int polyref, std::vector<int> &shapeindexlist, double tolerance = 0.0) const;
-   void shapeInPolyList(const SalaShape& shape, std::vector<int> &shapeindexlist);
+   std::vector<int> pointInPolyList(const Point2f& p) const;
+   std::vector<int> lineInPolyList(const Line& li, int lineref = -1, double tolerance = 0.0) const;
+   std::vector<int> polyInPolyList(int polyref, double tolerance = 0.0) const;
+   std::vector<int> shapeInPolyList(const SalaShape& shape);
    // helper to make actual test of point in shape:
    int testPointInPoly(const Point2f& p, const ShapeRef& shape) const;
    // also allow look for a close polyline:
