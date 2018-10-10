@@ -89,11 +89,11 @@ namespace dXreadwrite
     {
         // READ / WRITE USES 32-bit LENGTHS (number of elements) for compatibility reasons
 
-        if ( map.size() > size_t(uint(-1)))
+        if ( map.size() > size_t((unsigned int)(-1)))
         {
             throw new depthmapX::RuntimeException("Map exceeded max size for streaming");
         }
-        unsigned int length = uint(map.size());
+        unsigned int length = (unsigned int)(map.size());
         stream.write((char *) &length, sizeof(length));
         for(auto& pair: map)
         {
