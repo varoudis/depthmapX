@@ -65,6 +65,7 @@ TEST_CASE("Row matrix test assignemnt copy and move"){
    compareMatrixContent(copy, expected);
    REQUIRE(copy.columns() == 3);
    REQUIRE(copy.rows() == 2);
+   compareMatrixContent(clone, expected);
 }
 
 TEST_CASE("Row matrix test exceptions"){

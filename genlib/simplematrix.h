@@ -95,11 +95,11 @@ public:
     RowMatrix(RowMatrix const & other) : BaseMatrix(other){}
     RowMatrix(RowMatrix && other) : BaseMatrix(std::move(other)){}
 
-    RowMatrix<T> & operator= ( RowMatrix<T> & const other){
+    RowMatrix<T> & operator= ( RowMatrix<T> const & other){
         RowMatrix tmp(other);
-        std::swap(m_data, other.m_data);
-        std::swap(m_rows, other.m_rows);
-        std::swap(m_columns, other.m_columns);
+        std::swap(m_data, tmp.m_data);
+        std::swap(m_rows, tmp.m_rows);
+        std::swap(m_columns, tmp.m_columns);
         return *this;
     }
 
