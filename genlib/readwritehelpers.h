@@ -87,7 +87,6 @@ namespace dXreadwrite
 
     template<typename K, typename V> void writeMap(std::ostream& stream, const std::map<K, V>& map)
     {
-        typedef unsigned uint;
         // READ / WRITE USES 32-bit LENGTHS (number of elements) for compatibility reasons
 
         if ( map.size() > size_t((unsigned int)(-1)))
