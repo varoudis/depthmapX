@@ -132,7 +132,6 @@ protected:
         if ( column >= m_columns){
             throw std::out_of_range("column out of range");
         }
-
     }
 };
 
@@ -144,8 +143,8 @@ protected:
 template<typename T> class RowMatrix : public BaseMatrix<T>{
 public:
     RowMatrix(size_t rows, size_t columns) : BaseMatrix<T>(rows, columns){}
-    RowMatrix(RowMatrix const & other) : BaseMatrix(other){}
-    RowMatrix(RowMatrix && other) : BaseMatrix(std::move(other)){}
+    RowMatrix(RowMatrix const & other) : BaseMatrix<T>(other){}
+    RowMatrix(RowMatrix && other) : BaseMatrix<T>(std::move(other)){}
 
     RowMatrix<T> & operator= ( RowMatrix<T> const & other){
         RowMatrix tmp(other);
@@ -173,8 +172,8 @@ public:
 template<typename T> class ColumnMatrix : public BaseMatrix<T>{
 public:
     ColumnMatrix(size_t rows, size_t columns) : BaseMatrix<T>(rows, columns){}
-    ColumnMatrix(ColumnMatrix const & other) : BaseMatrix(other){}
-    ColumnMatrix(ColumnMatrix && other) : BaseMatrix(std::move(other)){}
+    ColumnMatrix(ColumnMatrix const & other) : BaseMatrix<T>(other){}
+    ColumnMatrix(ColumnMatrix && other) : BaseMatrix<T>(std::move(other)){}
 
     ColumnMatrix<T> & operator= ( ColumnMatrix<T> const & other){
         ColumnMatrix tmp(other);
