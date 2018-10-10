@@ -682,6 +682,7 @@ int MetaGraph::addShapeGraph(const std::string& name, int type)
     if ((type & ShapeMap::LINEMAP) != 0) {
         table.insertLockedColumn("Line Length");
     }
+    return mapref;
 }
 int MetaGraph::addShapeMap(const std::string& name)
 {
