@@ -50,6 +50,11 @@ TEST_CASE("Row matrix test assignemnt copy and move"){
    REQUIRE(copy.columns() == 3);
    REQUIRE(copy.rows() == 2);
    compareMatrixContent(clone, expected);
+
+   depthmapX::RowMatrix<std::string> assignMove(1,1);
+   assignMove = std::move(copy);
+   compareMatrixContent(assignMove, expected);
+   REQUIRE(copy.size() == 0);
 }
 
 TEST_CASE("Row matrix test exceptions"){
@@ -96,6 +101,12 @@ TEST_CASE("Column matrix test assignemnt copy and move"){
    REQUIRE(copy.columns() == 3);
    REQUIRE(copy.rows() == 2);
    compareMatrixContent(clone, expected);
+
+   depthmapX::ColumnMatrix<std::string> assignMove(1,1);
+   assignMove = std::move(copy);
+   compareMatrixContent(assignMove, expected);
+   REQUIRE(copy.size() == 0);
+
 }
 
 TEST_CASE("Column matrix test exceptions"){

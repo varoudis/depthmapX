@@ -133,6 +133,12 @@ protected:
             throw std::out_of_range("column out of range");
         }
     }
+
+    void swap(BaseMatrix & other){
+        std::swap(m_data, other.m_data);
+        std::swap(m_rows, other.m_rows);
+        std::swap(m_columns, other.m_columns);
+    }
 };
 
 
@@ -148,9 +154,13 @@ public:
 
     RowMatrix<T> & operator= ( RowMatrix<T> const & other){
         RowMatrix tmp(other);
-        std::swap(this->m_data, tmp.m_data);
-        std::swap(this->m_rows, tmp.m_rows);
-        std::swap(this->m_columns, tmp.m_columns);
+        this->swap(tmp);
+        return *this;
+    }
+
+    RowMatrix<T> & operator= ( RowMatrix<T> && other ){
+        RowMatrix<T> tmp(std::move(other));
+        this->swap(tmp);
         return *this;
     }
 
@@ -177,9 +187,13 @@ public:
 
     ColumnMatrix<T> & operator= ( ColumnMatrix<T> const & other){
         ColumnMatrix tmp(other);
-        std::swap(this->m_data, tmp.m_data);
-        std::swap(this->m_rows, tmp.m_rows);
-        std::swap(this->m_columns, tmp.m_columns);
+        this->swap(tmp);
+        return *this;
+    }
+
+    ColumnMatrix<T> & operator= ( ColumnMatrix<T> && other ){
+        ColumnMatrix<T> tmp(std::move(other));
+        this->swap(tmp);
         return *this;
     }
 
