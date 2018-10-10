@@ -27,8 +27,8 @@ protected:
         m_columns = columns;
     }
 
-    BaseMatrix<T>(const BaseMatrix<T> &other) : BaseMatrix<T>(other.rows, other,columns){
-        std::copy(m_data, other.begin(), other.end());
+    BaseMatrix<T>(const BaseMatrix<T> &other) : BaseMatrix<T>(other.m_rows, other.m_columns){
+        std::copy(other.begin(), other.end(), m_data);
     }
 
     BaseMatrix<T>(BaseMatrix<T> &&other): m_data(other.m_data), m_rows(other.m_rows), m_columns(other.m_columns){
@@ -79,10 +79,10 @@ protected:
     size_t m_columns;
 
     void access_check( size_t row, size_t column) const {
-        if ( row < 0 || row >= m_rows ){
+        if ( row >= m_rows ){
             throw std::out_of_range("row out of range");
         }
-        if ( column < 0 || column >= m_columns){
+        if ( column >= m_columns){
             throw std::out_of_range("column out of range");
         }
 
@@ -93,15 +93,23 @@ template<typename T> class RowMatrix : public BaseMatrix<T>{
 public:
     RowMatrix(size_t rows, size_t columns) : BaseMatrix<T>(rows, columns){}
     RowMatrix(RowMatrix const & other) : BaseMatrix(other){}
-    RowMatrix(RowMatrix && other) : BaseMatrix(other){}
+    RowMatrix(RowMatrix && other) : BaseMatrix(std::move(other)){}
+
+    RowMatrix<T> & operator= ( RowMatrix<T> & const other){
+        RowMatrix tmp(other);
+        std::swap(m_data, other.m_data);
+        std::swap(m_rows, other.m_rows);
+        std::swap(m_columns, other.m_columns);
+        return *this;
+    }
 
     T & operator () (size_t row, size_t column){
-        access_check(row, column);
+        this->access_check(row, column);
         return m_data[column + row * m_columns];
     }
 
     T const & operator ()(size_t row, size_t column) const {
-        access_check(row, column);
+        this->access_check(row, column);
         return m_data[column + row * m_columns];
     }
 };
