@@ -43,7 +43,7 @@ public:
    virtual void push_back(const T item);
    virtual void clear();
 public:
-   bool isEmpty() // isEmpty is provided in addition to size as is quicker to test
+   bool isEmpty() const // isEmpty is provided in addition to size as is quicker to test
       { return m_data == NULL; }
    T size() const
       { return m_data ? m_data[0] : 0; }

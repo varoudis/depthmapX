@@ -296,7 +296,8 @@ void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
       for (size_t j = 0; j < pixels.size(); j++) {
          PixelRef pix = pixels[j];
-         std::vector<ShapeRef> &shapes = m_pixel_shapes[pix.x + pix.y*m_cols];
+         auto& shapes = m_pixel_shapes(static_cast<size_t>(pix.y),
+                                       static_cast<size_t>(pix.x));
          for (const ShapeRef& shape: shapes) {
             if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
                continue;
