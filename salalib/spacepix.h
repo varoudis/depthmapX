@@ -1,5 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,17 +18,14 @@
 
 // This is my code to make a set of axial lines from a set of boundary lines
 
-#ifndef __SPATIALDATA_H__
-#define __SPATIALDATA_H__
+#pragma once
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
 #include "genlib/pafmath.h"
 #include "genlib/p2dpoly.h"
 
 #include "genlib/stringutils.h"
 #include "salalib/pixelref.h"
 #include "salalib/pafcolor.h"
-#include "genlib/paftl.h"
 #include <map>
 #include <deque>
 
@@ -106,18 +104,13 @@ protected:
    std::string m_name;
    bool m_show;
    bool m_edit;
-   pvecint **m_pixel_lines;
-//   int m_rows;
-//   int m_cols;
-//
-//   double m_pixel_height;
-//   double m_pixel_width;
-   //
+   std::vector<std::vector<int> > m_pixel_lines;
+
    int m_ref;
    std::map<int,LineTest> m_lines;
    //
    // for screen drawing
-   mutable int *m_display_lines;
+   mutable std::vector<int> m_display_lines;
    mutable int m_current;
    //
    // for line testing
@@ -125,7 +118,6 @@ protected:
    //
 public:
    SpacePixel(const std::string& name = std::string("Default"));
-   virtual ~SpacePixel();
    //
    SpacePixel(const SpacePixel& spacepixel);
    SpacePixel& operator = (const SpacePixel& spacepixel);
@@ -142,29 +134,15 @@ public:
    //
    int addLineDynamic(const Line& l);
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   bool removeLineDynamic(int ref, Line& line = Line() ); // fills in line if it finds it
-#else
-   bool removeLineDynamic(int ref, Line& line); // fills in line if it finds it
-#endif
-   //
    virtual void makeViewportLines( const QtRegion& viewport ) const;
    virtual bool findNextLine(bool&) const;
    virtual const Line& getNextLine() const;
    //
    bool intersect(const Line& l, double tolerance = 0.0);
    bool intersect_exclude(const Line& l, double tolerance = 0.0);
-   //
-   // Point2f getFirstCrossingPoint(const Line& l, int fromend, pvecint& ignorelist = pvecint());
+
    void cutLine(Line& l, short dir);
-   // Quick mod - TV
-#if defined(_WIN32)
-   pvecdouble getCrossingPoints(const Line& l, int ignore1, pvecint& ignorelist = pvecint() );
-#else
-   pvecdouble getCrossingPoints(const Line& l, int ignore1, pvecint& ignorelist);
-#endif
-   //
+
    QtRegion& getRegion() const
       { return (QtRegion&) m_region; }
    //
@@ -210,5 +188,3 @@ inline bool operator == (const SpacePixel& a, const SpacePixel& b)
 {
    return a.m_name == b.m_name;
 }
-
-#endif
