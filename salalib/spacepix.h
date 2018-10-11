@@ -20,12 +20,14 @@
 
 #pragma once
 
-#include "genlib/pafmath.h"
-#include "genlib/p2dpoly.h"
-
-#include "genlib/stringutils.h"
 #include "salalib/pixelref.h"
 #include "salalib/pafcolor.h"
+
+#include "genlib/pafmath.h"
+#include "genlib/p2dpoly.h"
+#include "genlib/stringutils.h"
+#include "genlib/simplematrix.h"
+
 #include <map>
 #include <deque>
 
@@ -104,7 +106,7 @@ protected:
    std::string m_name;
    bool m_show;
    bool m_edit;
-   std::vector<std::vector<int> > m_pixel_lines;
+   depthmapX::RowMatrix<std::vector<int> > m_pixel_lines;
 
    int m_ref;
    std::map<int,LineTest> m_lines;
