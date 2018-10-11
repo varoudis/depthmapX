@@ -780,8 +780,11 @@ bool SpacePixel::read( std::istream& stream, int version )
    stream.read( (char *) &m_region, sizeof(m_region) );
 
    // read rows / cols
-   stream.read( (char *) &m_rows, sizeof(m_rows) );
-   stream.read( (char *) &m_cols, sizeof(m_cols) );
+   int rows, cols;
+   stream.read( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.read( reinterpret_cast<char *>(&cols), sizeof(cols) );
+   m_rows = static_cast<size_t>(rows);
+   m_cols = static_cast<size_t>(cols);
 
    // could work these two out on the fly, but it's easier to have them stored:
    //m_pixel_height = m_region.height() / double(m_rows);
@@ -823,8 +826,10 @@ bool SpacePixel::write( std::ofstream& stream )
    stream.write( (char *) &m_region, sizeof(m_region) );
 
    // write rows / cols
-   stream.write( (char *) &m_rows, sizeof(m_rows) );
-   stream.write( (char *) &m_cols, sizeof(m_cols) );
+   int rows = static_cast<int>(m_rows);
+   int cols = static_cast<int>(m_cols);
+   stream.write( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.write( reinterpret_cast<char *>(&cols), sizeof(cols) );
 
    // write lines:
    stream.write( (char *) &m_ref, sizeof(m_ref) );
