@@ -87,7 +87,7 @@ protected:
    std::string m_name;
    const QtRegion* m_parentRegion;
    const std::vector<SpacePixelFile>* m_drawingFiles;
-   std::vector<Point> m_points;    // will contain the graph reference when created
+   depthmapX::ColumnMatrix<Point> m_points;    // will contain the graph reference when created
    //int m_rows;
    //int m_cols;
    int m_filled_point_count;
@@ -168,11 +168,11 @@ public:
    void outputBinSummaries(std::ostream& myout);
 
    const Point& getPoint(const PixelRef& p) const
-      { return m_points[p.x*m_rows + p.y]; }
+      { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
    Point& getPoint(const PixelRef& p)
-      { return m_points[p.x*m_rows + p.y]; }
+      { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
    const int& pointState( const PixelRef& p ) const
-      { return m_points[p.x*m_rows + p.y].m_state; }
+      { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)).m_state; }
    // to be phased out
    bool blockedAdjacent( const PixelRef p ) const;
    //
