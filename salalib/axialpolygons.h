@@ -1,6 +1,7 @@
 #pragma once
 
 #include "salalib/spacepix.h"
+#include "salalib/axialmap.h"
 #include "salalib/connector.h"
 #include "genlib/p2dpoly.h"
 #include "genlib/paftl.h"
@@ -128,7 +129,7 @@ public:
    // find a polygon corner visible from seed:
    AxialVertexKey seedVertex(const Point2f& seed);
    // make axial lines from corner vertices, visible from openspace
-   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, prefvec<pvecint>& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
+   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
-   void makePolygons(prefvec<pqvector<Point2f>>& polygons);
+   void makePolygons(std::vector<std::vector<Point2f> > &polygons);
 };

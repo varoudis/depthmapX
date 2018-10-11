@@ -333,7 +333,7 @@ bool MapInfoData::exportFile(std::ostream& miffile, std::ostream& midfile, const
    return true;
 }
 
-bool MapInfoData::exportPolygons(std::ostream& miffile, std::ostream& midfile, const prefvec<pqvector<Point2f>>& polygons, const QtRegion& region)
+bool MapInfoData::exportPolygons(std::ostream& miffile, std::ostream& midfile, const std::vector<std::vector<Point2f>>& polygons, const QtRegion& region)
 {
    // if bounds has not been filled in, fill it in
    if (m_bounds.empty()) {
@@ -358,18 +358,18 @@ bool MapInfoData::exportPolygons(std::ostream& miffile, std::ostream& midfile, c
    writetable(miffile,midfile,attributes);
 
    miffile.precision(16);
-   for (size_t j = 0; j < polygons.size(); j++) {
+   for (auto& polygon: polygons) {
       Point2f centre;
       miffile << "QtRegion  1" << std::endl;
-      miffile << "  " << polygons[j].size() + 1 << std::endl;
-      for (size_t k = 0; k < polygons[j].size(); k++) {
-         centre += polygons[j][k];
-         miffile << polygons[j][k].x << " " << polygons[j][k].y << std::endl;
+      miffile << "  " << polygon.size() + 1 << std::endl;
+      for (auto& point: polygon) {
+         centre += point;
+         miffile << point.x << " " << point.y << std::endl;
       }
-      miffile << polygons[j][0].x << " " << polygons[j][0].y << std::endl;
+      miffile << polygon[0].x << " " << polygon[0].y << std::endl;
       miffile << "    Pen (1,2,0)" << std::endl;
       miffile << "    Brush (2,16777215,16777215)" << std::endl;
-      centre /= polygons[j].size();
+      centre /= polygon.size();
       miffile << "    Center " << centre.x << " " << centre.y << std::endl;
    }
 

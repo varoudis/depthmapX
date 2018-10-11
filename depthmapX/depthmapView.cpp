@@ -2714,7 +2714,7 @@ void QDepthmapView::OutputSVGPoly(std::ofstream& stream, const SalaShape& shape,
       // polygons are hard... have to work out entry and exit points to the clipping frame
       // and wind according to their direction
       stream << "<polygon points=\"";
-      pqvector<SalaEdgeU> eus = shape.getClippingSet(logicalviewport);
+      std::vector<SalaEdgeU> eus = shape.getClippingSet(logicalviewport);
       if (eus.size() == 0) {
          // this should be a shape that is entirely within the viewport:
          QPoint last = SVGPhysicalUnits(shape.m_points[0],logicalviewport,h);

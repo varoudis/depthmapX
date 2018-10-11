@@ -1,5 +1,4 @@
 #include "salalib/axialpolygons.h"
-#include "salalib/axialmap.h"
 #include "salalib/tidylines.h"
 #include "salalib/tolerances.h"
 #include "genlib/containerutils.h"
@@ -182,10 +181,9 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[0][i] = pointlookup.size() - 1;
-         for (size_t j = 0; j < connectionset[i].m_back_segconns.size(); j++) {
-            const SegmentRef& segref = connectionset[i].m_back_segconns.key(j);
-            int forwback = (segref.dir == 1) ? 0 : 1;
-            found[forwback][segref.ref] = found[0][i];
+         for (auto& segconn: connectionset[i].m_back_segconns) {
+            int forwback = (segconn.first.dir == 1) ? 0 : 1;
+            found[forwback][segconn.first.ref] = found[0][i];
          }
       }
       if (found[1][i] == -1) {
@@ -193,10 +191,9 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
          m_vertex_possibles.insert(std::make_pair(pointlookup.tail(),pqvector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
          found[1][i] = pointlookup.size() - 1;
-         for (size_t j = 0; j < connectionset[i].m_forward_segconns.size(); j++) {
-            const SegmentRef& segref = connectionset[i].m_forward_segconns.key(j);
-            int forwback = (segref.dir == 1) ? 0 : 1;
-            found[forwback][segref.ref] = found[1][i];
+         for (auto& segconn: connectionset[i].m_forward_segconns) {
+            int forwback = (segconn.first.dir == 1) ? 0 : 1;
+            found[forwback][segconn.first.ref] = found[1][i];
          }
       }
    }
@@ -335,7 +332,7 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
 
 // adds any axial lines from this point to the list of lines, adds any unhandled visible vertices it finds to the openvertices list
 // axial lines themselves are added to the lines list - the axial line is only there to record the key vertices that comprise the line
-void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, prefvec<pvecint>& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
+void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, KeyVertices& keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines)
 {
    AxialVertex vertex = openvertices.tail();
    openvertices.pop_back();
@@ -422,12 +419,12 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
                if (possible && next_vertex.m_axial) {
                   // axial line
                   lines.push_back(line);
-                  keyvertices.push_back(pvecint());
+                  keyvertices.push_back(std::set<int>());
                   if (vertex.m_convex) {
-                     keyvertices.tail().add(vertex.m_ref_key);
+                     keyvertices.back().insert(vertex.m_ref_key);
                   }
                   if (next_vertex.m_convex) {
-                     keyvertices.tail().add(next_vertex.m_ref_key);
+                     keyvertices.back().insert(next_vertex.m_ref_key);
                   }
                }
             }
@@ -441,7 +438,7 @@ void AxialPolygons::makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<
 // not really used as yet, a feature to make all the polygons from the vertex
 // possibles list
 
-void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
+void AxialPolygons::makePolygons(std::vector<std::vector<Point2f>>& polygons)
 {
    prefvec<pvecint> handled_list;
    for (size_t j = 0; j < m_vertex_possibles.size(); j++) {
@@ -460,7 +457,7 @@ void AxialPolygons::makePolygons(prefvec<pqvector<Point2f>>& polygons)
          }
          handled_list[i].push_back(j);
          const Point2f& key = vertPoss.first;
-         pqvector<Point2f> polygon;
+         std::vector<Point2f> polygon;
          polygon.push_back(key);
          Point2f curr = vertPoss.second.at(j);
          Point2f last = key;
