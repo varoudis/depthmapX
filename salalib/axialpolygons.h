@@ -75,20 +75,17 @@ struct RadialLine : public RadialKey
    bool cuts(const Line& l) const;
 };
 
-struct RadialSegment : public pvecint
+struct RadialSegment
 {
+   std::set<int> indices;
    RadialKey radial_b;
 
-   RadialSegment(RadialKey& rb /*= RadialKey()*/) : pvecint()
+   RadialSegment(RadialKey& rb)
    { radial_b = rb; }
-   RadialSegment(const RadialKey& rb /*= RadialKey()*/) : pvecint()
+   RadialSegment(const RadialKey& rb)
    { radial_b = rb; }
-
-   // Quick mod - TV
-   RadialSegment() : pvecint()
-   {
-       radial_b = RadialKey();
-   }
+   RadialSegment()
+   { radial_b = RadialKey(); }
 
 };
 

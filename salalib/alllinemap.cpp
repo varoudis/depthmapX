@@ -200,7 +200,7 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
          if (rk_start.vertex == rk_end.vertex) {
             auto radialSegIter = radialsegs.find(rk_end);
             if (radialSegIter != radialsegs.end() && rk_start == radialSegIter->second.radial_b) {
-               radialSegIter->second.add(axIter->first);
+               radialSegIter->second.indices.insert(axIter->first);
                axSeg->second.insert(std::distance(radialsegs.begin(), radialSegIter));
             }
          }
