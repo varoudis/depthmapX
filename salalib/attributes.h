@@ -21,8 +21,7 @@
 #include "salalib/mgraph_consts.h"
 #include "salalib/pafcolor.h"
 
-// for scripting object
-#include "salalib/salaprogram.h"
+#include "genlib/paftl.h"
 
 #include <string>
 
@@ -142,21 +141,15 @@ class AttributeRow : public pvector<float>
 protected:
    mutable bool m_selected;
    mutable ValuePair m_display_info;
-   // this is for salascripting to allow "checking" a searched node:
-   mutable SalaObj m_sala_mark;
    // this is for recording layers (up to 64 are possible)
    int64 m_layers;
 public:
    AttributeRow()
       { m_selected = false; m_layers = 1; }
    void init(size_t length);
-   //
-   // For SalaScript
-   void setMark(SalaObj& mark)
-   { m_sala_mark = mark; }
-   const SalaObj& getMark() const
-   { return m_sala_mark; }
 };
+
+class AttributeTable;
 
 // note pvector: this is stored in order, reorder by qsort
 class AttributeIndex : public pvector<ValuePair>
@@ -363,12 +356,6 @@ public:
    { m_columns[col].setLock(lock); }
    int insertLockedColumn(const std::string& name = std::string())
    { int col = insertColumn(name); setColumnLock(col); return col; }
-   //
-   // For SalaScript:
-   void setMark(int row, SalaObj& mark) 
-      { value(row).setMark(mark); }
-   const SalaObj& getMark(int row) const
-      { return value(row).getMark(); }
 protected:
    // Selection:
    mutable int m_sel_count;

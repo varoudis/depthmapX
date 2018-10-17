@@ -17,8 +17,9 @@
 
 // ngraph.h
 
-#ifndef __NGRAPH_H__
-#define __NGRAPH_H__
+#pragma once
+
+#include "salalib/pixelref.h"
 
 #include <set>
 
@@ -186,5 +187,3 @@ inline bool operator < (const PixelRefV& a, const PixelRefV& b)
 {
    return (a.x < b.x || (a.x == b.x && a.y < b.y));
 }
-
-#endif
