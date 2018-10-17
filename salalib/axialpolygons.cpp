@@ -2,7 +2,6 @@
 #include "salalib/tidylines.h"
 #include "salalib/tolerances.h"
 
-#include "genlib/simplematrix.h"
 #include "genlib/containerutils.h"
 
 AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Point2f& openspace)
@@ -91,7 +90,7 @@ void AxialPolygons::clear()
    m_vertex_possibles.clear();
    m_vertex_polys.clear();
    m_handled_list.clear();
-   m_pixel_polys.clear();
+   m_pixel_polys.reset(0,0);
 }
 
 void AxialPolygons::init(std::vector<Line>& lines, const QtRegion& region)
@@ -226,13 +225,13 @@ void AxialPolygons::makePixelPolys()
 
    // record all of this onto the pixel polygons
 
-   m_pixel_polys = std::vector<std::vector<int> > (m_cols*m_rows);
+   m_pixel_polys = depthmapX::ColumnMatrix<std::vector<int>>(m_rows, m_cols);
    // now register the vertices in each pixel...
    int j = -1;
    for (auto vertPoss: m_vertex_possibles) {
       j++;
       PixelRef pix = pixelate(vertPoss.first);
-      m_pixel_polys[size_t(pix.x*m_rows+pix.y)].push_back(j);
+      m_pixel_polys(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x)).push_back(j);
    }
 }
 
@@ -252,8 +251,7 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
    int allboundaries = 0;
 
    while (!foundvertex) {
-      for (size_t i = 0; i < m_pixel_polys[size_t(seedref.x*m_rows+seedref.y)].size(); i++) {
-         int vertexref = m_pixel_polys[size_t(seedref.x*m_rows+seedref.y)][i];
+      for (int vertexref: m_pixel_polys(static_cast<size_t>(seedref.y), static_cast<size_t>(seedref.x))) {
          const Point2f& trialpoint = depthmapX::getMapAtIndex(m_vertex_possibles, vertexref)->first;
          if (!intersect_exclude(Line(seed,trialpoint))) {
             // yay... ...but wait... we need to see if it's a proper polygon vertex first...

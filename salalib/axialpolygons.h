@@ -3,6 +3,8 @@
 #include "salalib/spacepix.h"
 #include "salalib/axialmap.h"
 #include "salalib/connector.h"
+
+#include "genlib/simplematrix.h"
 #include "genlib/p2dpoly.h"
 
 struct AxialVertexKey
@@ -102,8 +104,9 @@ class AxialPolygons : public SpacePixel
    friend class ShapeGraphs;
 protected:
    std::vector<int> m_vertex_polys;
-   std::vector<std::vector<int> > m_pixel_polys;
+   depthmapX::ColumnMatrix<std::vector<int> > m_pixel_polys;
 public:
+   AxialPolygons(): m_pixel_polys(0,0) {}
    std::set<AxialVertex> m_handled_list;
    std::map<Point2f, std::vector<Point2f>> m_vertex_possibles;
 
