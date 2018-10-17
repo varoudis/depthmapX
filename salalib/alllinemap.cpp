@@ -178,7 +178,9 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    auto prevIter = m_radial_lines.begin();
    ++iter;
    for (;iter != m_radial_lines.end();) {
-      if (iter->vertex == prevIter->vertex) {
+      if (iter->vertex == prevIter->vertex && iter->ang != prevIter->ang) {
+                radialsegs.insert(std::make_pair( (RadialKey)(*iter), (RadialSegment)(*prevIter)));
+      }          
          if (iter->ang == prevIter->ang) {
             ++iter;
             ++prevIter;
