@@ -2442,8 +2442,11 @@ bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
    // read extents:
    stream.read( (char *) &m_region, sizeof(m_region) );
    // read rows / cols
-   stream.read( (char *) &m_rows, sizeof(m_rows) );
-   stream.read( (char *) &m_cols, sizeof(m_cols) );
+   int rows, cols;
+   stream.read( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.read( reinterpret_cast<char *>(&cols), sizeof(cols) );
+   m_rows = static_cast<size_t>(rows);
+   m_cols = static_cast<size_t>(cols);
    // calculate geom data:
    m_tolerance = __max(m_region.width(), m_region.height()) * TOLERANCE_A;
 
@@ -2525,8 +2528,10 @@ bool ShapeMap::write( std::ofstream& stream, int version )
    // write extents:
    stream.write( (char *) &m_region, sizeof(m_region) );
    // write rows / cols
-   stream.write( (char *) &m_rows, sizeof(m_rows) );
-   stream.write( (char *) &m_cols, sizeof(m_cols) );
+   int rows = static_cast<int>(m_rows);
+   int cols = static_cast<int>(m_cols);
+   stream.write( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.write( reinterpret_cast<char *>(&cols), sizeof(cols) );
 
    // write next object ref to be used:
    stream.write((char *) &m_obj_ref, sizeof(m_obj_ref));
