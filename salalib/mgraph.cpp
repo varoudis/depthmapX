@@ -2661,7 +2661,7 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
             alllinemap->m_poly_connections.clear();
             alllinemap->m_poly_connections.read(stream);
             alllinemap->m_radial_lines.clear();
-            alllinemap->m_radial_lines.read(stream);
+            dXreadwrite::readIntoVector(stream, alllinemap->m_radial_lines);
 
             // this is an index to look up the all line map, used by UI to determine if can make fewest line map
             // note: it is not saved for historical reasons
@@ -2725,7 +2725,7 @@ bool MetaGraph::writeShapeGraphs( std::ofstream& stream, int version, bool displ
         }
 
         alllinemap->m_poly_connections.write(stream);
-        alllinemap->m_radial_lines.write(stream);
+        dXreadwrite::writeVector(stream, alllinemap->m_radial_lines);
     }
     return true;
 }
