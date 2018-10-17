@@ -827,8 +827,8 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
 
-   m_links.read(stream);
-   m_unlinks.read(stream);
+   dXreadwrite::readIntoVector(stream,m_links);
+   dXreadwrite::readIntoVector(stream,m_unlinks);
 
    char x = stream.get();
    if (x == 'm') {
@@ -1038,7 +1038,8 @@ void ShapeGraph::makeNewSegMap()
             }
          }
       }
-      PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
+
+      PixelRef pix2 = pixelate(seg_a_line.second.t_end());
       std::vector<ShapeRef> &shapes2 = m_pixel_shapes(static_cast<size_t>(pix2.y),
                                                       static_cast<size_t>(pix2.x));
       for (auto& shape: shapes2) {

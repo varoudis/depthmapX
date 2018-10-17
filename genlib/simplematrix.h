@@ -25,6 +25,10 @@ namespace depthmapX {
  *  Base class for 2 dimensional matrices. This can be used as reference/pointer, but you cannot
  *  create this directly - you need to create either a row or a column matrix (the difference
  *  being the memory layout either, contiguous rows, or contiguous columns.
+ *  Which layout to choose depends on the underlying data - if the data layout is given, it should be
+ *  simple to find the matching implementation. To choose a new data layout, think about access patterns.
+ *  If it is more likely to process several values from one row in one got, choose a row matrix. If processing
+ *  is more likely to be by column, choose a column matrix. If access is truly random, it makes no difference.
  */
 template<typename T> class BaseMatrix {
 protected:
@@ -47,6 +51,31 @@ protected:
 public:
     virtual ~BaseMatrix<T>(){
         delete[] m_data;
+    }
+
+    /**
+     * @brief Fill all values of the matrix with a default value
+     * @param value default value
+     */
+    virtual void initialiseValues(T const & value ){
+        std::fill( begin(), end(), value);
+    }
+
+    /**
+     * @brief Resets the matrix to a new size - this deletes all contents.
+     * This method provides a strong exception guarantee - if the new statement throws,
+     * the old state will be preserved.
+     * @param rows new number of rows
+     * @param columns new number of columns
+     */
+    virtual void reset(size_t rows, size_t columns){
+        // allocate new memory first - if this throws, the old matrix is still intact.
+        T* tmp = new T[rows * columns];
+        delete[] m_data;
+        m_data = tmp;
+
+        m_rows = rows;
+        m_columns = columns;
     }
 
     /**
