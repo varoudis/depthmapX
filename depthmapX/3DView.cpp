@@ -362,10 +362,8 @@ void Q3DView::ReloadLineData()
       auto mgraphLock = pDoc->m_meta_graph->getLock();
       std::unique_lock<std::mutex> drawLock(m_draw_mutex);
 
-      SuperSpacePixel& superspacepix = *(pDoc->m_meta_graph);
-
       prefvec<Line> lines;
-      for (const auto& pixelGroup: superspacepix.m_spacePixels) {
+      for (const auto& pixelGroup: pDoc->m_meta_graph->m_drawingFiles) {
          for (const auto& pixel: pixelGroup.m_spacePixels) {
             if (pixel.isShown()) {
                if (m_region.atZero()) {
@@ -1140,7 +1138,7 @@ void Q3DView::OnToolsImportTraces()
       m_traces.clear();
       m_mannequins.clear();
             //
-      ifstream file(filename.c_str());
+      std::ifstream file(filename.c_str());
       // Eva's XMLs do not have the header yet:
       xmlelement traceset;
       QString elementname;
@@ -1170,7 +1168,7 @@ void Q3DView::OnToolsImportTraces()
                }
             }
             if (m_traces.tail().events.size() >= 1) {
-               m_traces.tail().endtime = m_traces.tail().events.tail().t;
+               m_traces.tail().endtime = m_traces.tail().events.back().t;
                Point2f p = m_traces.tail().events[0];
                p.normalScale(m_region);
                m_mannequins.push_back( QMannequin(p,m_traces.size()-1,true) );

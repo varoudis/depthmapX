@@ -25,8 +25,6 @@
 #include <string>
 #include "genlib/stringutils.h"
 
-using namespace std;
-
 #include <genlib/comm.h>  // for communicator
 #include <genlib/dxfp.h>
 
@@ -104,7 +102,7 @@ int DxfParser::numLineTypes() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-istream& operator >> (istream& stream, DxfParser& dxfp)
+std::istream& operator >> (std::istream& stream, DxfParser& dxfp)
 {
    if (dxfp.m_communicator)
    {
@@ -117,7 +115,7 @@ istream& operator >> (istream& stream, DxfParser& dxfp)
    return dxfp.open( stream );
 }
 
-istream& DxfParser::open( istream& stream )
+std::istream& DxfParser::open( std::istream& stream )
 {
    DxfToken token;
    int section = UNIDENTIFIED;
@@ -209,7 +207,7 @@ istream& DxfParser::open( istream& stream )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void DxfParser::openHeader( istream& stream )
+void DxfParser::openHeader( std::istream& stream )
 {
    DxfToken token;
    int subsection = UNIDENTIFIED;
@@ -271,7 +269,7 @@ void DxfParser::openHeader( istream& stream )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void DxfParser::openTables( istream& stream )
+void DxfParser::openTables( std::istream& stream )
 {
    DxfToken token;
    int subsection = UNIDENTIFIED;
@@ -365,7 +363,7 @@ void DxfParser::openTables( istream& stream )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void DxfParser::openBlocks( istream& stream )
+void DxfParser::openBlocks( std::istream& stream )
 {
    DxfToken token;
    int subsection = UNIDENTIFIED;
@@ -426,7 +424,7 @@ void DxfParser::openBlocks( istream& stream )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void DxfParser::openEntities( istream& stream, DxfToken& token, DxfBlock *block )
+void DxfParser::openEntities( std::istream& stream, DxfToken& token, DxfBlock *block )
 {
    int subsection = UNIDENTIFIED;
    if (token.code == 0) {
@@ -844,7 +842,7 @@ bool DxfPolyLine::parse( const DxfToken& token, DxfParser *parser )
       if ( vertex.parse( token, parser ) ) {
          add(vertex); // <- add to region
          if (m_min.x == 0) {
-            cerr << "problem" << endl;
+            std::cerr << "problem" << std::endl;
          }
          m_vertices.push_back( vertex );
          if ( token.data == "VERTEX" ) {  // Another vertex...
@@ -1657,7 +1655,7 @@ DxfToken::DxfToken()
    code = -1;
 }
 
-istream& operator >> (istream& stream, DxfToken& token)
+std::istream& operator >> (std::istream& stream, DxfToken& token)
 {
     std::string codeInputLine;
     std::getline(stream,codeInputLine);

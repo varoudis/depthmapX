@@ -15,14 +15,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "salalib/isovist.h"
+#include "salalib/attributes.h"
+
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <genlib/paftl.h>
-
-#include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
-
-#include "isovist.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -34,7 +32,7 @@
 void Isovist::makeit(BSPNode *root, const Point2f& p, const QtRegion& region, double startangle, double endangle)
 {
    // region is used to give an idea of scale, so isovists can be linked when there is floating point error
-   double tolerance = __max(region.width(),region.height()) * 1e-9;
+   double tolerance = std::max(region.width(),region.height()) * 1e-9;
 
    m_centre = p;
    m_blocks.clear();
@@ -312,7 +310,7 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
    if (col == -1) {
       col = table.insertColumn("Isovist Area");
    }
-   table.setValue(row,col,(float)area);
+   table.setValue(row,col, float(area));
 
 
    if(!simple_version) {
@@ -320,41 +318,41 @@ void Isovist::setData(AttributeTable& table, int row, bool simple_version)
        if (col == -1) {
            col = table.insertColumn("Isovist Compactness");
        }
-       table.setValue(row,col, (float)(4.0 * M_PI * area / (m_perimeter*m_perimeter)));
+       table.setValue(row,col, float(4.0 * M_PI * area / (m_perimeter*m_perimeter)));
 
        col = table.getColumnIndex("Isovist Drift Angle");
        if (col == -1) {
            col = table.insertColumn("Isovist Drift Angle");
        }
-       table.setValue(row,col,(float)(180.0*driftang/M_PI));
+       table.setValue(row,col, float(180.0*driftang/M_PI));
 
        col = table.getColumnIndex("Isovist Drift Magnitude");
        if (col == -1) {
            col = table.insertColumn("Isovist Drift Magnitude");
        }
-       table.setValue(row,col,(float)driftmag);
+       table.setValue(row,col, float(driftmag));
        col = table.getColumnIndex("Isovist Min Radial");
        if (col == -1) {
            col = table.insertColumn("Isovist Min Radial");
        }
-       table.setValue(row,col,(float)m_min_radial);
+       table.setValue(row,col, float(m_min_radial));
        col = table.getColumnIndex("Isovist Max Radial");
        if (col == -1) {
            col = table.insertColumn("Isovist Max Radial");
        }
-       table.setValue(row,col,(float)m_max_radial);
+       table.setValue(row,col, float(m_max_radial));
 
        col = table.getColumnIndex("Isovist Occlusivity");
        if (col == -1) {
            col = table.insertColumn("Isovist Occlusivity");
        }
-       table.setValue(row,col,(float)m_occluded_perimeter);
+       table.setValue(row,col, float(m_occluded_perimeter));
 
        col = table.getColumnIndex("Isovist Perimeter");
        if (col == -1) {
            col = table.insertColumn("Isovist Perimeter");
        }
-       table.setValue(row,col,(float)m_perimeter);
+       table.setValue(row,col, float(m_perimeter));
    }
 
 }

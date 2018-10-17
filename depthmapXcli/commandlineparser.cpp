@@ -44,13 +44,13 @@ void CommandLineParser::printVersion(){
 
 
 CommandLineParser::CommandLineParser(const IModeParserFactory &parserFactory)
-    :  _simpleMode(false), _modeParser(0), _parserFactory(parserFactory)
+    :  m_simpleMode(false), _modeParser(0), _parserFactory(parserFactory)
 {}
 
 void CommandLineParser::parse(size_t argc, char *argv[])
 {
-    _valid = false;
-    _printVersionMode = false;
+    m_valid = false;
+    m_printVersionMode = false;
     if (argc <= 1)
     {
         throw CommandLineException("No commandline parameters provided - don't know what to do");
@@ -63,7 +63,7 @@ void CommandLineParser::parse(size_t argc, char *argv[])
         }
         else if ( std::strcmp("-v", argv[i])== 0)
         {
-            _printVersionMode = true;
+            m_printVersionMode = true;
             return;
         }
         else if ( std::strcmp ("-m", argv[i]) == 0)
@@ -92,21 +92,21 @@ void CommandLineParser::parse(size_t argc, char *argv[])
         else if ( std::strcmp ("-f", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-f", i)
-            _fileName = argv[i];
+            m_fileName = argv[i];
         }
         else if ( std::strcmp ("-o", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-o", i)
-            _outputFile = argv[i];
+            m_outputFile = argv[i];
         }
         else if ( std::strcmp ("-t", argv[i]) == 0)
         {
             ENFORCE_ARGUMENT("-t", i)
-            _timingFile = argv[i];
+            m_timingFile = argv[i];
         }
         else if ( std::strcmp("-s", argv[i]) == 0)
         {
-            _simpleMode = true;
+            m_simpleMode = true;
         }
         ++i;
     }
@@ -115,21 +115,21 @@ void CommandLineParser::parse(size_t argc, char *argv[])
     {
         throw CommandLineException("-m for mode is required");
     }
-    if (_fileName.empty())
+    if (m_fileName.empty())
     {
         throw CommandLineException("-f for input file is required");
     }
-    if (_outputFile.empty())
+    if (m_outputFile.empty())
     {
         throw CommandLineException("-o for output file is required");
     }
     _modeParser->parse(argc, argv);
-    _valid = true;
+    m_valid = true;
 }
 
 void CommandLineParser::run(IPerformanceSink &perfWriter) const
 {
-    if (!_valid || !_modeParser)
+    if (!m_valid || !_modeParser)
     {
         throw CommandLineException("Trying to run with invalid command line parameters");
     }

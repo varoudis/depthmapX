@@ -20,6 +20,10 @@
 #ifndef __NAGENT_H__
 #define __NAGENT_H__
 
+#include "salalib/pixelref.h"
+#include "salalib/point.h"
+#include "genlib/pflipper.h"
+
 const char g_col_total_counts[] = "Gate Counts";
 const char g_col_gate_counts[] = "__Internal_Gate_Counts";
 const char g_col_gate[] = "__Internal_Gate";
@@ -125,9 +129,10 @@ class Agent;
 
 const int MAX_TRAILS = 50;
 
-class AgentEngine : public prefvec<AgentSet>
+class AgentEngine
 {
 public: // public for now for speed
+    std::vector<AgentSet> agentSets;
    int m_gatelayer;
    int m_timesteps;
 public:
@@ -136,7 +141,7 @@ public:
 public:
    AgentEngine();
    void run(Communicator *comm, PointMap *pointmap);
-   void outputTrails(ostream& trailsFile);
+   void outputTrails(std::ostream& trailsFile);
 };
 
 struct AgentProgram
@@ -187,8 +192,9 @@ struct AgentProgram
    bool open(const std::string& filename);
 };
 
-struct AgentSet : public AgentProgram, public prefvec<Agent>
+struct AgentSet : public AgentProgram
 {
+   std::vector<Agent> agents;
    std::vector<int> m_release_locations;
    int m_release_locations_seed = 0;
    double m_release_rate;
@@ -322,7 +328,7 @@ struct Trace
 {
    double starttime;
    double endtime;
-   prefvec<Event2f> events;
+   std::vector<Event2f> events;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////

@@ -17,12 +17,12 @@
 
 
 // a simple agent demonstration for Salad (now within depthmapX)
-#include <genlib/paftl.h>
-#include <genlib/comm.h>
 
-#include <salalib/mgraph.h>
-#include <salalib/nagent.h>
-#include <salalib/ngraph.h>
+#include "salalib/pointdata.h"
+#include "salalib/attributes.h"
+#include "salalib/nagent.h"
+#include "salalib/ngraph.h"
+#include "genlib/comm.h"
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
 
@@ -57,7 +57,7 @@ int progcompare(const void *a, const void *b )
 
 //
 
-pqvector<Point2f> g_trails[MAX_TRAILS];
+std::vector<Point2f> g_trails[MAX_TRAILS];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -73,8 +73,8 @@ AgentEngine::AgentEngine()
 
 void AgentEngine::run(Communicator *comm, PointMap *pointmap)
 {
-    for (size_t j = 0; j < size(); j++) {
-        if(at(j).m_sel_type == AgentProgram::SEL_LOS_OCC) {
+    for (auto& agentSet: agentSets) {
+        if(agentSet.m_sel_type == AgentProgram::SEL_LOS_OCC) {
             pointmap->requireIsovistAnalysis();
         }
     }
@@ -109,22 +109,22 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
    }
 
    // remove any agents that are left from a previous run
-   for (size_t j = 0; j < size(); j++) {
-      at(j).clear();
+   for (auto& agentSet: agentSets) {
+      agentSet.agents.clear();
    }
 
    for (int i = 0; i < m_timesteps; i++) {
 
       size_t j;
-      for (j = 0; j < size(); j++) {
-         int q = invcumpoisson(prandomr(),at(j).m_release_rate);
-         int length = at(j).size();
+      for (auto& agentSet: agentSets) {
+         int q = invcumpoisson(prandomr(),agentSet.m_release_rate);
+         int length = agentSet.agents.size();
          int k;
          for (k = 0; k < q; k++) {
-            at(j).push_back(Agent(&(at(j)),pointmap,output_mode));
+            agentSet.agents.push_back(Agent(&(agentSet),pointmap,output_mode));
          }
          for (k = 0; k < q; k++) {
-            at(j).init(length+k,trail_num);
+            agentSet.init(length+k,trail_num);
             if (trail_num != -1) {
                trail_num++;
                // after trail count, stop recording:
@@ -135,8 +135,8 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
          }
       }
 
-      for (j = 0; j < size(); j++) {
-         at(j).move();
+      for (auto& agentSet: agentSets) {
+         agentSet.move();
       }
 
       if (comm) {
@@ -152,7 +152,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
    // output agent trails to file:
    if (m_record_trails) {
        // just dump in local file...
-       ofstream trails("trails.cat");
+       std::ofstream trails("trails.cat");
        outputTrails(trails);
    }
 
@@ -161,14 +161,14 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
    pointmap->setDisplayedAttribute(displaycol);
 }
 
-void AgentEngine::outputTrails(ostream& trailsFile) {
-    trailsFile << "CAT" << endl;
+void AgentEngine::outputTrails(std::ostream& trailsFile) {
+    trailsFile << "CAT" << std::endl;
     for (int i = 0; i < m_trail_count; i++) {
-       trailsFile << "Begin Polyline" << endl;
+       trailsFile << "Begin Polyline" << std::endl;
        for (size_t j = 0; j < g_trails[i].size(); j++) {
-          trailsFile << g_trails[i][j].x << " " << g_trails[i][j].y << endl;
+          trailsFile << g_trails[i][j].x << " " << g_trails[i][j].y << std::endl;
        }
-       trailsFile << "End Polyline" << endl;
+       trailsFile << "End Polyline" << std::endl;
     }
 }
 
@@ -184,25 +184,25 @@ void AgentSet::init(int agent, int trail_num)
 {
    if (m_release_locations.size()) {
       int which = pafrand() % m_release_locations.size();
-      at(agent).onInit( m_release_locations[which], trail_num );
+      agents[agent].onInit( m_release_locations[which], trail_num );
    }
    else {
-      const PointMap& map = at(agent).getPointMap();
+      const PointMap& map = agents[agent].getPointMap();
       PixelRef pix;
       do {
          pix = map.pickPixel(prandom(m_release_locations_seed));
       } while (!map.getPoint(pix).filled());
-      at(agent).onInit(pix, trail_num);
+      agents[agent].onInit(pix, trail_num);
    }
 }
 
 void AgentSet::move()
 {
    // go through backwards so remove does not affect later agents
-   for (size_t i = size() - 1; i != paftl::npos; i--) {
-      at(i).onMove();
-      if (at(i).getFrame() >= m_lifetime) {
-         remove_at(i);
+   for (auto rev_iter = agents.rbegin(); rev_iter != agents.rend(); ++rev_iter) {
+      rev_iter->onMove();
+      if (rev_iter->getFrame() >= m_lifetime) {
+         agents.erase( std::next(rev_iter).base() );
       }
    }
 }
@@ -401,55 +401,55 @@ AgentProgram crossover(const AgentProgram& prog_a, const AgentProgram& prog_b)
 void AgentProgram::save(const std::string& filename)
 {
    // standard ascii:
-   ofstream file(filename.c_str());
+   std::ofstream file(filename.c_str());
 
    file << "Destination selection: ";
    switch (m_sel_type) {
    case SEL_STANDARD:
-      file << "Standard" << endl;
+      file << "Standard" << std::endl;
       break;
    case SEL_LENGTH:
-      file << "Gibsonian Length" << endl;
+      file << "Gibsonian Length" << std::endl;
       break;
    case SEL_OPTIC_FLOW:
-      file << "Gibsonian Optic Flow" << endl;
+      file << "Gibsonian Optic Flow" << std::endl;
       break;
    case SEL_COMPARATIVE_LENGTH:
-      file << "Gibsonian Comparative Length" << endl;
+      file << "Gibsonian Comparative Length" << std::endl;
       break;
    case SEL_COMPARATIVE_OPTIC_FLOW:
-      file << "Gibsonian Comparative Optic Flow" << endl;
+      file << "Gibsonian Comparative Optic Flow" << std::endl;
       break;
    default:
-      file << "Unknown" << endl;
+      file << "Unknown" << std::endl;
    }
 
-   file << "Steps: " << m_steps << endl;
-   file << "Bins: " << ((m_vbin == -1) ? 32 : m_vbin * 2 + 1) << endl;
+   file << "Steps: " << m_steps << std::endl;
+   file << "Bins: " << ((m_vbin == -1) ? 32 : m_vbin * 2 + 1) << std::endl;
    /*
-   file << "Ahead bins: " << m_vahead * 2 + 1 << endl;
-   file << "Ahead threshold: " << m_ahead_threshold << endl;
-   file << "Feeler threshold: " << m_feeler_threshold << endl;
-   file << "Feeler probability: " << m_feeler_probability << endl;
+   file << "Ahead bins: " << m_vahead * 2 + 1 << std::endl;
+   file << "Ahead threshold: " << m_ahead_threshold << std::endl;
+   file << "Feeler threshold: " << m_feeler_threshold << std::endl;
+   file << "Feeler probability: " << m_feeler_probability << std::endl;
 */
    file << "Rule order: " << m_rule_order[0] << " "
                           << m_rule_order[1] << " "
                           << m_rule_order[2] << " "
-                          << m_rule_order[3] << endl;
+                          << m_rule_order[3] << std::endl;
 
    for (int i = 0; i < 4; i++) {
-      file << "Rule " << i << " (Bin -" << 1 + (i * 2) << "/+" << 1 + (i * 2) << ")" << endl;
-      file << "Threshold: " << m_rule_threshold[i] << endl;
-      file << "Turn Probability: " << m_rule_probability[i] << endl;
+      file << "Rule " << i << " (Bin -" << 1 + (i * 2) << "/+" << 1 + (i * 2) << ")" << std::endl;
+      file << "Threshold: " << m_rule_threshold[i] << std::endl;
+      file << "Turn Probability: " << m_rule_probability[i] << std::endl;
    }
 
-   file << "Fitness: " << m_fitness << endl;
+   file << "Fitness: " << m_fitness << std::endl;
 }
 
 bool AgentProgram::open(const std::string& filename)
 {
    // standard ascii:
-   ifstream file(filename.c_str());
+   std::ifstream file(filename.c_str());
 
    std::string line;
    file >> line;

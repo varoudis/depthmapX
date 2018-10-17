@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include <string>
 #include "imodeparser.h"
 #include "commandlineparser.h"
+#include <string>
 
 class ExportParser : public IModeParser
 {
@@ -32,7 +32,11 @@ public:
         return    "Mode options for EXPORT:\n"\
                   "-em <export mode> one of:\n"\
                   "    pointmap-data-csv\n"\
-                  "    pointmap-connections-csv\n";
+                  "    pointmap-connections-csv\n"\
+                  "    pointmap-links-csv\n"\
+                  "    shapegraph-map-csv\n"\
+                  "    shapegraph-map-mif\n"\
+                  "    shapegraph-connections-csv\n";
     }
 
 public:
@@ -44,11 +48,14 @@ public:
         NONE,
         POINTMAP_DATA_CSV,
         POINTMAP_CONNECTIONS_CSV,
-        POINTMAP_LINKS_CSV
+        POINTMAP_LINKS_CSV,
+        SHAPEGRAPH_MAP_CSV,
+        SHAPEGRAPH_MAP_MIF,
+        SHAPEGRAPH_CONNECTIONS_CSV
     };
-    ExportMode getExportMode() const { return _exportMode; }
+    ExportMode getExportMode() const { return m_exportMode; }
 
 private:
-    ExportMode _exportMode;
+    ExportMode m_exportMode;
 };
 

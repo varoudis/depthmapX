@@ -17,83 +17,78 @@
 #include "salalib/mgraph.h"
 
 
-TEST_CASE("Test SuperSpacePixel construction", "")
+TEST_CASE("Test MetaGraph construction", "")
 {
     const float EPSILON = 0.001;
     double spacing = 0.5;
     Point2f offset(0,0); // seems that this is always set to 0,0
 
-    // create a new SuperSpacePixel
+    // create a new MetaGraph
     // The PointMap needs the m_region variable from this
     // object as a definition of the area the grid needs to cover
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
 
-    SECTION( "Construct a plain SuperSpacePixel without underlying geometry" )
+    SECTION( "Construct a plain MetaGraph without underlying geometry" )
     {
         Point2f bottomLeft(0,0);
         Point2f topRight(2,4);
 
         // set m_region to the bounds
-        spacePixel->m_region = QtRegion(bottomLeft, topRight);
+        metaGraph->setRegion(bottomLeft, topRight);
 
         // check if the bounds are set correctly
-        REQUIRE(spacePixel->m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
     }
 
-    SECTION( "Construct a SuperSpacePixel using underlying geometry" )
+    SECTION( "Construct a MetaGraph using underlying geometry" )
     {
         Point2f lineStart(0,0);
         Point2f lineEnd(2,4);
 
-        Point2f bottomLeft(min(lineStart.x,lineEnd.x),min(lineStart.y,lineEnd.y));
-        Point2f topRight(max(lineStart.x,lineEnd.x),max(lineStart.y,lineEnd.y));
+        Point2f bottomLeft(std::min(lineStart.x,lineEnd.x),std::min(lineStart.y,lineEnd.y));
+        Point2f topRight(std::max(lineStart.x,lineEnd.x),std::max(lineStart.y,lineEnd.y));
 
-        // push a SpacePixelFile in the SuperSpacePixel
-        spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
+        // push a SpacePixelFile in the MetaGraph
+        metaGraph->m_drawingFiles.emplace_back("Test MetaGraph");
 
         // push a ShapeMap in the SpacePixelFile
-        spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+        metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
 
         // add a line to the ShapeMap
-        spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
+        metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(lineStart, lineEnd));
 
         // check if the ShapeMap bounds are set correctly
-        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
-        // SpacePixelGroup (and thus SuperSpacePixel and SpacePixelFile)
-        // does not automatically grow its region when a new shapemap/file
-        // is added to it therefore we have to do this externally
-        spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
+        // MetaGraph and SpacePixelFile do not automatically grow
+        // their region when new shapemaps/files are added to them
+        // therefore we have to do this externally
+        metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
 
         // check if the SpacePixelFile bounds are set correctly
-        REQUIRE(spacePixel->m_spacePixels.back().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_spacePixels.back().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->m_drawingFiles.back().m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
 
-        spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
+        metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                             metaGraph->m_drawingFiles.back().m_region.top_right);
 
-        // check if the SuperSpacePixel bounds are set correctly
-        REQUIRE(spacePixel->m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        // check if the MetaGraph bounds are set correctly
+        REQUIRE(metaGraph->getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
     }
 
     // construct a sample pointMap
-    PointMap pointMap("Test PointMap");
-
-    // assign the spacePixel
-    bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
-
-    // check if the spacePixel was set
-    REQUIRE(spacePixelSet);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 }
 
 TEST_CASE("Test grid filling", "")
@@ -102,34 +97,28 @@ TEST_CASE("Test grid filling", "")
     double spacing = 0.5;
     Point2f offset(0,0); // seems that this is always set to 0,0
 
-    // create a new SuperSpacePixel
+    // create a new MetaGraph
     // The PointMap needs the m_region variable from this
     // object as a definition of the area the grid needs to cover
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
 
-    // Construct a plain SuperSpacePixel without underlying geometry
+    // Construct a plain MetaGraph without underlying geometry
     {
         Point2f bottomLeft(0,0);
         Point2f topRight(2,4);
 
         // set m_region to the bounds
-        spacePixel->m_region = QtRegion(bottomLeft, topRight);
+        metaGraph->setRegion(bottomLeft, topRight);
 
         // check if the bounds are set correctly
-        REQUIRE(spacePixel->m_region.bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.x == Approx(topRight.x).epsilon(EPSILON));
-        REQUIRE(spacePixel->m_region.top_right.y == Approx(topRight.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().bottom_left.x == Approx(bottomLeft.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().bottom_left.y == Approx(bottomLeft.y).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.x == Approx(topRight.x).epsilon(EPSILON));
+        REQUIRE(metaGraph->getRegion().top_right.y == Approx(topRight.y).epsilon(EPSILON));
     }
 
     // construct a sample pointMap
-    PointMap pointMap("Test PointMap");
-
-    // assign the spacePixel
-    bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
-
-    // check if the spacePixel was set
-    REQUIRE(spacePixelSet);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
     // set the grid
 
@@ -285,10 +274,9 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
         topRight.y = 4.4;
     }
 
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
-    spacePixel->m_region = QtRegion(bottomLeft, topRight);
-    PointMap pointMap("Test PointMap");
-    bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
+    metaGraph->setRegion(bottomLeft, topRight);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     bool gridIsSet = pointMap.setGrid(spacing, offset);
 
     int bottomLeftPixelIndexX = int(floor(bottomLeft.x / spacing - 0.5)) + 1;
@@ -322,13 +310,13 @@ TEST_CASE("Quirks in grid creation - Origin always at 0", "")
     REQUIRE(pointsMade);
 }
 
-TEST_CASE("Test PointMap connections output", "")
+TEST_CASE("PointMap copy, assign and add to vector")
 {
-    const float EPSILON = 0.001;
+    const double EPSILON = 0.001;
     double spacing = 0.5;
     Point2f offset(0,0); // seems that this is always set to 0,0
 
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
 
     double rectSize = 1.5;
 
@@ -341,18 +329,83 @@ TEST_CASE("Test PointMap connections output", "")
     Point2f line3Start(rectSize,0);
     Point2f line3End(0,0);
 
-    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
-    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
-    spacePixel->m_spacePixels.back().m_region = spacePixel->m_spacePixels.back().m_spacePixels.back().getRegion();
-    spacePixel->m_region = spacePixel->m_spacePixels.back().m_region;
-    PointMap pointMap("Test PointMap");
-    bool spacePixelSet = pointMap.setSpacePixel(spacePixel.get());
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
+    metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                         metaGraph->m_drawingFiles.back().m_region.top_right);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
+    Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
+    Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),
+                     gridBottomLeft.y + spacing * (floor(pointMap.getRows() * 0.5) + 0.5));
+
+    int fill_type = 0; // = QDepthmapView::FULLFILL
+    bool gridIsSet = pointMap.setGrid(spacing, offset);
+
+    bool pointsMade = pointMap.makePoints(midPoint, fill_type);
+
+    bool boundaryGraph = false;
+    double maxDist = -1;
+    // a communicator is required in order to create the connections between the pixels
+    std::unique_ptr<Communicator> comm(new ICommunicator());
+
+    bool graphMade = pointMap.sparkGraph2(comm.get(), boundaryGraph, maxDist);
+
+    REQUIRE(graphMade);
+
+    std::vector<PointMap> pointmaps;
+    pointmaps.push_back(pointMap);
+    REQUIRE(pointmaps.size() == 1);
+
+    PointMap assignedPointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Assigned PointMap");
+    REQUIRE(assignedPointMap.getName() == "Assigned PointMap");
+
+    assignedPointMap = pointMap;
+    REQUIRE(assignedPointMap.getName() == pointMap.getName());
+    pointmaps.push_back(assignedPointMap);
+    REQUIRE(pointmaps.size() == 2);
+
+    PointMap copiedPointMap(pointMap);
+    REQUIRE(copiedPointMap.getName() == pointMap.getName());
+    pointmaps.push_back(copiedPointMap);
+    REQUIRE(pointmaps.size() == 3);
+}
+
+TEST_CASE("Test PointMap connections output", "")
+{
+    const float EPSILON = 0.001;
+    double spacing = 0.5;
+    Point2f offset(0,0); // seems that this is always set to 0,0
+
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
+
+    double rectSize = 1.5;
+
+    Point2f line0Start(0,0);
+    Point2f line0End(0,rectSize);
+    Point2f line1Start(0,rectSize);
+    Point2f line1End(rectSize,rectSize);
+    Point2f line2Start(rectSize,rectSize);
+    Point2f line2End(rectSize,0);
+    Point2f line3Start(rectSize,0);
+    Point2f line3End(0,0);
+
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line0Start, line0End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_region = metaGraph->m_drawingFiles.back().m_spacePixels.back().getRegion();
+    metaGraph->setRegion(metaGraph->m_drawingFiles.back().m_region.bottom_left,
+                         metaGraph->m_drawingFiles.back().m_region.top_right);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
 
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
 
@@ -473,10 +526,9 @@ TEST_CASE("Direct pointmap linking - fully filled grid (no geometry)", "")
     Point2f topRight(2,4);
     int fill_type = 0; // = QDepthmapView::FULLFILL
 
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
-    spacePixel->m_region = QtRegion(bottomLeft, topRight);
-    PointMap pointMap("Test PointMap");
-    pointMap.setSpacePixel(spacePixel.get());
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
+    metaGraph->setRegion(bottomLeft, topRight);
+    PointMap pointMap(metaGraph->getRegion(), metaGraph->m_drawingFiles, "Test PointMap");
     pointMap.setGrid(spacing, offset);
     Point2f gridBottomLeft = pointMap.getRegion().bottom_left;
     Point2f midPoint(gridBottomLeft.x + spacing * (floor(pointMap.getCols() * 0.5) + 0.5),

@@ -55,7 +55,7 @@ namespace depthmapX {
         // Ideally datamaps and drawingmaps should be more similar.
 
         if(mapType == DRAWINGMAP) {
-            mgraph.m_spacePixels.emplace_back(name);
+            mgraph.m_drawingFiles.emplace_back(name);
         }
 
         bool parsed = false;
@@ -282,7 +282,7 @@ namespace depthmapX {
                 auto strings = dXstring::split(inputline, delimiter);
                 if(strings.size() != columns.size()) {
                     std::stringstream message;
-                    message << "Cells in line " << inputline << "not the same number as the columns" << flush;
+                    message << "Cells in line " << inputline << "not the same number as the columns" << std::flush;
                     throw RuntimeException(message.str().c_str());
                 }
                 if (!strings.size()) {

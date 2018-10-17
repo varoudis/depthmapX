@@ -15,7 +15,7 @@
 
 #include "catch.hpp"
 #include "salalib/axialmap.h"
-
+#include "salalib/axialpolygons.h"
 
 /**
  * This seems a bit silly, but this is a list of structs that are serialised by just dumping the memory content

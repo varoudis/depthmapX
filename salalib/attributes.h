@@ -19,6 +19,10 @@
 #define __ATTRIBUTES_H__
 
 #include "salalib/mgraph_consts.h"
+#include "salalib/pafcolor.h"
+
+#include "genlib/paftl.h"
+
 #include <string>
 
 // yet another way to do attributes, but one that is easily expandable
@@ -90,10 +94,44 @@ struct OrderedIntPair
    friend bool operator >  (const OrderedIntPair& x, const OrderedIntPair& y);
 };
 
+// note: these are unordered, but in 'a' takes priority over 'b'
+inline bool operator == (const IntPair& x, const IntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const IntPair& x, const IntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const IntPair& x, const IntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const IntPair& x, const IntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
+}
+
+// note: these are made with a is always less than b
+inline bool operator == (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
-// for scripting object
-#include <salalib/salaprogram.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -103,21 +141,15 @@ class AttributeRow : public pvector<float>
 protected:
    mutable bool m_selected;
    mutable ValuePair m_display_info;
-   // this is for salascripting to allow "checking" a searched node:
-   mutable SalaObj m_sala_mark;
    // this is for recording layers (up to 64 are possible)
    int64 m_layers;
 public:
    AttributeRow()
       { m_selected = false; m_layers = 1; }
    void init(size_t length);
-   //
-   // For SalaScript
-   void setMark(SalaObj& mark)
-   { m_sala_mark = mark; }
-   const SalaObj& getMark() const
-   { return m_sala_mark; }
 };
+
+class AttributeTable;
 
 // note pvector: this is stored in order, reorder by qsort
 class AttributeIndex : public pvector<ValuePair>
@@ -202,8 +234,8 @@ public:
    void setLock(bool lock = true)
    { m_locked = lock; }
    //
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version );
+   bool write( std::ofstream& stream, int version );
    friend bool operator == (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator < (const AttributeColumn& a, const AttributeColumn& b);
    friend bool operator > (const AttributeColumn& a, const AttributeColumn& b);
@@ -324,12 +356,6 @@ public:
    { m_columns[col].setLock(lock); }
    int insertLockedColumn(const std::string& name = std::string())
    { int col = insertColumn(name); setColumnLock(col); return col; }
-   //
-   // For SalaScript:
-   void setMark(int row, SalaObj& mark) 
-      { value(row).setMark(mark); }
-   const SalaObj& getMark(int row) const
-      { return value(row).getMark(); }
 protected:
    // Selection:
    mutable int m_sel_count;
@@ -396,14 +422,14 @@ public:
    { return m_name; }
    //
    // read / write
-   bool read(istream &stream, int version );
-   bool write( ofstream& stream, int version );
+   bool read(std::istream &stream, int version );
+   bool write( std::ofstream& stream, int version );
    //
-   bool outputHeader( ostream& stream, char delim = '\t', bool updated_only = false ) const;
-   bool outputRow( int row, ostream& stream, char delim = '\t', bool updated_only = false ) const;
+   bool outputHeader( std::ostream& stream, char delim = '\t', bool updated_only = false ) const;
+   bool outputRow( int row, std::ostream& stream, char delim = '\t', bool updated_only = false ) const;
    //
-   bool exportTable(ostream& stream, bool updated_only);
-   bool importTable(istream& stream, bool merge);
+   bool exportTable(std::ostream& stream, bool updated_only);
+   bool importTable(std::istream& stream, bool merge);
 };
 
 #endif

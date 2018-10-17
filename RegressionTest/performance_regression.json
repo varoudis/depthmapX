@@ -4,7 +4,67 @@
   "testbinlocation": "../../../build",
   "performance":{},
   "testcases": {
-    "visibility_global_n": {
+    "vis_prep_dense_pointmap":[{
+        "infile": "../../../testdata/rect1x1.graph",
+        "outfile": "out.graph",
+        "mode": "VISPREP",
+        "extraArgs": {
+            "-pg": "0.02",
+            "-pp": "0.5,0.5"
+        }
+    }],
+    "visibility_local": [{
+        "infile": "../../../testdata/gallery_connected.graph",
+        "outfile": "out.graph",
+        "mode": "VGA",
+        "extraArgs": {
+            "-vm": "visibility",
+            "-vl": ""
+        }
+    }],
+    "vga_isovist": [{
+        "infile": "../../../testdata/gallery_connected.graph",
+        "outfile": "out.graph",
+        "mode": "VGA",
+        "extraArgs": {
+            "-vm": "isovist"
+        }
+    }],
+    "vga_angular": [{
+        "infile": "../../../testdata/turns_connected.graph",
+        "outfile": "out.graph",
+        "mode": "VGA",
+        "extraArgs": {
+            "-vm": "angular"
+        }
+    }],
+    "vga_metric": [{
+        "infile": "../../../testdata/turns_connected.graph",
+        "outfile": "out.graph",
+        "mode": "VGA",
+        "extraArgs": {
+            "-vm": "metric",
+            "-vr": "n"
+        }
+    }],
+    "vga_thru_vision": [{
+        "infile": "../../../testdata/gallery_connected.graph",
+        "outfile": "out.graph",
+        "mode": "VGA",
+        "extraArgs": {
+            "-vm": "thruvision"
+        }
+    }],
+    "isovist_args": [{
+        "infile": "../../../testdata/gallery_empty.graph",
+        "outfile": "out.graph",
+        "mode": "ISOVIST",
+        "extraArgs":
+        {
+            "-ii":  ["1.77,6.6,90,30", "3.1,5.6,270,90" ]
+        }
+    }],
+    "visibility_global_n": [{
       "infile": "../../../testdata/gallery_connected.graph",
       "outfile": "out.graph",
       "mode": "VGA",
@@ -13,6 +73,112 @@
         "-vg": "1",
         "-vr": "n"
       }
-    }
+    }],
+    "axial_makelines": [{
+        "infile": "../../../testdata/gallery_empty.graph",
+        "outfile": "out.graph",
+        "mode": "AXIAL",
+        "extraArgs":{
+            "-xl": "3,5",
+            "-xf": ""
+        }
+    }],
+    "axial_rn": [{
+        "infile": "../../../testdata/barnsbury_extended2_axial.graph",
+        "outfile": "out.graph",
+        "mode": "AXIAL",
+        "extraArgs": {
+            "-xa": "n"
+        }
+    }],
+    "axial_rn_choice": [{
+        "infile": "../../../testdata/barnsbury_extended2_axial.graph",
+        "outfile": "out.graph",
+        "mode": "AXIAL",
+        "extraArgs": {
+            "-xa": "n",
+            "-xac": ""
+        }
+    }],
+    "axial_rn_local": [{
+        "infile": "../../../testdata/barnsbury_extended2_axial.graph",
+        "outfile": "out.graph",
+        "mode": "AXIAL",
+        "extraArgs": {
+            "-xa": "n",
+            "-xal": ""
+        }
+    }],
+    "segment_tulip_1024_rn_steps": [{
+        "infile": "../../../testdata/barnsbury_extended1_segment.graph",
+        "outfile": "out.graph",
+        "mode": "SEGMENT",
+        "extraArgs": {
+            "-st": "tulip",
+            "-stb": "1024",
+            "-sr": "n",
+            "-srt": "steps"
+        }
+    }],
+    "segment_tulip_1024_rn_steps_choice": [{
+        "infile": "../../../testdata/barnsbury_extended1_segment.graph",
+        "outfile": "out.graph",
+        "mode": "SEGMENT",
+        "extraArgs": {
+            "-st": "tulip",
+            "-stb": "1024",
+            "-sr": "n",
+            "-srt": "steps",
+            "-sic": ""
+        }
+    }],
+    "segment_tulip_1024_rn_steps_weighted": [{
+        "infile": "../../../testdata/barnsbury_extended1_segment.graph",
+        "outfile": "out.graph",
+        "mode": "SEGMENT",
+        "extraArgs": {
+            "-st": "tulip",
+            "-stb": "1024",
+            "-sr": "n",
+            "-srt": "steps",
+            "-swa": "Segment Length"
+        }
+    }],
+    "segment_topological_rn": [{
+        "infile": "../../../testdata/barnsbury_extended1_segment.graph",
+        "outfile": "out.graph",
+        "mode": "SEGMENT",
+        "extraArgs": {
+            "-st": "topological",
+            "-sr": "n"
+        }
+    }],
+    "segment_metric_rn": [{
+        "infile": "../../../testdata/barnsbury_extended1_segment.graph",
+        "outfile": "out.graph",
+        "mode": "SEGMENT",
+        "extraArgs": {
+            "-st": "metric",
+            "-sr": "n"
+        }
+    }],
+    "convert_drawing_axial":[{
+        "infile": "../../../testdata/barnsbury_extended2_drawing.graph",
+        "outfile": "out.graph",
+        "mode": "MAPCONVERT",
+        "extraArgs": {
+            "-co": "axial",
+            "-con": "Axial Map Test"
+        }
+    }],
+    "convert_axial_segment":[{
+        "infile": "../../../testdata/barnsbury_extended2_axial.graph",
+        "outfile": "out.graph",
+        "mode": "MAPCONVERT",
+        "extraArgs": {
+            "-co": "segment",
+            "-con": "Segment Map Test"
+        }
+    }]
   }
 }

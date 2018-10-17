@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "genlib/p2dpoly.h"
 #include <vector>
 #include <map>
 

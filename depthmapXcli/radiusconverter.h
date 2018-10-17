@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef RADIUSCONVERTER_H
-#define RADIUSCONVERTER_H
+#pragma once
+
 #include <string>
 
 class IRadiusConverter
@@ -33,4 +33,3 @@ public:
     virtual double ConvertForMetric(const std::string &radius) const;
 };
 
-#endif // RADIUSCONVERTER_H

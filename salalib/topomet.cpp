@@ -135,10 +135,22 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
          total += 1;
          //
          Connector& axline = m_connectors.at(here.ref);
-         axline.first();
-         int connected_cursor = -1;
-         connected_cursor = axline.cursor(here.dir);
+         int connected_cursor = -2;
+
+         auto iter = axline.m_back_segconns.begin();
+         bool backsegs = true;
+
          while (connected_cursor != -1) {
+             if(backsegs && iter == axline.m_back_segconns.end()) {
+                 iter = axline.m_forward_segconns.begin();
+                 backsegs = false;
+             }
+             if(!backsegs && iter == axline.m_forward_segconns.end()) {
+                 break;
+             }
+
+             connected_cursor = iter->first.ref;
+
             if (seen[connected_cursor] > segdepth && connected_cursor != cursor) {
                bool seenalready = (seen[connected_cursor] == 0xffffffff) ? false : true;
                float length = seglengths[connected_cursor];
@@ -168,7 +180,7 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
                // (seenalready: need to check that we're not doing this twice, given the seen can go twice)
 
                // Quick mod - TV
-               if (!sel_only && connected_cursor > (int)cursor && !seenalready) { // only one way paths, saves doing this twice
+               if (!sel_only && connected_cursor > int(cursor) && !seenalready) { // only one way paths, saves doing this twice
                   int subcur = connected_cursor;
                   while (subcur != -1) {
                      // in this method of choice, start and end lines are included
@@ -178,8 +190,7 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
                   }
                }
             }
-            axline.next();
-            connected_cursor = axline.cursor(here.dir);
+            iter++;
          }
       }
       // also put in mean depth:
@@ -310,13 +321,23 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
       else {
          here.done = true;
       }
-      //
-      double len = seglengths[here.ref];
+
       Connector& axline = m_connectors.at(here.ref);
-      axline.first();
-      int connected_cursor = -1;
-      connected_cursor = axline.cursor(here.dir);
+      int connected_cursor = -2;
+
+      auto iter = axline.m_back_segconns.begin();
+      bool backsegs = true;
+
       while (connected_cursor != -1) {
+          if(backsegs && iter == axline.m_back_segconns.end()) {
+              iter = axline.m_forward_segconns.begin();
+              backsegs = false;
+          }
+          if(!backsegs && iter == axline.m_forward_segconns.end()) {
+              break;
+          }
+
+          connected_cursor = iter->first.ref;
          if (seen[connected_cursor] > segdepth) {
             float length = seglengths[connected_cursor];
             int axialref = axialrefs[connected_cursor];
@@ -342,8 +363,7 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
                }
             }
          }
-         axline.next();
-         connected_cursor = axline.cursor(here.dir);
+         iter++;
       }
    }
 

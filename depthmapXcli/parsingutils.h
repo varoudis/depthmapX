@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+
 #define PASTE(arg) arg
 #define ENFORCE_ARGUMENT(flag, counter)\
     if ( ++ PASTE(counter) >= argc \
@@ -26,10 +27,19 @@
 #include <string>
 
 namespace depthmapX{
+
+    inline bool has_only_digits(const std::string &s){
+      return s.find_first_not_of( "0123456789" ) == std::string::npos;
+    }
+
+    inline bool has_only_digits_dots(const std::string &s){
+      return s.find_first_not_of( "0123456789." ) == std::string::npos;
+    }
+
     inline bool has_only_digits_dots_commas(const std::string &s){
         return s.find_first_not_of( "0123456789,.-" ) == std::string::npos;
     }
 
-    std::vector<double> parseAxialRadiusList(const std::string &radiusList);
+    std::vector<double> parseRadiusList(const std::string &radiusList);
 
 }

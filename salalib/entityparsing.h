@@ -38,6 +38,7 @@ namespace EntityParsing {
     Point2f parsePoint(const std::string &point, char delimiter = ',');
     std::vector<IsovistDefinition> parseIsovists(std::istream &stream, char delimiter);
     IsovistDefinition parseIsovist(const std::string &isovist);
+    std::vector<std::pair<int, int> > parseRefPairs(std::istream& stream, char delimiter);
 }
 
 #endif // ENTITYPARSING_H

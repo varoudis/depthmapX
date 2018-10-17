@@ -9,7 +9,11 @@ SOURCES += convertertest.cpp \
     main.cpp \
     dxfptest.cpp \
     teststringutils.cpp \
-    testbspnode.cpp
+    testbspnode.cpp \
+    testcontainerutils.cpp \
+    testreadwritehelpers.cpp \
+    testpsubvec.cpp \
+    testsimplematrix.cpp
 
 HEADERS +=
 

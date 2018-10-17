@@ -18,6 +18,7 @@
 #define EXCEPTIONS_H
 
 #include <exception>
+#include <string>
 
 namespace depthmapX
 {

@@ -15,22 +15,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __CONNECTOR_H__
-#define __CONNECTOR_H__
+#pragma once
 
+#include <istream>
+#include <ostream>
+#include <vector>
+#include <map>
 /////////////////////////////////////////////////////////////////////////////
 
 // Additional for segment analysis
 
 struct SegmentRef
 {
-   char dir; int ref;
-   SegmentRef(char d = 0, int r = -1)
+   char dir;
+   // padding the remaining three bytes behind the char
+   char pad1 : 8;
+   short pad2 : 16;
+   int ref;
+   SegmentRef(char d = 0, int r = -1): pad1(0), pad2(0)
    { dir = d; ref = r; }
-   friend bool operator < (SegmentRef a, SegmentRef b);
-   friend bool operator > (SegmentRef a, SegmentRef b);
-   friend bool operator == (SegmentRef a, SegmentRef b);
-   friend bool operator != (SegmentRef a, SegmentRef b);
 };
 // note, the dir is only a direction indicator, the ref should always be unique
 inline bool  operator < (SegmentRef a, SegmentRef b) { return a.ref < b.ref; }
@@ -66,32 +69,31 @@ inline bool operator != (SegmentData a, SegmentData b) { return a.metricdepth !=
 
 struct Connector
 {
-   // cursor included purely to make this compatible with DLL functionality
-   mutable int m_cursor;
    //  if this is a segment, this is the key for the axial line:
    int m_segment_axialref;
    // use one or other of these
-   pvecint m_connections;
+   std::vector<int> m_connections;
    //
-   pmap<SegmentRef,float> m_back_segconns;
-   pmap<SegmentRef,float> m_forward_segconns;
+   std::map<SegmentRef, float> m_back_segconns;
+   std::map<SegmentRef, float> m_forward_segconns;
    //
    Connector(int axialref = -1)
-   { m_segment_axialref = axialref; m_cursor = -1; }
+   { m_segment_axialref = axialref; }
    void clear()
    { m_connections.clear(); m_back_segconns.clear(); m_forward_segconns.clear(); }
    //
-   bool read(std::istream &stream, int version, pvecint *keyvertices = NULL );
-   bool write( ofstream& stream );
+   bool read(std::istream &stream);
+   bool write( std::ofstream& stream );
    //
    // Cursor extras
    enum { CONN_ALL, SEG_CONN_ALL, SEG_CONN_FW, SEG_CONN_BK };
-   int count(int mode = CONN_ALL) const;
-   int cursor(int mode = CONN_ALL) const;
-   int direction(int mode = SEG_CONN_ALL) const;
-   float weight(int mode = SEG_CONN_ALL) const;
-   void first() const { m_cursor = 0; }
-   void next() const { m_cursor++; } 
-};
 
-#endif
+   // PK: These functions have been stripped of state and left
+   // here for salaprogram which seems to be the only place they
+   // are used. salaprogram seems to also be the only place where
+   // the last two modes (SEG_CONN_FW, SEG_CONN_BK) are used
+   int count(int mode = CONN_ALL) const;
+   int getConnectedRef(int cursor, int mode = CONN_ALL) const;
+   int direction(int cursor, int mode = SEG_CONN_ALL) const;
+   float weight(int cursor, int mode = SEG_CONN_ALL) const;
+};

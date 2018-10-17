@@ -60,11 +60,42 @@ protected:
    int m_processflag;
 public:
    Point()
-      { m_state = EMPTY; m_block = 0; m_misc = 0; m_grid_connections = 0; m_node = NULL; m_processflag = 0; m_merge = NoPixel; m_user_data = NULL; }
+      { m_state = EMPTY; m_block = 0; m_misc = 0; m_grid_connections = 0; m_node = nullptr; m_processflag = 0; m_merge = NoPixel; m_user_data = NULL; }
    Point& operator = (const Point& p)
-      { throw 1; }
+   {
+       m_block = p.m_block;
+       m_state = p.m_state;
+       m_misc = p.m_misc;
+       m_grid_connections = p.m_grid_connections;
+       m_node = p.m_node ? std::unique_ptr<Node>(new Node(*p.m_node)) : nullptr;
+       m_location = p.m_location;
+       m_color = p.m_color;
+       m_merge = p.m_merge;
+       m_color = p.m_color;
+       m_extent = p.m_extent;
+       m_dist = p.m_dist;
+       m_cumangle = p.m_cumangle;
+       m_lines = p.m_lines;
+       m_processflag = p.m_processflag;
+       return *this;
+   }
    Point(const Point& p)
-      { throw 1; }
+   {
+       m_block = p.m_block;
+       m_state = p.m_state;
+       m_misc = p.m_misc;
+       m_grid_connections = p.m_grid_connections;
+       m_node = p.m_node ? std::unique_ptr<Node>(new Node(*p.m_node)) : nullptr;
+       m_location = p.m_location;
+       m_color = p.m_color;
+       m_merge = p.m_merge;
+       m_color = p.m_color;
+       m_extent = p.m_extent;
+       m_dist = p.m_dist;
+       m_cumangle = p.m_cumangle;
+       m_lines = p.m_lines;
+       m_processflag = p.m_processflag;
+   }
    //
    bool empty() const
       { return (m_state & EMPTY) == EMPTY; }

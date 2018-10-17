@@ -59,7 +59,7 @@ void IsovistParser::parse(int argc, char **argv)
                 throw CommandLineException("-ii cannot be used together with -if");
             }
             ENFORCE_ARGUMENT("-ii", i);
-            mIsovists.push_back(EntityParsing::parseIsovist(argv[i]));
+            m_isovists.push_back(EntityParsing::parseIsovist(argv[i]));
         }
         else if( std::strcmp(argv[i], "-if") == 0)
         {
@@ -67,7 +67,7 @@ void IsovistParser::parse(int argc, char **argv)
             {
                 throw CommandLineException("-if can only be used once");
             }
-            if (!mIsovists.empty())
+            if (!m_isovists.empty())
             {
                 throw depthmapX::CommandLineException("-if cannot be used together with -ii");
             }
@@ -85,9 +85,9 @@ void IsovistParser::parse(int argc, char **argv)
             message << "Failed to find file " << isovistFile;
             throw depthmapX::CommandLineException(message.str());
         }
-        mIsovists = EntityParsing::parseIsovists(file, ',');
+        m_isovists = EntityParsing::parseIsovists(file, ',');
     }
-    if (mIsovists.empty())
+    if (m_isovists.empty())
     {
         throw CommandLineException("No isovists defined. Use -ii or -if");
     }
@@ -96,5 +96,5 @@ void IsovistParser::parse(int argc, char **argv)
 
 void IsovistParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
-    dm_runmethods::runIsovists(clp, mIsovists, perfWriter);
+    dm_runmethods::runIsovists(clp, m_isovists, perfWriter);
 }

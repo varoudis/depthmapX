@@ -51,15 +51,15 @@ public:
     };
 
     // vga options
-    VgaMode getVgaMode() const { return _vgaMode; }
-    bool localMeasures() const { return _localMeasures; }
-    bool globalMeasures() const { return _globalMeasures; }
-    const std::string & getRadius() const { return _radius; }
+    VgaMode getVgaMode() const { return m_vgaMode; }
+    bool localMeasures() const { return m_localMeasures; }
+    bool globalMeasures() const { return m_globalMeasures; }
+    const std::string & getRadius() const { return m_radius; }
 private:
     // vga options
-    VgaMode _vgaMode;
-    bool _localMeasures;
-    bool _globalMeasures;
-    std::string _radius;
+    VgaMode m_vgaMode;
+    bool m_localMeasures;
+    bool m_globalMeasures;
+    std::string m_radius;
 };
 

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "../salalib/mapconverter.h"
 #include "../genlib/p2dpoly.h"
 #include "../salalib/mgraph.h"
 #include "../salalib/shapemap.h"
@@ -30,22 +31,20 @@ TEST_CASE("Testing ShapeGraph::writeAxialConnections"){
     Point2f line3Start(2,1);
     Point2f line3End  (2,-2);
 
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
 
-    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
-    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
 
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
 
-    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToAxial(0, "Test axial", (*spacePixel));
-    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+    auto shapegraph = MapConverter::convertDrawingToAxial(0, "Test axial", metaGraph->m_drawingFiles);
 
     SECTION("writeAxialConnectionsAsDotGraph") {
         std::stringstream stream;
-        displayedShapeGraph.writeAxialConnectionsAsDotGraph(stream);
+        shapegraph->writeAxialConnectionsAsDotGraph(stream);
 
         REQUIRE(stream.good());
         char line[1000];
@@ -61,7 +60,7 @@ TEST_CASE("Testing ShapeGraph::writeAxialConnections"){
     }
     SECTION("writeAxialConnectionsAsPairsCSV") {
         std::stringstream stream;
-        displayedShapeGraph.writeAxialConnectionsAsPairsCSV(stream);
+        shapegraph->writeAxialConnectionsAsPairsCSV(stream);
 
         REQUIRE(stream.good());
         char line[1000];
@@ -87,22 +86,20 @@ TEST_CASE("Testing ShapeGraph::writeSegmentConnections")
     Point2f line3Start(2,0);
     Point2f line3End  (2,2);
 
-    std::unique_ptr<SuperSpacePixel> spacePixel(new SuperSpacePixel("Test SuperSpacePixel"));
+    std::unique_ptr<MetaGraph> metaGraph(new MetaGraph("Test MetaGraph"));
 
-    spacePixel->m_spacePixels.emplace_back("Test SpacePixelGroup");
-    spacePixel->m_spacePixels.back().m_spacePixels.emplace_back("Test ShapeMap");
+    metaGraph->m_drawingFiles.emplace_back("Test SpacePixelGroup");
+    metaGraph->m_drawingFiles.back().m_spacePixels.emplace_back("Test ShapeMap");
 
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
-    spacePixel->m_spacePixels.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line1Start, line1End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line2Start, line2End));
+    metaGraph->m_drawingFiles.back().m_spacePixels.back().makeLineShape(Line(line3Start, line3End));
 
-    std::unique_ptr<ShapeGraphs> shapeGraphs(new ShapeGraphs());
-    shapeGraphs->convertDrawingToSegment(0, "Test segment", (*spacePixel));
-    ShapeGraph &displayedShapeGraph = shapeGraphs->getDisplayedMap();
+    auto shapegraph = MapConverter::convertDrawingToSegment(0, "Test segment", metaGraph->m_drawingFiles);
 
     SECTION("writeSegmentConnectionsAsPairsCSV") {
         std::stringstream stream;
-        displayedShapeGraph.writeSegmentConnectionsAsPairsCSV(stream);
+        shapegraph->writeSegmentConnectionsAsPairsCSV(stream);
 
         REQUIRE(stream.good());
         char line[1000];

@@ -72,8 +72,6 @@
    typedef uint64_t uint64;
 #endif
 
-using namespace std;
-
 #ifndef bool
 //   #define bool int
 #endif
@@ -187,8 +185,8 @@ public:
    const T& base_at(size_t pos) const
       { return m_data[pos]; }
 public:
-   istream& read( istream& stream, streampos offset = streampos(-1) );
-   ostream& write( ostream& stream );
+   std::istream& read( std::istream& stream, std::streampos offset = std::streampos(-1) );
+   std::ostream& write( std::ostream& stream );
 };
 
 template <class T>
@@ -396,9 +394,9 @@ void pmemvec<T>::shrink()
 }
 
 template <class T>
-istream& pmemvec<T>::read( istream& stream, streampos offset )
+std::istream& pmemvec<T>::read( std::istream& stream, std::streampos offset )
 {
-   if (offset != streampos(-1)) {
+   if (offset != std::streampos(-1)) {
       stream.seekg( offset );
    }
    // READ / WRITE USES 32-bit LENGTHS (number of elements)
@@ -418,13 +416,13 @@ istream& pmemvec<T>::read( istream& stream, streampos offset )
          throw pexception( pexception::MEMORY_ALLOCATION, sizeof(T) * storage_size() );
    }
    if (m_length != 0) {
-      stream.read( (char *) m_data, sizeof(T) * streamsize(m_length) );
+      stream.read( (char *) m_data, sizeof(T) * std::streamsize(m_length) );
    }
    return stream;
 }
 
 template <class T>
-ostream& pmemvec<T>::write( ostream& stream )
+std::ostream& pmemvec<T>::write( std::ostream& stream )
 {
    // READ / WRITE USES 32-bit LENGTHS (number of elements)
    // n.b., do not change this to size_t as it will cause 32-bit to 64-bit conversion problems
@@ -437,7 +435,7 @@ ostream& pmemvec<T>::write( ostream& stream )
    unsigned int length = (unsigned int)(m_length);
    stream.write( (char *) &length, sizeof(unsigned int) );
    if (m_length != 0) {
-      stream.write( (char *) m_data, sizeof(T) * streamsize(m_length) );
+      stream.write( (char *) m_data, sizeof(T) * std::streamsize(m_length) );
    }
    return stream;
 }
@@ -833,8 +831,8 @@ public:
    // NOTE: no find (as often equivalence operator will not be defined)
    //
    // Override read and write
-   istream& read( istream& stream );
-   ostream& write( ostream& stream );
+   std::istream& read( std::istream& stream );
+   std::ostream& write( std::ostream& stream );
 };
 
 template <class T>
@@ -1004,7 +1002,7 @@ void prefvec<T>::clearnofree()
 // Note: read and write only work for structures without pointers
 
 template <class T>
-istream& prefvec<T>::read( istream& stream )
+std::istream& prefvec<T>::read( std::istream& stream )
 {
    for (size_t i = 0; i < pmemvec<T *>::m_length; i++) {
       if (pmemvec<T *>::m_data[i]) {
@@ -1046,7 +1044,7 @@ istream& prefvec<T>::read( istream& stream )
 }
 
 template <class T>
-ostream& prefvec<T>::write( ostream& stream )
+std::ostream& prefvec<T>::write( std::ostream& stream )
 {
    // READ / WRITE USES 32-bit LENGTHS (number of elements)
    // n.b., do not change this to size_t as it will cause 32-bit to 64-bit conversion problems
@@ -1250,165 +1248,6 @@ void pqvector<T>::sort(size_t left, size_t right)
       sort(i, right);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-// psubvec is based on pvector, designed for arrays of chars or shorts, it subsumes itself
-// so can be stored as a single pointer: useful if you have a lot of empty arrays
-
-template <class T> class psubvec
-{
-public:
-   static const T npos = -1;
-protected:
-   T *m_data;
-public:
-   psubvec()
-      { m_data = NULL; }
-   psubvec(const psubvec<T>& );
-   ~psubvec();
-   psubvec<T>& operator = (const psubvec<T>& );
-   //
-   virtual void push_back(const T item);
-   virtual void clear();
-public:
-   bool isEmpty() // isEmpty is provided in addition to size as is quicker to test
-      { return m_data == NULL; }
-   T size() const
-      { return m_data ? m_data[0] : 0; }
-   T& operator [] (T pos)
-      { return m_data[pos+1]; }
-   const T& operator [] (T pos) const
-      { return m_data[pos+1]; }
-public:
-   istream& read( istream& stream, streampos offset = -1 );
-   ostream& write( ostream& stream );
-};
-
-template <class T>
-psubvec<T>::psubvec(const psubvec& v)
-{
-   if (v.m_data) {
-      T length = v.m_data[0];
-      T count = 0;
-      while (length >>= 1) // find bit length (note: cannot assume int)
-         count++;
-      m_data = new T [2 << count];
-      if (m_data == NULL) {
-         throw pexception( pexception::MEMORY_ALLOCATION, sizeof(T) * size_t(2 << count) );
-      }
-      length = v.m_data[0];
-      for (T i = 0; i < length + 1; i++) {
-         m_data[i] = v.m_data[i];
-      }
-   }
-   else {
-      m_data = NULL;
-   }
-}
-
-template <class T>
-psubvec<T>::~psubvec()
-{
-   if (m_data)
-   {
-      delete [] m_data;
-      m_data = NULL;
-   }
-}
-
-template <class T>
-psubvec<T>& psubvec<T>::operator = (const psubvec<T>& v)
-{
-   if (this != &v) {
-      if (v.m_data) {
-         T length = v.m_data[0];
-         T count = 0;
-         while (length >>= 1) // find bit length (note: cannot assume int)
-            count++;
-         m_data = new T [2 << count];
-         if (m_data == NULL) {
-            throw pexception( pexception::MEMORY_ALLOCATION, sizeof(T) * size_t(2 << count) );
-         }
-         length = v.m_data[0];
-         for (T i = 0; i < length + 1; i++) {
-            m_data[i] = v.m_data[i];
-         }
-      }
-      else {
-         m_data = NULL;
-      }
-   }
-   return *this;
-}
-
-template <class T>
-void psubvec<T>::push_back(const T item)
-{
-   if (!m_data) {
-      m_data = new T [2];
-      m_data[0] = 1;
-      m_data[1] = item;
-   }
-   else {
-      T length = m_data[0] + 1;
-      if ((length & (length - 1)) == 0) { // determine if next length would be power of 2
-         T *new_data = new T [length << 1];
-         if (new_data == NULL) {
-            throw pexception( pexception::MEMORY_ALLOCATION, sizeof(T) * size_t(length << 1) );
-         }
-         for (T i = 0; i < length; i++)
-            new_data[i] = m_data[i];
-         delete [] m_data;
-         m_data = new_data;
-      }
-      m_data[0] = length;
-      m_data[length] = item;
-   }
-}
-
-template <class T>
-void psubvec<T>::clear()
-{
-   if (m_data)
-   {
-      delete [] m_data;
-      m_data = NULL;
-   }
-}
-
-template <class T>
-istream& psubvec<T>::read( istream& stream, streampos offset )
-{
-   if (m_data) {
-      delete [] m_data;
-      m_data = NULL;
-   }
-   T length;
-   stream.read( (char *) &length, sizeof(T) );
-   if (length) {
-      T copy = length;
-	   T count = 0;
-      while (length >>= 1) // find bit length (note: cannot assume int)
-        count++;
-      m_data = new T [2 << count];
-      if (m_data == NULL) {
-         throw pexception( pexception::MEMORY_ALLOCATION, sizeof(T) * size_t(2 << count) );
-      }
-      stream.read((char *) &m_data, sizeof(T)*(copy+1) );
-   }
-   return stream;
-}
-
-template <class T>
-ostream& psubvec<T>::write( ostream& stream )
-{
-   if (m_data) {
-      stream.write((char *) &m_data, sizeof(T)*(m_data[0]+1));
-   }
-   return stream;
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1428,8 +1267,8 @@ public:
    T2& value() { return m_value; }
    const T2& value() const { return m_value; }
 
-   istream& read( istream& stream );
-   ostream& write( ostream& stream );
+   std::istream& read( std::istream& stream );
+   std::ostream& write( std::ostream& stream );
 };
 template <class T1, class T2>
 inline bool operator == (const keyvaluepair<T1,T2>& a, const keyvaluepair<T1,T2>& b)
@@ -1442,14 +1281,14 @@ inline bool operator > (const keyvaluepair<T1,T2>& a, const keyvaluepair<T1,T2>&
 { return (a.m_key > b.m_key); }
 // Note: read and write only work for structures without pointers
 template <class T1, class T2>
-istream& keyvaluepair<T1,T2>::read( istream& stream )
+std::istream& keyvaluepair<T1,T2>::read( std::istream& stream )
 {
    stream.read( (char *) &m_key, sizeof(T1) );
    stream.read( (char *) &m_value, sizeof(T2) );
    return stream;
 }
 template <class T1, class T2>
-ostream& keyvaluepair<T1,T2>::write( ostream& stream )
+std::ostream& keyvaluepair<T1,T2>::write( std::ostream& stream )
 {
    stream.write( (char *) &m_key, sizeof(T1) );
    stream.write( (char *) &m_value, sizeof(T2) );
@@ -1497,8 +1336,8 @@ public:
 #endif
 
    //
-   virtual istream& read( istream& stream );
-   virtual ostream& write( ostream& stream );
+   virtual std::istream& read( std::istream& stream );
+   virtual std::ostream& write( std::ostream& stream );
 };
 template <class T1, class T2>
 inline bool operator == (const keyvaluepairref<T1,T2>& a, const keyvaluepairref<T1,T2>& b)
@@ -1511,7 +1350,7 @@ inline bool operator > (const keyvaluepairref<T1,T2>& a, const keyvaluepairref<T
 { return (a.m_key > b.m_key); }
 // Note: read and write only work for structures without pointers
 template <class T1, class T2>
-istream& keyvaluepairref<T1,T2>::read( istream& stream )
+std::istream& keyvaluepairref<T1,T2>::read( std::istream& stream )
 {
    stream.read( (char *) &m_key, sizeof(T1) );
 
@@ -1522,7 +1361,7 @@ istream& keyvaluepairref<T1,T2>::read( istream& stream )
    return stream;
 }
 template <class T1, class T2>
-ostream& keyvaluepairref<T1,T2>::write( ostream& stream )
+std::ostream& keyvaluepairref<T1,T2>::write( std::ostream& stream )
 {
    stream.write( (char *) &m_key, sizeof(T1) );
    stream.write( (char *) m_value, sizeof(T2) );
@@ -1600,14 +1439,14 @@ public:
    const T2& current() const
    { return m_vector.current().value(); }
    // read and write (structures without pointers *only*)
-   istream& read( istream& stream );
-   ostream& write( ostream& stream );
+   std::istream& read( std::istream& stream );
+   std::ostream& write( std::ostream& stream );
 };
 
 // Note: read and write only work for structures without pointers
 
 template <class T1,class T2,class Pair>
-istream& pmemmap<T1,T2,Pair>::read( istream& stream )
+std::istream& pmemmap<T1,T2,Pair>::read( std::istream& stream )
 {
    for (size_t i = m_vector.size() - 1; i != paftl::npos; i--) {
       m_vector.remove_at(i);
@@ -1625,7 +1464,7 @@ istream& pmemmap<T1,T2,Pair>::read( istream& stream )
 }
 
 template <class T1,class T2,class Pair>
-ostream& pmemmap<T1,T2,Pair>::write( ostream& stream )
+std::ostream& pmemmap<T1,T2,Pair>::write( std::ostream& stream )
 {
    // check for max unsigned int exceeded
    if (m_vector.size() > size_t((unsigned int)-1)) {
@@ -1768,61 +1607,11 @@ public:
    }
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
-template <class T> class pflipper
-{
-protected:
-   T m_contents[2];
-   short parity;
-public:
-   pflipper() {
-      parity = 0;
-   }
-   pflipper( const T& a, const T& b ) {
-      parity = 0;
-      m_contents[0] = a;
-      m_contents[1] = b;
-   }
-   pflipper( const pflipper& f ) {
-      parity = f.parity;
-      m_contents[0] = f.m_contents[0];
-      m_contents[1] = f.m_contents[1];
-   }
-   virtual ~pflipper() {
-   }
-   pflipper& operator = (const pflipper& f ) {
-      if (this != &f) {
-         parity = f.parity;
-         m_contents[0] = f.m_contents[0];
-         m_contents[1] = f.m_contents[1];
-      }
-      return *this;
-   }
-   void flip() {
-      parity = (parity == 0) ? 1 : 0;
-   }
-   T& a() {
-      return m_contents[parity];
-   }
-   T& b() {
-      return m_contents[(parity == 0) ? 1 : 0];
-   }
-   const T& a() const {
-      return m_contents[parity];
-   }
-   const T& b() const {
-      return m_contents[(parity == 0) ? 1 : 0];
-   }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 // Read and write runlength encoded vectors, with byte alignment through T
 
 // note: vector must have been allocated to accept stream
 template <class T>
-istream& read_rle( istream& stream, T *vector, size_t length )
+std::istream& read_rle( std::istream& stream, T *vector, size_t length )
 {
    unsigned char *data = (unsigned char *) vector;
    for (size_t i = 0; i < sizeof(T); i++) {
@@ -1846,7 +1635,7 @@ istream& read_rle( istream& stream, T *vector, size_t length )
    return stream;
 }
 
-template <class T> ostream& write_rle( ostream& stream, T *vector, size_t length )
+template <class T> std::ostream& write_rle( std::ostream& stream, T *vector, size_t length )
 {
    unsigned char *data = (unsigned char *) vector;
    for (size_t i = 0; i < sizeof(T); i++) {
@@ -1994,11 +1783,11 @@ protected:
    unsigned char m_decodedstring[HASHTABLESIZE];   // <- impossible that the decode string is ever as long as the hash table size
 public:
    plzw();
-   istream& read( istream& stream, T *vector, int length );
-   ostream& write( ostream& stream, T *vector, int length );
+   std::istream& read( std::istream& stream, T *vector, int length );
+   std::ostream& write( std::ostream& stream, T *vector, int length );
 protected:
-   istream& get(istream& stream, unsigned int& code);
-   ostream& put(ostream& stream, const unsigned int code);
+   std::istream& get(std::istream& stream, unsigned int& code);
+   std::ostream& put(std::ostream& stream, const unsigned int code);
 };
 
 template <class T>
@@ -2009,7 +1798,7 @@ plzw<T>::plzw()
 }
 
 template <class T>
-istream& plzw<T>::read(istream& stream, T *vector, int length )
+std::istream& plzw<T>::read(std::istream& stream, T *vector, int length )
 {
    unsigned char *data = (unsigned char *) vector;
    unsigned char *string;
@@ -2051,7 +1840,7 @@ istream& plzw<T>::read(istream& stream, T *vector, int length )
 }
 
 template <class T>
-ostream& plzw<T>::write(ostream& stream, T *vector, int length )
+std::ostream& plzw<T>::write(std::ostream& stream, T *vector, int length )
 {
    unsigned char *data = (unsigned char *) vector;
 
@@ -2087,7 +1876,7 @@ ostream& plzw<T>::write(ostream& stream, T *vector, int length )
 // b2 a2
 
 template <class T>
-istream& plzw<T>::get(istream& stream, unsigned int& code)
+std::istream& plzw<T>::get(std::istream& stream, unsigned int& code)
 {
    unsigned char bits;
    if (!m_bitswaiting) {
@@ -2108,7 +1897,7 @@ istream& plzw<T>::get(istream& stream, unsigned int& code)
 }
 
 template <class T>
-ostream& plzw<T>::put(ostream& stream, const unsigned int code)
+std::ostream& plzw<T>::put(std::ostream& stream, const unsigned int code)
 {
    if (!m_bitswaiting) {
       stream.put((unsigned char)(code & 0xFF));
