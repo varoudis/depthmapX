@@ -48,7 +48,8 @@ SOURCES += \
     axialminimiser.cpp \
     axialpolygons.cpp \
     tidylines.cpp \
-    mapconverter.cpp
+    mapconverter.cpp \
+    vgavisualglobal.cpp
 
 HEADERS += \
     attributes.h \
@@ -93,7 +94,9 @@ HEADERS += \
     tolerances.h \
     axialpolygons.h \
     tidylines.h \
-    mapconverter.h
+    mapconverter.h \
+    ivga.h \
+    vgavisualglobal.h
 
 DISTFILES += \
     salascript-tests.txt
