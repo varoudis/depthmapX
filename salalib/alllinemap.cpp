@@ -213,10 +213,7 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
 
    // and a little more setting up: key vertex relationships
    std::vector<std::vector<int> > keyvertexconns;
-   int *keyvertexcounts = new int [m_keyvertexcount];
-   for (int x = 0; x < m_keyvertexcount; x++) {
-      keyvertexcounts[x] = 0;
-   }
+   std::vector<int> keyvertexcounts(static_cast<size_t>(m_keyvertexcount), 0);
    // this sets up a two step relationship: looks for the key vertices for all lines connected to you
    for (size_t y = 0; y < m_connectors.size(); y++) {
       keyvertexconns.push_back(std::vector<int>());
@@ -261,8 +258,6 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
          lines_m.push_back( depthmapX::getMapAtIndex(getAllShapes(), k)->second.getLine() );
       }
    }
-
-   delete [] keyvertexcounts;
 
    std::unique_ptr<ShapeGraph> fewestlinemap_subsets(new ShapeGraph("Fewest-Line Map (Subsets)", ShapeMap::AXIALMAP));
    fewestlinemap_subsets->clearAll();

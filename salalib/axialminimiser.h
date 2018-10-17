@@ -26,10 +26,10 @@ public:
    ~AxialMinimiser();
    void removeSubsets(std::map<int, std::set<int> > &axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
                       std::map<RadialKey, std::set<int> >& rlds, std::vector<RadialLine> &radial_lines,
-                      std::vector<std::vector<int> > &keyvertexconns, int *keyvertexcounts);
+                      std::vector<std::vector<int> > &keyvertexconns, std::vector<int>& keyvertexcounts);
    void fewestLongest(std::map<int,std::set<int> >& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
                       std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine>& radial_lines,
-                      std::vector<std::vector<int> >& keyvertexconns, int *keyvertexcounts);
+                      std::vector<std::vector<int> >& keyvertexconns, std::vector<int>& keyvertexcounts);
    // advanced topological testing:
    bool checkVital(int checkindex, std::set<int> &axSegCut, std::map<RadialKey,RadialSegment>& radialsegs,
                    std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine> &radial_lines);

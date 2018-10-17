@@ -34,7 +34,7 @@ AxialMinimiser::~AxialMinimiser()
 
 void AxialMinimiser::removeSubsets(std::map<int, std::set<int> >& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
                                    std::map<RadialKey, std::set<int> > &rlds,  std::vector<RadialLine> &radial_lines,
-                                   std::vector<std::vector<int> >& keyvertexconns, int *keyvertexcounts)
+                                   std::vector<std::vector<int> >& keyvertexconns, std::vector<int>& keyvertexcounts)
 {
    bool removedflag = true;
    int counterrors = 0;
@@ -176,7 +176,7 @@ void AxialMinimiser::removeSubsets(std::map<int, std::set<int> >& axsegcuts, std
 
 void AxialMinimiser::fewestLongest(std::map<int, std::set<int> > &axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
                                    std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine> &radial_lines,
-                                   std::vector<std::vector<int> > &keyvertexconns, int *keyvertexcounts)
+                                   std::vector<std::vector<int> > &keyvertexconns, std::vector<int>& keyvertexcounts)
 {
    //m_axialconns = m_alllinemap->m_connectors;
    int livecount = 0;
