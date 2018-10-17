@@ -276,13 +276,13 @@ bool AxialMinimiser::checkVital(int checkindex, std::set<int> &axSegCut, std::ma
          std::set<int>& divisorsb = rlds.find(seg.radial_b)->second;
          auto iterKey = std::find(radial_lines.begin(), radial_lines.end(), key);
          if(iterKey == radial_lines.end()) {
-             throw depthmapX::RuntimeException("Out of range");
+             throw depthmapX::RuntimeException("Radial key not found in radial lines");
          }
          const RadialLine& rlinea = *iterKey;
 
          auto iterSegB = std::find(radial_lines.begin(), radial_lines.end(), seg.radial_b);
          if(iterSegB == radial_lines.end()) {
-             throw depthmapX::RuntimeException("Out of range");
+             throw depthmapX::RuntimeException("Radial key not found in radial lines");
          }
          const RadialLine& rlineb = *iterSegB;
          for (int diva: divisorsa) {
