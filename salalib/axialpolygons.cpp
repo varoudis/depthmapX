@@ -1,6 +1,8 @@
 #include "salalib/axialpolygons.h"
 #include "salalib/tidylines.h"
 #include "salalib/tolerances.h"
+
+#include "genlib/simplematrix.h"
 #include "genlib/containerutils.h"
 
 AxialVertex AxialPolygons::makeVertex(const AxialVertexKey& vertexkey, const Point2f& openspace)
@@ -143,60 +145,56 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const pr
    size_t i = 0;
 
    // TODO: (CS) these should be vectors, not raw pointers.
-   int *found[2];
-   found[0] = new int [lines.size()];
-   found[1] = new int [lines.size()];
+   depthmapX::RowMatrix<int> found(2, lines.size());
    for (i = 0; i < lines.size(); i++) {
-      found[0][i] = -1;
-      found[1][i] = -1;
+      found(0, i) = -1;
+      found(1, i) = -1;
    }
    std::vector<Point2f> pointlookup;
    // three pass operation: (1) stack the lines
    for (i = 0; i < lines.size(); i++) {
-      if (found[0][i] == -1) {
+      if (found(0, i) == -1) {
          pointlookup.push_back(lines[i].start());
          m_vertex_possibles.insert(std::make_pair(pointlookup.back(),std::vector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
-         found[0][i] = pointlookup.size() - 1;
+         found(0, i) = static_cast<int>(pointlookup.size() - 1);
          for (auto& segconn: connectionset[i].m_back_segconns) {
             int forwback = (segconn.first.dir == 1) ? 0 : 1;
-            found[forwback][segconn.first.ref] = found[0][i];
+            found(static_cast<size_t>(forwback), static_cast<size_t>(segconn.first.ref)) = found(0, i);
          }
       }
-      if (found[1][i] == -1) {
+      if (found(1, i) == -1) {
          pointlookup.push_back(lines[i].end());
          m_vertex_possibles.insert(std::make_pair(pointlookup.back(),std::vector<Point2f>()));
          m_vertex_polys.push_back(-1); // <- n.b., dummy entry for now, maintain with vertex possibles
-         found[1][i] = pointlookup.size() - 1;
+         found(1, i) = static_cast<int>(pointlookup.size() - 1);
          for (auto& segconn: connectionset[i].m_forward_segconns) {
             int forwback = (segconn.first.dir == 1) ? 0 : 1;
-            found[forwback][segconn.first.ref] = found[1][i];
+            found(static_cast<size_t>(forwback), static_cast<size_t>(segconn.first.ref)) = found(1, i);
          }
       }
    }
    // three pass operation: (2) connect up vertex possibles
    for (i = 0; i < lines.size(); i++) {
-      if (found[0][i] == -1 || found[1][i] == -1) {
+      if (found(0, i) == -1 || found(1, i) == -1) {
          // TODO: (CS) What are these integers being thrown?!
          throw 1;
       }
-      auto index0 = m_vertex_possibles.find(pointlookup[size_t(found[0][i])]);
-      auto index1 = m_vertex_possibles.find(pointlookup[size_t(found[1][i])]);
+      auto index0 = m_vertex_possibles.find(pointlookup[size_t(found(0, i))]);
+      auto index1 = m_vertex_possibles.find(pointlookup[size_t(found(1, i))]);
       if (index0 == m_vertex_possibles.end() || index1 == m_vertex_possibles.end()) {
          // TODO: (CS) What are these integers being thrown?!
          throw 2;
       }
 
-      index0->second.push_back(pointlookup[size_t(found[1][i])]);
-      index1->second.push_back(pointlookup[size_t(found[0][i])]);
+      index0->second.push_back(pointlookup[size_t(found(1, i))]);
+      index1->second.push_back(pointlookup[size_t(found(0, i))]);
    }
    for(auto& possible: m_vertex_possibles) {
        sort( possible.second.begin(), possible.second.end() );
        possible.second.erase( unique( possible.second.begin(), possible.second.end() ), possible.second.end() );
    }
 
-   delete [] found[0];
-   delete [] found[1];
    // three pass operation: (3) create vertex poly entries
    int current_poly = -1;
    for (i = 0; i < m_vertex_possibles.size(); i++) {
