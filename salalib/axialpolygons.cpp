@@ -311,10 +311,9 @@ void AxialPolygons::makeAxialLines(std::set<AxialVertex>& openvertices, prefvec<
                                    KeyVertices& keyvertices, prefvec<PolyConnector>& poly_connections,
                                    std::vector<RadialLine>& radial_lines)
 {
-   auto it = openvertices.end();
-   --it;
+   auto it = openvertices.rbegin();
    AxialVertex vertex = *it;
-   openvertices.erase(it);
+   openvertices.erase(std::next(it).base());
 
    m_handled_list.insert(vertex);
 
