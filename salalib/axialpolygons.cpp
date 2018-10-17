@@ -434,7 +434,6 @@ void AxialPolygons::makePolygons(std::vector<std::vector<Point2f>>& polygons)
          continue;
       }
       for (size_t j = 0; j < vertPoss.second.size(); j++) {
-
          if (std::find(currList.begin(), currList.end(), j) != currList.end()) {
             continue;
          }
