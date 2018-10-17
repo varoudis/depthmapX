@@ -111,9 +111,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
    m_top_right.b   = -2147483647;
 */
    m_line_count = 0;
-   if (!layers.empty()) {
-      layers.clear();
-   }
+   layers.clear();
 
    for (size_t i = 0; i < fileset.size(); i++) {
 
