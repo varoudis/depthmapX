@@ -71,5 +71,5 @@ public:
    { return m_line_count; }
 protected:
    void fitBounds(const Line& li);
-   void addGeom(NtfLayer &layer, NtfGeometry& geom);
+   void addGeom(size_t layerIdx, NtfGeometry& geom);
 };

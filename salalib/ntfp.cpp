@@ -76,11 +76,11 @@ void NtfMap::fitBounds(const Line& li)
    }
 }
 
-void NtfMap::addGeom(NtfLayer& layer, NtfGeometry& geom)
+void NtfMap::addGeom(size_t layerIdx, NtfGeometry& geom)
 { 
    m_line_count += geom.lines.size();
-   layer.m_line_count += geom.lines.size();
-   layer.geometries.push_back( geom );
+   layers[layerIdx].m_line_count += geom.lines.size();
+   layers[layerIdx].geometries.push_back( geom );
    for (size_t i = 0; i < geom.lines.size(); i++) {
       fitBounds(geom.lines[i]);
    }
@@ -235,7 +235,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                      std::string featcodestr = line.substr(25,4);
                      auto pos = std::find(featcodes.begin(), featcodes.end(), stoi(featcodestr) );
                      if (pos != featcodes.end()) {
-                        addGeom(layers[size_t(std::distance(featcodes.begin(), pos))], geom);
+                        addGeom(static_cast<size_t>(std::distance(featcodes.begin(), pos)), geom);
                      }
                   }
                   parsing = 0;
@@ -265,7 +265,7 @@ void NtfMap::open(const std::vector<std::string>& fileset, Communicator *comm)
                }
                if (tokens.back()[tokens.back().length()-2] == '0') { // 0 here indicates no continuation
                   if (filetype == NTF_LANDLINE) {
-                     addGeom(layers[size_t(std::distance(featcodes.begin(), currpos))],geom);
+                     addGeom(static_cast<size_t>(std::distance(featcodes.begin(), currpos)),geom);
                      parsing = 0;
                   }
                }
