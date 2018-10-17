@@ -180,16 +180,6 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    for (;iter != m_radial_lines.end();) {
       if (iter->vertex == prevIter->vertex && iter->ang != prevIter->ang) {
                 radialsegs.insert(std::make_pair( (RadialKey)(*iter), (RadialSegment)(*prevIter)));
-      }          
-         if (iter->ang == prevIter->ang) {
-            ++iter;
-            ++prevIter;
-            continue;
-         }
-         else {
-            radialsegs.insert(std::make_pair( (RadialKey)(*iter),
-                                              (RadialSegment)(*prevIter)));
-         }
       }
       ++iter;
       ++prevIter;
