@@ -49,4 +49,5 @@ HEADERS += \
     bsptree.h \
     readwritehelpers.h \
     psubvec.h \
-    pflipper.h
+    pflipper.h \
+    simplematrix.h
