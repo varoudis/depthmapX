@@ -220,12 +220,11 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    // this sets up a two step relationship: looks for the key vertices for all lines connected to you
    for (size_t y = 0; y < m_connectors.size(); y++) {
       keyvertexconns.push_back(std::vector<int>());
+      auto &conn = keyvertexconns.back();
       Connector& axa = m_connectors[y];
       for (size_t z = 0; z < axa.m_connections.size(); z++) {
          std::set<int>& axb = m_keyvertices[axa.m_connections[z]];
          for (int axbi: axb) {
-            auto& conn = keyvertexconns[y];
-
             auto res = std::lower_bound(conn.begin(), conn.end(), axbi);
             if (res  == conn.end() || axbi < *res )
             {
