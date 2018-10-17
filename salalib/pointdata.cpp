@@ -1027,8 +1027,11 @@ bool PointMap::read(std::istream& stream, int version )
 
    stream.read( (char *) &m_spacing, sizeof(m_spacing) );
 
-   stream.read( (char *) &m_rows, sizeof(m_rows) );
-   stream.read( (char *) &m_cols, sizeof(m_cols) );
+   int rows, cols;
+   stream.read( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.read( reinterpret_cast<char *>(&cols), sizeof(cols) );
+   m_rows = static_cast<size_t>(rows);
+   m_cols = static_cast<size_t>(cols);
 
    stream.read( (char *) &m_filled_point_count, sizeof(m_filled_point_count) );
 
@@ -1108,8 +1111,10 @@ bool PointMap::write( std::ofstream& stream, int version )
 
    stream.write( (char *) &m_spacing, sizeof(m_spacing) );
 
-   stream.write( (char *) &m_rows, sizeof(m_rows) );
-   stream.write( (char *) &m_cols, sizeof(m_cols) );
+   int rows = static_cast<int>(m_rows);
+   int cols = static_cast<int>(m_cols);
+   stream.write( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.write( reinterpret_cast<char *>(&cols), sizeof(cols) );
 
    stream.write( (char *) &m_filled_point_count, sizeof(m_filled_point_count) );
 

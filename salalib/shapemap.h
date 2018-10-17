@@ -28,6 +28,8 @@
 #include "genlib/containerutils.h"
 #include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
+#include "genlib/readwritehelpers.h"
+#include "genlib/psubvec.h"
 
 #include <vector>
 #include <string>
@@ -60,6 +62,13 @@ inline bool operator < (const ShapeRef& a, const ShapeRef& b)
 { return a.m_shape_ref < b.m_shape_ref; }
 inline bool operator > (const ShapeRef& a, const ShapeRef& b)
 { return a.m_shape_ref > b.m_shape_ref; }
+
+struct ShapeRefHash {
+public:
+    size_t operator()(const ShapeRef & shapeRef) const {
+        return shapeRef.m_shape_ref;
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -140,7 +149,7 @@ public:
    //
    double getAngDev() const;
    //
-   pqvector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
+   std::vector<SalaEdgeU> getClippingSet(QtRegion& clipframe) const;
    //
    bool read(std::istream &stream, int version);
    bool write(std::ofstream& stream);
@@ -161,34 +170,6 @@ public:
        return lines;
    }
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-class SalaObject : public pvecint
-{
-   friend class ShapeMap;
-protected:
-   Point2f m_centroid;
-public:
-   SalaObject() {;}
-   //
-   bool read(std::istream &stream, int version);
-   bool write(std::ofstream& stream);
-};
-inline bool SalaObject::read(std::istream& stream, int)
-{
-   stream.read((char *)&m_centroid,sizeof(m_centroid));
-   pvecint::read(stream);
-   return true;
-}
-inline bool SalaObject::write(std::ofstream& stream)
-{
-   stream.write((char *)&m_centroid,sizeof(m_centroid));
-   pvecint::write(stream);
-   return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct Connector;
 
@@ -235,7 +216,6 @@ protected:
    mutable bool m_bsp_tree;
    //
    std::map<int,SalaShape> m_shapes;
-   std::map<int,SalaObject> m_objects;   // THIS IS UNUSED! Meant for each object to have many shapes
    //
    std::vector<SalaEvent> m_undobuffer;
    //
@@ -258,10 +238,6 @@ public:
    virtual ~ShapeMap();
    void copy(const ShapeMap& shapemap, int copyflags = 0);
    void clearAll();
-   //
-   // num objects
-   const size_t getObjectCount() const
-   { return m_objects.size(); }
    // num shapes total
    const size_t getShapeCount() const
    { return m_shapes.size(); }
@@ -314,8 +290,6 @@ public:
    bool polyClose(int shape_ref);
    bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
-protected:
-   pqvector<Point2f> m_temppoints;
 public:
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
@@ -333,10 +307,10 @@ public:
    // test if point is inside a particular shape
    bool pointInPoly(const Point2f& p, int shaperef) const;
    // retrieve lists of polys point intersects:
-   void pointInPolyList(const Point2f& p, pvecint& shapeindexlist) const;
-   void lineInPolyList(const Line& li, pvecint& shapeindexlist, int lineref = -1, double tolerance = 0.0) const;
-   void polyInPolyList(int polyref, pvecint& shapeindexlist, double tolerance = 0.0) const;
-   void shapeInPolyList(const SalaShape& shape, pvecint& shapeindexlist);
+   std::vector<int> pointInPolyList(const Point2f& p) const;
+   std::vector<int> lineInPolyList(const Line& li, int lineref = -1, double tolerance = 0.0) const;
+   std::vector<int> polyInPolyList(int polyref, double tolerance = 0.0) const;
+   std::vector<int> shapeInPolyList(const SalaShape& shape);
    // helper to make actual test of point in shape:
    int testPointInPoly(const Point2f& p, const ShapeRef& shape) const;
    // also allow look for a close polyline:
@@ -352,9 +326,9 @@ public:
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
-   int getLineConnections(int lineref, pvecint& connections, double tolerance);
+   std::vector<int> getLineConnections(int lineref, double tolerance);
    // Get arbitrary shape connections for a particular shape
-   int getShapeConnections(int polyref, pvecint& connections, double tolerance);
+   std::vector<int> getShapeConnections(int polyref, double tolerance);
    // Make all connections
    void makeShapeConnections();
    //
@@ -526,8 +500,8 @@ public:
    //
    // links and unlinks
 protected:
-   pqvector<OrderedIntPair> m_links;
-   pqvector<OrderedIntPair> m_unlinks;
+   std::vector<OrderedIntPair> m_links;
+   std::vector<OrderedIntPair> m_unlinks;
    mutable int m_curlinkline;
    mutable int m_curunlinkpoint;
 public:

@@ -15,7 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+
 #include <map>
+#include <algorithm>
 
 namespace depthmapX {
 
@@ -31,6 +33,17 @@ bool addIfNotExists(std::vector<T> &vec, T element) {
     auto it = std::find(vec.begin(), vec.end(), element);
     if(it == vec.end()) {
         vec.push_back(element);
+        return true;
+    }
+    return false;
+}
+
+
+template<typename K, typename V>
+bool addIfNotExists(std::map<K, V> &map, const K &key, const V &value) {
+    auto it = map.find(key);
+    if(it == map.end()) {
+        map[key] = value;
         return true;
     }
     return false;

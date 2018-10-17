@@ -44,7 +44,10 @@ HEADERS += \
     exceptions.h \
     legacyconverters.h \
     stringutils.h \
-    vectorhelpers.h \
     containerutils.h \
     linreg.h \
-    bsptree.h
+    bsptree.h \
+    readwritehelpers.h \
+    psubvec.h \
+    pflipper.h \
+    simplematrix.h

@@ -20,7 +20,6 @@
 #define __MAPINFODATA_H__
 
 #include "genlib/p2dpoly.h"
-#include "genlib/paftl.h"
 #include <istream>
 #include <ostream>
 #include <string>
@@ -60,7 +59,7 @@ public:
    //bool exportFile(ostream& miffile, ostream& midfile, const ShapeGraph& map);   // n.b., deprecated: use shapemap instead
    bool exportFile(std::ostream& miffile, std::ostream& midfile, const PointMap& points);
    bool exportFile(std::ostream& miffile, std::ostream& midfile, const ShapeMap& map);
-   bool exportPolygons(std::ostream& miffile, std::ostream& midfile, const prefvec<pqvector<Point2f>>& polygons, const QtRegion& region);
+   bool exportPolygons(std::ostream& miffile, std::ostream& midfile, const std::vector<std::vector<Point2f> > &polygons, const QtRegion& region);
    //
    bool readheader(std::istream& miffile);
    bool readcolumnheaders(std::istream& miffile, std::istream& midfile, std::vector<std::string>& columnheads);
