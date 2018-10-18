@@ -29,10 +29,13 @@ void findAndErase(std::vector<T> &vec, T element) {
 }
 
 template<typename T>
-void addIfNotExists(std::vector<T> &vec, T element) {
+bool addIfNotExists(std::vector<T> &vec, T element) {
     auto it = std::find(vec.begin(), vec.end(), element);
-    if(it == vec.end())
+    if(it == vec.end()) {
         vec.push_back(element);
+        return true;
+    }
+    return false;
 }
 
 
