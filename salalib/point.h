@@ -39,10 +39,13 @@ public:
    // note the order of these connections is important and used elsewhere:
    enum { CONNECT_E = 0x01, CONNECT_NE = 0x02, CONNECT_N = 0x04, CONNECT_NW = 0x08,
           CONNECT_W = 0x10, CONNECT_SW = 0x20, CONNECT_S = 0x40, CONNECT_SE = 0x80 };
+
+   int m_misc; // <- undocounter / point seen register / agent reference number, etc
+   PixelRef m_extent;       // used to speed up graph analysis (not sure whether or not it breaks it!)
+
 protected:
    int m_block;   // not used, unlikely to be used, but kept for time being
    int m_state;
-   int m_misc; // <- undocounter / point seen register / agent reference number, etc
    char m_grid_connections; // this is a standard set of grid connections, with bits set for E,NE,N,NW,W,SW,S,SE
    std::unique_ptr<Node> m_node;            // graph links
    Point2f m_location;      // note: this is large, but it helps allow loading of non-standard grid points,
@@ -50,7 +53,6 @@ protected:
                             // display
    float m_color;           // although display color for the point now introduced
    PixelRef m_merge;        // to merge with another point
-   PixelRef m_extent;       // used to speed up graph analysis (not sure whether or not it breaks it!)
    float m_dist;            // used to speed up metric analysis
    float m_cumangle;        // cummulative angle -- used in metric analysis and angular analysis
    // hmm... this is for my 3rd attempt at a quick line intersect algo:
@@ -157,6 +159,8 @@ public:
    }
    Node& getNode()
       { return *m_node; }
+   bool hasNode()
+      { return m_node != nullptr; }
    char getGridConnections() const
       { return m_grid_connections; }
    float getBinDistance(int i);
