@@ -1,4 +1,4 @@
-HEADERS += vgamodules/visualglobal.h \
+HEADERS += $$PWD/visualglobal.h \
     $$PWD/visuallocal.h
-SOURCES += vgamodules/visualglobal.cpp \
+SOURCES += $$PWD/visualglobal.cpp \
     $$PWD/visuallocal.cpp
