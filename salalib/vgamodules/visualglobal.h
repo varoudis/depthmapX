@@ -9,8 +9,8 @@ class VGAVisualGlobal : IVGA
 {
 public:
     VGAVisualGlobal();
-    virtual std::string getAnalysisName() const {
+    std::string getAnalysisName() const override {
         return "Global Visibility Analysis";
     }
-    virtual bool run(Communicator *comm, Options& options, PointMap &map, bool simple_version);
+    bool run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) override;
 };

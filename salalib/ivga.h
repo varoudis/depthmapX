@@ -17,6 +17,9 @@
 
 // Interface to handle different kinds of VGA analysis
 
+#include "salalib/pointdata.h"
+#include "salalib/options.h"
+
 #include "genlib/comm.h"
 
 #include <string>
@@ -25,7 +28,6 @@ class IVGA
 {
 public:
     virtual std::string getAnalysisName() const = 0;
-    virtual std::string getHelp() const = 0;
-    virtual void run(const Communicator *comm) const = 0;
+    virtual bool run(Communicator *comm, const Options& options, PointMap &map, bool simple_version) = 0;
     virtual ~IVGA(){}
 };
