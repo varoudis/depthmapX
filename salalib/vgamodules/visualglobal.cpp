@@ -187,6 +187,13 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
             }
         }
     }
+    for (int i = 0; i < map.getCols(); i++) {
+        for (int j = 0; j < map.getRows(); j++) {
+            PixelRef curs = PixelRef(i, j);
+            map.getPoint(curs).m_misc = miscs(j, i);
+            map.getPoint(curs).m_extent = extents(j, i);
+        }
+    }
     map.setDisplayedAttribute(integ_dv_col);
 
     return true;
