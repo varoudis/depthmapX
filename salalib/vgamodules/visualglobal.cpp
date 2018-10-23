@@ -45,6 +45,9 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
 
     int count = 0;
 
+    depthmapX::RowMatrix<int> miscs(map.getRows(), map.getCols());
+    depthmapX::RowMatrix<PixelRef> extents(map.getRows(), map.getCols());
+
     for (int i = 0; i < map.getCols(); i++) {
 
         for (int j = 0; j < map.getRows(); j++) {
@@ -60,8 +63,8 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
 
                 for (int ii = 0; ii < map.getCols(); ii++) {
                     for (int jj = 0; jj < map.getRows(); jj++) {
-                        map.getPoint(static_cast<PixelRef>(ii * map.getRows() + jj)).m_misc = 0;
-                        map.getPoint(static_cast<PixelRef>(ii * map.getRows() + jj)).m_extent = PixelRef(ii, jj);
+                        miscs(jj, ii) = 0;
+                        extents(jj, ii) = PixelRef(ii, jj);
                     }
                 }
 
@@ -78,26 +81,30 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                     search_tree.push_back(PixelRefVector());
                     distribution.push_back(0);
                     for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-                        Point &p = map.getPoint(search_tree[level][n]);
-                        if (p.filled() && p.m_misc != ~0) {
+                        PixelRef& ref = search_tree[level][n];
+                        int& pmisc = miscs(ref.y, ref.x);
+                        Point &p = map.getPoint(ref);
+                        if (p.filled() && pmisc != ~0) {
                             total_depth += level;
                             total_nodes += 1;
                             distribution.tail() += 1;
                             if ((int)options.radius == -1 ||
                                 level < (int)options.radius &&
                                     (!p.contextfilled() || search_tree[level][n].iseven())) {
-                                p.getNode().extractUnseen(search_tree[level + 1], &map, p.m_misc);
-                                p.m_misc = ~0;
+                                extractUnseen(p.getNode(), search_tree[level + 1], miscs, extents);
+                                pmisc = ~0;
                                 if (!p.getMergePixel().empty()) {
-                                    Point &p2 = map.getPoint(p.getMergePixel());
-                                    if (p2.m_misc != ~0) {
-                                        p2.getNode().extractUnseen(search_tree[level + 1], &map,
-                                                                 p2.m_misc); // did say p.misc
-                                        p2.m_misc = ~0;
+                                    PixelRef mergePixel = p.getMergePixel();
+                                    int& p2misc = miscs(mergePixel.y, mergePixel.x);
+                                    Point &p2 = map.getPoint(mergePixel);
+                                    if (p2misc != ~0) {
+                                        extractUnseen(p2.getNode(), search_tree[level + 1],
+                                                                 miscs, extents); // did say p.misc
+                                        p2misc = ~0;
                                     }
                                 }
                             } else {
-                                p.m_misc = ~0;
+                                pmisc = ~0;
                             }
                         }
                         search_tree[level].pop_back();

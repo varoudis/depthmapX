@@ -8,7 +8,6 @@
 class VGAVisualLocal : IVGA
 {
 public:
-    VGAVisualLocal();
     std::string getAnalysisName() const override {
         return "Local Visibility Analysis";
     }
