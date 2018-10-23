@@ -34,8 +34,8 @@ class SalaShape;
 class PixelBase
 {
 protected:
-   int m_rows;
-   int m_cols;
+   size_t m_rows;
+   size_t m_cols;
    QtRegion m_region;
 public:
    PixelBase() {;}

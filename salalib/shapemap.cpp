@@ -707,16 +707,16 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
          }
       }
       // now check any unlinks still exist in our newconnections are unlinked again (argh...)
-      for (size_t k = m_unlinks.size() - 1; k != paftl::npos; k--) {
+      for (auto revIter = m_unlinks.rbegin(); revIter != m_unlinks.rend(); ++revIter) {
          int connb = -1;
-         if (m_unlinks[k].a == rowid)
-            connb = m_unlinks[k].b;
-         else if (m_unlinks[k].b == rowid)
-            connb = m_unlinks[k].a;
+         if (revIter->a == rowid)
+            connb = revIter->b;
+         else if (revIter->b == rowid)
+            connb = revIter->a;
          if (connb != -1) {
             if (std::find(newconnections.begin(), newconnections.end(), connb) == newconnections.end()) {
                // no longer required:
-               m_unlinks.remove_at(k);
+               m_unlinks.erase( std::next(revIter).base() );
             }
             else {
                // enforce:
@@ -728,16 +728,16 @@ bool ShapeMap::moveShape(int shaperef, const Line& line, bool undoing)
          }
       }
       // now check any links are actually required (argh...)
-      for (size_t k = m_links.size() - 1; k != paftl::npos; k--) {
+      for (auto revIter = m_links.rbegin(); revIter != m_links.rend(); ++revIter) {
          int connb = -1;
-         if (m_links[k].a == rowid)
-            connb = m_links[k].b;
-         else if (m_links[k].b == rowid)
-            connb = m_links[k].a;
+         if (revIter->a == rowid)
+            connb = revIter->b;
+         else if (revIter->b == rowid)
+            connb = revIter->a;
          if (connb != -1) {
             if (std::find(newconnections.begin(), newconnections.end(), connb) != newconnections.end()) {
                // no longer required:
-               m_links.remove_at(k);
+                m_links.erase( std::next(revIter).base() );
             }
             else {
                // enforce:
@@ -959,27 +959,26 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
       m_connectors.erase(m_connectors.begin() + int(rowid));
 
       // take out explicit links and unlinks (note, undo won't restore these):
-      size_t k;
-      for (k = m_links.size() - 1; k != paftl::npos; k--) {
-         if (m_links[k].a == rowid || m_links[k].b == rowid) {
-            m_links.remove_at(k);
+      for (auto revIter = m_links.rbegin(); revIter != m_links.rend(); ++revIter) {
+         if (revIter->a == rowid || revIter->b == rowid) {
+            m_links.erase( std::next(revIter).base() );
          }
          else {
-            if (m_links[k].a > (int)rowid)
-               m_links[k].a -= 1;
-            if (m_links[k].b > (int)rowid)
-               m_links[k].b -= 1;
+            if (revIter->a > int(rowid))
+               revIter->a -= 1;
+            if (revIter->b > int(rowid))
+               revIter->b -= 1;
          }
       }
-      for (k = m_unlinks.size() - 1; k != paftl::npos; k--) {
-         if (m_unlinks[k].a == rowid || m_unlinks[k].b == rowid) {
-            m_unlinks.remove_at(k);
+      for (auto revIter = m_unlinks.rbegin(); revIter != m_unlinks.rend(); ++revIter) {
+         if (revIter->a == rowid || revIter->b == rowid) {
+            m_unlinks.erase( std::next(revIter).base() );
          }
          else {
-            if (m_unlinks[k].a > (int)rowid)
-               m_unlinks[k].a -= 1;
-            if (m_unlinks[k].b > (int)rowid)
-               m_unlinks[k].b -= 1;
+            if (revIter->a > int(rowid))
+               revIter->a -= 1;
+            if (revIter->b > int(rowid))
+               revIter->b -= 1;
          }
       }
    }
@@ -1815,7 +1814,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
          else if (shape.m_tags & ShapeRef::SHAPE_INTERNAL_EDGE) {
             std::vector<int> testnodes;
             size_t j;
-            for (j = 0; j < size_t(shape.m_polyrefs.size()); j++) { // <- note, polyrefs is a subvec and has maximum number according to sizeof(T)
+            for (j = 0; j < size_t(shape.m_polyrefs.size()); j++) {
                depthmapX::addIfNotExists(testnodes, int(shape.m_polyrefs[j]));
             }
             PixelRef pix2 = pixelate(p);
@@ -2029,8 +2028,8 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
       if (includes(pix)) { // <- note, for some reason, this pixel may be off edge (line crop problem?)
          std::vector<ShapeRef>& shapeRefs = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
          for (ShapeRef& shaperef: shapeRefs) {
-            if (!shaperef.m_polyrefs.isEmpty()) {
-               int len = shaperef.m_polyrefs.size();
+            if (!shaperef.m_polyrefs.empty()) {
+               size_t len = shaperef.m_polyrefs.size();
                for (int k = 0; k < len; k++) {
                   int x = int(shaperef.m_polyrefs[k]);
                   IntPair pair(int(shaperef.m_shape_ref),x);
@@ -2443,8 +2442,11 @@ bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
    // read extents:
    stream.read( (char *) &m_region, sizeof(m_region) );
    // read rows / cols
-   stream.read( (char *) &m_rows, sizeof(m_rows) );
-   stream.read( (char *) &m_cols, sizeof(m_cols) );
+   int rows, cols;
+   stream.read( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.read( reinterpret_cast<char *>(&cols), sizeof(cols) );
+   m_rows = static_cast<size_t>(rows);
+   m_cols = static_cast<size_t>(cols);
    // calculate geom data:
    m_tolerance = __max(m_region.width(), m_region.height()) * TOLERANCE_A;
 
@@ -2494,8 +2496,8 @@ bool ShapeMap::read( std::istream& stream, int version, bool drawinglayer )
       m_connectors.push_back(Connector());
       m_connectors[size_t(i)].read(stream);
    }
-   m_links.read(stream);
-   m_unlinks.read(stream);
+   dXreadwrite::readIntoVector(stream, m_links);
+   dXreadwrite::readIntoVector(stream, m_unlinks);
 
    // some miscellaneous extra data for mapinfo files
    m_hasMapInfoData = false;
@@ -2526,8 +2528,10 @@ bool ShapeMap::write( std::ofstream& stream, int version )
    // write extents:
    stream.write( (char *) &m_region, sizeof(m_region) );
    // write rows / cols
-   stream.write( (char *) &m_rows, sizeof(m_rows) );
-   stream.write( (char *) &m_cols, sizeof(m_cols) );
+   int rows = static_cast<int>(m_rows);
+   int cols = static_cast<int>(m_cols);
+   stream.write( reinterpret_cast<char *>(&rows), sizeof(rows) );
+   stream.write( reinterpret_cast<char *>(&cols), sizeof(cols) );
 
    // write next object ref to be used:
    stream.write((char *) &m_obj_ref, sizeof(m_obj_ref));
@@ -2560,8 +2564,8 @@ bool ShapeMap::write( std::ofstream& stream, int version )
    for (int i = 0; i < count; i++) {
       m_connectors[i].write(stream);
    }
-   m_links.write(stream);
-   m_unlinks.write(stream);
+   dXreadwrite::writeVector(stream, m_links);
+   dXreadwrite::writeVector(stream, m_unlinks);
 
    // some miscellaneous extra data for mapinfo files
    if (m_hasMapInfoData) {
@@ -3004,9 +3008,9 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
       // link these lines...
       // first look for explicit unlinks and clear
       OrderedIntPair link(index1,index2);
-      size_t unlinkindex = m_unlinks.searchindex(link);
-      if (unlinkindex != paftl::npos) {
-         m_unlinks.remove_at(unlinkindex);
+      auto unlinkiter = std::find(m_unlinks.begin(), m_unlinks.end(), link);
+      if (unlinkiter != m_unlinks.end()) {
+         m_unlinks.erase(unlinkiter);
          update = true;
       }
       else {
@@ -3017,7 +3021,7 @@ bool ShapeMap::linkShapes(int index1, int index2, bool refresh)
          auto linkIter2 = std::find(connections2.begin(), connections2.end(), index1);
          if (linkIter1 == connections1.end() && linkIter2 == connections2.end()) {
             // finally, link the two lines
-            m_links.add(link);
+            depthmapX::addIfNotExists(m_links, link);
             update = true;
          }
       }
@@ -3099,9 +3103,9 @@ bool ShapeMap::unlinkShapes(int index1, int index2, bool refresh)
       // unlink these shapes...
       // first look for explicit links and clear
       OrderedIntPair unlink(index1,index2);
-      size_t linkindex = m_links.searchindex(unlink);
-      if (linkindex != paftl::npos) {
-         m_links.remove_at(linkindex);
+      auto linkiter = std::find(m_links.begin(), m_links.end(), unlink);
+      if (linkiter != m_links.end()) {
+         m_links.erase(linkiter);
          update = true;
       }
       else {
@@ -3112,7 +3116,7 @@ bool ShapeMap::unlinkShapes(int index1, int index2, bool refresh)
          auto linkIter2 = std::find(connections2.begin(), connections2.end(), index1);
          if (linkIter1 != connections1.end() && linkIter2 != connections2.end()) {
             // finally, unlink the two shapes
-            m_unlinks.add(unlink);
+            depthmapX::addIfNotExists(m_unlinks, unlink);
             update = true;
          }
       }
