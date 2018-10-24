@@ -47,10 +47,10 @@ public:
    bool includes(const PixelRef pix) const {
       return (pix.x >= 0 && pix.x < m_cols && pix.y >= 0 && pix.y < m_rows);
    }
-   int getCols() const {
+   size_t getCols() const {
       return m_cols;
    }
-   int getRows() const {
+   size_t getRows() const {
       return m_rows;
    }
    const QtRegion& getRegion() const {
