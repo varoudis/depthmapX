@@ -1246,7 +1246,6 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    try {
       std::set<int> radii;
       for (double radius: options.radius_list) {
-          std::cout << radius <<std::endl;
          radii.insert( int(radius) );
       }
       retvar = getDisplayedShapeGraph().integrate( communicator, radii, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
