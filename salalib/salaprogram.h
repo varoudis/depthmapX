@@ -16,11 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __SALAPROGRAM_H__
-#define __SALAPROGRAM_H__
+#pragma once
 
 #include "genlib/stringutils.h"
-#include "genlib/paftl.h"
+
+#include <cmath>
 #include <vector>
 #include <set>
 #include <map>
@@ -88,7 +88,7 @@ inline bool operator > (const SalaStr& a, const SalaStr& b)
 
 struct SalaList {
    int *refcount;
-   pvector<SalaObj> *list;
+   std::vector<SalaObj> *list;
 public:
    friend bool operator == (const SalaList& a, const SalaList& b);
    friend bool operator != (const SalaList& a, const SalaList& b);
@@ -178,7 +178,7 @@ public:
       type = t; 
       if (t & S_LIST) {
          data.list.refcount = new int(1);
-         data.list.list = new pvector<SalaObj>;
+         data.list.list = new std::vector<SalaObj>;
       }
       else {
          data.count = 1; 
@@ -191,8 +191,7 @@ public:
       type = t; 
       if (t & S_LIST) {
          data.list.refcount = new int(1);
-         data.list.list = new pvector<SalaObj>;
-         data.list.list->set(v); // set blanks
+         data.list.list = new std::vector<SalaObj>(v); // set blanks
       }
       else {
          data.var = v; 
@@ -247,6 +246,7 @@ public:
    //
    // operations for graphs / graph nodes:
    AttributeTable *getTable();
+   std::map<int, SalaObj> marks;
    //
    const std::string getTypeStr() const;
    const std::string getTypeIndefArt() const;
@@ -265,14 +265,14 @@ protected:
    //
    SalaProgram *m_program; // information about the running program (in particular, the global variable and error stack)
    SalaCommand *m_parent;
-   prefvec<SalaCommand> m_children;
+   std::vector<SalaCommand> m_children;
    //
    std::map<std::string,int> m_var_names;
    //
    Command m_command;
    int m_indent;  // vital for program flow due to Pythonesque syntax
-   pvector<SalaObj> m_eval_stack;
-   pvector<SalaObj> m_func_stack;
+   std::vector<SalaObj> m_eval_stack;
+   std::vector<SalaObj> m_func_stack;
    //
    SalaObj m_for_iter;  // object used in a for loop
    //
@@ -298,8 +298,8 @@ class SalaProgram
    friend class SalaCommand;
    //
    SalaCommand m_root_command;
-   pvector<SalaObj> m_var_stack;
-   prefvec<SalaError> m_error_stack;
+   std::vector<SalaObj> m_var_stack;
+   std::vector<SalaError> m_error_stack;
    //
    // column is stored away from the context, as it's not actually passed to the program itself, just used to update a column
    int m_col;  
@@ -308,7 +308,6 @@ class SalaProgram
    SalaObj m_thisobj;
    //
    bool m_marked; // this is used to tell the program that a node has been "marked" -- all marks are cleared at the end of the execution
-   //
 public:
    SalaProgram(SalaObj context);
    ~SalaProgram();
@@ -436,7 +435,7 @@ inline int SalaObj::toInt() const
    switch(type) {
       case S_BOOL: return data.b ? 1 : 0;
       case S_INT: return data.i;
-      case S_DOUBLE: return int(floor(data.f)); // ensure properly implemented
+      case S_DOUBLE: return int(std::floor(data.f)); // ensure properly implemented
       default: throw SalaError(std::string("Cannot convert ") + getTypeIndefArt() + getTypeStr() + std::string(" to an integer value"));
    }
    return 0;
@@ -793,7 +792,3 @@ struct SalaMemberFuncLabel : public SalaFuncLabel
    }
 };
 
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-#endif

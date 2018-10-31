@@ -827,8 +827,8 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    stream.read((char *)&m_keyvertexcount,sizeof(m_keyvertexcount));
 
 
-   m_links.read(stream);
-   m_unlinks.read(stream);
+   dXreadwrite::readIntoVector(stream,m_links);
+   dXreadwrite::readIntoVector(stream,m_unlinks);
 
    char x = stream.get();
    if (x == 'm') {
@@ -929,7 +929,7 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
     std::vector<Point2f> closepoints;
     std::vector<IntPair> intersections;
     PixelRef pix = pixelate(unlinkPoint);
-    std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+    std::vector<ShapeRef>& pix_shapes = m_pixel_shapes(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x));
     auto iter = pix_shapes.begin();
     for (; iter != pix_shapes.end(); ++iter) {
        for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
@@ -1019,7 +1019,8 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes(static_cast<size_t>(pix1.y),
+                                                      static_cast<size_t>(pix1.x));
       for (auto& shape: shapes1) {
          auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
          int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
@@ -1040,8 +1041,10 @@ void ShapeGraph::makeNewSegMap()
             }
          }
       }
-      PixelRef pix2 = pixelate(depthmapX::getMapAtIndex(m_shapes, seg_a)->second.getLine().t_end());
-      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+
+      PixelRef pix2 = pixelate(seg_a_line.second.t_end());
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes(static_cast<size_t>(pix2.y),
+                                                      static_cast<size_t>(pix2.x));
       for (auto& shape: shapes2) {
          auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
          int seg_b = int(std::distance(lineset.begin(), seg_b_iter));

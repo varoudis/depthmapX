@@ -682,6 +682,7 @@ int MetaGraph::addShapeGraph(const std::string& name, int type)
     if ((type & ShapeMap::LINEMAP) != 0) {
         table.insertLockedColumn("Line Length");
     }
+    return mapref;
 }
 int MetaGraph::addShapeMap(const std::string& name)
 {
@@ -1401,22 +1402,20 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 
       m_drawingFiles.back().m_region = map.getRegion();;
 
-      for (size_t i = 0; i < map.size(); i++) {
+      for (auto layer: map.layers) {
 
-         m_drawingFiles.back().m_spacePixels.emplace_back(map[i].getName());
-         m_drawingFiles.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
+         m_drawingFiles.back().m_spacePixels.emplace_back(layer.getName());
+         m_drawingFiles.back().m_spacePixels.back().init(layer.getLineCount(), map.getRegion());
 
-         for (size_t j = 0; j < map[i].size(); j++) {
-
-            for (size_t k = 0; k < map[i][j].size(); k++) {
-
-               m_drawingFiles.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
+         for (auto geometry: layer.geometries) {
+            for (auto& line: geometry.lines) {
+               m_drawingFiles.back().m_spacePixels.back().makeLineShape( line );
             }
          }
 
          // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-2);
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-1);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-2);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-1);
       }
    }
 
@@ -1743,18 +1742,18 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
    }
 
    if (sourcetype & VIEWDATA) {
-      std::vector<int> gatelist;
+
       for (int i = 0; i < table_out.getRowCount(); i++) {
          if (!table_out.isVisible(i)) {
             continue;
          }
-         gatelist.clear();
+         std::vector<int> gatelist;
          if (desttype == VIEWVGA) {
-            m_dataMaps[sourcelayer].pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location,gatelist);
+            gatelist = m_dataMaps[sourcelayer].pointInPolyList(m_pointMaps[destlayer].getPoint(table_out.getRowKey(i)).m_location);
          }
          else if (desttype == VIEWAXIAL) {
             auto shapeMap = m_shapeGraphs[destlayer]->getAllShapes();
-            m_dataMaps[sourcelayer].shapeInPolyList(shapeMap[table_out.getRowKey(i)],gatelist);
+            gatelist = m_dataMaps[sourcelayer].shapeInPolyList(shapeMap[table_out.getRowKey(i)]);
          }
          else if (desttype == VIEWDATA) {
             if (sourcelayer == destlayer) {
@@ -1762,13 +1761,13 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                return false;
             }
             auto dataMap = m_dataMaps[destlayer].getAllShapes();
-            m_dataMaps[sourcelayer].shapeInPolyList(dataMap[table_out.getRowKey(i)],gatelist);
+            gatelist = m_dataMaps[sourcelayer].shapeInPolyList(dataMap[table_out.getRowKey(i)]);
          }
          double val = -1.0;
          int count = 0;
-         for (size_t j = 0; j < gatelist.size(); j++) {
-            if (table_in.isVisible(gatelist[j])) {
-               double thisval = table_in.getValue(gatelist[j],col_in);
+         for (int gate: gatelist) {
+            if (table_in.isVisible(gate)) {
+               double thisval = table_in.getValue(gate,col_in);
                pushValue(val,count,thisval,push_func);
             }
          }
@@ -1792,25 +1791,24 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          vals[i] = -1;
       }
 
-      std::vector<int> gatelist;
       if (sourcetype & VIEWVGA) {
          for (int i = 0; i < table_in.getRowCount(); i++) {
             if (!table_in.isVisible(i)) {
                continue;
             }
-            gatelist.clear();
+            std::vector<int> gatelist;
             if (desttype == VIEWDATA) {
-               m_dataMaps[destlayer].pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               gatelist = m_dataMaps[size_t(destlayer)].pointInPolyList(m_pointMaps[size_t(sourcelayer)].getPoint(table_in.getRowKey(i)).m_location);
             }
             else if (desttype == VIEWAXIAL) {
                // note, "axial" could be convex map, and hence this would be a valid operation
-               m_shapeGraphs[destlayer]->pointInPolyList(m_pointMaps[sourcelayer].getPoint(table_in.getRowKey(i)).m_location,gatelist);
+               gatelist = m_shapeGraphs[size_t(destlayer)]->pointInPolyList(m_pointMaps[size_t(sourcelayer)].getPoint(table_in.getRowKey(i)).m_location);
             }
             double thisval = table_in.getValue(i,col_in);
-            for (size_t j = 0; j < gatelist.size(); j++) {
-               if (table_out.isVisible(gatelist[j])) {
-                  double& val = vals[gatelist[j]];
-                  int& count = counts[gatelist[j]];
+            for (int gate: gatelist) {
+               if (table_out.isVisible(gate)) {
+                  double& val = vals[gate];
+                  int& count = counts[gate];
                   pushValue(val,count,thisval,push_func);
                }
             }
@@ -1825,20 +1823,20 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             if (!table_in.isVisible(i)) {
                continue;
             }
-            gatelist.clear();
+            std::vector<int> gatelist;
             if (desttype == VIEWDATA) {
-               auto dataMap = m_shapeGraphs[sourcelayer]->getAllShapes();
-               m_dataMaps[destlayer].shapeInPolyList(dataMap[table_in.getRowKey(i)],gatelist);
+               auto dataMap = m_shapeGraphs[size_t(sourcelayer)]->getAllShapes();
+               gatelist = m_dataMaps[size_t(destlayer)].shapeInPolyList(dataMap[table_in.getRowKey(i)]);
             }
             else if (desttype == VIEWAXIAL) {
-                auto shapeMap = m_shapeGraphs[sourcelayer]->getAllShapes();
-               m_shapeGraphs[destlayer]->shapeInPolyList(shapeMap[table_in.getRowKey(i)],gatelist);
+                auto shapeMap = m_shapeGraphs[size_t(sourcelayer)]->getAllShapes();
+               gatelist = m_shapeGraphs[size_t(destlayer)]->shapeInPolyList(shapeMap[table_in.getRowKey(i)]);
             }
             double thisval = table_in.getValue(i,col_in);
-            for (size_t j = 0; j < gatelist.size(); j++) {
-               if (table_out.isVisible(gatelist[j])) {
-                  double& val = vals[gatelist[j]];
-                  int& count = counts[gatelist[j]];
+            for (int gate: gatelist) {
+               if (table_out.isVisible(gate)) {
+                  double& val = vals[gate];
+                  int& count = counts[gate];
                   pushValue(val,count,thisval,push_func);
                }
             }
@@ -2662,7 +2660,7 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
             alllinemap->m_poly_connections.clear();
             alllinemap->m_poly_connections.read(stream);
             alllinemap->m_radial_lines.clear();
-            alllinemap->m_radial_lines.read(stream);
+            dXreadwrite::readIntoVector(stream, alllinemap->m_radial_lines);
 
             // this is an index to look up the all line map, used by UI to determine if can make fewest line map
             // note: it is not saved for historical reasons
@@ -2726,7 +2724,7 @@ bool MetaGraph::writeShapeGraphs( std::ofstream& stream, int version, bool displ
         }
 
         alllinemap->m_poly_connections.write(stream);
-        alllinemap->m_radial_lines.write(stream);
+        dXreadwrite::writeVector(stream, alllinemap->m_radial_lines);
     }
     return true;
 }

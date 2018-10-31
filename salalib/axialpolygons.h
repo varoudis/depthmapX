@@ -3,6 +3,8 @@
 #include "salalib/spacepix.h"
 #include "salalib/axialmap.h"
 #include "salalib/connector.h"
+
+#include "genlib/simplematrix.h"
 #include "genlib/p2dpoly.h"
 
 struct AxialVertexKey
@@ -75,26 +77,17 @@ struct RadialLine : public RadialKey
    bool cuts(const Line& l) const;
 };
 
-typedef pqvector<RadialKey> RadialKeyList;
-
-struct RadialSegment : public pvecint
+struct RadialSegment
 {
+   std::set<int> indices;
    RadialKey radial_b;
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   RadialSegment(RadialKey& rb = RadialKey()) : pvecint()
+   RadialSegment(RadialKey& rb)
    { radial_b = rb; }
-#else
-   RadialSegment(RadialKey& rb /*= RadialKey()*/) : pvecint()
+   RadialSegment(const RadialKey& rb)
    { radial_b = rb; }
-#endif
-
-   // Quick mod - TV
-   RadialSegment() : pvecint()
-   {
-       radial_b = RadialKey();
-   }
+   RadialSegment()
+   { radial_b = RadialKey(); }
 
 };
 
@@ -110,15 +103,13 @@ class AxialPolygons : public SpacePixel
 {
    friend class ShapeGraphs;
 protected:
-   pvecint m_vertex_polys;
-   pvecint **m_pixel_polys;
+   std::vector<int> m_vertex_polys;
+   depthmapX::ColumnMatrix<std::vector<int> > m_pixel_polys;
 public:
-   pqvector<AxialVertex> m_handled_list;
-   std::map<Point2f,pqvector<Point2f>> m_vertex_possibles;
+   AxialPolygons(): m_pixel_polys(0,0) {}
+   std::set<AxialVertex> m_handled_list;
+   std::map<Point2f, std::vector<Point2f>> m_vertex_possibles;
 
-   AxialPolygons();
-   virtual ~AxialPolygons();
-   //
    void clear();
    void init(std::vector<Line> &lines, const QtRegion& region);
    void makeVertexPossibles(const std::vector<Line> &lines, const std::vector<Connector> &connectionset);
@@ -128,7 +119,9 @@ public:
    // find a polygon corner visible from seed:
    AxialVertexKey seedVertex(const Point2f& seed);
    // make axial lines from corner vertices, visible from openspace
-   void makeAxialLines(pqvector<AxialVertex>& openvertices, prefvec<Line>& lines, KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections, pqvector<RadialLine>& radial_lines);
+   void makeAxialLines(std::set<AxialVertex> &openvertices, prefvec<Line>& lines,
+                       KeyVertices &keyvertices, prefvec<PolyConnector>& poly_connections,
+                       std::vector<RadialLine> &radial_lines);
    // extra: make all the polygons possible from the set of m_vertex_possibles
    void makePolygons(std::vector<std::vector<Point2f> > &polygons);
 };

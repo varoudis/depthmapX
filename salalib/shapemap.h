@@ -29,7 +29,6 @@
 #include "genlib/p2dpoly.h"
 #include "genlib/stringutils.h"
 #include "genlib/readwritehelpers.h"
-#include "genlib/psubvec.h"
 
 #include <vector>
 #include <string>
@@ -46,7 +45,7 @@ struct ShapeRef
    enum {SHAPE_EDGE = 0x0f, SHAPE_INTERNAL_EDGE = 0x10, SHAPE_CENTRE = 0x20, SHAPE_OPEN = 0x40 };
    unsigned char m_tags;
    unsigned int m_shape_ref;
-   psubvec<short> m_polyrefs;
+   std::vector<short> m_polyrefs;
    ShapeRef( unsigned int sref = SHAPE_REF_NULL, unsigned char tags = 0x00 )
       { m_shape_ref = sref; m_tags = tags; }
    friend bool operator == (const ShapeRef& a, const ShapeRef& b);
@@ -209,7 +208,7 @@ protected:
    mutable bool m_newshape;   // if a new shape has been added
    //
    // quick grab for shapes
-   std::vector<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
+   depthmapX::ColumnMatrix<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
    mutable BSPNode *m_bsp_root;
@@ -290,8 +289,6 @@ public:
    bool polyClose(int shape_ref);
    bool polyCancel(int shape_ref);
    // some shape creation tools for the scripting language or DLL interface
-protected:
-   pqvector<Point2f> m_temppoints;
 public:
    bool canUndo() const
    { return m_undobuffer.size() != 0; }
@@ -309,10 +306,10 @@ public:
    // test if point is inside a particular shape
    bool pointInPoly(const Point2f& p, int shaperef) const;
    // retrieve lists of polys point intersects:
-   void pointInPolyList(const Point2f& p, std::vector<int> &shapeindexlist) const;
-   void lineInPolyList(const Line& li, std::vector<int> &shapeindexlist, int lineref = -1, double tolerance = 0.0) const;
-   void polyInPolyList(int polyref, std::vector<int> &shapeindexlist, double tolerance = 0.0) const;
-   void shapeInPolyList(const SalaShape& shape, std::vector<int> &shapeindexlist);
+   std::vector<int> pointInPolyList(const Point2f& p) const;
+   std::vector<int> lineInPolyList(const Line& li, int lineref = -1, double tolerance = 0.0) const;
+   std::vector<int> polyInPolyList(int polyref, double tolerance = 0.0) const;
+   std::vector<int> shapeInPolyList(const SalaShape& shape);
    // helper to make actual test of point in shape:
    int testPointInPoly(const Point2f& p, const ShapeRef& shape) const;
    // also allow look for a close polyline:
@@ -502,8 +499,8 @@ public:
    //
    // links and unlinks
 protected:
-   pqvector<OrderedIntPair> m_links;
-   pqvector<OrderedIntPair> m_unlinks;
+   std::vector<OrderedIntPair> m_links;
+   std::vector<OrderedIntPair> m_unlinks;
    mutable int m_curlinkline;
    mutable int m_curunlinkpoint;
 public:

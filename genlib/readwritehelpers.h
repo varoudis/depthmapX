@@ -29,11 +29,11 @@ namespace dXreadwrite
     {
         vec.clear();
         unsigned int size;
-        stream.read((char *)&size, sizeof(size));
+        stream.read(reinterpret_cast<char *>(&size), sizeof(size));
         if (size > 0)
         {
             vec.resize(size);
-            stream.read((char *)vec.data(), sizeof(T) * std::streamsize(size));
+            stream.read(reinterpret_cast<char *>(vec.data()), sizeof(T) * std::streamsize(size));
         }
         return size;
     }
@@ -49,15 +49,15 @@ namespace dXreadwrite
     {
         // READ / WRITE USES 32-bit LENGTHS (number of elements) for compatibility reasons
 
-        if ( vec.size() > size_t((unsigned int)-1))
+        if ( vec.size() > size_t(static_cast<unsigned int>(-1)))
         {
             throw new depthmapX::RuntimeException("Vector exceeded max size for streaming");
         }
-        unsigned int length = (unsigned int)vec.size();
-        stream.write((char *)&length, sizeof(length));
+        const unsigned int length = static_cast<const unsigned int>(vec.size());
+        stream.write(reinterpret_cast<const char *>(&length), sizeof(length));
         if (length > 0)
         {
-            stream.write((char *)vec.data(), sizeof(T) * std::streamsize(length));
+            stream.write(reinterpret_cast<const char *>(vec.data()), sizeof(T) * std::streamsize(length));
         }
     }
 
@@ -67,12 +67,12 @@ namespace dXreadwrite
     {
         map.clear();
         unsigned int size;
-        stream.read((char *) &size, sizeof(size));
+        stream.read(reinterpret_cast<char *>(&size), sizeof(size));
         for(size_t i = 0; i < size; ++i) {
             K key;
             V value;
-            stream.read((char *) &key, sizeof(K));
-            stream.read((char *) &value, sizeof(V));
+            stream.read(reinterpret_cast<char *>(&key), sizeof(K));
+            stream.read(reinterpret_cast<char *>(&value), sizeof(V));
             map.insert(std::make_pair(key, value));
         }
         return size;
@@ -89,16 +89,16 @@ namespace dXreadwrite
     {
         // READ / WRITE USES 32-bit LENGTHS (number of elements) for compatibility reasons
 
-        if ( map.size() > size_t(uint(-1)))
+        if ( map.size() > size_t(static_cast<unsigned int>(-1)))
         {
             throw new depthmapX::RuntimeException("Map exceeded max size for streaming");
         }
-        unsigned int length = uint(map.size());
-        stream.write((char *) &length, sizeof(length));
+        const unsigned int length = static_cast<const unsigned int>(map.size());
+        stream.write(reinterpret_cast<const char *>(&length), sizeof(length));
         for(auto& pair: map)
         {
-            stream.write((char *) &pair.first, sizeof(K));
-            stream.write((char *) &pair.second, sizeof(V));
+            stream.write(reinterpret_cast<const char *>(&pair.first), sizeof(K));
+            stream.write(reinterpret_cast<const char *>(&pair.second), sizeof(V));
         }
     }
 

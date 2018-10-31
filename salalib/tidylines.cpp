@@ -29,8 +29,8 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
       m_lines[i].test = m_test;
       PixelRefVector list = pixelateLine( m_lines[i].line );
       for (size_t a = 0; a < list.size(); a++) {
-         for (size_t b = 0; b < m_pixel_lines[ list[a].x ][ list[a].y ].size(); b++) {
-            int j = m_pixel_lines[ list[a].x ][ list[a].y ][b];
+         auto pixel_lines = m_pixel_lines(static_cast<size_t>(list[a].y), static_cast<size_t>(list[a].x));
+         for (int j: pixel_lines) {
             if (m_lines[j].test != m_test && j > (int)i && intersect_region(lines[i],lines[j],TOLERANCE_B * maxdim)) {
                m_lines[j].test = m_test;
                int axis_i = (lines[i].width() >= lines[i].height()) ? XAXIS : YAXIS;
@@ -107,9 +107,9 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
    for (auto line: lines) {
       i++;
       PixelRef start = pixelate(line.second.start());
-      for (size_t j = 0; j < m_pixel_lines[start.x][start.y].size(); j++) {
-         int k = m_pixel_lines[start.x][start.y][j];
-         if (k > (int)i && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
+      auto& pixel_lines = m_pixel_lines(static_cast<size_t>(start.y), static_cast<size_t>(start.x));
+      for (int k: pixel_lines) {
+         if (k > int(i) && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
             if (approxeq(m_lines[i].line.end(),m_lines[k].line.end(),tolerance)) {
                removelist.push_back(line.first);
                break;
