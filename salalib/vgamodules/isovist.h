@@ -25,11 +25,11 @@
 
 #include "genlib/simplematrix.h"
 
-class VGAThroughVision : IVGA
+class VGAIsovist : IVGA
 {
 public:
     std::string getAnalysisName() const override {
-        return "Through Vision Analysis";
+        return "Angular Analysis";
     }
-    bool run(Communicator *comm, MetaGraph &, const Options &, PointMap &map, bool) override;
+    bool run(Communicator *comm, MetaGraph &mgraph, const Options &, PointMap &map, bool simple_version) override;
 };

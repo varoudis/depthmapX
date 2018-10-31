@@ -19,6 +19,7 @@
 
 #include "salalib/pointdata.h"
 #include "salalib/options.h"
+#include "salalib/mgraph.h"
 
 #include "genlib/comm.h"
 
@@ -28,6 +29,6 @@ class IVGA
 {
 public:
     virtual std::string getAnalysisName() const = 0;
-    virtual bool run(Communicator *comm, const Options& options, PointMap &map, bool simple_version) = 0;
+    virtual bool run(Communicator *comm, MetaGraph &mgraph, const Options& options, PointMap &map, bool simple_version) = 0;
     virtual ~IVGA(){}
 };

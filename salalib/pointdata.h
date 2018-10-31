@@ -81,7 +81,7 @@ class PointMap : public PixelBase
    // pushValuesToLayer: this swaps values from a PointMap to a DataLayer, and it needs to be changed in the future
    // (e.g., when making DataLayers into ShapeMaps)
    friend class MetaGraph;
-private:
+public:
    bool m_hasIsovistAnalysis = false;
 protected:
    std::string m_name;
@@ -145,7 +145,6 @@ public:
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
    bool binDisplay(Communicator *comm);
-   bool analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple_version);
    bool analyseVisualPointDepth(Communicator *comm);
    bool analyseMetricPointDepth(Communicator *comm);
    bool analyseAngularPointDepth(Communicator *comm);
