@@ -97,7 +97,7 @@ bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, 
                             if (p2.m_misc != ~0) {
                                 p2.m_cumangle = p.m_cumangle;
                                 p2.getNode().extractAngular(search_list, &map,
-                                                          AngularTriple(here.angle, p.getMergePixel(), NoPixel));
+                                                            AngularTriple(here.angle, p.getMergePixel(), NoPixel));
                                 p2.m_misc = ~0;
                             }
                         }
