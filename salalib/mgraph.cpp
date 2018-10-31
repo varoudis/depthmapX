@@ -1244,11 +1244,11 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    bool retvar = false;
 
    try {
-      pvecint radius;
-      for (size_t i = 0; i < options.radius_list.size(); i++) {
-         radius.push_back( (int) options.radius_list[i] );
+      std::set<int> radii;
+      for (double radius: options.radius_set) {
+         radii.insert( int(radius) );
       }
-      retvar = getDisplayedShapeGraph().integrate( communicator, radius, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
+      retvar = getDisplayedShapeGraph().integrate( communicator, radii, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1270,7 +1270,7 @@ bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options option
                                                               options.tulip_bins,
                                                               options.choice,
                                                               options.radius_type,
-                                                              options.radius_list,
+                                                              options.radius_set,
                                                               options.weighted_measure_col);
    }
    catch (Communicator::CancelledException) {
@@ -1289,7 +1289,7 @@ bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options opti
    bool retvar = false;
 
    try {
-       retvar = getDisplayedShapeGraph().analyseAngular(communicator, options.radius_list);
+       retvar = getDisplayedShapeGraph().analyseAngular(communicator, options.radius_set);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1308,8 +1308,8 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
 
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
-      for(size_t i = 0; i < options.radius_list.size(); i++) {
-          if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, options.radius_list[i], options.sel_only)) {
+      for(double radius: options.radius_set) {
+          if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, radius, options.sel_only)) {
               retvar = false;
           }
       }

@@ -18,24 +18,22 @@
 
 // This is my code to make a set of axial lines from a set of boundary lines
 
+#include "salalib/axialmap.h"
 #include "salalib/alllinemap.h"
 #include "salalib/tolerances.h"
-#include <math.h>
-#include <float.h>
-#include <time.h>
-#include <genlib/paftl.h>
-#include <genlib/comm.h>  // For communicator
+#include "salalib/pointdata.h"   // need the pointdata for the convert boundary graph to axial map routine
+#include "salalib/ngraph.h"      // ditto ngraph
+#include "salalib/MapInfoData.h"
 
-#include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
-#include <salalib/axialmap.h>
-
-#include <salalib/pointdata.h>   // need the pointdata for the convert boundary graph to axial map routine
-#include <salalib/ngraph.h>      // ditto ngraph
-#include "MapInfoData.h"
-
+#include "genlib/comm.h"  // For communicator
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
 #include "genlib/readwritehelpers.h"
+#include "genlib/pflipper.h"
+
+#include <math.h>
+#include <float.h>
+#include <time.h>
 
 #ifndef _WIN32
 #define _finite finite
@@ -220,10 +218,11 @@ void ShapeGraph::outputNet(std::ostream& netfile) const
    }
 }
 
-typedef pvector<IntPair> IntPairVector;
+typedef std::vector<IntPair> IntPairVector;
 
 // n.b., translate radius list before entry
-bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool choice, bool local, bool fulloutput, int weighting_col, bool simple_version)
+bool ShapeGraph::integrate(Communicator *comm, const std::set<int>& radius_set, bool choice,
+                           bool local, bool fulloutput, int weighting_col, bool simple_version)
 {
    // note, from 10.0, Depthmap no longer includes *self* connections on axial lines
    // self connections are stripped out on loading graph files, as well as no longer made
@@ -237,21 +236,21 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    // note: radius must be sorted lowest to highest, but if -1 occurs ("radius n") it needs to be last...
    // ...to ensure no mess ups, we'll re-sort here:
    bool radius_n = false;
-   pvecint radius;
-   for (size_t i = 0; i < radius_list.size(); i++) {
-      if (radius_list[i] == -1) {
+   std::vector<int> radii;
+   for (int radius: radius_set) {
+      if (radius < 0) {
          radius_n = true;
       }
       else {
-         radius.add(radius_list[i]);
+         radii.push_back(radius);
       }
    }
    if (radius_n) {
-      radius.push_back(-1);
+      radii.push_back(-1);
    }
 
    // retrieve weighted col data, as this may well be overwritten in the new analysis:
-   pvecdouble weights;
+   std::vector<double> weights;
    std::string weighting_col_text;
    if (weighting_col != -1) {
       weighting_col_text = m_attributes.getColumnName(weighting_col);
@@ -261,11 +260,10 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    }
 
    // first enter the required attribute columns:
-   size_t r;
-   for (r = 0; r < radius.size(); r++) {
+   for (int radius: radii) {
       std::string radius_text;
-      if (radius[r] != -1) {
-         radius_text = std::string(" R") + dXstring::formatString(int(radius[r]),"%d");
+      if (radius != -1) {
+         radius_text = dXstring::formatString(radius, " R%d");
       }
       if (choice) {
          std::string choice_col_text = std::string("Choice") + radius_text;
@@ -340,12 +338,12 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
       }
    }
    // then look up all the columns... eek:
-   pvecint choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
+   std::vector<int> choice_col, n_choice_col, w_choice_col, nw_choice_col, entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, intensity_col,
            depth_col, count_col, rel_entropy_col, penn_norm_col, w_depth_col, total_weight_col, ra_col, rra_col, td_col, harmonic_col;
-   for (r = 0; r < radius.size(); r++) {
+   for (int radius: radii) {
       std::string radius_text;
-      if (radius[r] != -1) {
-         radius_text = std::string(" R") + dXstring::formatString(int(radius[r]),"%d");
+      if (radius != -1) {
+         radius_text = std::string(" R") + dXstring::formatString(int(radius),"%d");
       }
       if (choice) {
          std::string choice_col_text = std::string("Choice") + radius_text;
@@ -422,7 +420,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    if (choice) {
       audittrail = new AnalysisInfo *[m_connectors.size()];
       for (size_t i = 0; i < m_connectors.size(); i++) {
-         audittrail[i] = new AnalysisInfo [radius.size()];
+         audittrail[i] = new AnalysisInfo [radii.size()];
       }
    }
 
@@ -445,16 +443,16 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
       if (local) {
          double control = 0.0;
          const std::vector<int>& connections = m_connectors[i].m_connections;
-         pvecint totalneighbourhood;
+         std::vector<int> totalneighbourhood;
          for (int connection: connections) {
             // n.b., as of Depthmap 10.0, connections[j] and i cannot coexist
             // if (connections[j] != i) {
-               totalneighbourhood.add(connection); // <- note add does nothing if member already exists
+               depthmapX::addIfNotExists(totalneighbourhood, connection);
                int retro_size = 0;
                auto& retconnectors = m_connectors[size_t(connection)].m_connections;
                for (auto retconnector: retconnectors) {
                    retro_size++;
-                   totalneighbourhood.add(retconnector); // <- note add does nothing if member already exists
+                   depthmapX::addIfNotExists(totalneighbourhood, retconnector);
                }
                control += 1.0 / double(retro_size);
             //}
@@ -472,7 +470,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          }
       }
 
-      pvecint depthcounts;
+      std::vector<int> depthcounts;
       depthcounts.push_back(0);
       Connector& thisline = m_connectors[i];
       pflipper<IntPairVector> foundlist;
@@ -486,10 +484,11 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
          total_weight += rootweight;
       }
       register int index = -1;
-      for (size_t r = 0; r < radius.size(); r++) {
+      int r = 0;
+      for (int radius: radii) {
          while (foundlist.a().size()) {
             if (!choice) {
-               index = foundlist.a().tail().a;
+               index = foundlist.a().back().a;
             }
             else {
                pos = pafrand() % foundlist.a().size();
@@ -526,18 +525,18 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                   }
                   total_depth += depth;
                   node_count++;
-                  depthcounts.tail() += 1;
+                  depthcounts.back() += 1;
                }
             }
             if (!choice)
                foundlist.a().pop_back();
             else
-               foundlist.a().remove_at(pos);
+               foundlist.a().erase(foundlist.a().begin() + pos);
             if (!foundlist.a().size()) {
                foundlist.flip();
                depth++;
                depthcounts.push_back(0);
-               if (radius[r] != -1 && depth > radius[r]) {
+               if (radius != -1 && depth > radius) {
                   break;
                }
             }
@@ -656,7 +655,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                 m_attributes.setValue(i,harmonic_col[r],-1.0f);
             }
          }
-
+         ++r;
       }
       //
       if (comm) {
@@ -673,7 +672,8 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    if (choice) {
       for (size_t i = 0; i < m_connectors.size(); i++) {
          double total_choice = 0.0, w_total_choice = 0.0;
-         for (size_t r = 0; r < radius.size(); r++) {
+         int r = 0;
+         for (int radius: radii) {
             total_choice += audittrail[i][r].choice;
             w_total_choice += audittrail[i][r].weighted_choice;
             // n.b., normalise choice according to (n-1)(n-2)/2 (maximum possible through routes)
@@ -698,6 +698,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
                   m_attributes.setValue(i,nw_choice_col[r],-1);
                }
             }
+            ++r;
          }
       }
       for (size_t i = 0; i < m_connectors.size(); i++) {
@@ -707,7 +708,7 @@ bool ShapeGraph::integrate(Communicator *comm, const pvecint& radius_list, bool 
    }
 
    m_displayed_attribute = -1; // <- override if it's already showing
-   setDisplayedAttribute(integ_dv_col.tail());
+   setDisplayedAttribute(integ_dv_col.back());
 
    return true;
 }
@@ -721,7 +722,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
    for (size_t i = 0; i < m_connectors.size(); i++) {
       covered[i] = false;
    }
-   pflipper<pvecint> foundlist;
+   pflipper<std::vector<int> > foundlist;
    for(auto& lineindex: m_selection_set) {
       foundlist.a().push_back(lineindex);
       covered[lineindex] = true;
@@ -729,7 +730,7 @@ bool ShapeGraph::stepdepth(Communicator *comm)
    }
    int depth = 1;
    while (foundlist.a().size()) {
-      Connector& line = m_connectors[foundlist.a().tail()];
+      Connector& line = m_connectors[foundlist.a().back()];
       for (size_t k = 0; k < line.m_connections.size(); k++) {
          if (!covered[line.m_connections[k]]) {
             covered[line.m_connections[k]] = true;
@@ -926,10 +927,10 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
 }
 
 void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
-    pqvector<Point2f> closepoints;
-    prefvec<IntPair> intersections;
+    std::vector<Point2f> closepoints;
+    std::vector<IntPair> intersections;
     PixelRef pix = pixelate(unlinkPoint);
-    std::vector<ShapeRef>& pix_shapes = m_pixel_shapes[size_t(pix.x + pix.y*m_cols)];
+    std::vector<ShapeRef>& pix_shapes = m_pixel_shapes(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x));
     auto iter = pix_shapes.begin();
     for (; iter != pix_shapes.end(); ++iter) {
        for (auto jter = iter; jter != pix_shapes.end(); ++jter) {
@@ -948,14 +949,17 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
     }
     double mindist = -1.0;
     int minpair = -1;
-    for (size_t j = 0; j < closepoints.size(); j++) {
-       if (minpair == -1 || dist(unlinkPoint,closepoints[j]) < mindist) {
-          mindist = dist(unlinkPoint,closepoints[j]);
-          minpair = int(j);
+    int j = 0;
+    for (auto& closepoint: closepoints) {
+       if (minpair == -1 || dist(unlinkPoint,closepoint) < mindist) {
+          mindist = dist(unlinkPoint,closepoint);
+          minpair = j;
        }
+       j++;
     }
     if (minpair != -1) {
-       unlinkShapes(intersections[size_t(minpair)].a, intersections[size_t(minpair)].b, false);
+       auto& intersection = intersections[size_t(minpair)];
+       unlinkShapes(intersection.a, intersection.b, false);
     }
     else {
        std::cerr << "eek!";
@@ -1000,7 +1004,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
 void ShapeGraph::makeNewSegMap()
 {
    // now make a connection set from the ends of lines:
-   prefvec<Connector> connectionset;
+   std::vector<Connector> connectionset;
    std::map<int,Line> lineset;
    for (auto shape: m_shapes) {
       if (shape.second.isLine()) {
@@ -1016,7 +1020,8 @@ void ShapeGraph::makeNewSegMap()
        seg_a++;
       // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
       PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      std::vector<ShapeRef> &shapes1 = m_pixel_shapes[size_t(pix1.x + pix1.y*m_cols)];
+      std::vector<ShapeRef> &shapes1 = m_pixel_shapes(static_cast<size_t>(pix1.y),
+                                                      static_cast<size_t>(pix1.x));
       for (auto& shape: shapes1) {
          auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
          int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
@@ -1037,8 +1042,10 @@ void ShapeGraph::makeNewSegMap()
             }
          }
       }
+
       PixelRef pix2 = pixelate(seg_a_line.second.t_end());
-      std::vector<ShapeRef> &shapes2 = m_pixel_shapes[size_t(pix2.x + pix2.y*m_cols)];
+      std::vector<ShapeRef> &shapes2 = m_pixel_shapes(static_cast<size_t>(pix2.y),
+                                                      static_cast<size_t>(pix2.x));
       for (auto& shape: shapes2) {
          auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
          int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
@@ -1077,7 +1084,7 @@ void ShapeGraph::makeNewSegMap()
 // identify the original axial line this line segment is
 // associated with
 
-void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& connectionset, double stubremoval)
+void ShapeGraph::makeSegmentMap(std::vector<Line>& lines, std::vector<Connector>& connectors, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
    std::map<OrderedIntPair,IntPair> segmentlist;
@@ -1092,7 +1099,8 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
          continue;
       }
       const Line& line = shape.getLine();
-      pmap<double,int> breaks;
+      std::vector<std::pair<double,int> > breaks; // this is a vector instead of a map because the
+                                                  // original code allowed for duplicate keys
       int axis = line.width() >= line.height() ? XAXIS : YAXIS;
       // we need the breaks ordered from start to end of the line
       // this is automatic for XAXIS, but on YAXIS, need to know
@@ -1105,9 +1113,11 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
          // note: more than one break at the same place allowed
          auto shapeJ = depthmapX::getMapAtIndex(m_shapes, connections[j])->second;
          if (i != connections[j] && shapeJ.isLine()) {
-            breaks.add( parity * line.intersection_point( shapeJ.getLine(), axis, TOLERANCE_A ), connections[j], paftl::ADD_DUPLICATE );
+            breaks.push_back(std::make_pair(parity * line.intersection_point( shapeJ.getLine(), axis, TOLERANCE_A ),
+                                         connections[j]));
          }
       }
+      std::sort(breaks.begin(), breaks.end());
       // okay, now we have a list from one end of the other of lines this line connects with
       Point2f lastpoint = line.start();
       int seg_a = -1, seg_b = -1;
@@ -1123,44 +1133,44 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
       neardist = (axis == XAXIS) ? (line.width() * stubremoval) : (line.height() * stubremoval);
       double overlapdist = (axis == XAXIS) ? (line.width() * TOLERANCE_C) : (line.height() * TOLERANCE_C);
       //
-      for (size_t k = 0; k < breaks.size(); ) {
-         pvecint keylist;
+      for (auto breaksIter = breaks.begin(); breaksIter != breaks.end();) {
+         std::vector<int> keylist;
          if (seg_a == -1) {
-            Point2f thispoint = line.point_on_line(parity * breaks.key(k),axis);
-            if (fabs(parity * breaks.key(k) - line.start()[axis]) < neardist) {
+            Point2f thispoint = line.point_on_line(parity * breaksIter->first,axis);
+            if (fabs(parity * breaksIter->first - line.start()[axis]) < neardist) {
                seg_a = -1;
                lastpoint = thispoint;
             }
             else  {
                Line segment_a(line.start(),thispoint);
-               lineset.push_back(segment_a);
-               connectionset.push_back(Connector(i));
-               seg_a = lineset.size() - 1;
+               lines.push_back(segment_a);
+               connectors.push_back(Connector(i));
+               seg_a = lines.size() - 1;
             }
             lastpoint = thispoint;
          }
          //
-         double here = parity * breaks.key(k);
-         while (k < breaks.size() && fabs(parity * breaks.key(k) - here) < overlapdist) {
-            keylist.push_back(breaks.value(k));
-            k++;
+         double here = parity * breaksIter->first;
+         while (breaksIter != breaks.end() && fabs(parity * breaksIter->first - here) < overlapdist) {
+            keylist.push_back(breaksIter->second);
+            ++breaksIter;
          }
          //
-         if (k == breaks.size() && fabs(line.end()[axis] - parity * breaks.key(k-1)) < neardist) {
+         if (breaksIter == breaks.end() && fabs(line.end()[axis] - parity * breaks.rbegin()->first) < neardist) {
             seg_b = -1;
          }
          else {
             Point2f thispoint;
-            if (k < breaks.size()) {
-               thispoint = line.point_on_line(parity * breaks.key(k),axis);
+            if (breaksIter != breaks.end()) {
+               thispoint = line.point_on_line(parity * breaksIter->first,axis);
             }
             else {
                thispoint = line.end();
             }
             Line segment_b(lastpoint,thispoint);
-            lineset.push_back(segment_b);
-            connectionset.push_back(Connector(i));
-            seg_b = lineset.size() - 1;
+            lines.push_back(segment_b);
+            connectors.push_back(Connector(i));
+            seg_b = lines.size() - 1;
             //
             lastpoint = thispoint;
          }
@@ -1176,42 +1186,42 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
                   int seg_2 = segIter->second.b;
                   if (seg_a != -1) {
                      if (seg_1 != -1) {
-                        Point2f alpha = lineset[size_t(seg_a)].start() - lineset[size_t(seg_a)].end();
-                        Point2f beta  = lineset[size_t(seg_1)].start() - lineset[size_t(seg_1)].end();
+                        Point2f alpha = lines[size_t(seg_a)].start() - lines[size_t(seg_a)].end();
+                        Point2f beta  = lines[size_t(seg_1)].start() - lines[size_t(seg_1)].end();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(-1,seg_1), x);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_1)].m_forward_segconns, SegmentRef(-1,seg_a), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_a)].m_forward_segconns, SegmentRef(-1,seg_1), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_1)].m_forward_segconns, SegmentRef(-1,seg_a), x);
                      }
                      if (seg_2 != -1) {
-                        Point2f alpha = lineset[size_t(seg_a)].start() - lineset[size_t(seg_a)].end();
-                        Point2f beta  = lineset[size_t(seg_2)].end() - lineset[size_t(seg_2)].start();
+                        Point2f alpha = lines[size_t(seg_a)].start() - lines[size_t(seg_a)].end();
+                        Point2f beta  = lines[size_t(seg_2)].end() - lines[size_t(seg_2)].start();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_2), x);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_2)].m_back_segconns, SegmentRef(-1,seg_a), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_2), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_2)].m_back_segconns, SegmentRef(-1,seg_a), x);
                      }
                   }
                   if (seg_b != -1) {
                      if (seg_1 != -1) {
-                        Point2f alpha = lineset[size_t(seg_b)].end() - lineset[size_t(seg_b)].start();
-                        Point2f beta  = lineset[size_t(seg_1)].start() - lineset[size_t(seg_1)].end();
+                        Point2f alpha = lines[size_t(seg_b)].end() - lines[size_t(seg_b)].start();
+                        Point2f beta  = lines[size_t(seg_1)].start() - lines[size_t(seg_1)].end();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_1), x);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_1)].m_forward_segconns, SegmentRef(1,seg_b), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_1), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_1)].m_forward_segconns, SegmentRef(1,seg_b), x);
                      }
                      if (seg_2 != -1) {
-                        Point2f alpha = lineset[size_t(seg_b)].end() - lineset[size_t(seg_b)].start();
-                        Point2f beta  = lineset[size_t(seg_2)].end() - lineset[size_t(seg_2)].start();
+                        Point2f alpha = lines[size_t(seg_b)].end() - lines[size_t(seg_b)].start();
+                        Point2f beta  = lines[size_t(seg_2)].end() - lines[size_t(seg_2)].start();
                         alpha.normalise();
                         beta.normalise();
                         float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(1,seg_2), x);
-                        depthmapX::addIfNotExists(connectionset[size_t(seg_2)].m_back_segconns, SegmentRef(1,seg_b), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_b)].m_back_segconns, SegmentRef(1,seg_2), x);
+                        depthmapX::addIfNotExists(connectors[size_t(seg_2)].m_back_segconns, SegmentRef(1,seg_b), x);
                      }
                   }
                }
@@ -1223,8 +1233,8 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lineset, prefvec<Connector>& 
             }
          }
          if (seg_a != -1 && seg_b != -1) {
-            depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_b), 0.0f);
-            depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_a), 0.0f);
+            depthmapX::addIfNotExists(connectors[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_b), 0.0f);
+            depthmapX::addIfNotExists(connectors[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_a), 0.0f);
          }
          seg_a = seg_b;
       }
@@ -1243,7 +1253,7 @@ void ShapeGraph::initialiseAttributesSegment()
 // now segments and connections are listed separately...
 // put them together in a new map
 
-void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
+void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
 {
    m_connectors.clear();
 
@@ -1276,7 +1286,7 @@ void ShapeGraph::makeSegmentConnections(prefvec<Connector>& connectionset)
       m_attributes.setValue(rowid, uw_conn_col, float(connector.m_forward_segconns.size() + connector.m_back_segconns.size()));
 
       // free up connectionset as we go along:
-      connectionset.free_at(i);
+      connectionset[size_t(i)] = Connector();
    }
 
    m_displayed_attribute = -2; // <- override if it's already showing
@@ -1291,10 +1301,10 @@ void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
    if (m_attributes.getColumnIndex("Axial Line Ref") == -1) {
       // this should never happen
       // AT: I am converting this to throw an error
-      throw MetaGraph::Error("Axial line ref does not exist");
+      throw depthmapX::RuntimeException("Axial line ref does not exist");
    }
 
-   pvecint colindices;
+   std::vector<int> colindices;
    for (int i = 0; i < axialmap.m_attributes.getColumnCount(); i++) {
       std::string colname = std::string("Axial ") + axialmap.m_attributes.getColumnName(i);
       colindices.push_back(m_attributes.insertColumn(colname));
@@ -1309,7 +1319,7 @@ void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
    }
 }
 
-bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_list)
+bool ShapeGraph::analyseAngular(Communicator *comm, const std::set<double>& radius_set)
 {
    if (m_map_type != ShapeMap::SEGMENTMAP) {
       return false;
@@ -1324,24 +1334,23 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
    // note: radius must be sorted lowest to highest, but if -1 occurs ("radius n") it needs to be last...
    // ...to ensure no mess ups, we'll re-sort here:
    bool radius_n = false;
-   pvecdouble radius;
-   for (size_t i = 0; i < radius_list.size(); i++) {
-      if (radius_list[i] == -1.0) {
+   std::vector<double> radii;
+   for (double radius: radius_set) {
+      if (radius < 0) {
          radius_n = true;
       }
       else {
-         radius.add(radius_list[i]);
+         radii.push_back(radius);
       }
    }
    if (radius_n) {
-      radius.push_back(-1.0);
+      radii.push_back(-1.0);
    }
 
-   pvecint depth_col, count_col, total_col;
+   std::vector<int> depth_col, count_col, total_col;
    // first enter table values
-   size_t r;
-   for (r = 0; r < radius.size(); r++) {
-      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
+   for (int radius: radii) {
+      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius);
       std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
       m_attributes.insertColumn(depth_col_text.c_str());
       std::string count_col_text = std::string("Angular Node Count") + radius_text;
@@ -1350,8 +1359,8 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       m_attributes.insertColumn(total_col_text.c_str());
    }
 
-   for (r = 0; r < radius.size(); r++) {
-      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius[r]);
+   for (int radius: radii) {
+      std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR,radius);
       std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
       depth_col.push_back(m_attributes.getColumnIndex(depth_col_text.c_str()));
       std::string count_col_text = std::string("Angular Node Count") + radius_text;
@@ -1366,36 +1375,36 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
       for (size_t j = 0; j < m_connectors.size(); j++) {
          covered[j] = false;
       }
-      pmap<float,SegmentData> anglebins;
-      anglebins.add(0.0f,SegmentData(0,i,SegmentRef(),0,0.0,0));
+      std::vector<std::pair<float,SegmentData> > anglebins;
+      anglebins.push_back(std::make_pair(0.0f,SegmentData(0,i,SegmentRef(),0,0.0,0)));
       Connector& thisline = m_connectors[i];
-      pvecdouble total_depth;
-      pvecint node_count;
-      size_t r;
-      for (r = 0; r < radius.size(); r++) {
+      std::vector<double> total_depth;
+      std::vector<int> node_count;
+      for (size_t r = 0; r < radii.size(); r++) {
          total_depth.push_back(0.0);
          node_count.push_back(0);
       }
       // node_count includes this one, but will be added in next algo:
       while (anglebins.size()) {
-         SegmentData lineindex = anglebins.value(0);
+         auto iter = anglebins.begin();
+         SegmentData lineindex = iter->second;
          if (!covered[lineindex.ref]) {
             covered[lineindex.ref] = true;
-            double depth_to_line = anglebins.key(0);
+            double depth_to_line = iter->first;
             total_depth[lineindex.coverage] += depth_to_line;
             node_count[lineindex.coverage] += 1;
-            anglebins.remove_at(0);
+            anglebins.erase(iter);
             Connector& line = m_connectors[lineindex.ref];
             if (lineindex.dir != -1) {
                for (auto& segconn: line.m_forward_segconns) {
                   if (!covered[segconn.first.ref]) {
                      double angle = depth_to_line + segconn.second;
                      int rbin = lineindex.coverage;
-                     while (rbin != radius.size() && radius[rbin] != -1 && angle > radius[rbin]) {
+                     while (rbin != radii.size() && radii[rbin] != -1 && angle > radii[rbin]) {
                         rbin++;
                      }
-                     if (rbin != radius.size()) {
-                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                     if (rbin != radii.size()) {
+                        depthmapX::insert_sorted(anglebins, std::make_pair(float(angle), SegmentData(segconn.first,SegmentRef(),0,0.0,rbin)));
                      }
                   }
                }
@@ -1405,24 +1414,24 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
                   if (!covered[segconn.first.ref]) {
                      double angle = depth_to_line + segconn.second;
                      int rbin = lineindex.coverage;
-                     while (rbin != radius.size() && radius[rbin] != -1 && angle > radius[rbin]) {
+                     while (rbin != radii.size() && radii[rbin] != -1 && angle > radii[rbin]) {
                         rbin++;
                      }
-                     if (rbin != radius.size()) {
-                        anglebins.add(angle, SegmentData(segconn.first,SegmentRef(),0,0.0,rbin), paftl::ADD_DUPLICATE);
+                     if (rbin != radii.size()) {
+                        depthmapX::insert_sorted(anglebins, std::make_pair(float(angle), SegmentData(segconn.first,SegmentRef(),0,0.0,rbin)));
                      }
                   }
                }
             }
          }
          else {
-            anglebins.remove_at(0);
+            anglebins.erase(iter);
          }
       }
       // set the attributes for this node:
       int curs_node_count = 0;
       double curs_total_depth = 0.0;
-      for (r = 0; r < radius.size(); r++) {
+      for (size_t r = 0; r < radii.size(); r++) {
          curs_node_count += node_count[r];
          curs_total_depth += total_depth[r];
          m_attributes.setValue(i,count_col[r],float(curs_node_count));
@@ -1451,13 +1460,15 @@ bool ShapeGraph::analyseAngular(Communicator *comm, const pvecdouble& radius_lis
    delete [] covered;
 
    m_displayed_attribute = -2; // <- override if it's already showing
-   setDisplayedAttribute(depth_col.tail());
+   setDisplayedAttribute(depth_col.back());
 
    return true;
 }
 
 // extra parameters for selection_only and interactive are for parallel process extensions
-int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, int radius_type, const pvecdouble& radius_list, int weighting_col, int weighting_col2, int routeweight_col, bool selection_only, bool interactive)
+int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, int radius_type,
+                             const std::set<double>& radius_set, int weighting_col, int weighting_col2,
+                             int routeweight_col, bool selection_only, bool interactive)
 {
    int processed_rows = 0;
 
@@ -1475,13 +1486,13 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    // note: radius must be sorted lowest to highest, but if -1 occurs ("radius n") it needs to be last...
    // ...to ensure no mess ups, we'll re-sort here:
    bool radius_n = false;
-   pvecdouble radius_unconverted;
-   for (size_t i = 0; i < radius_list.size(); i++) {
-      if (radius_list[i] == -1.0) {
+   std::vector<double> radius_unconverted;
+   for (int radius: radius_set) {
+      if (radius == -1.0) {
          radius_n = true;
       }
       else {
-         radius_unconverted.add(radius_list[i]);
+         radius_unconverted.push_back(radius);
       }
    }
    if (radius_n) {
@@ -1489,8 +1500,8 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    }
 
    // retrieve weighted col data, as this may well be overwritten in the new analysis:
-   pvecfloat weights;
-   pvecfloat routeweights;  //EF
+   std::vector<float> weights;
+   std::vector<float> routeweights;  //EF
    std::string weighting_col_text;
 
    if (weighting_col != -1) {
@@ -1523,7 +1534,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 
    //EFEF*
    //for origin-destination weighting
-   pvecfloat weights2;
+   std::vector<float> weights2;
    std::string weighting_col_text2;
    if (weighting_col2 != -1) {
       weighting_col_text2 = m_attributes.getColumnName(weighting_col2);
@@ -1621,7 +1632,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
             }
         }
    }
-   pvecint choice_col, w_choice_col, w_choice_col2, count_col, integ_col, w_integ_col, td_col, w_td_col, total_weight_col;
+   std::vector<int> choice_col, w_choice_col, w_choice_col2, count_col, integ_col, w_integ_col, td_col, w_td_col, total_weight_col;
    // then look them up! eek....
    for (r = 0; r < radius_unconverted.size(); r++) {
       std::string radius_text = makeRadiusText(radius_type, radius_unconverted[r]);
@@ -1717,7 +1728,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       uncovered[i] = new unsigned int [2];
 
    }
-   pvecdouble radius;
+   std::vector<double> radius;
    for (r = 0; r < radius_unconverted.size(); r++) {
       if (radius_type == Options::RADIUS_ANGULAR && radius_unconverted[r] != -1) {
          radius.push_back(floor(radius_unconverted[r] * tulip_bins * 0.5));
@@ -1728,7 +1739,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
    }
    // entered once for each segment
    int length_col = m_attributes.getColumnIndex("Segment Length");
-   pvecfloat lengths;
+   std::vector<float> lengths;
    if (length_col != -1) {
       for (size_t i = 0; i < m_connectors.size(); i++) {
          lengths.push_back(m_attributes.getValue(i,length_col));
@@ -1780,7 +1791,7 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
       // could be on an option?
       //bins[0].push_back(SegmentData(0,rowid,SegmentRef(),0,0.0,radiusmask));
       Connector& thisline = m_connectors[rowid];
-      pvecint node_count;
+      std::vector<int> node_count;
       double weight = 0.0;
       int depthlevel = 0;
       int opencount = 1;
@@ -2100,10 +2111,10 @@ int ShapeGraph::analyseTulip(Communicator *comm, int tulip_bins, bool choice, in
 
    m_displayed_attribute = -2; // <- override if it's already showing
    if (choice) {
-      setDisplayedAttribute(choice_col.tail());
+      setDisplayedAttribute(choice_col.back());
    }
    else {
-      setDisplayedAttribute(td_col.tail());
+      setDisplayedAttribute(td_col.back());
    }
    return processed_rows;
 }
@@ -2115,16 +2126,15 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    std::string stepdepth_col_text = "Angular Step Depth";
    int stepdepth_col = m_attributes.insertColumn(stepdepth_col_text.c_str());
 
-   int tulip_bins = 1024;
-   // calc so duplicate code above
-   tulip_bins /= 2;  // <- actually use semicircle of tulip bins
-   tulip_bins += 1;
+   // The original code set tulip_bins to 1024, divided by two and added one
+   // in order to duplicate previous code (using a semicircle of tulip bins)
+   size_t tulip_bins = 513;
 
    bool *covered = new bool [m_connectors.size()];
    for (size_t i = 0; i < m_connectors.size(); i++) {
       covered[i] = false;
    }
-   pqvector<SegmentData> *bins = new pqvector<SegmentData>[tulip_bins];
+   std::vector<std::vector<SegmentData> > bins(tulip_bins);
 
    int opencount = 0;
    for (auto& sel: m_selection_set) {
@@ -2135,27 +2145,30 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
       }
    }
    int depthlevel = 0;
+   auto binIter = bins.begin();
    int currentbin = 0;
    while (opencount) {
-      while (!bins[currentbin].size()) {
+      while (binIter->empty()) {
          depthlevel++;
+         binIter++;
          currentbin++;
-         if (currentbin == tulip_bins) {
-            currentbin = 0;
+         if (binIter == bins.end()) {
+            binIter = bins.begin();
          }
       }
       SegmentData lineindex;
-      if (bins[currentbin].size() > 1) {
+      if (binIter->size() > 1) {
          // it is slightly slower to delete from an arbitrary place in the bin,
          // but it is necessary to use random paths to even out the number of times through equal paths
-         int curr = pafrand() % bins[currentbin].size();
-         lineindex = bins[currentbin][curr];
-         bins[currentbin].remove_at(curr);
+         int curr = pafrand() % binIter->size();
+         auto currIter = binIter->begin() + curr;
+         lineindex = *currIter;
+         binIter->erase(currIter);
          // note: do not clear choice values here!
       }
       else {
-         lineindex = bins[currentbin][0];
-         bins[currentbin].pop_back();
+         lineindex = binIter->front();
+         binIter->pop_back();
       }
       opencount--;
       if (!covered[lineindex.ref]) {
@@ -2170,6 +2183,7 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
             for (auto& segconn: line.m_forward_segconns) {
                if (!covered[segconn.first.ref]) {
                   extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
+                  auto currIter = binIter;
                   bins[(currentbin + tulip_bins + extradepth) % tulip_bins].push_back(
                       SegmentData(segconn.first,lineindex.ref,lineindex.segdepth+1,0.0,0));
                   opencount++;
@@ -2189,7 +2203,6 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
       }
    }
    delete [] covered;
-   delete [] bins;
 
    m_displayed_attribute = -2; // <- override if it's already showing
    setDisplayedAttribute(stepdepth_col);

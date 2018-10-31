@@ -17,6 +17,19 @@
 #ifndef VERSION_H
 #define VERSION_H
 
+
+#ifndef APP_DATE
+#define APP_DATE "1/1/1970"
+#endif
+
+#ifndef APP_GIT_BRANCH
+#define APP_GIT_BRANCH "local-dev"
+#endif
+
+#ifndef APP_GIT_COMMIT
+#define APP_GIT_COMMIT "-"
+#endif
+
 // use these to define the depthmap versions
 #define DEPTHMAPX_MAJOR_VERSION 0
 #define DEPTHMAPX_MINOR_VERSION 6

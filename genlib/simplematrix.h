@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <stdexcept>
-#include <algorithm>
 
 namespace depthmapX {
 

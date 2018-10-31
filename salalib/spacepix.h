@@ -20,12 +20,14 @@
 
 #pragma once
 
-#include "genlib/pafmath.h"
-#include "genlib/p2dpoly.h"
-
-#include "genlib/stringutils.h"
 #include "salalib/pixelref.h"
 #include "salalib/pafcolor.h"
+
+#include "genlib/pafmath.h"
+#include "genlib/p2dpoly.h"
+#include "genlib/stringutils.h"
+#include "genlib/simplematrix.h"
+
 #include <map>
 #include <deque>
 
@@ -47,10 +49,10 @@ public:
    bool includes(const PixelRef pix) const {
       return (pix.x >= 0 && pix.x < m_cols && pix.y >= 0 && pix.y < m_rows);
    }
-   int getCols() const {
+   size_t getCols() const {
       return m_cols;
    }
-   int getRows() const {
+   size_t getRows() const {
       return m_rows;
    }
    const QtRegion& getRegion() const {
@@ -104,7 +106,7 @@ protected:
    std::string m_name;
    bool m_show;
    bool m_edit;
-   std::vector<std::vector<int> > m_pixel_lines;
+   depthmapX::RowMatrix<std::vector<int> > m_pixel_lines;
 
    int m_ref;
    std::map<int,LineTest> m_lines;
