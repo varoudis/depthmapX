@@ -67,11 +67,8 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
     depthmapX::RowMatrix<PixelRef> extents(map.getRows(), map.getCols());
 
     for (int i = 0; i < map.getCols(); i++) {
-
         for (int j = 0; j < map.getRows(); j++) {
-
             PixelRef curs = PixelRef(i, j);
-
             if (map.getPoint(curs).filled()) {
 
                 if ((map.getPoint(curs).contextfilled() && !curs.iseven()) || (options.gates_only)) {
