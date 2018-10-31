@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 include(../defaults.pri)
-
+include(vgamodules/vgamodules.pri)
 
 QT       -= qt
 CONFIG   -= qt
@@ -93,7 +93,8 @@ HEADERS += \
     tolerances.h \
     axialpolygons.h \
     tidylines.h \
-    mapconverter.h
+    mapconverter.h \
+    ivga.h
 
 DISTFILES += \
     salascript-tests.txt

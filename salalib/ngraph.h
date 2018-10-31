@@ -49,12 +49,12 @@ class Bin
 {
    friend class Node;
 protected:
-   char m_dir;
    unsigned short m_node_count;
    float m_distance;
    float m_occ_distance;
-   std::vector<PixelVec> m_pixel_vecs;
 public:
+   char m_dir;
+   std::vector<PixelVec> m_pixel_vecs;
    Bin()
    { m_dir = PixelRef::NODIR; m_node_count = 0; m_distance = 0.0f; m_occ_distance = 0.0f; }
    //
