@@ -202,9 +202,9 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
             }
         }
     }
-    for (int i = 0; i < map.getCols(); i++) {
-        for (int j = 0; j < map.getRows(); j++) {
-            PixelRef curs = PixelRef(i, j);
+    for (size_t i = 0; i < map.getCols(); i++) {
+        for (size_t j = 0; j < map.getRows(); j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             map.getPoint(curs).m_misc = miscs(j, i);
             map.getPoint(curs).m_extent = extents(j, i);
         }

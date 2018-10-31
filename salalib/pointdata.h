@@ -35,7 +35,7 @@ class OldPoint1 {
    friend class PointMap;
 protected:
    int m_noderef;
-   int m_state; 
+   int m_state;
 };
 
 class OldPoint2 {
@@ -108,7 +108,7 @@ public:
    void communicate( time_t& atime, Communicator *comm, int record );
    // constrain is constrain to existing rows / cols
    PixelRef pixelate( const Point2f& p, bool constrain = true, int scalefactor = 1 ) const;
-   Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below 
+   Point2f depixelate( const PixelRef& p, double scalefactor = 1.0 ) const;   // Inlined below
    QtRegion regionate( const PixelRef& p, double border ) const;     // Inlined below
    bool setGrid(double spacing, const Point2f& offset = Point2f());
    std::vector<std::pair<PixelRef, PixelRef>> getMergedPixelPairs()
@@ -146,9 +146,7 @@ public:
    //
    bool binDisplay(Communicator *comm);
    bool analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple_version);
-   bool analyseVisual(Communicator *comm, Options& options, bool simple_version);
    bool analyseVisualPointDepth(Communicator *comm);
-   bool analyseMetric(Communicator *comm, Options& options);
    bool analyseMetricPointDepth(Communicator *comm);
    bool analyseAngular(Communicator *comm, Options& options);
    bool analyseAngularPointDepth(Communicator *comm);
@@ -158,7 +156,7 @@ public:
    bool mergePixels(PixelRef a, PixelRef b);
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
-   
+
    void outputSummary(std::ostream& myout, char delimiter = '\t');
    void outputMif(std::ostream& miffile, std::ostream& midfile );
    void outputNet(std::ostream& netfile );
@@ -169,6 +167,7 @@ public:
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
    Point& getPoint(const PixelRef& p)
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
+   depthmapX::ColumnMatrix<Point>& getPoints() { return m_points; }
    const int& pointState( const PixelRef& p ) const
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)).m_state; }
    // to be phased out
@@ -186,7 +185,7 @@ public:
 protected:
    int expand( const PixelRef p1, const PixelRef p2, PixelRefVector& list, int filltype );
    //
-   //void walk( PixelRef& start, int steps, Graph& graph, 
+   //void walk( PixelRef& start, int steps, Graph& graph,
    //           int parity, int dominant_axis, const int grad_pair[] );
 
    // Selection functionality
@@ -195,7 +194,7 @@ protected:
    int m_selection;
    bool m_pinned_selection;
    std::set<int> m_selection_set;      // n.b., m_selection_set stored as int for compatibility with other map layers
-   mutable PixelRef s_bl; 
+   mutable PixelRef s_bl;
    mutable PixelRef s_tr;
 public:
    bool isSelected() const                              // does a selection exist
@@ -220,7 +219,7 @@ public:
       { return m_attributes.insertColumn(name); }
    void removeAttribute(int col)
       { m_attributes.removeColumn(col); }
-   // I don't want to do this, but every so often you will need to update this table 
+   // I don't want to do this, but every so often you will need to update this table
    // use const version by preference
    AttributeTable& getAttributeTable()
       { return m_attributes; }
@@ -228,12 +227,12 @@ public:
       { return m_attributes; }
 public:
    double getDisplayMinValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
+   { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; }
 
    // Quick mod - TV
 #if defined(_WIN32)
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right); } 
+   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right); }
 #else
    double getDisplayMaxValue() const
    { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right).x; }
@@ -241,13 +240,13 @@ public:
    //
    mutable DisplayParams m_display_params;
    const DisplayParams& getDisplayParams() const
-   { return m_attributes.getDisplayParams(m_displayed_attribute); } 
+   { return m_attributes.getDisplayParams(m_displayed_attribute); }
    // make a local copy of the display params for access speed:
    void setDisplayParams(const DisplayParams& dp, bool apply_to_all = false)
    { if (apply_to_all)
-        m_attributes.setDisplayParams(dp); 
-     else 
-        m_attributes.setDisplayParams(m_displayed_attribute, dp); 
+        m_attributes.setDisplayParams(dp);
+     else
+        m_attributes.setDisplayParams(m_displayed_attribute, dp);
      m_display_params = dp; }
    //
 public:
@@ -255,7 +254,7 @@ public:
    // use set displayed attribute instead unless you are deliberately changing the column order:
    void overrideDisplayedAttribute(int attribute)
    { m_displayed_attribute = attribute; }
-   // now, there is a slightly odd thing here: the displayed attribute can go out of step with the underlying 
+   // now, there is a slightly odd thing here: the displayed attribute can go out of step with the underlying
    // attribute data if there is a delete of an attribute in idepthmap.h, so it just needs checking before returning!
    int getDisplayedAttribute() const
    { if (m_displayed_attribute == m_attributes.m_display_column) return m_displayed_attribute;
@@ -323,7 +322,7 @@ public:
 
 inline Point2f PointMap::depixelate( const PixelRef& p, double scalefactor ) const
 {
-   return Point2f( m_bottom_left.x + m_spacing * scalefactor * double(p.x), 
+   return Point2f( m_bottom_left.x + m_spacing * scalefactor * double(p.x),
                    m_bottom_left.y + m_spacing * scalefactor * double(p.y) );
 }
 
@@ -342,7 +341,7 @@ inline QtRegion PointMap::regionate( const PixelRef& p, double border ) const
 // A helper class for metric integration
 
 // to allow a dist / PixelRef pair for easy sorting
-// (have to do comparison operation on both dist and PixelRef as 
+// (have to do comparison operation on both dist and PixelRef as
 // otherwise would have a duplicate key for pqmap / pqvector)
 
 struct MetricTriple
@@ -408,7 +407,7 @@ inline int whichbin( const Point2f& grad )
 
    // This is only for true gradients...
    //    ...see below for calculated gradients
-   //    
+   //
    // Octant:
    //       +     -
    //    - \ 8 | 8 / +
@@ -416,7 +415,7 @@ inline int whichbin( const Point2f& grad )
    //      ---- ----
    //      16/ | \32
    //    + /24 | 24\ -
-   //      -      +    
+   //      -      +
 
    if (fabs(grad.y) > fabs(grad.x)) {
       bin = 1; // temporary: label y priority
@@ -525,10 +524,10 @@ inline int processoctant(int bin)
 inline int flagoctant(int bin)
 {
    int q = 0;
-         
+
    // have to use two q octants if you are on diagonals or axes...
    switch (bin) {
-   case 0: 
+   case 0:
       q |= 1 << 1; q |= 1 << 3; break;
    case 1: case 2: case 3:
       q |= 1 << 1; break;
@@ -536,11 +535,11 @@ inline int flagoctant(int bin)
       q |= 1 << 1; q |= 1 << 7; break;
    case 5: case 6: case 7:
       q |= 1 << 7; break;
-   case 8: 
+   case 8:
       q |= 1 << 7; q |= 1 << 6; break;
    case 9: case 10: case 11:
       q = 1 << 6; break;
-   case 12: 
+   case 12:
       q |= 1 << 6; q |= 1 << 0; break;
    case 13: case 14: case 15:
       q |= 1 << 0; break;
@@ -552,11 +551,11 @@ inline int flagoctant(int bin)
       q |= 1 << 2; q |= 1 << 4; break;
    case 21: case 22: case 23:
       q |= 1 << 4; break;
-   case 24: 
+   case 24:
       q |= 1 << 4; q |= 1 << 5; break;
    case 25: case 26: case 27:
       q |= 1 << 5; break;
-   case 28: 
+   case 28:
       q |= 1 << 5; q |= 1 << 3; break;
    case 29: case 30: case 31:
       q |= 1 << 3; break;
@@ -578,7 +577,7 @@ inline int q_opposite(int bin)
             //      - -   - -
             //      2 / | \ 3
             //      / 4 | 5 \
-         
+
    return flagoctant(opposing_bin);
 }
 
