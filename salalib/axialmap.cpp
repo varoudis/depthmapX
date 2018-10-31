@@ -2126,10 +2126,9 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
    std::string stepdepth_col_text = "Angular Step Depth";
    int stepdepth_col = m_attributes.insertColumn(stepdepth_col_text.c_str());
 
-   size_t tulip_bins = 1024;
-   // calc so duplicate code above
-   tulip_bins /= 2;  // <- actually use semicircle of tulip bins
-   tulip_bins += 1;
+   // The original code set tulip_bins to 1024, divided by two and added one
+   // in order to duplicate previous code (using a semicircle of tulip bins)
+   size_t tulip_bins = 513;
 
    bool *covered = new bool [m_connectors.size()];
    for (size_t i = 0; i < m_connectors.size(); i++) {
