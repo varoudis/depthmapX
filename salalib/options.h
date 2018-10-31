@@ -39,7 +39,7 @@ struct Options
    int radius_type;
    double radius; // <- n.b. for metric integ radius is floating point
    // radius has to go up to a list (phase out radius as is)
-   std::set<double> radius_list;
+   std::set<double> radius_set;
    //
    int point_depth_selection;
    int tulip_bins;

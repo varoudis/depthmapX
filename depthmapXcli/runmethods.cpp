@@ -326,7 +326,7 @@ namespace dm_runmethods
             std::cout << "Running axial analysis... " << std::flush;
             Options options;
             const std::vector<double>& radii = ap.getRadii();
-            options.radius_list.insert(radii.begin(), radii.end());
+            options.radius_set.insert(radii.begin(), radii.end());
             options.choice = ap.useChoice();
             options.local = ap.useLocal();
             options.fulloutput = ap.calculateRRA();
@@ -349,7 +349,7 @@ namespace dm_runmethods
         std::cout << "Running segment analysis... " << std::flush;
         Options options;
         const std::vector<double>& radii = sp.getRadii();
-        options.radius_list.insert(radii.begin(), radii.end());
+        options.radius_set.insert(radii.begin(), radii.end());
         options.choice = sp.includeChoice();
         options.tulip_bins = sp.getTulipBins();
         options.weighted_measure_col = -1;

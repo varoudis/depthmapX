@@ -1245,7 +1245,7 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
 
    try {
       std::set<int> radii;
-      for (double radius: options.radius_list) {
+      for (double radius: options.radius_set) {
          radii.insert( int(radius) );
       }
       retvar = getDisplayedShapeGraph().integrate( communicator, radii, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
@@ -1270,7 +1270,7 @@ bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options option
                                                               options.tulip_bins,
                                                               options.choice,
                                                               options.radius_type,
-                                                              options.radius_list,
+                                                              options.radius_set,
                                                               options.weighted_measure_col);
    }
    catch (Communicator::CancelledException) {
@@ -1289,7 +1289,7 @@ bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options opti
    bool retvar = false;
 
    try {
-       retvar = getDisplayedShapeGraph().analyseAngular(communicator, options.radius_list);
+       retvar = getDisplayedShapeGraph().analyseAngular(communicator, options.radius_set);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1308,7 +1308,7 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
 
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
-      for(double radius: options.radius_list) {
+      for(double radius: options.radius_set) {
           if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, radius, options.sel_only)) {
               retvar = false;
           }

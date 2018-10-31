@@ -142,7 +142,7 @@ void CSegmentAnalysisDlg::OnOK()
 		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 		if (mainWin)
 		{
-			mainWin->m_options.radius_list.clear();
+			mainWin->m_options.radius_set.clear();
 			QString curr_radius;
 			int curr_comma = -1, last_comma = 0;
 			bool add_rn = false;
@@ -179,13 +179,13 @@ void CSegmentAnalysisDlg::OnOK()
 								return;
 							}
 						}
-                        mainWin->m_options.radius_list.insert(double(radius));
+                        mainWin->m_options.radius_set.insert(double(radius));
 					}
 				}
 			}
 			while (curr_comma != -1);
-			if (mainWin->m_options.radius_list.size() == 0 || add_rn) {
-                mainWin->m_options.radius_list.insert(-1);
+			if (mainWin->m_options.radius_set.size() == 0 || add_rn) {
+                mainWin->m_options.radius_set.insert(-1);
 			}
 
 			if (m_tulip_bins % 2 != 0) { 
