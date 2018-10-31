@@ -263,7 +263,7 @@ bool ShapeGraph::integrate(Communicator *comm, const std::set<int>& radius_set, 
    for (int radius: radii) {
       std::string radius_text;
       if (radius != -1) {
-         radius_text = std::string(" R") + dXstring::formatString(int(radius),"%d");
+         radius_text = dXstring::formatString(radius, " R%d");
       }
       if (choice) {
          std::string choice_col_text = std::string("Choice") + radius_text;
