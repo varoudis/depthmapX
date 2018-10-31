@@ -29,10 +29,13 @@ void findAndErase(std::vector<T> &vec, T element) {
 }
 
 template<typename T>
-void addIfNotExists(std::vector<T> &vec, T element) {
+bool addIfNotExists(std::vector<T> &vec, T element) {
     auto it = std::find(vec.begin(), vec.end(), element);
-    if(it == vec.end())
+    if(it == vec.end()) {
         vec.push_back(element);
+        return true;
+    }
+    return false;
 }
 
 
@@ -47,14 +50,14 @@ bool addIfNotExists(std::map<K, V> &map, const K &key, const V &value) {
 }
 
 template<typename K, typename V>
-typename std::map<K, V>::const_iterator getMapAtIndex(const std::map<K, V> &m, int idx) {
+typename std::map<K, V>::const_iterator getMapAtIndex(const std::map<K, V> &m, size_t idx) {
     auto iter = m.begin();
     std::advance(iter, idx);
     return iter;
 }
 
 template<typename K, typename V>
-typename std::map<K, V>::iterator getMapAtIndex(std::map<K, V> &m, int idx) {
+typename std::map<K, V>::iterator getMapAtIndex(std::map<K, V> &m, size_t idx) {
     auto iter = m.begin();
     std::advance(iter, idx);
     return iter;

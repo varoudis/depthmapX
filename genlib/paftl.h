@@ -1415,7 +1415,7 @@ public:
    { return m_vector.search(Pair(item)).value(); }
    const T2& search(const T1& item) const
    { return m_vector.search(Pair(item)).value(); }
-   const size_t searchindex(const T1& item) const
+   size_t searchindex(const T1& item) const
    { return m_vector.searchindex(Pair(item)); }
    void remove_at(size_t i)
    { m_vector.remove_at(i); }
@@ -1698,7 +1698,7 @@ public:
 inline phashtable::phashtable()
 {
    for (size_t i = 0; i < HASHTABLESIZE; i++) {
-      m_table[i].code = -1;
+      m_table[i].code = static_cast<unsigned int>(-1);
    }
    m_nextcode = 256; // 0-255 for standard characters
 }
@@ -1750,7 +1750,7 @@ inline unsigned char *phashtable::decode(unsigned char *buffer, unsigned int cod
     *buffer++ = m_table[code].character;
     code = m_table[code].prefix;
   }
-  *buffer = code;
+  *buffer = static_cast<unsigned char>(code);
   return buffer;
 }
 

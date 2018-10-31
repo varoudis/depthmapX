@@ -1401,22 +1401,20 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
 
       m_drawingFiles.back().m_region = map.getRegion();;
 
-      for (size_t i = 0; i < map.size(); i++) {
+      for (auto layer: map.layers) {
 
-         m_drawingFiles.back().m_spacePixels.emplace_back(map[i].getName());
-         m_drawingFiles.back().m_spacePixels[i].init(map[i].getLineCount(), map.getRegion());
+         m_drawingFiles.back().m_spacePixels.emplace_back(layer.getName());
+         m_drawingFiles.back().m_spacePixels.back().init(layer.getLineCount(), map.getRegion());
 
-         for (size_t j = 0; j < map[i].size(); j++) {
-
-            for (size_t k = 0; k < map[i][j].size(); k++) {
-
-               m_drawingFiles.back().m_spacePixels[i].makeLineShape( map[i][j][k] );
+         for (auto geometry: layer.geometries) {
+            for (auto& line: geometry.lines) {
+               m_drawingFiles.back().m_spacePixels.back().makeLineShape( line );
             }
          }
 
          // TODO: Investigate why setDisplayedAttribute needs to be set to -2 first
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-2);
-         m_drawingFiles.back().m_spacePixels[i].setDisplayedAttribute(-1);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-2);
+         m_drawingFiles.back().m_spacePixels.back().setDisplayedAttribute(-1);
       }
    }
 
@@ -2661,7 +2659,7 @@ bool MetaGraph::readShapeGraphs(std::istream& stream, int version )
             alllinemap->m_poly_connections.clear();
             alllinemap->m_poly_connections.read(stream);
             alllinemap->m_radial_lines.clear();
-            alllinemap->m_radial_lines.read(stream);
+            dXreadwrite::readIntoVector(stream, alllinemap->m_radial_lines);
 
             // this is an index to look up the all line map, used by UI to determine if can make fewest line map
             // note: it is not saved for historical reasons
@@ -2725,7 +2723,7 @@ bool MetaGraph::writeShapeGraphs( std::ofstream& stream, int version, bool displ
         }
 
         alllinemap->m_poly_connections.write(stream);
-        alllinemap->m_radial_lines.write(stream);
+        dXreadwrite::writeVector(stream, alllinemap->m_radial_lines);
     }
     return true;
 }

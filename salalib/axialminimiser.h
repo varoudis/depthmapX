@@ -24,10 +24,15 @@ protected:
 public:
    AxialMinimiser(const AllLineMap& alllinemap, int no_of_axsegcuts, int no_of_radialsegs);
    ~AxialMinimiser();
-   void removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts);
-   void fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts);
+   void removeSubsets(std::map<int, std::set<int> > &axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                      std::map<RadialKey, std::set<int> >& rlds, std::vector<RadialLine> &radial_lines,
+                      std::vector<std::vector<int> > &keyvertexconns, std::vector<int>& keyvertexcounts);
+   void fewestLongest(std::map<int,std::set<int> >& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                      std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine>& radial_lines,
+                      std::vector<std::vector<int> >& keyvertexconns, std::vector<int>& keyvertexcounts);
    // advanced topological testing:
-   bool checkVital(int checkindex,pvecint& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds, pqvector<RadialLine>& radial_lines);
+   bool checkVital(int checkindex, std::set<int> &axSegCut, std::map<RadialKey,RadialSegment>& radialsegs,
+                   std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine> &radial_lines);
    //
    bool removed(int i) const
    { return m_removed[i]; }

@@ -32,7 +32,9 @@ AxialMinimiser::~AxialMinimiser()
 
 // Alan and Bill's algo...
 
-void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey,pvecint>& rlds,  pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
+void AxialMinimiser::removeSubsets(std::map<int, std::set<int> >& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                                   std::map<RadialKey, std::set<int> > &rlds,  std::vector<RadialLine> &radial_lines,
+                                   std::vector<std::vector<int> >& keyvertexconns, std::vector<int>& keyvertexcounts)
 {
    bool removedflag = true;
    int counterrors = 0;
@@ -45,8 +47,8 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
    int y = -1;
    for (auto axSegCut: axsegcuts) {
       y++;
-      for (size_t z = 0; z < axSegCut.second.size(); z++) {
-         m_radialsegcounts[axSegCut.second[z]] += 1;
+      for (int cut: axSegCut.second) {
+         m_radialsegcounts[cut] += 1;
       }
       m_removed[y] = false;
       m_vital[y] = false;
@@ -131,8 +133,8 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
             // now check removing it won't break any topological loops
             bool presumedvital = false;
             auto& axSegCut = depthmapX::getMapAtIndex(axsegcuts, removeindex)->second;
-            for (size_t k = 0; k < axSegCut.size(); k++) {
-               if (m_radialsegcounts[axSegCut[k]] <= 1) {
+            for (int cut: axSegCut) {
+               if (m_radialsegcounts[cut] <= 1) {
                   presumedvital = true;
                   break;
                }
@@ -155,8 +157,8 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
                   }
                }
                removedflag = true;
-               for (size_t k = 0; k < axSegCut.size(); k++) {
-                  m_radialsegcounts[axSegCut[k]] -= 1;
+               for (int cut: axSegCut) {
+                  m_radialsegcounts[cut] -= 1;
                }
                // vital connections
                for (size_t k = 0; k < keyvertexconns[removeindex].size(); k++) {
@@ -172,7 +174,9 @@ void AxialMinimiser::removeSubsets(std::map<int,pvecint>& axsegcuts, std::map<Ra
 
 // My algo... v. simple... fewest longest
 
-void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey, pvecint> &rlds, pqvector<RadialLine>& radial_lines, prefvec<pvecint>& keyvertexconns, int *keyvertexcounts)
+void AxialMinimiser::fewestLongest(std::map<int, std::set<int> > &axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs,
+                                   std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine> &radial_lines,
+                                   std::vector<std::vector<int> > &keyvertexconns, std::vector<int>& keyvertexcounts)
 {
    //m_axialconns = m_alllinemap->m_connectors;
    int livecount = 0;
@@ -208,8 +212,8 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
       //
       bool presumedvital = false;
       auto &axSegCut = depthmapX::getMapAtIndex(axsegcuts, j)->second;
-      for (k = 0; k < axSegCut.size(); k++) {
-         if (m_radialsegcounts[axSegCut[k]] <= 1) {
+      for (int cut: axSegCut) {
+         if (m_radialsegcounts[cut] <= 1) {
             presumedvital = true;
             break;
          }
@@ -240,8 +244,8 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
                m_affected[affectedconnection] = true;
             }
          }
-         for (size_t k = 0; k < axSegCut.size(); k++) {
-            m_radialsegcounts[axSegCut[k]] -= 1;
+         for (auto cut: axSegCut) {
+            m_radialsegcounts[cut] -= 1;
          }
          // vital connections
          for (size_t k = 0; k < keyvertexconns[j].size(); k++) {
@@ -253,36 +257,46 @@ void AxialMinimiser::fewestLongest(std::map<int,pvecint>& axsegcuts, std::map<Ra
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-bool AxialMinimiser::checkVital(int checkindex, pvecint& axsegcuts, std::map<RadialKey,RadialSegment>& radialsegs, std::map<RadialKey, pvecint> &rlds, pqvector<RadialLine>& radial_lines)
+bool AxialMinimiser::checkVital(int checkindex, std::set<int> &axSegCut, std::map<RadialKey,RadialSegment>& radialsegs,
+                                std::map<RadialKey, std::set<int> > &rlds, std::vector<RadialLine>& radial_lines)
 {
    std::map<int,SalaShape>& axiallines = m_alllinemap->m_shapes;
 
    bool presumedvital = true;
    int nonvitalcount = 0, vitalsegs = 0;
    // again, this time more rigourously... check any connected pairs don't cover the link...
-   for (size_t k = 0; k < axsegcuts.size(); k++) {
-      if (m_radialsegcounts[axsegcuts[k]] <= 1) {
+   for (int cut: axSegCut) {
+      if (m_radialsegcounts[cut] <= 1) {
          bool nonvitalseg = false;
          vitalsegs++;
-         auto radialSegIter = depthmapX::getMapAtIndex(radialsegs, axsegcuts[k]);
+         auto radialSegIter = depthmapX::getMapAtIndex(radialsegs, cut);
          const RadialKey& key = radialSegIter->first;
          RadialSegment& seg = radialSegIter->second;
-         pvecint& divisorsa = rlds.find(key)->second;
-         pvecint& divisorsb = rlds.find(seg.radial_b)->second;
-         RadialLine& rlinea = radial_lines.search(key);
-         RadialLine& rlineb = radial_lines.search(seg.radial_b);
-         for (size_t divi = 0; divi < divisorsa.size(); divi++) {
-            if (divisorsa[divi] == checkindex || m_removed[divisorsa[divi]]) {
+         std::set<int>& divisorsa = rlds.find(key)->second;
+         std::set<int>& divisorsb = rlds.find(seg.radial_b)->second;
+         auto iterKey = std::find(radial_lines.begin(), radial_lines.end(), key);
+         if(iterKey == radial_lines.end()) {
+             throw depthmapX::RuntimeException("Radial key not found in radial lines");
+         }
+         const RadialLine& rlinea = *iterKey;
+
+         auto iterSegB = std::find(radial_lines.begin(), radial_lines.end(), seg.radial_b);
+         if(iterSegB == radial_lines.end()) {
+             throw depthmapX::RuntimeException("Radial key not found in radial lines");
+         }
+         const RadialLine& rlineb = *iterSegB;
+         for (int diva: divisorsa) {
+            if (diva == checkindex || m_removed[diva]) {
                continue;
             }
-            for (size_t divj = 0; divj < divisorsb.size(); divj++) {
-               if (divisorsb[divj] == checkindex || m_removed[divisorsb[divj]]) {
+            for (int divb: divisorsb) {
+               if (divb == checkindex || m_removed[divb]) {
                   continue;
                }
-               auto& connections = m_axialconns[divisorsa[divi]].m_connections;
-               if (std::find(connections.begin(), connections.end(), divisorsb[divj]) != connections.end()) {
+               auto& connections = m_axialconns[size_t(diva)].m_connections;
+               if (std::find(connections.begin(), connections.end(), divb) != connections.end()) {
                   // as a further challenge, they must link within in the zone of interest, not on the far side of it... arg!
-                  Point2f p = intersection_point(axiallines[divisorsa[divi]].getLine(),axiallines[divisorsb[divj]].getLine(),TOLERANCE_A);
+                  Point2f p = intersection_point(axiallines[diva].getLine(),axiallines[divb].getLine(),TOLERANCE_A);
                   if (p.insegment(rlinea.keyvertex,rlinea.openspace,rlineb.openspace,TOLERANCE_A)) {
                      nonvitalseg = true;
                   }

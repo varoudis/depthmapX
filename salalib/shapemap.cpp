@@ -1847,7 +1847,7 @@ int ShapeMap::testPointInPoly(const Point2f& p, const ShapeRef& shape) const
          else if (shape.m_tags & ShapeRef::SHAPE_INTERNAL_EDGE) {
             std::vector<int> testnodes;
             size_t j;
-            for (j = 0; j < size_t(shape.m_polyrefs.size()); j++) { // <- note, polyrefs is a subvec and has maximum number according to sizeof(T)
+            for (j = 0; j < size_t(shape.m_polyrefs.size()); j++) {
                depthmapX::addIfNotExists(testnodes, int(shape.m_polyrefs[j]));
             }
             PixelRef pix2 = pixelate(p);
@@ -2065,9 +2065,9 @@ void ShapeMap::getShapeCuts(const Line& li_orig, std::vector<ValuePair>& cuts)
          const std::vector<ShapeRef> &shapeRefs = m_pixel_shapes(static_cast<size_t>(pix.y),
                                                                  static_cast<size_t>(pix.x));
          for (const ShapeRef& shaperef: shapeRefs) {
-            if (!shaperef.m_polyrefs.isEmpty()) {
-               int len = shaperef.m_polyrefs.size();
-               for (int k = 0; k < len; k++) {
+            if (!shaperef.m_polyrefs.empty()) {
+               size_t len = shaperef.m_polyrefs.size();
+               for (size_t k = 0; k < len; k++) {
                   int x = int(shaperef.m_polyrefs[k]);
                   IntPair pair(int(shaperef.m_shape_ref),x);
                   auto iter = depthmapX::findBinary( tested, pair );
