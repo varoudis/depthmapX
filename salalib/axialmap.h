@@ -15,12 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __SHAPEGRAPH_H__
-#define __SHAPEGRAPH_H__
+#pragma once
 
 #include "salalib/spacepixfile.h"
-#include "spacepix.h"
-#include "connector.h"
+#include "salalib/spacepix.h"
+#include "salalib/connector.h"
 
 struct AxialVertex;
 struct AxialVertexKey;
@@ -69,20 +68,24 @@ public:
    void initialiseAttributesAxial();
    void makeConnections(const KeyVertices &keyvertices = KeyVertices());
    //void initAttributes();
-   bool integrate(Communicator *comm = NULL, const pvecint& radius = pvecint(), bool choice = false, bool local = false, bool fulloutput = false, int weighting_col = -1, bool simple_version = true);
+   bool integrate(Communicator *comm = NULL, const std::set<int> &radius_set = std::set<int>(),
+                  bool choice = false, bool local = false, bool fulloutput = false,
+                  int weighting_col = -1, bool simple_version = true);
    bool stepdepth(Communicator *comm = NULL);
-   bool analyseAngular(Communicator *comm, const pvecdouble& radius);
+   bool analyseAngular(Communicator *comm, const std::set<double>& radius_set);
    // extra parameters for selection_only and interactive are for parallel process extensions
-   int analyseTulip(Communicator *comm, int tulip_bins, bool choice, int radius_type, const pvecdouble& radius, int weighting_col, int weighting_col2 = -1, int routeweight_col = -1, bool selection_only = false, bool interactive = true);
+   int analyseTulip(Communicator *comm, int tulip_bins, bool choice, int radius_type,
+                    const std::set<double>& radius_set, int weighting_col, int weighting_col2 = -1,
+                    int routeweight_col = -1, bool selection_only = false, bool interactive = true);
    bool angularstepdepth(Communicator *comm);
    // the two topomet analyses can be found in topomet.cpp:
    bool analyseTopoMet(Communicator *comm, int analysis_type, double radius, bool sel_only);
    bool analyseTopoMetPD(Communicator *comm, int analysis_type);
    // lineset and connectionset are filled in by segment map
    void makeNewSegMap();
-   void makeSegmentMap(std::vector<Line> &lineset, prefvec<Connector>& connectionset, double stubremoval);
+   void makeSegmentMap(std::vector<Line> &lines, std::vector<Connector> &connectors, double stubremoval);
    void initialiseAttributesSegment();
-   void makeSegmentConnections(prefvec<Connector>& connectionset);
+   void makeSegmentConnections(std::vector<Connector> &connectionset);
    void pushAxialValues(ShapeGraph& axialmap);
    //
    virtual bool read( std::istream& stream, int version );
@@ -94,5 +97,3 @@ public:
    void unlinkAtPoint(const Point2f& unlinkPoint);
    void unlinkFromShapeMap(const ShapeMap& shapemap);
 };
-
-#endif

@@ -60,7 +60,7 @@ public:
     bool useLocal() const { return m_local; }
     bool calculateRRA() const { return m_rra; }
 
-    const std::vector<double> getRadii() const { return m_radii;}
+    const std::vector<double>& getRadii() const { return m_radii;}
 
 private:
     std::vector<Point2f> m_allAxesRoots;

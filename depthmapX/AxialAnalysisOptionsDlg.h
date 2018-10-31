@@ -38,5 +38,5 @@ private slots:
 		void OnUpdateRadius();
 		void OnWeighted();
 		void OnOK();
-		void OnCancel();
+        void OnCancel() { reject(); }
 };
