@@ -148,7 +148,6 @@ public:
    bool analyseIsovist(Communicator *comm, MetaGraph& mgraph, bool simple_version);
    bool analyseVisualPointDepth(Communicator *comm);
    bool analyseMetricPointDepth(Communicator *comm);
-   bool analyseAngular(Communicator *comm, Options& options);
    bool analyseAngularPointDepth(Communicator *comm);
    bool analyseThruVision(Communicator *comm);
    bool mergePoints(const Point2f& p);

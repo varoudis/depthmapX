@@ -29,6 +29,7 @@
 #include "salalib/vgamodules/visualglobal.h"
 #include "salalib/vgamodules/visuallocal.h"
 #include "salalib/vgamodules/metric.h"
+#include "salalib/vgamodules/angular.h"
 
 #include "mgraph440/mgraph.h"
 
@@ -341,7 +342,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
           retvar = analysis.run(communicator, options, getDisplayedPointMap(), simple_version);
       }
       else if (options.output_type == Options::OUTPUT_ANGULAR) {
-         getDisplayedPointMap().analyseAngular( communicator, options );
+          retvar = VGAAngular().run(communicator, options, getDisplayedPointMap(), simple_version);
       }
       else if (options.output_type == Options::OUTPUT_THRU_VISION) {
          retvar = analyseThruVision( communicator, options.gatelayer );
