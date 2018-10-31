@@ -2167,7 +2167,6 @@ bool ShapeGraph::angularstepdepth(Communicator *comm)
          // note: do not clear choice values here!
       }
       else {
-         // PK: Not sure why pick front element but erase last...
          lineindex = binIter->front();
          binIter->pop_back();
       }
