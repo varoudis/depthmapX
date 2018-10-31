@@ -19,10 +19,8 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <genlib/paftl.h>
 #include <genlib/comm.h>  // For communicator
 
-#include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
 #include <salalib/axialmap.h>
 
 #include "genlib/stringutils.h"
@@ -41,16 +39,16 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
    int reccount = 0;
 
    // record axial line refs for topological analysis
-   pvecint axialrefs;
+   std::vector<int> axialrefs;
    // quick through to find the longest seg length
-   pvecfloat seglengths;
+   std::vector<float> seglengths;
    float maxseglength = 0.0f;
    for (size_t cursor = 0; cursor < getShapeCount(); cursor++)
    {
       axialrefs.push_back(m_attributes.getValue(cursor,"Axial Line Ref"));
       seglengths.push_back(m_attributes.getValue(cursor,"Segment Length"));
-      if (seglengths.tail() > maxseglength) {
-         maxseglength = seglengths.tail();
+      if (seglengths.back() > maxseglength) {
+         maxseglength = seglengths.back();
       }
    }
 
@@ -96,7 +94,7 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
       for (size_t i = 0; i < getShapeCount(); i++) {
          seen[i] = 0xffffffff;
       }
-      pvecint list[512]; // 512 bins!
+      std::vector<int> list[512]; // 512 bins!
       int bin = 0;
       list[bin].push_back(cursor);
       double rootseglength = seglengths[cursor];
@@ -113,7 +111,7 @@ bool ShapeGraph::analyseTopoMet(Communicator *comm, int analysis_type, double ra
             }
          }
          //
-         TopoMetSegmentRef& here = audittrail[list[bin].tail()];
+         TopoMetSegmentRef& here = audittrail[list[bin].back()];
          list[bin].pop_back();
          open--;
          //
@@ -249,16 +247,16 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
    bool retvar = true;
 
    // record axial line refs for topological analysis
-   pvecint axialrefs;
+   std::vector<int> axialrefs;
    // quick through to find the longest seg length
-   pvecfloat seglengths;
+   std::vector<float> seglengths;
    float maxseglength = 0.0f;
    for (size_t cursor = 0; cursor < getShapeCount(); cursor++)
    {
       axialrefs.push_back(m_attributes.getValue(cursor,"Axial Line Ref"));
       seglengths.push_back(m_attributes.getValue(cursor,"Segment Length"));
-      if (seglengths.tail() > maxseglength) {
-         maxseglength = seglengths.tail();
+      if (seglengths.back() > maxseglength) {
+         maxseglength = seglengths.back();
       }
    }
 
@@ -278,7 +276,7 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
 
    unsigned int *seen = new unsigned int[getShapeCount()];
    TopoMetSegmentRef *audittrail = new TopoMetSegmentRef[getShapeCount()];
-   pvecint list[512]; // 512 bins!
+   std::vector<int> list[512]; // 512 bins!
    int open = 0;
 
    for (size_t i = 0; i < getShapeCount(); i++)
@@ -313,7 +311,7 @@ bool ShapeGraph::analyseTopoMetPD(Communicator *comm, int analysis_type)
          }
       }
       //
-      TopoMetSegmentRef& here = audittrail[list[bin].tail()];
+      TopoMetSegmentRef& here = audittrail[list[bin].back()];
       list[bin].pop_back();
       open--;
       // this is necessary using unsigned ints for "seen", as it is possible to add a node twice
