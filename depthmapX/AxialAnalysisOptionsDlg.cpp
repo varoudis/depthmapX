@@ -173,8 +173,6 @@ void CAxialAnalysisOptionsDlg::OnOK() {
     accept();
 }
 
-void CAxialAnalysisOptionsDlg::OnCancel() { reject(); }
-
 void CAxialAnalysisOptionsDlg::UpdateData(bool value) {
     if (value) {
         m_radius = c_radius->text();
