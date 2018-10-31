@@ -34,25 +34,23 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
     AttributeTable &attributes = map.getAttributeTable();
 
     // current version (not sure of differences!)
-    int i;
-    for (i = 0; i < map.getCols(); i++) {
-        for (int j = 0; j < map.getRows(); j++) {
-            PixelRef curs = PixelRef(i, j);
+    for (size_t i = 0; i < map.getCols(); i++) {
+        for (size_t j = 0; j < map.getRows(); j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             map.getPoint(curs).m_misc = 0;
         }
     }
 
     int count = 0;
-    for (i = 0; i < map.getCols(); i++) {
-        for (int j = 0; j < map.getRows(); j++) {
+    for (size_t i = 0; i < map.getCols(); i++) {
+        for (size_t j = 0; j < map.getRows(); j++) {
             pvecint seengates;
-            PixelRef curs = PixelRef(i, j);
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             Point &p = map.getPoint(curs);
             if (map.getPoint(curs).filled()) {
                 p.getNode().first();
                 while (!p.getNode().is_tail()) {
                     PixelRef x = p.getNode().cursor();
-                    Line li = Line(map.depixelate(x), map.depixelate(curs));
                     PixelRefVector pixels = map.quickPixelateLine(x, curs);
                     for (size_t k = 1; k < pixels.size() - 1; k++) {
                         map.getPoint(pixels[k]).m_misc += 1;
@@ -83,7 +81,7 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
 
     int col = attributes.insertColumn("Through vision");
 
-    for (i = 0; i < attributes.getRowCount(); i++) {
+    for (size_t i = 0; i < attributes.getRowCount(); i++) {
         PixelRef curs = attributes.getRowKey(i);
         attributes.setValue(i, col, static_cast<float>(map.getPoint(curs).m_misc));
         map.getPoint(curs).m_misc = 0;
