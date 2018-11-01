@@ -16,14 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "salalib/vgamodules/isovist.h"
+#include "salalib/vgamodules/vgaisovist.h"
+#include "salalib/isovist.h"
 
 #include "genlib/stringutils.h"
 
-// This is a slow algorithm, but should give the correct answer
-// for demonstrative purposes
-
-bool VGAIsovist::run(Communicator *comm, MetaGraph& mgraph, const Options &, PointMap &map, bool simple_version) {
+bool VGAIsovist::run(Communicator *comm, MetaGraph &mgraph, const Options &, PointMap &map, bool simple_version) {
     map.m_hasIsovistAnalysis = false;
     // note, BSP tree plays with comm counting...
     comm->CommPostMessage(Communicator::NUM_STEPS, 2);

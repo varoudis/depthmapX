@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "salalib/vgamodules/throughvision.h"
+#include "salalib/vgamodules/vgathroughvision.h"
 #include "salalib/nagent.h"
 
 #include "genlib/stringutils.h"

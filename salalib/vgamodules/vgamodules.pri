@@ -1,12 +1,20 @@
-HEADERS += $$PWD/visualglobal.h \
-    $$PWD/visuallocal.h \
-    $$PWD/metric.h \
-    $$PWD/angular.h \
-    $$PWD/throughvision.h \
-    $$PWD/isovist.h
-SOURCES += $$PWD/visualglobal.cpp \
-    $$PWD/visuallocal.cpp \
-    $$PWD/metric.cpp \
-    $$PWD/angular.cpp \
-    $$PWD/throughvision.cpp \
-    $$PWD/isovist.cpp
+HEADERS += \
+    $$PWD/vgaisovist.h \
+    $$PWD/vgavisualglobal.h \
+    $$PWD/vgavisuallocal.h \
+    $$PWD/vgathroughvision.h \
+    $$PWD/vgametric.h \
+    $$PWD/vgaangular.h \
+    $$PWD/vgaangulardepth.h \
+    $$PWD/vgametricdepth.h \
+    $$PWD/vgavisualglobaldepth.h
+SOURCES += \
+    $$PWD/vgaisovist.cpp \
+    $$PWD/vgaangular.cpp \
+    $$PWD/vgametric.cpp \
+    $$PWD/vgathroughvision.cpp \
+    $$PWD/vgavisuallocal.cpp \
+    $$PWD/vgavisualglobal.cpp \
+    $$PWD/vgaangulardepth.cpp \
+    $$PWD/vgametricdepth.cpp \
+    $$PWD/vgavisualglobaldepth.cpp

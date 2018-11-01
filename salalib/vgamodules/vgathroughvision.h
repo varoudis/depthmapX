@@ -19,17 +19,12 @@
 #pragma once
 
 #include "salalib/ivga.h"
-#include "salalib/pointdata.h"
 #include "salalib/options.h"
 #include "salalib/pixelref.h"
+#include "salalib/pointdata.h"
 
-#include "genlib/simplematrix.h"
-
-class VGAThroughVision : IVGA
-{
-public:
-    std::string getAnalysisName() const override {
-        return "Through Vision Analysis";
-    }
+class VGAThroughVision : IVGA {
+  public:
+    std::string getAnalysisName() const override { return "Through Vision Analysis"; }
     bool run(Communicator *comm, MetaGraph &, const Options &, PointMap &map, bool) override;
 };

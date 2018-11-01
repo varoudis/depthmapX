@@ -26,12 +26,15 @@
 #include "salalib/mgraph.h"
 #include "salalib/importutils.h"
 
-#include "salalib/vgamodules/visualglobal.h"
-#include "salalib/vgamodules/visuallocal.h"
-#include "salalib/vgamodules/metric.h"
-#include "salalib/vgamodules/angular.h"
-#include "salalib/vgamodules/throughvision.h"
-#include "salalib/vgamodules/isovist.h"
+#include "salalib/vgamodules/vgaisovist.h"
+#include "salalib/vgamodules/vgavisualglobal.h"
+#include "salalib/vgamodules/vgavisualglobaldepth.h"
+#include "salalib/vgamodules/vgavisuallocal.h"
+#include "salalib/vgamodules/vgametric.h"
+#include "salalib/vgamodules/vgametricdepth.h"
+#include "salalib/vgamodules/vgaangular.h"
+#include "salalib/vgamodules/vgaangulardepth.h"
+#include "salalib/vgamodules/vgathroughvision.h"
 
 #include "mgraph440/mgraph.h"
 
@@ -291,7 +294,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       retvar = true;
       if (options.point_depth_selection == 1) {
          if (m_view_class & VIEWVGA) {
-            getDisplayedPointMap().analyseVisualPointDepth( communicator );
+             retvar = VGAVisualGlobalDepth().run(communicator, *this, Options(), getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!getDisplayedShapeGraph().isSegmentMap()) {
@@ -306,14 +309,14 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       }
       else if (options.point_depth_selection == 2) {
          if (m_view_class & VIEWVGA) {
-            getDisplayedPointMap().analyseMetricPointDepth( communicator );
+             retvar = VGAMetricDepth().run(communicator, *this, Options(), getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
             getDisplayedShapeGraph().analyseTopoMetPD( communicator, 1 ); // 1 is metric step depth
          }
       }
       else if (options.point_depth_selection == 3) {
-         getDisplayedPointMap().analyseAngularPointDepth( communicator );
+          retvar = VGAAngularDepth().run(communicator, *this, Options(), getDisplayedPointMap(), false);
       }
       else if (options.point_depth_selection == 4) {
          if (m_view_class & VIEWVGA) {

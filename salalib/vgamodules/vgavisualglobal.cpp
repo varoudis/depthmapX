@@ -16,11 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "salalib/vgamodules/visualglobal.h"
+#include "salalib/vgamodules/vgavisualglobal.h"
 
 #include "genlib/stringutils.h"
 
-bool VGAVisualGlobal::run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map, bool simple_version) {
+bool VGAVisualGlobal::run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map,
+                          bool simple_version) {
     time_t atime = 0;
     if (comm) {
         qtimer(atime, 0);
@@ -96,8 +97,8 @@ bool VGAVisualGlobal::run(Communicator *comm, MetaGraph &, const Options &option
                     search_tree.push_back(PixelRefVector());
                     distribution.push_back(0);
                     for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-                        PixelRef& ref = search_tree[level][n];
-                        int& pmisc = miscs(ref.y, ref.x);
+                        PixelRef &ref = search_tree[level][n];
+                        int &pmisc = miscs(ref.y, ref.x);
                         Point &p = map.getPoint(ref);
                         if (p.filled() && pmisc != ~0) {
                             total_depth += level;
@@ -110,11 +111,11 @@ bool VGAVisualGlobal::run(Communicator *comm, MetaGraph &, const Options &option
                                 pmisc = ~0;
                                 if (!p.getMergePixel().empty()) {
                                     PixelRef mergePixel = p.getMergePixel();
-                                    int& p2misc = miscs(mergePixel.y, mergePixel.x);
+                                    int &p2misc = miscs(mergePixel.y, mergePixel.x);
                                     Point &p2 = map.getPoint(mergePixel);
                                     if (p2misc != ~0) {
-                                        extractUnseen(p2.getNode(), search_tree[level + 1],
-                                                                 miscs, extents); // did say p.misc
+                                        extractUnseen(p2.getNode(), search_tree[level + 1], miscs,
+                                                      extents); // did say p.misc
                                         p2misc = ~0;
                                     }
                                 }

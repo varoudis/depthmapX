@@ -145,9 +145,6 @@ public:
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
    bool binDisplay(Communicator *comm);
-   bool analyseVisualPointDepth(Communicator *comm);
-   bool analyseMetricPointDepth(Communicator *comm);
-   bool analyseAngularPointDepth(Communicator *comm);
    bool mergePoints(const Point2f& p);
    bool unmergePoints();
    bool mergePixels(PixelRef a, PixelRef b);
