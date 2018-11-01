@@ -5,6 +5,8 @@
 #-------------------------------------------------
 include(../defaults.pri)
 include(vgamodules/vgamodules.pri)
+include(axialmodules/axialmodules.pri)
+include(segmmodules/segmmodules.pri)
 
 QT       -= qt
 CONFIG   -= qt
@@ -32,7 +34,6 @@ SOURCES += \
     spacepix.cpp \
     sparksieve2.cpp \
     tigerp.cpp \
-    topomet.cpp \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
@@ -67,7 +68,6 @@ HEADERS += \
     spacepix.h \
     sparksieve2.h \
     tigerp.h \
-    topomet.h \
     entityparsing.h \
     linkutils.h \
     gridproperties.h \
@@ -94,7 +94,9 @@ HEADERS += \
     axialpolygons.h \
     tidylines.h \
     mapconverter.h \
-    ivga.h
+    ivga.h \
+    iaxial.h \
+    isegment.h
 
 DISTFILES += \
     salascript-tests.txt

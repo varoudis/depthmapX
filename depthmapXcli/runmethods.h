@@ -28,7 +28,6 @@
 #include "exportparser.h"
 #include "linkparser.h"
 #include "salalib/isovistdef.h"
-#include "salalib/topomet.h"
 #include <vector>
 
 class Line;
