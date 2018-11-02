@@ -5,6 +5,7 @@
 #-------------------------------------------------
 include(../defaults.pri)
 include(vgamodules/vgamodules.pri)
+include(parsers/parsers.pri)
 
 QT       -= qt
 CONFIG   -= qt
@@ -21,17 +22,14 @@ SOURCES += \
     axialmap.cpp \
     connector.cpp \
     isovist.cpp \
-    MapInfoData.cpp \
     mgraph.cpp \
     nagent.cpp \
     ngraph.cpp \
-    ntfp.cpp \
     pointdata.cpp \
     salaprogram.cpp \
     shapemap.cpp \
     spacepix.cpp \
     sparksieve2.cpp \
-    tigerp.cpp \
     topomet.cpp \
     entityparsing.cpp \
     linkutils.cpp \
@@ -40,7 +38,6 @@ SOURCES += \
     layermanagerimpl.cpp \
     attributetableview.cpp \
     geometrygenerators.cpp \
-    importutils.cpp \
     point.cpp \
     pafcolor.cpp \
     spacepixfile.cpp \
@@ -48,7 +45,8 @@ SOURCES += \
     axialminimiser.cpp \
     axialpolygons.cpp \
     tidylines.cpp \
-    mapconverter.cpp
+    mapconverter.cpp \
+    importutils.cpp
 
 HEADERS += \
     attributes.h \
@@ -56,17 +54,14 @@ HEADERS += \
     connector.h \
     fileproperties.h \
     isovist.h \
-    MapInfoData.h \
     mgraph.h \
     nagent.h \
     ngraph.h \
-    ntfp.h \
     pointdata.h \
     salaprogram.h \
     shapemap.h \
     spacepix.h \
     sparksieve2.h \
-    tigerp.h \
     topomet.h \
     entityparsing.h \
     linkutils.h \
@@ -80,8 +75,6 @@ HEADERS += \
     attributetablehelpers.h \
     attributetableview.h \
     geometrygenerators.h \
-    importutils.h \
-    importtypedefs.h \
     point.h \
     pixelref.h \
     displayparams.h \
@@ -94,7 +87,9 @@ HEADERS += \
     axialpolygons.h \
     tidylines.h \
     mapconverter.h \
-    ivga.h
+    ivga.h \
+    importutils.h \
+    importtypedefs.h
 
 DISTFILES += \
     salascript-tests.txt

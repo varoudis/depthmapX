@@ -21,17 +21,18 @@
 #include "salalib/alllinemap.h"
 #include "salalib/mapconverter.h"
 #include "salalib/isovist.h"
-#include "salalib/ntfp.h"
-#include "salalib/tigerp.h"
 #include "salalib/mgraph.h"
+
 #include "salalib/importutils.h"
+#include "salalib/parsers/ntfp.h"
+#include "salalib/parsers/tigerp.h"
+#include "salalib/parsers/dxfp.h"
 
 #include "mgraph440/mgraph.h"
 
 #include "genlib/paftl.h"
 #include "genlib/pafmath.h"
 #include "genlib/p2dpoly.h"
-#include "genlib/dxfp.h"
 #include "genlib/comm.h"
 
 #include "math.h"

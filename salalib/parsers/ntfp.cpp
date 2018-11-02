@@ -19,7 +19,7 @@
 // Quick OS land-line NTF parser
 
 
-#include "salalib/ntfp.h"
+#include "ntfp.h"
 
 #include "genlib/p2dpoly.h"
 #include "genlib/comm.h" // for communicator

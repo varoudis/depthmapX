@@ -20,7 +20,7 @@
 
 // Quick Tiger line parser (type 1 records)
 
-#include "salalib/tigerp.h"
+#include "salalib/parsers/tigerp.h"
 #include "genlib/comm.h"
 #include <iostream>
 #include <fstream>

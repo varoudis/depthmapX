@@ -14,16 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "depthmapX/GraphDoc.h"
+#include "salalib/nagent.h"
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Q3DView view
 #include <QOpenGLWidget>
 #include <QRect>
 #include <QPoint>
 #include <QSize>
-#include "GraphDoc.h"
-#include <salalib/nagent.h>
 
 #define ID_ADD_AGENT                    32947
 #define ID_3D_PAN                       32948

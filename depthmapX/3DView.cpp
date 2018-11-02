@@ -14,17 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "3DView.h"
 
-// 3DView.cpp : implementation file
-//
+#include "depthmapX/mainwindow.h"
+
+#include "salalib/parsers/xmlparse.h"
 
 #include <QtGui>
 #include <QtOpenGL>
 #include <QTimer>
 #include <QtWidgets/QFileDialog>
-#include <genlib/xmlparse.h>
-#include "mainwindow.h"
-#include "3DView.h"
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>

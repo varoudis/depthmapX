@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <genlib/xmlparse.h>
+#include "xmlparse.h"
 
 enum { STEP_START, STEP_ELEMENT_NAME, 
                    STEP_ATTRIBUTE_NAME,
