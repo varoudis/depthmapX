@@ -28,7 +28,7 @@
 class VGAVisualGlobalDepth : IVGA {
   public:
     std::string getAnalysisName() const override { return "Global Visibility Depth"; }
-    bool run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map, bool simple_version) override;
+    bool run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) override;
     void extractUnseen(Node &node, PixelRefVector &pixels, depthmapX::RowMatrix<int> &miscs,
                        depthmapX::RowMatrix<PixelRef> &extents) {
         for (int i = 0; i < 32; i++) {

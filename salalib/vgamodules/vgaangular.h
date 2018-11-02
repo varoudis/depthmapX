@@ -26,5 +26,5 @@
 class VGAAngular : IVGA {
   public:
     std::string getAnalysisName() const override { return "Angular Analysis"; }
-    bool run(Communicator *, MetaGraph &, const Options &, PointMap &map, bool) override;
+    bool run(Communicator *, const Options &, PointMap &map, bool) override;
 };

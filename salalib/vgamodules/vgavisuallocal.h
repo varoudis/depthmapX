@@ -26,5 +26,5 @@
 class VGAVisualLocal : IVGA {
   public:
     std::string getAnalysisName() const override { return "Local Visibility Analysis"; }
-    bool run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map, bool simple_version) override;
+    bool run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) override;
 };

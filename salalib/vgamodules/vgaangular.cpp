@@ -20,7 +20,7 @@
 
 #include "genlib/stringutils.h"
 
-bool VGAAngular::run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map, bool) {
+bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, bool) {
     time_t atime = 0;
     if (comm) {
         qtimer(atime, 0);

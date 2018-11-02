@@ -20,14 +20,14 @@
 
 #include "genlib/stringutils.h"
 
-bool VGAVisualLocal::run(Communicator *comm, MetaGraph &, const Options &options, PointMap &map, bool simple_version) {
+bool VGAVisualLocal::run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) {
     time_t atime = 0;
     if (comm) {
         qtimer(atime, 0);
         comm->CommPostMessage(Communicator::NUM_RECORDS, map.getFilledPointCount());
     }
 
-    int cluster_col, control_col, controllability_col;
+    int cluster_col = -1, control_col = -1, controllability_col = -1;
     if (!simple_version) {
         cluster_col = map.getAttributeTable().insertColumn("Visual Clustering Coefficient");
         control_col = map.getAttributeTable().insertColumn("Visual Control");
@@ -36,9 +36,9 @@ bool VGAVisualLocal::run(Communicator *comm, MetaGraph &, const Options &options
 
     int count = 0;
 
-    for (int i = 0; i < map.getCols(); i++) {
-        for (int j = 0; j < map.getRows(); j++) {
-            PixelRef curs = PixelRef(i, j);
+    for (size_t i = 0; i < map.getCols(); i++) {
+        for (size_t j = 0; j < map.getRows(); j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             if (map.getPoint(curs).filled()) {
                 if ((map.getPoint(curs).contextfilled() && !curs.iseven()) || (options.gates_only)) {
                     count++;
