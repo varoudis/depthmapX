@@ -14,6 +14,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+
+#include "mainwindow.h"
+
+#include "depthmapX/views/depthmapview/depthmapview.h"
+#include "depthmapX/views/3dview/3dview.h"
+#include "depthmapX/views/plotview/plotview.h"
+#include "depthmapX/views/tableview/tableview.h"
+#include "dialogs/AboutDlg.h"
+#include "dialogs/settings/settingsdialog.h"
+
 #include <QtGui>
 #include <QDesktopServices>
 #include <QtWidgets/QMdiArea>
@@ -27,14 +37,6 @@
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
-
-#include "mainwindow.h"
-#include "depthmapView.h"
-#include "3DView.h"
-#include "PlotView.h"
-#include "tableView.h"
-#include "dialogs/AboutDlg.h"
-#include "dialogs/settings/settingsdialog.h"
 
 
 static int current_view_type = 0;

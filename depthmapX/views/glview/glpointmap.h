@@ -17,9 +17,9 @@
 #pragma once
 
 #include "salalib/mgraph.h"
-#include "depthmapX/gllinesuniform.h"
-#include "depthmapX/glrastertexture.h"
-#include "depthmapX/gltrianglesuniform.h"
+#include "depthmapX/views/glview/gllinesuniform.h"
+#include "depthmapX/views/glview/glrastertexture.h"
+#include "depthmapX/views/glview/gltrianglesuniform.h"
 
 class GLPointMap
 {

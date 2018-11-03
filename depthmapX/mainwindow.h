@@ -17,18 +17,19 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "depthmapX/indexWidget.h"
+#include "depthmapX/treeWindow.h"
+#include "depthmapX/GraphDoc.h"
+#include "depthmapX/compatibilitydefines.h"
+#include "depthmapX/settings.h"
+#include "depthmapX/version.h"
+
+#include "depthmapX/dialogs/ColourScaleDlg.h"
+#include "depthmapX/views/glview/glview.h"
+
 #include <QMainWindow>
 #include <QButtonGroup>
 #include <QComboBox>
-#include "indexWidget.h"
-#include "treeWindow.h"
-#include "GraphDoc.h"
-#include "dialogs/ColourScaleDlg.h"
-#include "compatibilitydefines.h"
-#include "settings.h"
-
-#include "version.h"
-#include "glview.h"
 
 class ItemTreeEntry
 {

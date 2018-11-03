@@ -1,66 +1,31 @@
 include(../defaults.pri)
 include(dialogs/dialogs.pri)
+include(views/views.pri)
 
 QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
 TEMPLATE      = lib
 CONFIG        += staticlib
 TARGET        = depthmapX
-HEADERS       += depthmapView.h \
-                GraphDoc.h \
+HEADERS       += GraphDoc.h \
                 indexWidget.h \
                 mainwindow.h \
                 mdichild.h \
                 treeWindow.h \
-                3DView.h \
-                PlotView.h \
-                tableView.h \
     compatibilitydefines.h \
     mainwindowfactory.h \
-    viewhelpers.h \
     version.h \
     settings.h \
-    settingsimpl.h \
-    gllinesuniform.h \
-    glview.h \
-    gllines.h \
-    glrastertexture.h \
-    glpolygons.h \
-    glutriangulator.h \
-    gltrianglesuniform.h \
-    glpointmap.h \
-    glshapegraph.h \
-    glshapemap.h \
-    gldynamicrect.h \
-    gldynamicline.h \
-    mapview.h
+    settingsimpl.h
 
-SOURCES       += depthmapView.cpp \
-                GraphDoc.cpp \
+SOURCES       += GraphDoc.cpp \
                 indexWidget.cpp \
                 mainwindow.cpp \
                 mdichild.cpp \
                 renderthread.cpp \
                 treeWindow.cpp \
-                3DView.cpp \
-                PlotView.cpp \
-                tableView.cpp \
     mainwindowfactory.cpp \
-    viewhelpers.cpp \
-    settingsimpl.cpp \
-    gllinesuniform.cpp \
-    glview.cpp \
-    gllines.cpp \
-    glrastertexture.cpp \
-    glpolygons.cpp \
-    glutriangulator.cpp \
-    gltrianglesuniform.cpp \
-    glpointmap.cpp \
-    glshapegraph.cpp \
-    glshapemap.cpp \
-    gldynamicrect.cpp \
-    gldynamicline.cpp \
-    mapview.cpp
+    settingsimpl.cpp
 
 RESOURCES     += resource.qrc
 

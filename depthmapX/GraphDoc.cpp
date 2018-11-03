@@ -49,8 +49,9 @@
 #include "dialogs/TopoMetDlg.h"
 #include "dialogs/AttributeSummary.h"
 
-#include "depthmapView.h"
-#include "viewhelpers.h"
+#include "views/depthmapview/depthmapview.h"
+#include "views/viewhelpers.h"
+
 #include <QMetaType>
 
 #ifdef _WIN32

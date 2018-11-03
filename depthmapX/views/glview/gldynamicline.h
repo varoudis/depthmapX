@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "depthmapX/gldynamicrect.h"
+#include "depthmapX/views/glview/gldynamicrect.h"
 
 class GLDynamicLine : public GLDynamicRect
 {
