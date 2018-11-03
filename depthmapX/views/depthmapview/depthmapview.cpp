@@ -33,7 +33,7 @@
 #include <qsettings.h>
 
 #include "mainwindow.h"
-#include "depthmapView.h"
+#include "depthmapview.h"
 #include "depthmapX/views/viewhelpers.h"
 
 class QToolBar;

@@ -26,7 +26,7 @@
 #include <QtGui/QFocusEvent>
 
 #include "mainwindow.h"
-#include "tableView.h"
+#include "tableview.h"
 
 #define ROW_HEIGHT 20
 #define PG_COUNT 40
