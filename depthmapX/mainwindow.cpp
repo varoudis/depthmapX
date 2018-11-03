@@ -33,8 +33,8 @@
 #include "3DView.h"
 #include "PlotView.h"
 #include "tableView.h"
-#include "AboutDlg.h"
-#include "settingsdialog/settingsdialog.h"
+#include "dialogs/AboutDlg.h"
+#include "dialogs/settings/settingsdialog.h"
 
 
 static int current_view_type = 0;

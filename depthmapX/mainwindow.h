@@ -23,7 +23,7 @@
 #include "indexWidget.h"
 #include "treeWindow.h"
 #include "GraphDoc.h"
-#include "ColourScaleDlg.h"
+#include "dialogs/ColourScaleDlg.h"
 #include "compatibilitydefines.h"
 #include "settings.h"
 

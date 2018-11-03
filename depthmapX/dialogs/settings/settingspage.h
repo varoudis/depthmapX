@@ -17,6 +17,8 @@
 
 #include "depthmapX/settings.h"
 
+#include <QWidget>
+
 class SettingsPage : public QWidget
 {
 public:

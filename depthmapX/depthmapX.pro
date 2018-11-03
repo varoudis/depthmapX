@@ -1,10 +1,12 @@
 include(../defaults.pri)
+include(dialogs/dialogs.pri)
+
 QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
 TEMPLATE      = lib
 CONFIG        += staticlib
 TARGET        = depthmapX
-HEADERS       = depthmapView.h \
+HEADERS       += depthmapView.h \
                 GraphDoc.h \
                 indexWidget.h \
                 mainwindow.h \
@@ -13,33 +15,6 @@ HEADERS       = depthmapView.h \
                 3DView.h \
                 PlotView.h \
                 tableView.h \
-    TopoMetDlg.h \
-    SegmentAnalysisDlg.h \
-    RenameObjectDlg.h \
-    PushDialog.h \
-    PromptReplace.h \
-    OptionsDlg.h \
-    NewLayerDlg.h \
-    MakeOptionsDlg.h \
-    MakeLayerDlg.h \
-    LicenceDialog.h \
-    LayerChooserDlg.h \
-    IsovistPathDlg.h \
-    InsertColumnDlg.h \
-    GridDialog.h \
-    FindLocDlg.h \
-    FilePropertiesDlg.h \
-    FewestLineOptionsDlg.h \
-    EditConnectionsDlg.h \
-    ConvertShapesDlg.h \
-    ColumnPropertiesDlg.h \
-    ColourScaleDlg.h \
-    AxialAnalysisOptionsDlg.h \
-    AttributeSummary.h \
-    AttributeChooserDlg.h \
-    AgentAnalysisDlg.h \
-    AboutDlg.h \
-    licenseagreement.h \
     compatibilitydefines.h \
     mainwindowfactory.h \
     viewhelpers.h \
@@ -60,7 +35,7 @@ HEADERS       = depthmapView.h \
     gldynamicline.h \
     mapview.h
 
-SOURCES       = depthmapView.cpp \
+SOURCES       += depthmapView.cpp \
                 GraphDoc.cpp \
                 indexWidget.cpp \
                 mainwindow.cpp \
@@ -70,33 +45,6 @@ SOURCES       = depthmapView.cpp \
                 3DView.cpp \
                 PlotView.cpp \
                 tableView.cpp \
-    TopoMetDlg.cpp \
-    SegmentAnalysisDlg.cpp \
-    RenameObjectDlg.cpp \
-    PushDialog.cpp \
-    PromptReplace.cpp \
-    OptionsDlg.cpp \
-    NewLayerDlg.cpp \
-    MakeOptionsDlg.cpp \
-    MakeLayerDlg.cpp \
-    LicenceDialog.cpp \
-    LayerChooserDlg.cpp \
-    IsovistPathDlg.cpp \
-    InsertColumnDlg.cpp \
-    GridDialog.cpp \
-    FindLocDlg.cpp \
-    FilePropertiesDlg.cpp \
-    FewestLineOptionsDlg.cpp \
-    EditConnectionsDlg.cpp \
-    ConvertShapesDlg.cpp \
-    ColumnPropertiesDlg.cpp \
-    ColourScaleDlg.cpp \
-    AxialAnalysisOptionsDlg.cpp \
-    AttributeSummary.cpp \
-    AttributeChooserDlg.cpp \
-    AgentAnalysisDlg.cpp \
-    AboutDlg.cpp \
-    licenseagreement.cpp \
     mainwindowfactory.cpp \
     viewhelpers.cpp \
     settingsimpl.cpp \
@@ -114,7 +62,7 @@ SOURCES       = depthmapView.cpp \
     gldynamicline.cpp \
     mapview.cpp
 
-RESOURCES     = resource.qrc
+RESOURCES     += resource.qrc
 
 OTHER_FILES += \
     Libs/include/generic/lgpl.txt
