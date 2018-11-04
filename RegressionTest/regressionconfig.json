@@ -83,6 +83,22 @@
                 "-vl": ""
             }
         }],
+        "visibility_local_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vl": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
+            }
+        }],
         "visibility_global_with_multiple_pointmaps": [{
             "infile": "../../../testdata/gallery_two_pointmaps.graph",
             "outfile": "out.graph",
