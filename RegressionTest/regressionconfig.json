@@ -255,7 +255,8 @@
             "outfile": "out.graph",
             "mode": "VGA",
             "extraArgs": {
-                "-vm": "metric"
+                "-vm": "metric",
+                "-vr": "n"
             }
         },{
             "infile": "out.graph",
