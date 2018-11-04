@@ -29,7 +29,8 @@ std::istream& Point::read(std::istream& stream, int version, int attr_count)
    // (note block NO LONGER used!)
    stream.read( (char *) &m_block, sizeof(m_block) );
 
-   stream.read( (char *) &m_misc, sizeof(m_misc) );
+   int dummy = 0;
+   stream.read( reinterpret_cast<char *>(&dummy), sizeof(dummy) );
 
    stream.read( (char *) &m_grid_connections, sizeof(m_grid_connections) );
 

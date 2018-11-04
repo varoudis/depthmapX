@@ -162,6 +162,23 @@
                 "-vr": "n"
             }
         }],
+        "visibility_global_n_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "visibility",
+                "-vg": "",
+                "-vr": "n"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
+            }
+        }],
         "vga_isovist": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
@@ -170,12 +187,42 @@
                 "-vm": "isovist"
             }
         }],
+        "vga_isovist_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "isovist"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
+            }
+        }],
         "vga_angular": [{
             "infile": "../../../testdata/turns_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
             "extraArgs": {
                 "-vm": "angular"
+            }
+        }],
+        "vga_angular_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "angular"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
             }
         }],
         "vga_metric": [{
@@ -187,12 +234,42 @@
                 "-vr": "n"
             }
         }],
+        "vga_metric_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "metric"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
+            }
+        }],
         "vga_thru_vision": [{
             "infile": "../../../testdata/gallery_connected.graph",
             "outfile": "out.graph",
             "mode": "VGA",
             "extraArgs": {
                 "-vm": "thruvision"
+            }
+        }],
+        "vga_thru_vision_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.graph",
+            "mode": "VGA",
+            "extraArgs": {
+                "-vm": "thruvision"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "pointmap-data-csv"
             }
         }],
         "isovist_args": [{
