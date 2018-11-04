@@ -54,7 +54,8 @@ std::ofstream& Point::write(std::ofstream& stream, int version)
    // block is the same size as m_noderef used to be for ease of replacement:
    // note block is no longer used at all
    stream.write( (char *) &m_block, sizeof(m_block) );
-   stream.write( (char *) &m_misc, sizeof(m_misc) );
+   int dummy = 0;
+   stream.write( (char *) &dummy, sizeof(dummy) );
    stream.write( (char *) &m_grid_connections, sizeof(m_grid_connections) );
    stream.write( (char *) &m_merge, sizeof(m_merge) );
    bool ngraph;
