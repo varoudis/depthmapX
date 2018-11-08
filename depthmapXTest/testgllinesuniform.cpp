@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "catch.hpp"
-#include "../depthmapX/gllinesuniform.h"
+#include "../depthmapX/views/glview/gllinesuniform.h"
 
 TEST_CASE("Test GLLinesUniform::loadLineData()", "")
 {

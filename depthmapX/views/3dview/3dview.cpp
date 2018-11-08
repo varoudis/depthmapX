@@ -24,7 +24,7 @@
 #include <QtWidgets/QFileDialog>
 #include <genlib/xmlparse.h>
 #include "mainwindow.h"
-#include "3DView.h"
+#include "3dview.h"
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>

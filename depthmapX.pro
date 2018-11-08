@@ -4,7 +4,6 @@ SUBDIRS = \
     mgraph440 \
     genlib \
     salalib \
-    settingsdialog \
     depthmapX \
     GuiUnitTest \
     GuiApp \
@@ -13,4 +12,4 @@ SUBDIRS = \
     salaTest \
     genlibTest \
     depthmapXTest
-GuiApp.depends = depthmapX genlib mgraph440 salalib settingsdialog
+GuiApp.depends = depthmapX genlib mgraph440 salalib
