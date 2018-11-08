@@ -28,6 +28,16 @@
 #include "salalib/parsers/tigerp.h"
 #include "salalib/parsers/dxfp.h"
 
+#include "salalib/vgamodules/vgaisovist.h"
+#include "salalib/vgamodules/vgavisualglobal.h"
+#include "salalib/vgamodules/vgavisualglobaldepth.h"
+#include "salalib/vgamodules/vgavisuallocal.h"
+#include "salalib/vgamodules/vgametric.h"
+#include "salalib/vgamodules/vgametricdepth.h"
+#include "salalib/vgamodules/vgaangular.h"
+#include "salalib/vgamodules/vgaangulardepth.h"
+#include "salalib/vgamodules/vgathroughvision.h"
+
 #include "mgraph440/mgraph.h"
 
 #include "genlib/paftl.h"
@@ -285,7 +295,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       retvar = true;
       if (options.point_depth_selection == 1) {
          if (m_view_class & VIEWVGA) {
-            getDisplayedPointMap().analyseVisualPointDepth( communicator );
+             retvar = VGAVisualGlobalDepth().run(communicator, Options(), getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!getDisplayedShapeGraph().isSegmentMap()) {
@@ -300,14 +310,14 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       }
       else if (options.point_depth_selection == 2) {
          if (m_view_class & VIEWVGA) {
-            getDisplayedPointMap().analyseMetricPointDepth( communicator );
+             retvar = VGAMetricDepth().run(communicator, Options(), getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
             getDisplayedShapeGraph().analyseTopoMetPD( communicator, 1 ); // 1 is metric step depth
          }
       }
       else if (options.point_depth_selection == 3) {
-         getDisplayedPointMap().analyseAngularPointDepth( communicator );
+          retvar = VGAAngularDepth().run(communicator, Options(), getDisplayedPointMap(), false);
       }
       else if (options.point_depth_selection == 4) {
          if (m_view_class & VIEWVGA) {
@@ -318,21 +328,27 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
          }
       }
       else if (options.output_type == Options::OUTPUT_ISOVIST) {
-         getDisplayedPointMap().analyseIsovist( communicator, *this, simple_version );
+         retvar = VGAIsovist().run(communicator, options, getDisplayedPointMap(), simple_version);
       }
       else if (options.output_type == Options::OUTPUT_VISUAL) {
-         getDisplayedPointMap().analyseVisual( communicator, options, simple_version );
-         // REPLACES:
-         // Graph::calculate_depth_matrix( communicator, options, output_graph );
+          bool localResult = true;
+          bool globalResult = true;
+          if (options.local) {
+              localResult = VGAVisualLocal().run(communicator, options, getDisplayedPointMap(), simple_version);
+          }
+          if (options.global) {
+              globalResult = VGAVisualGlobal().run(communicator, options, getDisplayedPointMap(), simple_version);
+          }
+          retvar = globalResult & localResult;
       }
       else if (options.output_type == Options::OUTPUT_METRIC) {
-         getDisplayedPointMap().analyseMetric( communicator, options );
+          retvar = VGAMetric().run(communicator, options, getDisplayedPointMap(), simple_version);
       }
       else if (options.output_type == Options::OUTPUT_ANGULAR) {
-         getDisplayedPointMap().analyseAngular( communicator, options );
+          retvar = VGAAngular().run(communicator, options, getDisplayedPointMap(), simple_version);
       }
       else if (options.output_type == Options::OUTPUT_THRU_VISION) {
-         retvar = analyseThruVision( communicator, options.gatelayer );
+          retvar = VGAThroughVision().run(communicator, options, getDisplayedPointMap(), simple_version);
       }
    } 
    catch (Communicator::CancelledException) {
@@ -1912,7 +1928,7 @@ void MetaGraph::runAgentEngine(Communicator *comm)
 }
 
 // Thru vision
-
+// TODO: Undocumented functionality
 bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
 {
    bool retvar = false;
@@ -1931,7 +1947,8 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
    }
 
    try {
-      retvar = getDisplayedPointMap().analyseThruVision(comm);
+       Options tempOptions;
+       retvar = VGAThroughVision().run(comm, tempOptions, getDisplayedPointMap(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;

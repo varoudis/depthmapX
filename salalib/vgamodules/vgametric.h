@@ -1,4 +1,7 @@
-// Copyright (C) 2018 Petros Koutsolampros
+// sala - a component of the depthmapX - spatial network analysis platform
+// Copyright (C) 2000-2010, University College London, Alasdair Turner
+// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2017-2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,19 +18,13 @@
 
 #pragma once
 
-// Interface to handle different kinds of VGA analysis
-
-#include "salalib/mgraph.h"
+#include "salalib/ivga.h"
 #include "salalib/options.h"
+#include "salalib/pixelref.h"
 #include "salalib/pointdata.h"
 
-#include "genlib/comm.h"
-
-#include <string>
-
-class IVGA {
+class VGAMetric : IVGA {
   public:
-    virtual std::string getAnalysisName() const = 0;
-    virtual bool run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) = 0;
-    virtual ~IVGA() {}
+    std::string getAnalysisName() const override { return "Metric Analysis"; }
+    bool run(Communicator *comm, const Options &options, PointMap &map, bool) override;
 };

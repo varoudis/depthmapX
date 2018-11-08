@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "salalib/vgamodules/visualglobal.h"
+#include "salalib/vgamodules/vgavisualglobal.h"
 
 #include "genlib/stringutils.h"
 
@@ -96,8 +96,8 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                     search_tree.push_back(PixelRefVector());
                     distribution.push_back(0);
                     for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-                        PixelRef& ref = search_tree[level][n];
-                        int& pmisc = miscs(ref.y, ref.x);
+                        PixelRef &ref = search_tree[level][n];
+                        int &pmisc = miscs(ref.y, ref.x);
                         Point &p = map.getPoint(ref);
                         if (p.filled() && pmisc != ~0) {
                             total_depth += level;
@@ -110,11 +110,11 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                                 pmisc = ~0;
                                 if (!p.getMergePixel().empty()) {
                                     PixelRef mergePixel = p.getMergePixel();
-                                    int& p2misc = miscs(mergePixel.y, mergePixel.x);
+                                    int &p2misc = miscs(mergePixel.y, mergePixel.x);
                                     Point &p2 = map.getPoint(mergePixel);
                                     if (p2misc != ~0) {
-                                        extractUnseen(p2.getNode(), search_tree[level + 1],
-                                                                 miscs, extents); // did say p.misc
+                                        extractUnseen(p2.getNode(), search_tree[level + 1], miscs,
+                                                      extents); // did say p.misc
                                         p2misc = ~0;
                                     }
                                 }
@@ -202,9 +202,9 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
             }
         }
     }
-    for (int i = 0; i < map.getCols(); i++) {
-        for (int j = 0; j < map.getRows(); j++) {
-            PixelRef curs = PixelRef(i, j);
+    for (size_t i = 0; i < map.getCols(); i++) {
+        for (size_t j = 0; j < map.getRows(); j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             map.getPoint(curs).m_misc = miscs(j, i);
             map.getPoint(curs).m_extent = extents(j, i);
         }
@@ -212,4 +212,28 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
     map.setDisplayedAttribute(integ_dv_col);
 
     return true;
+}
+
+void VGAVisualGlobal::extractUnseen(Node &node, PixelRefVector &pixels, depthmapX::RowMatrix<int> &miscs,
+                   depthmapX::RowMatrix<PixelRef> &extents) {
+    for (int i = 0; i < 32; i++) {
+        Bin &bin = node.bin(i);
+        for (auto pixVec : bin.m_pixel_vecs) {
+            for (PixelRef pix = pixVec.start(); pix.col(bin.m_dir) <= pixVec.end().col(bin.m_dir);) {
+                int &misc = miscs(pix.y, pix.x);
+                PixelRef &extent = extents(pix.y, pix.x);
+                if (misc == 0) {
+                    pixels.push_back(pix);
+                    misc |= (1 << i);
+                }
+                // 10.2.02 revised --- diagonal was breaking this as it was extent in diagonal or horizontal
+                if (!(bin.m_dir & PixelRef::DIAGONAL)) {
+                    if (extent.col(bin.m_dir) >= pixVec.end().col(bin.m_dir))
+                        break;
+                    extent.col(bin.m_dir) = pixVec.end().col(bin.m_dir);
+                }
+                pix.move(bin.m_dir);
+            }
+        }
+    }
 }
