@@ -39,7 +39,6 @@ HEADERS += \
     p2dpoly.h \
     pafmath.h \
     paftl.h \
-    paftl_old.h \
     xmlparse.h \
     exceptions.h \
     legacyconverters.h \
