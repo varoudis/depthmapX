@@ -26,7 +26,7 @@ bool VGAIsovist::run(Communicator *comm, const Options &, PointMap &map, bool si
     // note, BSP tree plays with comm counting...
     comm->CommPostMessage(Communicator::NUM_STEPS, 2);
     comm->CommPostMessage(Communicator::CURRENT_STEP, 1);
-    BSPNode bspRoot = makeBSPtree(comm, *map.getDrawingFiles());
+    BSPNode bspRoot = makeBSPtree(comm, map.getDrawingFiles());
 
     AttributeTable &attributes = map.getAttributeTable();
 

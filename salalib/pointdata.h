@@ -83,7 +83,7 @@ class PointMap : public PixelBase
    friend class MetaGraph;
 public:
    bool m_hasIsovistAnalysis = false;
-   const std::vector<SpacePixelFile>* getDrawingFiles() { return m_drawingFiles; }
+   const std::vector<SpacePixelFile>& getDrawingFiles() { return *m_drawingFiles; }
 protected:
    std::string m_name;
    const QtRegion* m_parentRegion;
