@@ -15,8 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "depthmapX/glview.h"
-#include "depthmapX/depthmapView.h"
+#include "glview.h"
+#include "depthmapX/views/depthmapview/depthmapview.h"
 #include "salalib/linkutils.h"
 #include "salalib/geometrygenerators.h"
 #include "mainwindow.h"
