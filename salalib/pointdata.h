@@ -162,7 +162,7 @@ public:
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
    Point& getPoint(const PixelRef& p)
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)); }
-   depthmapX::ColumnMatrix<Point>& getPoints() { return m_points; }
+   depthmapX::BaseMatrix<Point>& getPoints() { return m_points; }
    const int& pointState( const PixelRef& p ) const
       { return m_points(static_cast<size_t>(p.y), static_cast<size_t>(p.x)).m_state; }
    // to be phased out
