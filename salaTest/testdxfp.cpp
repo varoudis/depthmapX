@@ -14,10 +14,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "catch.hpp"
+#include "salalib/parsers/dxfp.h"
+
 #include "genlib/paftl.h"
 #include "genlib/comm.h"
 #include "genlib/p2dpoly.h"
-#include "genlib/dxfp.h"
 
 TEST_CASE("DXF Parsing (lines)")
 {

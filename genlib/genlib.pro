@@ -26,20 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    dxfp.cpp \
     p2dpoly.cpp \
     pafmath.cpp \
-    xmlparse.cpp \
     stringutils.cpp \
-    bsptree.cpp
+    bsptree.cpp \
+    xmlparse.cpp
 
 HEADERS += \
     comm.h \
-    dxfp.h \
     p2dpoly.h \
     pafmath.h \
     paftl.h \
-    paftl_old.h \
     xmlparse.h \
     exceptions.h \
     legacyconverters.h \
@@ -49,4 +46,5 @@ HEADERS += \
     bsptree.h \
     readwritehelpers.h \
     pflipper.h \
-    simplematrix.h
+    simplematrix.h \
+    xmlparse.h

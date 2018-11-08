@@ -17,16 +17,15 @@
 
 
 // parser class
+#include "dxfp.h"
+
+#include "genlib/comm.h"  // for communicator
+#include "genlib/stringutils.h"
 
 #include <iostream>
 #include <fstream>
-#include <math.h>
 #include <algorithm>
 #include <string>
-#include "genlib/stringutils.h"
-
-#include <genlib/comm.h>  // for communicator
-#include <genlib/dxfp.h>
 
 static int counter = 0;
 

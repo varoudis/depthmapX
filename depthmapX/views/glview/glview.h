@@ -16,19 +16,21 @@
 
 #pragma once
 
-#include "depthmapX/mapview.h"
+#include "depthmapX/GraphDoc.h"
+
+#include "depthmapX/views/mapview.h"
+#include "depthmapX/views/glview/gllines.h"
+#include "depthmapX/views/glview/gllinesuniform.h"
+#include "depthmapX/views/glview/glrastertexture.h"
+#include "depthmapX/views/glview/glpolygons.h"
+#include "depthmapX/views/glview/glpointmap.h"
+#include "depthmapX/views/glview/glshapegraph.h"
+#include "depthmapX/views/glview/gldynamicrect.h"
+#include "depthmapX/views/glview/gldynamicline.h"
+
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
-#include "GraphDoc.h"
-#include "depthmapX/gllines.h"
-#include "depthmapX/gllinesuniform.h"
-#include "depthmapX/glrastertexture.h"
-#include "depthmapX/glpolygons.h"
-#include "depthmapX/glpointmap.h"
-#include "depthmapX/glshapegraph.h"
-#include "depthmapX/gldynamicrect.h"
-#include "depthmapX/gldynamicline.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)
 
