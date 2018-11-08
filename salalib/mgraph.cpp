@@ -28,6 +28,15 @@
 #include "salalib/parsers/tigerp.h"
 #include "salalib/parsers/dxfp.h"
 
+#include "salalib/segmmodules/segmangular.h"
+#include "salalib/segmmodules/segmtulip.h"
+#include "salalib/segmmodules/segmtulipdepth.h"
+#include "salalib/segmmodules/segmmetric.h"
+#include "salalib/segmmodules/segmmetricpd.h"
+#include "salalib/segmmodules/segmtopological.h"
+#include "salalib/segmmodules/segmtopologicalpd.h"
+#include "salalib/axialmodules/axialintegration.h"
+#include "salalib/axialmodules/axialstepdepth.h"
 #include "salalib/vgamodules/vgaisovist.h"
 #include "salalib/vgamodules/vgavisualglobal.h"
 #include "salalib/vgamodules/vgavisualglobaldepth.h"
@@ -299,10 +308,10 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!getDisplayedShapeGraph().isSegmentMap()) {
-               getDisplayedShapeGraph().stepdepth( communicator );
+                retvar = AxialStepDepth().run(communicator, options, getDisplayedShapeGraph(), false);
             }
             else {
-               getDisplayedShapeGraph().angularstepdepth( communicator );
+                retvar = SegmentTulipDepth().run(communicator, options, getDisplayedShapeGraph(), false);
             }
          }
          // REPLACES:
@@ -313,7 +322,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
              retvar = VGAMetricDepth().run(communicator, Options(), getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
-            getDisplayedShapeGraph().analyseTopoMetPD( communicator, 1 ); // 1 is metric step depth
+             retvar = SegmentMetricPD().run(communicator, options, getDisplayedShapeGraph(), false);
          }
       }
       else if (options.point_depth_selection == 3) {
@@ -324,7 +333,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
             getDisplayedPointMap().binDisplay( communicator );
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
-            getDisplayedShapeGraph().analyseTopoMetPD( communicator, 0 ); // 0 is topological step depth
+             retvar = SegmentTopologicalPD().run(communicator, options, getDisplayedShapeGraph(), false);
          }
       }
       else if (options.output_type == Options::OUTPUT_ISOVIST) {
@@ -1261,11 +1270,7 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    bool retvar = false;
 
    try {
-      std::set<int> radii;
-      for (double radius: options.radius_set) {
-         radii.insert( int(radius) );
-      }
-      retvar = getDisplayedShapeGraph().integrate( communicator, radii, options.choice, options.local, options.fulloutput, options.weighted_measure_col, simple_version );
+      AxialIntegration().run(communicator, options, getDisplayedShapeGraph(), false);
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1283,12 +1288,7 @@ bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options option
    bool retvar = false;
 
    try {
-       retvar = getDisplayedShapeGraph().analyseTulip(communicator,
-                                                              options.tulip_bins,
-                                                              options.choice,
-                                                              options.radius_type,
-                                                              options.radius_set,
-                                                              options.weighted_measure_col);
+       SegmentTulip().run(communicator, options, getDisplayedShapeGraph(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1306,7 +1306,7 @@ bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options opti
    bool retvar = false;
 
    try {
-       retvar = getDisplayedShapeGraph().analyseAngular(communicator, options.radius_set);
+       SegmentAngular().run(communicator, options, getDisplayedShapeGraph(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1326,8 +1326,12 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
       for(double radius: options.radius_set) {
-          if(!getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, radius, options.sel_only)) {
-              retvar = false;
+          if(options.output_type == 0) {
+              if(!SegmentTopological().run(communicator, options, getDisplayedShapeGraph(), false))
+                  retvar = false;
+          } else {
+              if(!SegmentMetric().run(communicator, options, getDisplayedShapeGraph(), false))
+                  retvar = false;
           }
       }
    }
@@ -1348,7 +1352,11 @@ bool MetaGraph::analyseTopoMet( Communicator *communicator, Options options ) //
 
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
-      retvar = getDisplayedShapeGraph().analyseTopoMet(communicator, options.output_type, options.radius, options.sel_only);
+       if(options.output_type == 0) {
+           retvar = SegmentTopological().run(communicator, options, getDisplayedShapeGraph(), false);
+       } else {
+           retvar = SegmentMetric().run(communicator, options, getDisplayedShapeGraph(), false);
+       }
    } 
    catch (Communicator::CancelledException) {
       retvar = false;

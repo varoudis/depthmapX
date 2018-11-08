@@ -14,11 +14,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui_TopoMetDlg.h"
-#include "salalib/topomet.h"
 
 class CTopoMetDlg : public QDialog, public Ui::CTopoMetDlg
 {
-	Q_OBJECT
+    Q_OBJECT
+private:
+    enum {TOPOMET_METHOD_TOPOLOGICAL = 0, TOPOMET_METHOD_METRIC = 1};
 public:
 	CTopoMetDlg(QWidget *parent = 0);
 	int m_topological;

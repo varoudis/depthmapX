@@ -67,20 +67,7 @@ public:
    virtual ~ShapeGraph() {;}
    void initialiseAttributesAxial();
    void makeConnections(const KeyVertices &keyvertices = KeyVertices());
-   //void initAttributes();
-   bool integrate(Communicator *comm = NULL, const std::set<int> &radius_set = std::set<int>(),
-                  bool choice = false, bool local = false, bool fulloutput = false,
-                  int weighting_col = -1, bool simple_version = true);
    bool stepdepth(Communicator *comm = NULL);
-   bool analyseAngular(Communicator *comm, const std::set<double>& radius_set);
-   // extra parameters for selection_only and interactive are for parallel process extensions
-   int analyseTulip(Communicator *comm, int tulip_bins, bool choice, int radius_type,
-                    const std::set<double>& radius_set, int weighting_col, int weighting_col2 = -1,
-                    int routeweight_col = -1, bool selection_only = false, bool interactive = true);
-   bool angularstepdepth(Communicator *comm);
-   // the two topomet analyses can be found in topomet.cpp:
-   bool analyseTopoMet(Communicator *comm, int analysis_type, double radius, bool sel_only);
-   bool analyseTopoMetPD(Communicator *comm, int analysis_type);
    // lineset and connectionset are filled in by segment map
    void makeNewSegMap();
    void makeSegmentMap(std::vector<Line> &lines, std::vector<Connector> &connectors, double stubremoval);

@@ -5,6 +5,8 @@
 #-------------------------------------------------
 include(../defaults.pri)
 include(vgamodules/vgamodules.pri)
+include(axialmodules/axialmodules.pri)
+include(segmmodules/segmmodules.pri)
 include(parsers/parsers.pri)
 
 QT       -= qt
@@ -30,7 +32,6 @@ SOURCES += \
     shapemap.cpp \
     spacepix.cpp \
     sparksieve2.cpp \
-    topomet.cpp \
     entityparsing.cpp \
     linkutils.cpp \
     gridproperties.cpp \
@@ -62,7 +63,6 @@ HEADERS += \
     shapemap.h \
     spacepix.h \
     sparksieve2.h \
-    topomet.h \
     entityparsing.h \
     linkutils.h \
     gridproperties.h \
@@ -88,6 +88,8 @@ HEADERS += \
     tidylines.h \
     mapconverter.h \
     ivga.h \
+    iaxial.h \
+    isegment.h \
     importutils.h \
     importtypedefs.h
 
