@@ -305,6 +305,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
 
     std::vector<std::vector<SegmentData>> bins(tulip_bins);
 
+    // TODO: Replace these with STL
     AnalysisInfo ***audittrail;
     unsigned int **uncovered;
     audittrail = new AnalysisInfo **[map.getConnections().size()];

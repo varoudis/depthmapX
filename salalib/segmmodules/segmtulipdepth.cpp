@@ -33,7 +33,7 @@ bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGra
     // in order to duplicate previous code (using a semicircle of tulip bins)
     size_t tulip_bins = 513;
 
-    bool *covered = new bool [map.getConnections().size()];
+    std::vector<bool> covered(map.getConnections().size());
     for (size_t i = 0; i < map.getConnections().size(); i++) {
        covered[i] = false;
     }
@@ -105,7 +105,6 @@ bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGra
           }
        }
     }
-    delete [] covered;
 
     map.setDisplayedAttribute(-2); // <- override if it's already showing
     map.setDisplayedAttribute(stepdepth_col);

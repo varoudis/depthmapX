@@ -71,7 +71,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
         total_col.push_back(attributes.getColumnIndex(total_col_text.c_str()));
     }
 
-    bool *covered = new bool[map.getConnections().size()];
+    std::vector<bool> covered(map.getConnections().size());
     for (size_t i = 0; i < map.getConnections().size(); i++) {
         for (size_t j = 0; j < map.getConnections().size(); j++) {
             covered[j] = false;
@@ -153,14 +153,12 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
         if (comm) {
             if (qtimer(atime, 500)) {
                 if (comm->IsCancelled()) {
-                    delete[] covered;
                     throw Communicator::CancelledException();
                 }
                 comm->CommPostMessage(Communicator::CURRENT_RECORD, i);
             }
         }
     }
-    delete[] covered;
 
     map.setDisplayedAttribute(-2); // <- override if it's already showing
     map.setDisplayedAttribute(depth_col.back());

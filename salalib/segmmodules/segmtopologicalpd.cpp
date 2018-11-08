@@ -45,8 +45,8 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
 
     attributes.insertColumn(depthcol.c_str());
 
-    unsigned int *seen = new unsigned int[map.getShapeCount()];
-    TopoMetSegmentRef *audittrail = new TopoMetSegmentRef[map.getShapeCount()];
+    std::vector<unsigned int> seen(map.getShapeCount());
+    std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
     std::vector<int> list[512]; // 512 bins!
     int open = 0;
 
@@ -124,9 +124,6 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
             iter++;
         }
     }
-
-    delete[] seen;
-    delete[] audittrail;
 
     map.setDisplayedAttribute(attributes.getColumnIndex(depthcol.c_str()));
 

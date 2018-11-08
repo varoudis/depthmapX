@@ -73,9 +73,9 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
     attributes.insertColumn(totalcol.c_str());
     attributes.insertColumn(wtotalcol.c_str());
     //
-    unsigned int *seen = new unsigned int[map.getShapeCount()];
-    TopoMetSegmentRef *audittrail = new TopoMetSegmentRef[map.getShapeCount()];
-    TopoMetSegmentChoice *choicevals = new TopoMetSegmentChoice[map.getShapeCount()];
+    std::vector<unsigned int> seen(map.getShapeCount());
+    std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
+    std::vector<TopoMetSegmentChoice> choicevals(map.getShapeCount());
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
         if (options.sel_only && !attributes.isSelected(cursor)) {
             continue;
@@ -178,9 +178,6 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
         if (comm) {
             if (qtimer(atime, 500)) {
                 if (comm->IsCancelled()) {
-                    delete[] seen;
-                    delete[] audittrail;
-                    delete[] choicevals;
                     throw Communicator::CancelledException();
                 }
             }
@@ -195,9 +192,6 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
             attributes.setValue(cursor, wchoicecol.c_str(), choicevals[cursor].wchoice);
         }
     }
-    delete[] seen;
-    delete[] audittrail;
-    delete[] choicevals;
 
     if (!options.sel_only) {
         map.setDisplayedAttribute(attributes.getColumnIndex(choicecol.c_str()));
