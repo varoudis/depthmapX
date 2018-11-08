@@ -18,7 +18,7 @@
 
 #include "depthmapX/mainwindow.h"
 
-#include "salalib/parsers/xmlparse.h"
+#include "genlib/xmlparse.h"
 
 #include <QtGui>
 #include <QtOpenGL>

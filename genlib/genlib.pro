@@ -29,7 +29,8 @@ SOURCES += \
     p2dpoly.cpp \
     pafmath.cpp \
     stringutils.cpp \
-    bsptree.cpp
+    bsptree.cpp \
+    xmlparse.cpp
 
 HEADERS += \
     comm.h \
@@ -46,4 +47,5 @@ HEADERS += \
     bsptree.h \
     readwritehelpers.h \
     pflipper.h \
-    simplematrix.h
+    simplematrix.h \
+    xmlparse.h
