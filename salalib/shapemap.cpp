@@ -17,24 +17,22 @@
 
 // This is my code to make a set of axial lines from a set of boundary lines
 
+#include "salalib/mgraph.h" // purely for the version info --- as phased out should replace
+#include "salalib/shapemap.h"
+#include "salalib/parsers/mapinfodata.h" // for mapinfo interface
+
+#include "genlib/comm.h" // for communicator
+#include "genlib/stringutils.h"
+#include "genlib/exceptions.h"
+#include "genlib/legacyconverters.h"
+#include "genlib/containerutils.h"
+
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <genlib/comm.h> // for communicator
-#include <genlib/stringutils.h>
-#include <genlib/exceptions.h>
-#include <genlib/legacyconverters.h>
-
-#include <salalib/mgraph.h> // purely for the version info --- as phased out should replace
-#include <salalib/shapemap.h>
-#include "genlib/containerutils.h"
-
-#include <stdexcept>
-// for mapinfo interface
-#include "MapInfoData.h"
-
 #include <unordered_map>
 #include <unordered_set>
+#include <stdexcept>
 
 #ifndef _WIN32
 #define _finite finite

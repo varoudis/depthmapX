@@ -16,8 +16,7 @@
 
 // DXF parser header file
 
-#ifndef __DXFP_H__
-#define __DXFP_H__
+#pragma once
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,7 +25,9 @@
 // The parser reads in vertices, lines and polylines, and stores them in the
 // defined layers.  It also reads in any line types defined.
 
+#include <math.h>
 #include <map>
+#include <vector>
 
 class DxfToken;
 
@@ -605,5 +606,3 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#endif
