@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "catch.hpp"
-#include "../depthmapX/gllines.h"
+#include "../depthmapX/views/glview/gllines.h"
 
 TEST_CASE("Test GLLines::loadLineData()", "")
 {

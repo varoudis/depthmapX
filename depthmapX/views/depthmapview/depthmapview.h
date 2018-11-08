@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "depthmapX/mapview.h"
+#include "depthmapX/views/mapview.h"
 #include <QRect>
 #include <QPoint>
 #include <QSize>

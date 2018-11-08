@@ -16,9 +16,12 @@
 
 #pragma once
 
-#include "genlib/p2dpoly.h"
 #include "salalib/pafcolor.h"
-#include "depthmapX/gltrianglesuniform.h"
+
+#include "depthmapX/views/glview/gltrianglesuniform.h"
+
+#include "genlib/p2dpoly.h"
+
 #include <qopengl.h>
 #include <QVector>
 #include <QVector3D>

@@ -21,7 +21,7 @@
 #include <qevent.h>
 
 #include "mainwindow.h"
-#include "PlotView.h"
+#include "plotview.h"
 
 #ifdef _WIN32
 #define finite _finite

@@ -14,11 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+
+#include "settingspage.h"
+
 #include <QDialog>
 #include "depthmapX/settings.h"
 #include <vector>
 #include <memory>
-#include "settingsdialog/settingspage.h"
 
 class QListWidget;
 class QListWidgetItem;

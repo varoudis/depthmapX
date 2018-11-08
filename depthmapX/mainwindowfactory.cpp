@@ -15,7 +15,7 @@
 
 #include "mainwindowfactory.h"
 #include "mainwindow.h"
-#include "licenseagreement.h"
+#include "dialogs/licenseagreement.h"
 #include <memory>
 
 namespace MainWindowFactory{

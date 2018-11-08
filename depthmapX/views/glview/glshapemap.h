@@ -17,8 +17,8 @@
 #pragma once
 
 #include "salalib/mgraph.h"
-#include "depthmapX/gllines.h"
-#include "depthmapX/glpolygons.h"
+#include "depthmapX/views/glview/gllines.h"
+#include "depthmapX/views/glview/glpolygons.h"
 
 class GLShapeMap
 {
