@@ -134,7 +134,7 @@ TEST_CASE("Test grid filling", "")
     // fill the grid
 
     // seems like fill_type is actually connected to the
-    // QDepthmapView class which is a GUI class (depthmapView.h)
+    // QDepthmapView class which is a GUI class (depthmapview.h)
     // TODO Disentangle GUI enum from pointMap.makePoints
     int fill_type = 0; // = QDepthmapView::FULLFILL
 

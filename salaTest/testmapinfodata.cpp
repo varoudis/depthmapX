@@ -15,7 +15,7 @@
 
 #include "catch.hpp"
 #include "salalib/mgraph.h"
-#include "salalib/MapInfoData.h"
+#include "salalib/parsers/mapinfodata.h"
 
 TEST_CASE("MapInfo failing header", "")
 {

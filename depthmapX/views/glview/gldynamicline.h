@@ -1,4 +1,5 @@
-// Copyright (C) 2017 Petros Koutsolampros
+// depthmapX - spatial network analysis platform
+// Copyright (C) 2017, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,11 +16,11 @@
 
 #pragma once
 
-#include "depthmapX/settings.h"
+#include "depthmapX/views/glview/gldynamicrect.h"
 
-class SettingsPage : public QWidget
+class GLDynamicLine : public GLDynamicRect
 {
 public:
-    SettingsPage(Settings &settings, QWidget *parent = 0) : QWidget(parent) {}
-    virtual void writeSettings(Settings &settings) = 0;
+    GLDynamicLine();
+    void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel, const QMatrix2x2 &m_selectionBounds);
 };

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "genlib/paftl.h"
+#include "genlib/p2dpoly.h"
 
 // linear regression
 // T should be int, float or double

@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "catch.hpp"
-#include "../depthmapX/glrastertexture.h"
+#include "../depthmapX/views/glview/glrastertexture.h"
 
 TEST_CASE("Test GLRasterTexture::loadRegionData()", "")
 {
