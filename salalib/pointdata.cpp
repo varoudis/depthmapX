@@ -18,22 +18,20 @@
 
 // Point data
 
-#include <math.h>
-#include <genlib/comm.h>  // for communicator
 
-#include <salalib/mgraph.h>
-#include <salalib/pointdata.h>
-#include "MapInfoData.h"
-#include "isovist.h"
-
-// Metagraphs are used...
-#include <salalib/mgraph.h>
-#include <salalib/ngraph.h>
+#include "salalib/pointdata.h"
+#include "salalib/parsers/mapinfodata.h" // for mapinfo interface
 #include "salalib/vgamodules/visuallocal.h"
 #include "salalib/vgamodules/visualglobal.h"
+#include "salalib/isovist.h"
+#include "salalib/mgraph.h" // Metagraphs are used...
+#include "salalib/ngraph.h"
 
+#include "genlib/comm.h"  // for communicator
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+
+#include <math.h>
 #include <unordered_set>
 
 

@@ -23,7 +23,7 @@
 #include "salalib/tolerances.h"
 #include "salalib/pointdata.h"   // need the pointdata for the convert boundary graph to axial map routine
 #include "salalib/ngraph.h"      // ditto ngraph
-#include "salalib/MapInfoData.h"
+#include "salalib/parsers/mapinfodata.h"
 
 #include "genlib/comm.h"  // For communicator
 #include "genlib/stringutils.h"

@@ -22,7 +22,7 @@
 #include "salalib/importtypedefs.h"
 #include "salalib/attributes.h"
 #include "salalib/spacepix.h"
-#include "salalib/MapInfoData.h"
+#include "salalib/parsers/mapinfodata.h"
 
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"

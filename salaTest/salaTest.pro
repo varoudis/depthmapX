@@ -24,6 +24,7 @@ SOURCES += main.cpp \
     testgeometrygenerators.cpp \
     testmapinfodata.cpp \
     testsalaprogram.cpp
+    testdxfp.cpp \
 
 win32:Release:LIBS += -L../genlib/release -L../mgraph440/release -L../salalib/release
 win32:Debug:LIBS += -L../genlib/debug -L../mgraph440/debug -L../salalib/debug
