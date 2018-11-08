@@ -40,7 +40,11 @@ public:
    enum { CONNECT_E = 0x01, CONNECT_NE = 0x02, CONNECT_N = 0x04, CONNECT_NW = 0x08,
           CONNECT_W = 0x10, CONNECT_SW = 0x20, CONNECT_S = 0x40, CONNECT_SE = 0x80 };
 
-   int m_misc; // <- undocounter / point seen register / agent reference number, etc
+   // TODO: These intermediary variables are only used for storing arbitrary data during the
+   // analysis. They should be made into local variables and removed from this class
+   int m_misc;              // <- undocounter / point seen register / agent reference number, etc
+   float m_dist;            // used to speed up metric analysis
+   float m_cumangle;        // cummulative angle -- used in metric analysis and angular analysis
    PixelRef m_extent;       // used to speed up graph analysis (not sure whether or not it breaks it!)
 
 protected:
@@ -53,8 +57,6 @@ protected:
                             // display
    float m_color;           // although display color for the point now introduced
    PixelRef m_merge;        // to merge with another point
-   float m_dist;            // used to speed up metric analysis
-   float m_cumangle;        // cummulative angle -- used in metric analysis and angular analysis
    // hmm... this is for my 3rd attempt at a quick line intersect algo:
    // every line that goes through the gridsquare -- memory intensive I know, but what can you do:
    // accuracy is imperative here!  Calculated pre-fillpoints / pre-makegraph, and (importantly) it works.
