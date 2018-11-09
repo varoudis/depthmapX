@@ -20,9 +20,7 @@
 // The idea is that from this format,
 // we can read into Cosmo3d as well as Sala based applications
 
-#ifndef __P2DPOLY_H__
-#define __P2DPOLY_H__
-
+#pragma once
 // Using doubles right the way through can really eat memory for isovist
 // polygon files, thus we use a defined type, change as appropriate:
 
@@ -532,9 +530,11 @@ private:
 // Now the difficult bit: making the line segments into polygons...
 // The polygons are stored in a tree format so that intersection testing is easier
 
+class Poly;
+
 class RegionTree
 {
-friend class Poly;
+friend class mgraph440::Poly;
 protected:
    Line       *m_p_region;
    RegionTree *m_p_left;
@@ -646,5 +646,3 @@ public:
 };
 
 }
-
-#endif

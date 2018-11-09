@@ -65,6 +65,5 @@ FORMS += \
     UI/AboutDlg.ui \
     UI/licenseagreement.ui
 
-QMAKE_CXXFLAGS += -DAPP_DATE=\\\"`date +'\"%a_%b_%d,_%Y\"'`\\\"
-QMAKE_CXXFLAGS += -DAPP_GIT_BRANCH=\\\"`git rev-parse --abbrev-ref HEAD`\\\"
-QMAKE_CXXFLAGS += -DAPP_GIT_COMMIT=\\\"`git log --pretty=format:'%h' -n 1`\\\"
+win32: system(make_version_header.bat)
+!win32: system(sh ./make_version_header.sh)
