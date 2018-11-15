@@ -151,8 +151,8 @@ private:
    // Line start and end (must be in map units in case you zoom out / pan while you're drawing!
    Line m_line;
    Line m_old_line;
-   pvector<QRgb> m_line_pixels;
-   prefvec<Point2f> m_point_handles;
+   std::vector<QRgb> m_line_pixels;
+   std::vector<Point2f> m_point_handles;
    int m_active_point_handle;
 
    int m_currentlyEditingShapeRef = -1;

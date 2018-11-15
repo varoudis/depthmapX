@@ -99,15 +99,15 @@ bool QPlotView::eventFilter(QObject *object, QEvent *e)
 					size_t yfloor = idx_y.searchfloorindex(ValuePair(-1,dataY(hit_point.y()+2)));
 					size_t yceil = idx_y.searchceilindex(ValuePair(-1,dataY(hit_point.y()-2)));
 					// work out anything near this point...
-					pvecint xkeys;
+                    std::set<int> xkeys;
 					for (size_t i = xfloor + 1; i < xceil; i++) {
 						int index = idx_x[i].index;
-						xkeys.add(index);
+                        xkeys.insert(index);
 					}
-					pvecint finalkeys;
+                    std::vector<int> finalkeys;
 					for (size_t j = yfloor + 1; j < yceil; j++) {
 						size_t index = idx_y[j].index;
-						if (xkeys.searchindex(index) != paftl::npos) {
+                        if (xkeys.find(index) != xkeys.end()) {
 							finalkeys.push_back( table.getRowKey(index) );
 						}
 					}
@@ -722,15 +722,15 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
    AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
 
    // work out selection
-   pvecint xkeys;
+   std::set<int> xkeys;
    for (size_t i = xfloor + 1; i < xceil; i++) {
       int index = idx_x[i].index;
-      xkeys.add(index);
+      xkeys.insert(index);
    }
    std::vector<int> finalkeys;
    for (size_t j = yfloor + 1; j < yceil; j++) {
       int index = idx_y[j].index;
-      if (xkeys.searchindex(index) != paftl::npos) {
+      if (xkeys.find(index) != xkeys.end()) {
          finalkeys.push_back( table.getRowKey(index) );
       }
    }

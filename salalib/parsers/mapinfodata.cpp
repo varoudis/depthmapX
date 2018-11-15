@@ -43,7 +43,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    // set up a list of readable columns from the headers:
    // 
    std::vector<std::string> colnames;
-   pvecint readable, colindexes;
+   std::vector<int> readable, colindexes;
    size_t i;
    for (i = 0; i < columnheads.size(); i++) {
       dXstring::ltrim(columnheads[i]);
@@ -65,8 +65,8 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
 
    std::string textline;
    std::vector<std::vector<Point2f>> pointsets;
-   pvecint duplicates;
-   pvecint types;
+   std::vector<int> duplicates;
+   std::vector<int> types;
 
    try {
    // now read line data into the axial map   

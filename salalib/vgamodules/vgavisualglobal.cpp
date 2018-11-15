@@ -86,10 +86,10 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                 int total_depth = 0;
                 int total_nodes = 0;
 
-                pvecint distribution;
-                prefvec<PixelRefVector> search_tree;
+                std::vector<int> distribution;
+                std::vector<PixelRefVector> search_tree;
                 search_tree.push_back(PixelRefVector());
-                search_tree.tail().push_back(curs);
+                search_tree.back().push_back(curs);
 
                 int level = 0;
                 while (search_tree[level].size()) {
@@ -102,7 +102,7 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                         if (p.filled() && pmisc != ~0) {
                             total_depth += level;
                             total_nodes += 1;
-                            distribution.tail() += 1;
+                            distribution.back() += 1;
                             if ((int)options.radius == -1 ||
                                 level < (int)options.radius &&
                                     (!p.contextfilled() || search_tree[level][n].iseven())) {

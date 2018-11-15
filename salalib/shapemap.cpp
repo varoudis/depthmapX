@@ -1502,15 +1502,16 @@ std::vector<int> ShapeMap::pointInPolyList(const Point2f& p) const
    if (!m_region.contains(p)) {
       return shapeindexlist;
    }
-   pvecint testedshapes;
+   std::vector<int> testedshapes;
    PixelRef pix = pixelate(p);
    const std::vector<ShapeRef> &shapes = m_pixel_shapes(static_cast<size_t>(pix.y),
                                                         static_cast<size_t>(pix.x));
    for (const ShapeRef& shape: shapes) {
-      if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
-         continue;
-      }
-      testedshapes.add(shape.m_shape_ref,paftl::ADD_HERE);
+       auto iter = depthmapX::findBinary( testedshapes, shape.m_shape_ref );
+       if (iter != testedshapes.end()) {
+          continue;
+       }
+       testedshapes.insert(iter, int(shape.m_shape_ref));
 
       int shapeindex = testPointInPoly(p,shape);
 
@@ -1593,7 +1594,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
    }
    const SalaShape& poly = shapeIter->second;
    if (poly.isClosed()) { // <- it ought to be, you shouldn't be using this function if not!
-      pvecint testedlist;
+      std::vector<int> testedlist;
       // easiest just to use scan lines to find internal pixels rather than trace a complex border:
       PixelRef minpix = pixelate(poly.m_region.bottom_left);
       PixelRef maxpix = pixelate(poly.m_region.top_right);
@@ -1608,7 +1609,9 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                // this has us in it, now looked through everything else:
                for (const ShapeRef& shapeRef: pixShapes) {
                   if (*iter != shapeRef && ((iter->m_tags & ShapeRef::SHAPE_CENTRE) || (shapeRef.m_tags & ShapeRef::SHAPE_CENTRE))) {
-                     if (testedlist.add(shapeRef.m_shape_ref) != -1) {
+                     auto iter = depthmapX::findBinary(testedlist, shapeRef.m_shape_ref);
+                     if (iter == testedlist.end()) {
+                        testedlist.insert(iter, shapeRef.m_shape_ref);
                         shapeindexlist.push_back(int(depthmapX::findIndexFromKey(m_shapes, int(shapeRef.m_shape_ref))));
                      }
                   }
@@ -1627,7 +1630,8 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                if ((shaperef.m_tags & ShapeRef::SHAPE_CENTRE) == 0) {
                   // this has us in it, now looked through everything else:
                    for (auto& shaperefb: pixShapes) {
-                     if (shaperef != shaperefb && testedlist.searchindex(shaperefb.m_shape_ref) == paftl::npos) {
+                     auto iter = depthmapX::findBinary(testedlist, shaperefb.m_shape_ref);
+                     if (shaperef != shaperefb && iter == testedlist.end()) {
                         auto shapeIter = m_shapes.find(shaperefb.m_shape_ref);
                         size_t indexb = std::distance(m_shapes.begin(), shapeIter);
                         const SalaShape& polyb = shapeIter->second;
@@ -1638,7 +1642,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                         }
                         else if (polyb.isLine()) {
                            if (testPointInPoly(polyb.getLine().start(),shaperef) != -1 || testPointInPoly(polyb.getLine().end(),shaperef) != -1) {
-                              testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
+                              testedlist.insert(iter, shaperefb.m_shape_ref);
                               shapeindexlist.push_back(int(indexb));
                            }
                            else {
@@ -1646,7 +1650,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                                  Line line = Line(poly.m_points[shaperef.m_polyrefs[k]],poly.m_points[((shaperef.m_polyrefs[k]+1)%poly.m_points.size())]);
                                  if (intersect_region(line,polyb.getLine())) {
                                     if (intersect_line(line,polyb.getLine(),tolerance)) {
-                                       testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
+                                       testedlist.insert(iter, shaperefb.m_shape_ref);
                                        shapeindexlist.push_back(int(indexb));
                                        break;
                                     }
@@ -1656,7 +1660,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                         }
                         else if (polyb.isPolyLine()) {
                            if (testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1)  {
-                              testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
+                              testedlist.insert(iter, shaperefb.m_shape_ref);
                               shapeindexlist.push_back(int(indexb));
                            }
                            else {
@@ -1666,7 +1670,9 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                                     Line lineb = Line(polyb.m_points[shaperefb.m_polyrefs[kk]],polyb.m_points[((shaperefb.m_polyrefs[kk]+1)%polyb.m_points.size())]);
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
-                                          if (testedlist.add(shaperefb.m_shape_ref) != -1) {
+                                          auto iterInternal = std::lower_bound(testedlist.begin(), testedlist.end(), shaperefb.m_shape_ref);
+                                          if (iterInternal == testedlist.end() || shaperefb.m_shape_ref < *iterInternal) {
+                                             testedlist.insert(iterInternal, shaperefb.m_shape_ref);
                                              shapeindexlist.push_back(int(indexb));
                                              break;
                                           }
@@ -1683,7 +1689,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                            // pixel, not just part of the line associated with it...
                            if ((pixelate(polyb.m_points[shaperefb.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(polyb.m_points[shaperefb.m_polyrefs[0]],shaperef) != -1) ||
                                (pixelate(poly.m_points[shaperef.m_polyrefs[0]]) == PixelRef(x,y) && testPointInPoly(poly.m_points[shaperef.m_polyrefs[0]],shaperefb) != -1))  {
-                              testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
+                              testedlist.insert(iter, shaperefb.m_shape_ref);
                               shapeindexlist.push_back(int(indexb));
                            }
                            else {
@@ -1695,7 +1701,7 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                                     Line lineb = Line(polyb.m_points[shaperefb.m_polyrefs[kk]],polyb.m_points[((shaperefb.m_polyrefs[kk]+1)%polyb.m_points.size())]);
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
-                                          testedlist.add(shaperefb.m_shape_ref,paftl::ADD_HERE);
+                                          testedlist.insert(iter, shaperefb.m_shape_ref);
                                           shapeindexlist.push_back(int(indexb));
                                           breakit = true;
                                           break;
@@ -3194,7 +3200,7 @@ bool ShapeMap::clearLinks()
 bool ShapeMap::unlinkShapeSet(std::istream& idset, int refcol)
 {
    std::string line;
-   prefvec<IntPair> unlinks;
+   std::vector<IntPair> unlinks;
    do {
       IntPair unlink;
       idset >> line;

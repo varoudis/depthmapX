@@ -33,11 +33,11 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
         map.getPoint(pix).m_extent = pix;
     }
 
-    prefvec<PixelRefVector> search_tree;
+    std::vector<PixelRefVector> search_tree;
     search_tree.push_back(PixelRefVector());
     for (auto &sel : map.getSelSet()) {
         // need to convert from ints (m_selection_set) to pixelrefs for this op:
-        search_tree.tail().push_back(sel);
+        search_tree.back().push_back(sel);
     }
 
     size_t level = 0;

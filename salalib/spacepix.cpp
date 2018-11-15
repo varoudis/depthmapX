@@ -623,7 +623,7 @@ void SpacePixel::cutLine(Line& l, short dir)
    Point2f trueend =  (dir == l.direction()) ? l.end() : l.start();
 
    bool found = false;
-   prefvec<Line> touching_lines;
+   std::vector<Line> touching_lines;
 
    for (size_t i = 0; i < vec.size() && !found; i++) {
       // depending on direction of line either move head to tail or tail to head

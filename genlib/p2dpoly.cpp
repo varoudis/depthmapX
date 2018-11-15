@@ -19,7 +19,6 @@
 #include "p2dpoly.h"
 
 #include "genlib/comm.h" // used in BSP construction
-#include "genlib/paftl.h"
 
 #include <cmath>
 #include <float.h>
@@ -771,16 +770,16 @@ RegionTree *Poly::copy_region_tree(const RegionTree *tree) {
         newtree = new RegionTreeBranch();
     }
 
-    pvector<RegionTree *> newlist;
-    pvector<RegionTree *> oldlist;
+    std::vector<RegionTree *> newlist;
+    std::vector<RegionTree *> oldlist;
 
     oldlist.push_back((RegionTree *)tree);
     newlist.push_back((RegionTree *)newtree);
 
     do {
-        RegionTree *oldnode = oldlist.tail();
+        RegionTree *oldnode = oldlist.back();
         oldlist.pop_back();
-        RegionTree *newnode = newlist.tail();
+        RegionTree *newnode = newlist.back();
         newlist.pop_back();
 
         newnode->m_p_region = new Line(*oldnode->m_p_region);
@@ -818,13 +817,13 @@ void Poly::destroy_region_tree() {
         return;
     }
 
-    pvector<RegionTree *> del_node_list;
-    pvector<short> del_node_dir;
+    std::vector<RegionTree *> del_node_list;
+    std::vector<short> del_node_dir;
 
     del_node_list.push_back(m_p_root);
 
     do {
-        RegionTree *current_node = del_node_list.tail();
+        RegionTree *current_node = del_node_list.back();
 
         if (current_node->m_p_left == current_node && current_node->m_p_right == current_node) {
 
@@ -832,11 +831,11 @@ void Poly::destroy_region_tree() {
             del_node_list.pop_back();
 
             if (del_node_list.size() > 0) {
-                if (del_node_dir.tail() == 0) {
-                    del_node_list.tail()->m_p_left = del_node_list.tail();
+                if (del_node_dir.back() == 0) {
+                    del_node_list.back()->m_p_left = del_node_list.back();
                     del_node_dir.pop_back();
                 } else {
-                    del_node_list.tail()->m_p_right = del_node_list.tail();
+                    del_node_list.back()->m_p_right = del_node_list.back();
                     del_node_dir.pop_back();
                 }
             }

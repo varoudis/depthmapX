@@ -188,7 +188,6 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
                                                                  const std::vector<SpacePixelFile> &drawingFiles)
 {
    QtRegion region;
-   pvecint polygon_refs;
 
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
    int conn_col = usermap->getAttributeTable().insertLockedColumn("Connectivity");
@@ -227,12 +226,10 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
 std::unique_ptr<ShapeGraph> MapConverter::convertDataToConvex(Communicator *comm, const std::string& name,
                                                               ShapeMap& shapemap, bool copydata)
 {
-   pvecint polygon_refs;
-
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
    int conn_col = usermap->getAttributeTable().insertLockedColumn("Connectivity");
 
-   pvecint lookup;
+   std::vector<int> lookup;
    auto refShapes = shapemap.getAllShapes();
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;

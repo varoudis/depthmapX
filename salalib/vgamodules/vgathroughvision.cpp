@@ -44,7 +44,7 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
     int count = 0;
     for (size_t i = 0; i < map.getCols(); i++) {
         for (size_t j = 0; j < map.getRows(); j++) {
-            pvecint seengates;
+            std::vector<int> seengates;
             PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             Point &p = map.getPoint(curs);
             if (map.getPoint(curs).filled()) {
@@ -58,9 +58,11 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
 
                         // TODO: Undocumented functionality. Shows how many times a gate is passed?
                         int gate = (index != -1) ? static_cast<int>(attributes.getValue(index, g_col_gate)) : -1;
-                        if (gate != -1 && seengates.searchindex(gate) == paftl::npos) {
+
+                        auto iter = depthmapX::findBinary( seengates, gate );
+                        if (gate != -1 && iter == seengates.end()) {
                             attributes.incrValue(index, g_col_gate_counts);
-                            seengates.add(gate, paftl::ADD_HERE);
+                            seengates.insert(iter, int(gate));
                         }
                     }
                     p.getNode().next();

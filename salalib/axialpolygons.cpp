@@ -301,8 +301,8 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
 
 // adds any axial lines from this point to the list of lines, adds any unhandled visible vertices it finds to the openvertices list
 // axial lines themselves are added to the lines list - the axial line is only there to record the key vertices that comprise the line
-void AxialPolygons::makeAxialLines(std::set<AxialVertex>& openvertices, prefvec<Line>& lines,
-                                   KeyVertices& keyvertices, prefvec<PolyConnector>& poly_connections,
+void AxialPolygons::makeAxialLines(std::set<AxialVertex>& openvertices, std::vector<Line>& lines,
+                                   KeyVertices& keyvertices, std::vector<PolyConnector>& poly_connections,
                                    std::vector<RadialLine>& radial_lines)
 {
    auto it = openvertices.rbegin();

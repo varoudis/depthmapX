@@ -57,9 +57,9 @@ void CColumnPropertiesDlg::OnOK()
 
 void CColumnPropertiesDlg::UpdateData(bool value)
 {
-	pqvector<QString> rows;
-	pvecdouble summary_all;
-	pvecdouble summary_sel;
+    std::vector<QString> rows;
+    std::vector<double> summary_all;
+    std::vector<double> summary_sel;
 
 	rows.push_back(tr("Average"));
 	rows.push_back(tr("Minimum"));

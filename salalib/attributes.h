@@ -273,8 +273,6 @@ public:
    int renameColumn(int col, const std::string& name = std::string());
    int insertRow(int key);
    void removeRow(int key);
-   void removeRowids(const pvecint& list)
-      { remove_at(list); }
    //
    // note... retrieves from column index (which are sorted by name), not physical column
    const std::string& getColumnName(int col) const

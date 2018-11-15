@@ -15,7 +15,6 @@
 
 #include "../salalib/mapconverter.h"
 #include "catch.hpp"
-#include "genlib/paftl.h"
 #include "salalib/salaprogram.h"
 #include "genlib/p2dpoly.h"
 #include "salalib/mgraph.h"

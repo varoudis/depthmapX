@@ -435,7 +435,7 @@ bool AttributeTable::importTable(std::istream& stream, bool merge)
       return false;
    }
 
-   pvecint colrefs;
+   std::vector<int> colrefs;
 
    for (size_t i = 1; i < strings.size(); i++) {
       int col = getOrInsertColumnIndex(strings[i]);
