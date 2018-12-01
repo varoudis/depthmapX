@@ -1109,7 +1109,7 @@ void ShapeMap::makePolyPixels(int polyref)
       }
       // erase joined sides, and look for min:
       PixelRef minpix = NoPixel;
-      for (auto relation: relations) {
+      for (auto& relation: relations) {
          PixelRef pix = relation.first;
          PixelRef nextpix;
          nextpix = pix.right();
@@ -1154,7 +1154,7 @@ void ShapeMap::makePolyPixels(int polyref)
       // go through any that aren't on the outer border: this will be internal edges, and will cause problems
       // for point in polygon algorithms!
 
-      for (auto relation: relations) {
+      for (auto& relation: relations) {
          PixelRef pix = relation.first;
          std::vector<ShapeRef> &pixShapes = m_pixel_shapes(static_cast<size_t>(pix.y),
                                                            static_cast<size_t>(pix.x));
@@ -1168,7 +1168,7 @@ void ShapeMap::makePolyPixels(int polyref)
       }
       // now, any remaining tags are internal sides, and need to be cleared through fill
       // we could go either direction, but we just go left to right:
-      for (auto relation: relations) {
+      for (auto& relation: relations) {
          PixelRef pix = relation.first;
          if (relation.second & ShapeRef::SHAPE_R) {
             bool lastWasNotFound = true;
