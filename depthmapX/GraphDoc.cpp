@@ -218,19 +218,23 @@ void QGraphDoc::OnLayerNew()
       ShapeMap *map;
       if (dlg.m_layer_type == 0) {
           int ref = m_meta_graph->addShapeMap(dlg.m_name.toStdString());
-         map = &(m_meta_graph->getDataMaps()[ref]);
+          m_meta_graph->setDisplayedDataMapRef(ref);
+          map = &(m_meta_graph->getDataMaps()[ref]);
       }
       else if (dlg.m_layer_type == 1) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 2) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 3) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();

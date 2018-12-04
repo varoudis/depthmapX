@@ -314,8 +314,10 @@ void CColourScaleDlg::MyUpdateData(bool dir, bool apply_to_all)
 				}
 				else if (graph->getViewClass() & MetaGraph::VIEWAXIAL) {
 					ShapeGraph& map = graph->getDisplayedShapeGraph();
-					m_display_min = map.getDisplayMinValue();
-					m_display_max = map.getDisplayMaxValue();
+                    if(map.getShapeCount() > 0) {
+                        m_display_min = map.getDisplayMinValue();
+                        m_display_max = map.getDisplayMaxValue();
+                    }
 					m_displayparams = map.getDisplayParams();
 					m_color = m_displayparams.colorscale;
 					bool show_lines = m_show_lines, show_fill = m_show_fill, show_centroids = m_show_centroids;
@@ -324,8 +326,10 @@ void CColourScaleDlg::MyUpdateData(bool dir, bool apply_to_all)
 				}
 				else if (graph->getViewClass() & MetaGraph::VIEWDATA) {
 					ShapeMap& map = graph->getDisplayedDataMap();
-					m_display_min = map.getDisplayMinValue();
-					m_display_max = map.getDisplayMaxValue();
+                    if(map.getShapeCount() > 0) {
+                        m_display_min = map.getDisplayMinValue();
+                        m_display_max = map.getDisplayMaxValue();
+                    }
 					m_displayparams = map.getDisplayParams();
 					m_color = m_displayparams.colorscale;
 					bool show_lines = m_show_lines, show_fill = m_show_fill, show_centroids = m_show_centroids;

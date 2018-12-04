@@ -65,6 +65,7 @@ namespace depthmapX {
         switch (fileType) {
             case CSV: {
                 ShapeMap &shapeMap = mgraph.createNewShapeMap(mapType, name);
+                int newMapIdx = mgraph.getMapRef(mgraph.getDataMaps(), shapeMap.getName());
                 parsed = importTxt(shapeMap, stream, ',');
 
                 if(!parsed) {
@@ -73,11 +74,14 @@ namespace depthmapX {
                 }
                 if(mapType == DRAWINGMAP) {
                     mgraph.updateParentRegions(shapeMap);
+                } else if(mapType == DATAMAP){
+                    mgraph.setDisplayedDataMapRef(newMapIdx);
                 }
                 break;
             }
             case TSV: {
                 ShapeMap &shapeMap = mgraph.createNewShapeMap(mapType, name);
+                int newMapIdx = mgraph.getMapRef(mgraph.getDataMaps(), shapeMap.getName());
                 parsed = importTxt(shapeMap, stream, '\t');
 
                 if(!parsed) {
@@ -86,6 +90,8 @@ namespace depthmapX {
                 }
                 if(mapType == DRAWINGMAP) {
                     mgraph.updateParentRegions(shapeMap);
+                } else if(mapType == DATAMAP){
+                    mgraph.setDisplayedDataMapRef(newMapIdx);
                 }
                 break;
             }
