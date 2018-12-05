@@ -261,10 +261,7 @@ SalaObj SalaProgram::evaluate()
 
    // clear marks if they've been used:
    if (m_marked) {
-      AttributeTable *table = m_thisobj.getTable();
-      for (int i = 0; i < table->getRowCount(); i++) {
-          m_thisobj.marks[i] = SalaObj();
-      }
+      marks.clear();
       m_marked = false;
    }
 
@@ -885,12 +882,14 @@ int SalaCommand::decode(std::string string)   // string copied as makelower appl
             SalaCommand *parent = m_parent;
             auto n = parent->m_var_names.end();
             int x = -1;
-            while (parent != NULL && n == parent->m_var_names.end()) {
+            while (parent != NULL) {
                n = parent->m_var_names.find(string);
                if (n != parent->m_var_names.end()) {
                   x = n->second;
+                  parent = NULL;
+               } else {
+                  parent = parent->m_parent;
                }
-               parent = parent->m_parent;
             }
             if (x != -1) {
                m_eval_stack.push_back( SalaObj( SalaObj::S_VAR, x) );
@@ -1564,13 +1563,13 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   {
                      param.ensureNone();
                      AttributeTable *table = obj.getTable();
-                     data = obj.marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node];
+                     data = m_program->marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node];
                   }
                   break;
                case SalaObj::S_FSETMARK:
                   {
                      AttributeTable *table = obj.getTable();
-                     obj.marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node] = param;
+                     m_program->marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node] = param;
                      m_program->m_marked = true;   // <- this tells the program to tidy up marks between executions
                      data = SalaObj(); // returns none
                   }
