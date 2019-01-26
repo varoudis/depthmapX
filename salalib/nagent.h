@@ -130,8 +130,6 @@ struct AgentSet;
 struct AgentProgram;
 class Agent;
 
-const int MAX_TRAILS = 50;
-
 class AgentEngine
 {
 public: // public for now for speed
@@ -140,7 +138,7 @@ public: // public for now for speed
    int m_timesteps;
 public:
    bool m_record_trails;
-   int m_trail_count;
+   int m_trail_count = 50;
 public:
    AgentEngine();
    void run(Communicator *comm, PointMap *pointmap);
@@ -193,6 +191,7 @@ struct AgentProgram
    // to reload later:
    void save(const std::string& filename);
    bool open(const std::string& filename);
+   std::vector<std::vector<Point2f>> m_trails;
 };
 
 struct AgentSet : public AgentProgram

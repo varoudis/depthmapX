@@ -57,7 +57,6 @@ int progcompare(const void *a, const void *b )
 
 //
 
-std::vector<Point2f> g_trails[MAX_TRAILS];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +67,6 @@ AgentEngine::AgentEngine()
    m_timesteps = 5000;
    m_gatelayer = -1;
    m_record_trails = false;
-   m_trail_count = MAX_TRAILS;
 }
 
 void AgentEngine::run(Communicator *comm, PointMap *pointmap)
@@ -92,20 +90,20 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
       output_mode |= Agent::OUTPUT_GATE_COUNTS;
    }
 
-   // remove any agent trails that are left from a previous run
-   for (int k = 0; k < MAX_TRAILS; k++) {
-      g_trails[k].clear();
-   }
-
    int trail_num = -1;
    if (m_record_trails) {
       if (m_trail_count < 1) {
          m_trail_count = 1;
       }
-      if (m_trail_count > MAX_TRAILS) {
-         m_trail_count = MAX_TRAILS;
+      for (auto& agentSet: agentSets) {
+        agentSet.m_trails = std::vector<std::vector<Point2f>>(m_trail_count);
       }
       trail_num = 0;
+   } else {
+       for (auto& agentSet: agentSets) {
+           // remove any agent trails that are left from a previous run
+           agentSet.m_trails.clear();
+       }
    }
 
    // remove any agents that are left from a previous run
@@ -156,7 +154,11 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
 ShapeMap AgentEngine::getTrailsAsMap(std::string mapName) {
     ShapeMap trailsMap(mapName, ShapeMap::DATAMAP);
     for (int i = 0; i < m_trail_count; i++) {
-        trailsMap.makePolyShape(g_trails[i], true, false);
+        for (auto& agentSet: agentSets) {
+            // there is currently only one AgentSet. If at any point there are more then
+            // this could be amended to put the AgentSet id as a property of the agent
+            trailsMap.makePolyShape(agentSet.m_trails[i], true, false);
+        }
     }
     return(trailsMap);
 }
@@ -709,7 +711,7 @@ void Agent::onStep()
       m_loc = nextloc;
    }
    if (!m_stopped && m_trail_num != -1) {
-      g_trails[m_trail_num].push_back(m_loc);
+      m_program->m_trails[m_trail_num].push_back(m_loc);
    }
 }
 bool Agent::diagonalStep() 

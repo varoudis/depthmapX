@@ -496,7 +496,6 @@ namespace dm_runmethods
         // note, trails currently per run, but output per engine
         if (agentP.recordTrailsForAgents() == 0) {
             eng.m_record_trails = true;
-            eng.m_trail_count = MAX_TRAILS;
         }
         else if (agentP.recordTrailsForAgents() > 0) {
                 eng.m_record_trails = true;
