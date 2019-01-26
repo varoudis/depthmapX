@@ -23,6 +23,7 @@
 #include "salalib/attributes.h"
 #include "salalib/spacepix.h"
 #include "salalib/parsers/mapinfodata.h"
+#include "salalib/connector.h"
 
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
@@ -169,8 +170,6 @@ public:
        return lines;
    }
 };
-
-struct Connector;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
