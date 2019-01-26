@@ -363,6 +363,17 @@ void MainWindow::OnFileExport()
         m_p->OnFileExport();
     }
 }
+
+
+void MainWindow::OnFileExportMapGeometry()
+{
+    QGraphDoc* m_p = activeMapDoc();
+    if(m_p)
+    {
+        m_p->OnFileExportMapGeometry();
+    }
+}
+
 void MainWindow::OnFileExportLinks()
 {
     QGraphDoc* m_p = activeMapDoc();
@@ -2515,6 +2526,7 @@ void MainWindow::updateMapMenu()
         convertMapShapesAct->setEnabled(0);
         importAct->setEnabled(0);
         exportAct->setEnabled(0);
+        exportGeometryAct->setEnabled(false);
         exportLinksAct->setEnabled(0);
         exportAxialConnectionsDotAct->setEnabled(0);
         exportAxialConnectionsPairAct->setEnabled(0);
@@ -2542,6 +2554,7 @@ void MainWindow::updateMapMenu()
     if (!m_p->m_meta_graph->viewingNone() && !m_p->m_communicator)
     {
         exportAct->setEnabled(true);
+        exportGeometryAct->setEnabled(true);
         exportLinksAct->setEnabled(true);
         exportAxialConnectionsDotAct->setEnabled(true);
         exportAxialConnectionsPairAct->setEnabled(true);
@@ -2550,6 +2563,7 @@ void MainWindow::updateMapMenu()
     else
     {
         exportAct->setEnabled(0);
+        exportGeometryAct->setEnabled(false);
         exportLinksAct->setEnabled(0);
         exportAxialConnectionsDotAct->setEnabled(0);
         exportAxialConnectionsPairAct->setEnabled(0);
@@ -2982,6 +2996,10 @@ void MainWindow::createActions()
     exportAct->setShortcut(tr("Ctrl+E"));
     exportAct->setStatusTip(tr("Export the active map"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(OnFileExport()));
+
+    exportGeometryAct = new QAction(tr("&Export map geometry..."), this);
+    exportGeometryAct->setStatusTip(tr("Export the geometry of the active map"));
+    connect(exportGeometryAct, SIGNAL(triggered()), this, SLOT(OnFileExportMapGeometry()));
 
     exportLinksAct = new QAction(tr("&Export links..."), this);
     exportLinksAct->setStatusTip(tr("Export the links of the active map"));
@@ -3506,6 +3524,7 @@ void MainWindow::createMenus()
     mapMenu->addAction(importAct);
     exportSubMenu = mapMenu->addMenu(tr("&Export"));
     exportSubMenu->addAction(exportAct);
+    exportSubMenu->addAction(exportGeometryAct);
     exportSubMenu->addAction(exportLinksAct);
     exportSubMenu->addAction(exportAxialConnectionsDotAct);
     exportSubMenu->addAction(exportAxialConnectionsPairAct);
