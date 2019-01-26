@@ -146,6 +146,7 @@ public:
       { m_state = state; }
 
    int loadLineData( Communicator *communicator, int load_type );
+   void writeMapShapesAsCat(ShapeMap& map, std::ostream &stream);
    int loadCat( std::istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<std::string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);

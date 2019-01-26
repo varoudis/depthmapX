@@ -22,6 +22,9 @@
 
 #include "salalib/pixelref.h"
 #include "salalib/point.h"
+#include "salalib/pointdata.h"
+#include "salalib/shapemap.h"
+
 #include "genlib/pflipper.h"
 
 const char g_col_total_counts[] = "Gate Counts";
@@ -141,7 +144,7 @@ public:
 public:
    AgentEngine();
    void run(Communicator *comm, PointMap *pointmap);
-   void outputTrails(std::ostream& trailsFile);
+   ShapeMap getTrailsAsMap(std::string mapName = "Agent Trails");
 };
 
 struct AgentProgram
