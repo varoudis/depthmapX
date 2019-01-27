@@ -1463,16 +1463,16 @@ void MetaGraph::writeMapShapesAsCat(ShapeMap& map, std::ostream &stream) {
     for (auto refShape: map.getAllShapes()) {
         SalaShape& shape = refShape.second;
         if(shape.isPolyLine() || shape.isPolygon()) {
-            stream << "begin " << (shape.isPolyLine() ? "polyline" : "polygon") << std::endl;
+            stream << "Begin " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
             for (Point2f p: shape.m_points) {
                 stream << p.x << " " << p.y << std::endl;
             }
-            stream << "end " << (shape.isPolyLine() ? "polyline" : "polygon") << std::endl;
+            stream << "End " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
         } else if(shape.isLine()) {
-            stream << "begin polyline" << std::endl;
+            stream << "Begin Polyline" << std::endl;
             stream << shape.getLine().ax() << " " << shape.getLine().ay() << std::endl;
             stream << shape.getLine().bx() << " " << shape.getLine().by() << std::endl;
-            stream << "end polyline" << std::endl;
+            stream << "End Polyline" << std::endl;
         }
     }
 }
