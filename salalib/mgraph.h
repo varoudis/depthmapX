@@ -28,7 +28,7 @@
 #include "salalib/attributes.h"
 #include "salalib/connector.h"
 #include "salalib/spacepix.h"
-#include "salalib/nagent.h" // for agent engine interface
+#include "salalib/agents/agentengine.h" // for agent engine interface
 
 // still need paftl:
 #include "salalib/shapemap.h"
