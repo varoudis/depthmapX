@@ -191,7 +191,7 @@ struct AgentProgram
    // to reload later:
    void save(const std::string& filename);
    bool open(const std::string& filename);
-   std::vector<std::vector<Point2f>> m_trails;
+   std::vector<std::vector<Event2f>> m_trails;
 };
 
 struct AgentSet : public AgentProgram

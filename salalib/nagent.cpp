@@ -96,7 +96,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
          m_trail_count = 1;
       }
       for (auto& agentSet: agentSets) {
-        agentSet.m_trails = std::vector<std::vector<Point2f>>(m_trail_count);
+        agentSet.m_trails = std::vector<std::vector<Event2f>>(m_trail_count);
       }
       trail_num = 0;
    } else {
@@ -153,14 +153,15 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
 
 ShapeMap AgentEngine::getTrailsAsMap(std::string mapName) {
     ShapeMap trailsMap(mapName, ShapeMap::DATAMAP);
-    for (int i = 0; i < m_trail_count; i++) {
-        for (auto& agentSet: agentSets) {
-            // there is currently only one AgentSet. If at any point there are more then
-            // this could be amended to put the AgentSet id as a property of the agent
-            trailsMap.makePolyShape(agentSet.m_trails[i], true, false);
+    for (auto &agentSet : agentSets) {
+        // there is currently only one AgentSet. If at any point there are more then
+        // this could be amended to put the AgentSet id as a property of the trail
+        for (auto &trail : agentSet.m_trails) {
+            std::vector<Point2f> trailGeometry(trail.begin(), trail.end());
+            trailsMap.makePolyShape(trailGeometry, true, false);
         }
     }
-    return(trailsMap);
+    return (trailsMap);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -711,7 +712,7 @@ void Agent::onStep()
       m_loc = nextloc;
    }
    if (!m_stopped && m_trail_num != -1) {
-      m_program->m_trails[m_trail_num].push_back(m_loc);
+      m_program->m_trails[m_trail_num].push_back(Event2f(m_loc, m_program->m_steps));
    }
 }
 bool Agent::diagonalStep() 
