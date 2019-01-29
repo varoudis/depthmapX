@@ -51,10 +51,10 @@ ShapeGraph::ShapeGraph(const std::string& name, int type) : ShapeMap(name,type)
 
 void ShapeGraph::initialiseAttributesAxial()
 {
-    m_attributes.clear();
+    m_attributes->clear();
     // note, expects these to be numbered 0, 1...
-    int conn_col = m_attributes.insertLockedColumn("Connectivity");
-    int leng_col = m_attributes.insertLockedColumn("Line Length");
+    m_attributes->insertOrResetLockedColumn("Connectivity");
+    m_attributes->insertOrResetLockedColumn("Line Length");
 
 }
 
@@ -66,19 +66,20 @@ void ShapeGraph::makeConnections(const KeyVertices &keyvertices)
    m_keyvertices.clear();
 
    // note, expects these to be numbered 0, 1...
-   int conn_col = m_attributes.getColumnIndex("Connectivity");
-   int leng_col = m_attributes.getColumnIndex("Line Length");
+   int conn_col = m_attributes->getColumnIndex("Connectivity");
+   int leng_col = m_attributes->getColumnIndex("Line Length");
 
    int i = -1;
    for (auto shape: m_shapes) {
       i++;
       int key = shape.first;
-      int rowid = m_attributes.getRowid(key);
+      dXreimpl::AttributeRow &row =
+          m_attributes->getRow(dXreimpl::AttributeKey(key));
       // all indices should match...
       m_connectors.push_back( Connector() );
       m_connectors[i].m_connections = getLineConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
-      m_attributes.setValue(rowid, conn_col, float(m_connectors[i].m_connections.size()) );
-      m_attributes.setValue(rowid, leng_col, float(shape.second.getLine().length()) );
+      row.setValue(conn_col, float(m_connectors[i].m_connections.size()) );
+      row.setValue(leng_col, float(shape.second.getLine().length()) );
       if (keyvertices.size()) {
          // note: depends on lines being recorded in same order as keyvertices...
          m_keyvertices.push_back( keyvertices[i] );
@@ -179,7 +180,7 @@ void ShapeGraph::outputNet(std::ostream& netfile) const
 
 bool ShapeGraph::read(std::istream &stream, int version )
 {
-   m_attributes.clear();
+   m_attributes->clear();
    m_connectors.clear();
    m_selection = false;
    m_map_type = ShapeMap::EMPTYMAP;
@@ -215,7 +216,7 @@ bool ShapeGraph::readold( std::istream& stream, int version )
       makeLineShape(line.second.line);
    }
    // n.b., we now have to reclear attributes!
-   m_attributes.clear();
+   m_attributes->clear();
 
    // continue old read:
    int pushmap = -1;
@@ -238,7 +239,7 @@ bool ShapeGraph::readold( std::istream& stream, int version )
    int displayed_attribute;  // n.b., temp variable necessary to force recalc below
    stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
 
-   m_attributes.read(stream,version);
+   m_attributes->read(stream, m_layers, version);
    int size;
    stream.read((char *)&size,sizeof(size));
    for (int j = 0; j < size; j++) {
@@ -409,7 +410,7 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
    }
 
    // reset displayed attribute if it happens to be "Connectivity":
-   int conn_col = m_attributes.getColumnIndex("Connectivity");
+   int conn_col = m_attributes->getColumnIndex("Connectivity");
    if (getDisplayedAttribute() == conn_col) {
       invalidateDisplayedAttribute();
       setDisplayedAttribute(conn_col);  // <- reflect changes to connectivity counts
@@ -666,11 +667,11 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lines, std::vector<Connector>
 
 void ShapeGraph::initialiseAttributesSegment()
 {
-    m_attributes.clear();
+    m_attributes->clear();
 
     // note, expects these in alphabetical order to preserve numbering:
-    m_attributes.insertLockedColumn("Axial Line Ref");
-    m_attributes.insertLockedColumn("Segment Length");
+    m_attributes->insertOrResetLockedColumn("Axial Line Ref");
+    m_attributes->insertOrResetLockedColumn("Segment Length");
 }
 
 // now segments and connections are listed separately...
@@ -681,20 +682,20 @@ void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
    m_connectors.clear();
 
    // note, expects these in alphabetical order to preserve numbering:
-   int w_conn_col = m_attributes.insertColumn("Angular Connectivity");
-   int uw_conn_col = m_attributes.insertLockedColumn("Connectivity");
+   int w_conn_col = m_attributes->getOrInsertColumn("Angular Connectivity");
+   int uw_conn_col = m_attributes->getOrInsertLockedColumn("Connectivity");
 
-   int ref_col = m_attributes.getColumnIndex("Axial Line Ref");
-   int leng_col = m_attributes.getColumnIndex("Segment Length");
+   int ref_col = m_attributes->getColumnIndex("Axial Line Ref");
+   int leng_col = m_attributes->getColumnIndex("Segment Length");
 
    int i = -1;
    for (auto shape: m_shapes) {
        i++;
        Connector& connector = connectionset[size_t(i)];
-      int rowid = m_attributes.getRowid(shape.first);
+      dXreimpl::AttributeRow& row = m_attributes->getRow(dXreimpl::AttributeKey(shape.first));
 
-      m_attributes.setValue(rowid, ref_col, float(connector.m_segment_axialref));
-      m_attributes.setValue(rowid, leng_col, float(shape.second.getLine().length()));
+      row.setValue(ref_col, float(connector.m_segment_axialref));
+      row.setValue(leng_col, float(shape.second.getLine().length()));
 
       // all indices should match... (including lineset/connectionset versus m_shapes)
       m_connectors.push_back( connector );
@@ -705,8 +706,8 @@ void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
       for (auto iter = connector.m_back_segconns.begin(); iter != connector.m_back_segconns.end(); ++iter) {
          total_weight += iter->second;
       }
-      m_attributes.setValue(rowid, w_conn_col, float(total_weight));
-      m_attributes.setValue(rowid, uw_conn_col, float(connector.m_forward_segconns.size() + connector.m_back_segconns.size()));
+      row.setValue(w_conn_col, float(total_weight));
+      row.setValue(uw_conn_col, float(connector.m_forward_segconns.size() + connector.m_back_segconns.size()));
 
       // free up connectionset as we go along:
       connectionset[size_t(i)] = Connector();
@@ -721,23 +722,27 @@ void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
 
 void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
 {
-   if (m_attributes.getColumnIndex("Axial Line Ref") == -1) {
+   if (m_attributes->getColumnIndex("Axial Line Ref") == -1) {
       // this should never happen
       // AT: I am converting this to throw an error
       throw depthmapX::RuntimeException("Axial line ref does not exist");
    }
 
    std::vector<int> colindices;
-   for (int i = 0; i < axialmap.m_attributes.getColumnCount(); i++) {
-      std::string colname = std::string("Axial ") + axialmap.m_attributes.getColumnName(i);
-      colindices.push_back(m_attributes.insertColumn(colname));
+   for (int i = 0; i < axialmap.m_attributes->getNumColumns(); i++) {
+      std::string colname = std::string("Axial ") + axialmap.m_attributes->getColumnName(i);
+      colindices.push_back(m_attributes->getOrInsertColumn(colname));
    }
-   for (int j = 0; j < m_attributes.getRowCount(); j++) {
-      int axialref = (int) m_attributes.getValue(j,"Axial Line Ref");
-      for (int k = 0; k < axialmap.m_attributes.getColumnCount(); k++) {
-         float val = axialmap.m_attributes.getValue(axialref,k);
+   for (auto iter = m_attributes->begin(); iter != m_attributes->end(); iter++) {
+      int key = iter->getKey().value;
+      int axialref = (int) iter->getRow().getValue("Axial Line Ref");
+      // P.K: The original code here got the index of the row, but the column
+      // "Axial Line Ref" should actually contain keys, not indices
+      dXreimpl::AttributeRow& row = axialmap.m_attributes->getRow(dXreimpl::AttributeKey(axialref));
+      for (int k = 0; k < axialmap.m_attributes->getNumColumns(); k++) {
+         float val = row.getValue(k);
          // need to look up the column index:
-         m_attributes.setValue(j,colindices[k],val);
+         iter->getRow().setValue(colindices[k],val);
       }
    }
 }

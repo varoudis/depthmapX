@@ -22,7 +22,7 @@
 
 bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     bool retvar = true;
 
@@ -41,8 +41,10 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        axialrefs.push_back(attributes.getValue(cursor, "Axial Line Ref"));
-        seglengths.push_back(attributes.getValue(cursor, "Segment Length"));
+        axialrefs.push_back(
+            attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue(attributes.getColumnIndex("Axial Line Ref")));
+        seglengths.push_back(
+            attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue(attributes.getColumnIndex("Segment Length")));
         if (seglengths.back() > maxseglength) {
             maxseglength = seglengths.back();
         }
@@ -64,20 +66,20 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::string wtotalcol = prefix + "Total Length" + suffix;
     //
     if (!options.sel_only) {
-        attributes.insertColumn(choicecol.c_str());
-        attributes.insertColumn(wchoicecol.c_str());
+        attributes.insertOrResetColumn(choicecol.c_str());
+        attributes.insertOrResetColumn(wchoicecol.c_str());
     }
-    attributes.insertColumn(meandepthcol.c_str());
-    attributes.insertColumn(wmeandepthcol.c_str());
-    attributes.insertColumn(totaldcol.c_str());
-    attributes.insertColumn(totalcol.c_str());
-    attributes.insertColumn(wtotalcol.c_str());
+    attributes.insertOrResetColumn(meandepthcol.c_str());
+    attributes.insertOrResetColumn(wmeandepthcol.c_str());
+    attributes.insertOrResetColumn(totaldcol.c_str());
+    attributes.insertOrResetColumn(totalcol.c_str());
+    attributes.insertOrResetColumn(wtotalcol.c_str());
     //
     std::vector<unsigned int> seen(map.getShapeCount());
     std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
     std::vector<TopoMetSegmentChoice> choicevals(map.getShapeCount());
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        if (options.sel_only && !attributes.isSelected(cursor)) {
+        if (options.sel_only && !attributes.getRow(dXreimpl::AttributeKey(cursor)).isSelected()) {
             continue;
         }
         for (size_t i = 0; i < map.getShapeCount(); i++) {
@@ -177,11 +179,13 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
         }
         // also put in mean depth:
         //
-        attributes.setValue(cursor, meandepthcol.c_str(), totalsegdepth / (total - 1));
-        attributes.setValue(cursor, totaldcol.c_str(), totalsegdepth);
-        attributes.setValue(cursor, wmeandepthcol.c_str(), wtotaldepth / (wtotal - rootseglength));
-        attributes.setValue(cursor, totalcol.c_str(), total);
-        attributes.setValue(cursor, wtotalcol.c_str(), wtotal);
+        dXreimpl::AttributeRow &row =
+            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+        row.setValue(meandepthcol.c_str(), totalsegdepth / (total - 1));
+        row.setValue(totaldcol.c_str(), totalsegdepth);
+        row.setValue(wmeandepthcol.c_str(), wtotaldepth / (wtotal - rootseglength));
+        row.setValue(totalcol.c_str(), total);
+        row.setValue(wtotalcol.c_str(), wtotal);
         //
         if (comm) {
             if (qtimer(atime, 500)) {
@@ -196,8 +200,10 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     if (!options.sel_only) {
         // note, I've stopped sel only from calculating choice values:
         for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-            attributes.setValue(cursor, choicecol.c_str(), choicevals[cursor].choice);
-            attributes.setValue(cursor, wchoicecol.c_str(), choicevals[cursor].wchoice);
+            dXreimpl::AttributeRow &row =
+                attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+            row.setValue(choicecol.c_str(), choicevals[cursor].choice);
+            row.setValue(wchoicecol.c_str(), choicevals[cursor].wchoice);
         }
     }
 

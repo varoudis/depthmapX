@@ -16,7 +16,7 @@
 #include "ColumnPropertiesDlg.h"
 #include "genlib/stringutils.h"
 
-CColumnPropertiesDlg::CColumnPropertiesDlg(AttributeTable *table, int col, QWidget *parent)
+CColumnPropertiesDlg::CColumnPropertiesDlg(dXreimpl::AttributeTable *table, LayerManagerImpl *layers, int col, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);
@@ -26,13 +26,15 @@ CColumnPropertiesDlg::CColumnPropertiesDlg(AttributeTable *table, int col, QWidg
 	m_creator = tr("");
 	m_formula_note = tr("");
 
-	m_table = table;
+    m_table = table;
+    m_layers = layers;
 	m_col = col;
 
-	m_name = m_table->getColumnName(m_col).c_str();
-	m_formula = m_table->getColumnFormula(m_col).c_str();
+    dXreimpl::AttributeColumn& column = m_table->getColumn(m_col);
+    m_name = column.getName().c_str();
+    m_formula = column.getFormula().c_str();
 
-	if (!m_table->isColumnLocked(m_col)) {
+    if (!column.isLocked()) {
 		m_name_text = "Name";
 	}
 	else {
@@ -80,9 +82,10 @@ void CColumnPropertiesDlg::UpdateData(bool value)
 		}
 	}
 
-	for (i = 0; i < m_table->getRowCount(); i++) {
-		double val = m_table->getValue(i,m_col);
-		if (val != -1.0 && m_table->isVisible(i)) {
+    for (auto iter = m_table->begin(); iter != m_table->end(); iter++) {
+        auto& row = iter->getRow();
+        double val = row.getValue(m_col);
+        if (val != -1.0 && isObjectVisible(*m_layers, iter->getRow())) {
 			summary_all[0] += val;
 			summary_all[4] += 1.0;
 			if (summary_all[1] == -1.0 || val < summary_all[1]) {
@@ -91,7 +94,7 @@ void CColumnPropertiesDlg::UpdateData(bool value)
 			if (summary_all[2] == -1.0 || val > summary_all[2]) {
 				summary_all[2] = val;
 			}
-			if (m_table->isSelected(i)) {
+            if (row.isSelected()) {
 				summary_sel[0] += val;
 				summary_sel[4] += 1.0;
 				if (summary_sel[1] == -1.0 || val < summary_sel[1]) {
@@ -137,16 +140,17 @@ void CColumnPropertiesDlg::UpdateData(bool value)
 
 	double var_all = 0.0;
 	double var_sel = 0.0;
-	for (i = 0; i < m_table->getRowCount(); i++) {
-		double val = m_table->getValue(i,m_col);
-		if (val != -1.0 && m_table->isVisible(i)) {
+    for (auto iter = m_table->begin(); iter != m_table->end(); iter++) {
+        auto& row = iter->getRow();
+        double val = row.getValue(m_col);
+        if (val != -1.0 && isObjectVisible(*m_layers, iter->getRow())) {
 			var_all += sqr(val-summary_all[0]);
 			if (freqrows) {
 				int pos = floor((val - summary_all[1])/unit);
 				if (pos == 10) pos = 9; // irritating exactly equal to max
 				summary_all[5+pos] += 1;
-			}
-			if (m_table->isSelected(i)) {
+            }
+            if (row.isSelected()) {
 				var_sel += sqr(val-summary_sel[0]);
 				if (freqrows) {
 					// note: must use summary_all even on selected to make difference

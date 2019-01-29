@@ -24,10 +24,10 @@
 
 bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     std::string stepdepth_col_text = "Angular Step Depth";
-    int stepdepth_col = attributes.insertColumn(stepdepth_col_text.c_str());
+    int stepdepth_col = attributes.insertOrResetColumn(stepdepth_col_text.c_str());
 
     // The original code set tulip_bins to 1024, divided by two and added one
     // in order to duplicate previous code (using a semicircle of tulip bins)
@@ -41,7 +41,7 @@ bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGra
 
     int opencount = 0;
     for (auto& sel: map.getSelSet()) {
-       int row = attributes.getRowid(sel);
+       int row = depthmapX::getMapAtIndex(map.getAllShapes(), sel)->first;
        if (row != -1) {
           bins[0].push_back(SegmentData(0,row,SegmentRef(),0,0.0,0));
           opencount++;
@@ -80,7 +80,7 @@ bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGra
           // convert depth from tulip_bins normalised to standard angle
           // (note the -1)
           double depth_to_line = depthlevel / ((tulip_bins - 1) * 0.5);
-          attributes.setValue(lineindex.ref,stepdepth_col,depth_to_line);
+          attributes.getRow(dXreimpl::AttributeKey(lineindex.ref)).setValue(stepdepth_col,depth_to_line);
           register int extradepth;
           if (lineindex.dir != -1) {
              for (auto& segconn: line.m_forward_segconns) {

@@ -27,5 +27,5 @@ class VGAIsovist : IVGA {
   public:
     std::string getAnalysisName() const override { return "Isovist Analysis"; }
     bool run(Communicator *comm, const Options &, PointMap &map, bool simple_version) override;
-    BSPNode makeBSPtree(Communicator *communicator, std::vector<SpacePixelFile> drawingFiles);
+    BSPNode makeBSPtree(Communicator *communicator, const std::vector<SpacePixelFile> &drawingFiles);
 };

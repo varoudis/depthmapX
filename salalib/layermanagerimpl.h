@@ -30,6 +30,7 @@ public:
     virtual size_t getLayerIndex(const std::string &layerName) const;
     virtual void setLayerVisible(size_t layerIndex, bool visible);
     virtual bool isLayerVisible(size_t layerIndex) const;
+    virtual size_t getNumLayers() const {return m_layers.size();}
 
     virtual KeyType getKey(size_t layerIndex) const;
     virtual bool isVisible(const KeyType &key) const;

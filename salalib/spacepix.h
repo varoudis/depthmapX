@@ -147,6 +147,8 @@ public:
 
    QtRegion& getRegion() const
       { return (QtRegion&) m_region; }
+
+   void setRegion(QtRegion& region) { m_region = region; }
    //
    const std::map<int,LineTest>& getAllLines() const // Danger! Use solely to look at the raw line data
       { return m_lines; }

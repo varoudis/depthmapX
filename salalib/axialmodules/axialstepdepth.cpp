@@ -24,10 +24,10 @@
 
 bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool) {
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     std::string stepdepth_col_text = std::string("Step Depth");
-    int stepdepth_col = attributes.insertColumn(stepdepth_col_text.c_str());
+    int stepdepth_col = attributes.insertOrResetColumn(stepdepth_col_text.c_str());
 
     bool *covered = new bool [map.getConnections().size()];
     for (size_t i = 0; i < map.getConnections().size(); i++) {
@@ -37,7 +37,7 @@ bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool)
     for(auto& lineindex: map.getSelSet()) {
        foundlist.a().push_back(lineindex);
        covered[lineindex] = true;
-       attributes.setValue(lineindex,stepdepth_col,0.0f);
+       attributes.getRow(dXreimpl::AttributeKey(lineindex)).setValue(stepdepth_col,0.0f);
     }
     int depth = 1;
     while (foundlist.a().size()) {
@@ -46,7 +46,7 @@ bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool)
           if (!covered[line.m_connections[k]]) {
              covered[line.m_connections[k]] = true;
              foundlist.b().push_back(line.m_connections[k]);
-             attributes.setValue(line.m_connections[k],stepdepth_col,float(depth));
+             attributes.getRow(dXreimpl::AttributeKey(line.m_connections[k])).setValue(stepdepth_col,float(depth));
           }
        }
        foundlist.a().pop_back();

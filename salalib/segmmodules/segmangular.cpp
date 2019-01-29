@@ -23,10 +23,10 @@
 bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
     if (map.getMapType() != ShapeMap::SEGMENTMAP) {
-       return false;
+        return false;
     }
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     time_t atime = 0;
     if (comm) {
@@ -54,11 +54,11 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
     for (int radius : radii) {
         std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR, radius);
         std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
-        attributes.insertColumn(depth_col_text.c_str());
+        attributes.insertOrResetColumn(depth_col_text.c_str());
         std::string count_col_text = std::string("Angular Node Count") + radius_text;
-        attributes.insertColumn(count_col_text.c_str());
+        attributes.insertOrResetColumn(count_col_text.c_str());
         std::string total_col_text = std::string("Angular Total Depth") + radius_text;
-        attributes.insertColumn(total_col_text.c_str());
+        attributes.insertOrResetColumn(total_col_text.c_str());
     }
 
     for (int radius : radii) {
@@ -132,21 +132,23 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 anglebins.erase(iter);
             }
         }
+        dXreimpl::AttributeRow &row =
+            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), i)->first));
         // set the attributes for this node:
         int curs_node_count = 0;
         double curs_total_depth = 0.0;
         for (size_t r = 0; r < radii.size(); r++) {
             curs_node_count += node_count[r];
             curs_total_depth += total_depth[r];
-            attributes.setValue(i, count_col[r], float(curs_node_count));
+            row.setValue(count_col[r], float(curs_node_count));
             if (curs_node_count > 1) {
                 // note -- node_count includes this one -- mean depth as per p.108 Social Logic of Space
                 double mean_depth = curs_total_depth / double(curs_node_count - 1);
-                attributes.setValue(i, depth_col[r], float(mean_depth));
-                attributes.setValue(i, total_col[r], float(curs_total_depth));
+                row.setValue(depth_col[r], float(mean_depth));
+                row.setValue(total_col[r], float(curs_total_depth));
             } else {
-                attributes.setValue(i, depth_col[r], -1);
-                attributes.setValue(i, total_col[r], -1);
+                row.setValue(depth_col[r], -1);
+                row.setValue(total_col[r], -1);
             }
         }
         //

@@ -64,11 +64,11 @@ void tableView::RedoTable()
    clear();
 
    if (pDoc->m_meta_graph->viewingProcessed()) {
-      const AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+      const dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
       int col = pDoc->m_meta_graph->getDisplayedAttribute();
 	  int i;
 
-      m_column_count = table.getColumnCount();
+      m_column_count = table.getNumColumns();
 	  setColumnCount(m_column_count+1);
       connect(horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(colum_Sort(int)));
 	  verticalHeader()->hide();
@@ -83,7 +83,7 @@ void tableView::RedoTable()
 		 setHorizontalHeaderItem(i+1, Item);
       }
 
-	  m_row_count = table.getRowCount();
+      m_row_count = table.getNumRows();
 	  setRowCount(m_row_count);
       PrepareCache(m_curr_row);
    }
@@ -108,9 +108,9 @@ QSize tableView::sizeHint() const
 void tableView::PrepareCache(int to)
 {
 	in_update = 1;
-	QTableWidgetItem *Item;
-	const AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-	AttributeIndex& index = table.m_display_index;
+    QTableWidgetItem *Item;
+    const AttributeTableHandle& tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
+    auto& index = tableHandle.getTableIndex();
 
     int diff = PG_COUNT;
     if(to+PG_COUNT >= m_row_count)
@@ -119,6 +119,7 @@ void tableView::PrepareCache(int to)
     }
     for (int i = 0; i < diff; i++)
 	{
+        auto& indexItem = index[to+i];
 		for (int j = 0; j < m_column_count+1; j++)
 		{
 			if(!j)
@@ -126,13 +127,13 @@ void tableView::PrepareCache(int to)
                 Item = item(to+i, j);
                 if(Item)
 				{
-					if(table.isSelected(to+i)) Item->setCheckState(Qt::Checked);
+                    if(indexItem.row->isSelected()) Item->setCheckState(Qt::Checked);
 					else Item->setCheckState(Qt::Unchecked);
 				}
 				else
 				{
-					Item = new QTableWidgetItem(QString("%1").arg(table.getRowKey(index[to+i].index)));
-					if(table.isSelected(to+i)) Item->setCheckState(Qt::Checked);
+                    Item = new QTableWidgetItem(QString("%1").arg(indexItem.key.value));
+                    if(indexItem.row->isSelected()) Item->setCheckState(Qt::Checked);
 					else Item->setCheckState(Qt::Unchecked);
 					setItem(to+i, 0, Item);
 					continue;
@@ -140,7 +141,7 @@ void tableView::PrepareCache(int to)
 			}
 			if(!item(to+i, j))
 			{
-				Item = new QTableWidgetItem(QString("%1").arg(table.getValue(index[to+i].index, j-1)));
+                Item = new QTableWidgetItem(QString("%1").arg(indexItem.row->getValue(j-1)));
 				setRowHeight(to+i, ROW_HEIGHT);
 				setItem(to+i, j, Item);
 			}
@@ -154,12 +155,14 @@ void tableView::itemChanged(QTableWidgetItem * item)
 	if(in_update) return;
 	int row = item->row();
 	int col = item->column();
+    MetaGraph *graph = pDoc->m_meta_graph;
+    dXreimpl::AttributeTable& table = graph->getAttributeTable();
+    AttributeTableHandle& tableHandle = graph->getAttributeTableHandle();
+    auto& index = tableHandle.getTableIndex();
 	if(col == 0)
 	{
         std::vector<int> x;
-		AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-		AttributeIndex& index = table.m_display_index;
-		x.push_back(table.getRowKey(index[row].index));
+        x.push_back(index[row].key.value);
 		pDoc->m_meta_graph->setSelSet(x);
 		pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION, this);
         PrepareCache(m_curr_row);
@@ -174,13 +177,11 @@ void tableView::itemChanged(QTableWidgetItem * item)
             return;
          }
 
-         MetaGraph *graph = pDoc->m_meta_graph;
          if (graph && graph->viewingProcessed()) {
             // go for the change:
-            AttributeTable &table = graph->getAttributeTable();
-            double value2 = table.getValue(table.m_display_index[row].index, col-1);
+            double value2 = index[row].row->getValue(col-1);
             if (value2 == 0 || fabs((value / value2) - 1.0) > 1e-5) {
-               table.changeValue(table.m_display_index[row].index, col-1, value);
+               index[row].mutable_row->setValue(col-1, value);
                pDoc->modifiedFlag = true;
             }
 
@@ -242,9 +243,9 @@ void tableView::itemEditChanged(QTableWidgetItem* item)
 	int row = item->row();
 	int col = item->column();
 
-	if (col > 0 && col < pDoc->m_meta_graph->getAttributeTable().getColumnCount() + 1) {
+    if (col > 0 && col < pDoc->m_meta_graph->getAttributeTable().getNumColumns() + 1) {
 	// don't let them edit a locked attribute
-		if (pDoc->m_meta_graph->getAttributeTable().isColumnLocked(col-1)) {
+        if (pDoc->m_meta_graph->getAttributeTable().getColumn(col-1).isLocked()) {
 		   QMessageBox::warning(this, tr("Warning"), tr("This column is locked and cannot be edited"), QMessageBox::Ok, QMessageBox::Ok);
 		}
 	}

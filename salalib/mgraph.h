@@ -286,8 +286,12 @@ public:
    int addAttribute(const std::string& name);
    void removeAttribute(int col);
    bool isAttributeLocked(int col);
-   AttributeTable& getAttributeTable(int type = -1, int layer = -1);
-   const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
+   dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1);
+   const dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
+   LayerManagerImpl& getLayers(int type = -1, int layer = -1);
+   const LayerManagerImpl& getLayers(int type = -1, int layer = -1) const;
+   AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1);
+   const AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1) const;
 
    int getLineFileCount() const
       { return (int) m_drawingFiles.size(); }
@@ -402,11 +406,11 @@ public:
    float getSelAvg()
    {
       if (m_view_class & VIEWVGA)
-         return (float)getDisplayedPointMap().getAttributeTable().getSelAvg();
+         return (float)getDisplayedPointMap().getDisplayedSelectedAvg();
       else if (m_view_class & VIEWAXIAL) 
-         return (float)getDisplayedShapeGraph().getAttributeTable().getSelAvg();
+         return (float)getDisplayedShapeGraph().getDisplayedSelectedAvg();
       else if (m_view_class & VIEWDATA) 
-         return (float)getDisplayedDataMap().getAttributeTable().getSelAvg();
+         return (float)getDisplayedDataMap().getDisplayedSelectedAvg();
       else
          return -1.0f;
    }

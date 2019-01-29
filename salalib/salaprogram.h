@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "salalib/attributetable.h"
+
 #include "genlib/stringutils.h"
 
 #include <cmath>
@@ -245,7 +247,7 @@ public:
    { if (type != SalaObj::S_NONE) throw SalaError("Does not take any parameters"); }
    //
    // operations for graphs / graph nodes:
-   AttributeTable *getTable();
+   dXreimpl::AttributeTable *getTable();
    std::map<int, SalaObj> marks;
    //
    const std::string getTypeStr() const;

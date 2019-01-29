@@ -26,7 +26,7 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
         qtimer(atime, 0);
         comm->CommPostMessage(Communicator::NUM_RECORDS, map.getFilledPointCount());
     }
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     int entropy_col, rel_entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, depth_col, count_col;
     std::string radius_text;
@@ -39,25 +39,25 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
 #ifndef _COMPILE_dX_SIMPLE_VERSION
     if (!simple_version) {
         std::string entropy_col_text = std::string("Visual Entropy") + radius_text;
-        entropy_col = attributes.insertColumn(entropy_col_text.c_str());
+        entropy_col = attributes.insertOrResetColumn(entropy_col_text.c_str());
     }
 #endif
 
     std::string integ_dv_col_text = std::string("Visual Integration [HH]") + radius_text;
-    integ_dv_col = attributes.insertColumn(integ_dv_col_text.c_str());
+    integ_dv_col = attributes.insertOrResetColumn(integ_dv_col_text.c_str());
 
 #ifndef _COMPILE_dX_SIMPLE_VERSION
     if (!simple_version) {
         std::string integ_pv_col_text = std::string("Visual Integration [P-value]") + radius_text;
-        integ_pv_col = attributes.insertColumn(integ_pv_col_text.c_str());
+        integ_pv_col = attributes.insertOrResetColumn(integ_pv_col_text.c_str());
         std::string integ_tk_col_text = std::string("Visual Integration [Tekl]") + radius_text;
-        integ_tk_col = attributes.insertColumn(integ_tk_col_text.c_str());
+        integ_tk_col = attributes.insertOrResetColumn(integ_tk_col_text.c_str());
         std::string depth_col_text = std::string("Visual Mean Depth") + radius_text;
-        depth_col = attributes.insertColumn(depth_col_text.c_str());
+        depth_col = attributes.insertOrResetColumn(depth_col_text.c_str());
         std::string count_col_text = std::string("Visual Node Count") + radius_text;
-        count_col = attributes.insertColumn(count_col_text.c_str());
+        count_col = attributes.insertOrResetColumn(count_col_text.c_str());
         std::string rel_entropy_col_text = std::string("Visual Relativised Entropy") + radius_text;
-        rel_entropy_col = attributes.insertColumn(rel_entropy_col_text.c_str());
+        rel_entropy_col = attributes.insertOrResetColumn(rel_entropy_col_text.c_str());
     }
 #endif
 
@@ -126,17 +126,17 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                     }
                     level++;
                 }
-                int row = attributes.getRowid(curs);
+                dXreimpl::AttributeRow &row = attributes.getRow(dXreimpl::AttributeKey(curs));
                 // only set to single float precision after divide
                 // note -- total_nodes includes this one -- mean depth as per p.108 Social Logic of Space
                 if (!simple_version) {
-                    attributes.setValue(row, count_col, float(total_nodes)); // note: total nodes includes this one
+                    row.setValue(count_col, float(total_nodes)); // note: total nodes includes this one
                 }
                 // ERROR !!!!!!
                 if (total_nodes > 1) {
                     double mean_depth = double(total_depth) / double(total_nodes - 1);
                     if (!simple_version) {
-                        attributes.setValue(row, depth_col, float(mean_depth));
+                        row.setValue(depth_col, float(mean_depth));
                     }
                     // total nodes > 2 to avoid divide by 0 (was > 3)
                     if (total_nodes > 2 && mean_depth > 1.0) {
@@ -145,24 +145,24 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                         double rra_d = ra / dvalue(total_nodes);
                         double rra_p = ra / pvalue(total_nodes);
                         double integ_tk = teklinteg(total_nodes, total_depth);
-                        attributes.setValue(row, integ_dv_col, float(1.0 / rra_d));
+                        row.setValue(integ_dv_col, float(1.0 / rra_d));
                         if (!simple_version) {
-                            attributes.setValue(row, integ_pv_col, float(1.0 / rra_p));
+                            row.setValue(integ_pv_col, float(1.0 / rra_p));
                         }
                         if (total_depth - total_nodes + 1 > 1) {
                             if (!simple_version) {
-                                attributes.setValue(row, integ_tk_col, float(integ_tk));
+                                row.setValue(integ_tk_col, float(integ_tk));
                             }
                         } else {
                             if (!simple_version) {
-                                attributes.setValue(row, integ_tk_col, -1.0f);
+                                row.setValue(integ_tk_col, -1.0f);
                             }
                         }
                     } else {
-                        attributes.setValue(row, integ_dv_col, (float)-1);
+                        row.setValue(integ_dv_col, (float)-1);
                         if (!simple_version) {
-                            attributes.setValue(row, integ_pv_col, (float)-1);
-                            attributes.setValue(row, integ_tk_col, (float)-1);
+                            row.setValue(integ_pv_col, (float)-1);
+                            row.setValue(integ_tk_col, (float)-1);
                         }
                     }
                     double entropy = 0.0, rel_entropy = 0.0, factorial = 1.0;
@@ -179,14 +179,14 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                         }
                     }
                     if (!simple_version) {
-                        attributes.setValue(row, entropy_col, float(entropy));
-                        attributes.setValue(row, rel_entropy_col, float(rel_entropy));
+                        row.setValue(entropy_col, float(entropy));
+                        row.setValue(rel_entropy_col, float(rel_entropy));
                     }
                 } else {
                     if (!simple_version) {
-                        attributes.setValue(row, depth_col, (float)-1);
-                        attributes.setValue(row, entropy_col, (float)-1);
-                        attributes.setValue(row, rel_entropy_col, (float)-1);
+                        row.setValue(depth_col, (float)-1);
+                        row.setValue(entropy_col, (float)-1);
+                        row.setValue(rel_entropy_col, (float)-1);
                     }
                 }
             }

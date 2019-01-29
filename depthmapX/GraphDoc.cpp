@@ -218,6 +218,7 @@ void QGraphDoc::OnLayerNew()
       ShapeMap *map;
       if (dlg.m_layer_type == 0) {
           int ref = m_meta_graph->addShapeMap(dlg.m_name.toStdString());
+          m_meta_graph->setDisplayedDataMapRef(ref);
          map = &(m_meta_graph->getDataMaps()[ref]);
       }
       else if (dlg.m_layer_type == 1) {
@@ -1987,9 +1988,9 @@ void QGraphDoc::OnAddColumn()
 		  QMessageBox::warning(this, tr("Warning"), tr("Column name cannot be empty"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         AttributeTable& tab = m_meta_graph->getAttributeTable();
+         dXreimpl::AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
-         for (int i = 0; i < tab.getColumnCount(); i++) {
+         for (int i = 0; i < tab.getNumColumns(); i++) {
             if (tab.getColumnName(i) == dlg.m_object_name.toStdString()) {
 				QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
                found = true;
@@ -2013,7 +2014,7 @@ void QGraphDoc::OnAddColumn()
 
 void QGraphDoc::OnRenameColumn() 
 {
-   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    int col = m_meta_graph->getDisplayedAttribute();
    // -1 is reference number, -2 is displaying nothing (-2 shouldn't happen but is)
    if (col == -1 || col == -2 || m_meta_graph->isAttributeLocked(col)) {
@@ -2029,18 +2030,19 @@ void QGraphDoc::OnRenameColumn()
    }
 }
 
-int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
+int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
 {
    QString colname = QString(tab->getColumnName(col).c_str());
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
    bool success = false;
    while (dlg.exec() == QDialog::Accepted && !success && dlg.m_object_name != colname) {
-      int newcol = tab->renameColumn(col,dlg.m_object_name.toStdString());
-      if (newcol == -1) {
+       std::string newColName = dlg.m_object_name.toStdString();
+      if (tab->hasColumn(newColName)) {
 		  QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         return newcol;
+         tab->renameColumn(tab->getColumnName(col), newColName);
+         return tab->getColumnIndex(newColName);
       }
    }
    return -1;
@@ -2048,10 +2050,11 @@ int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
 
 void QGraphDoc::OnColumnProperties() 
 {
-   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   LayerManagerImpl *layers = &(m_meta_graph->getLayers());
    int col = m_meta_graph->getDisplayedAttribute();
 
-   CColumnPropertiesDlg dlg(tab,col);
+   CColumnPropertiesDlg dlg(tab, layers, col);
    
    dlg.exec();
 }
@@ -2106,7 +2109,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
       return false;
    }
 
-   AttributeTable *table = program_context.getTable();
+   dXreimpl::AttributeTable *table = program_context.getTable();
 
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,col);  // Using a column number sets it to use the replace text rather than select text
@@ -2148,7 +2151,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
          }
       }
       if (!error) {
-         table->setColumnFormula(col,text);
+         table->getColumn(col).setFormula(text);
       }
       delete [] text;
    }
@@ -2194,7 +2197,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       return false;
    }
 
-   AttributeTable *table = program_context.getTable();
+   dXreimpl::AttributeTable *table = program_context.getTable();
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,-1);  // -1 sets it to use the select text rather than replace text
    bool error = true;
