@@ -156,7 +156,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
             <number name="att_availableLayers" id="645" type="integer" length="8" endian="little"/>
             <number name="att_visibleLayers" id="646" type="integer" length="8" endian="little"/>
             <number name="att_layerCount" id="647" type="integer" length="4" endian="little"/>
-            <structure name="att_layer" id="648" repeat="id:647">
+            <structure name="att_layer" id="648" repeatmin="att_layerCount" repeatmax="att_layerCount">
                 <number name="att_layerKey" id="649" type="integer" length="8" endian="little"/>
                 <structref name="att_layer" id="650" structure="id:565"/>
             </structure>
