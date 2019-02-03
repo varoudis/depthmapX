@@ -122,18 +122,15 @@ TEST_CASE("Trivial errors") {
 
 }
 
-TEST_CASE("Trivial scripts with unexpected results") {
-    // These are cases where the result is not as expected i.e. for
-    // a pythonesque language
-
+TEST_CASE("Variables from outer scope are accessible in inner scope") {
     std::stringstream script;
     SalaObj expected;
-    SECTION("No access to globabl scope from within a for loop") {
+    SECTION("Access to global scope from within a for loop") {
         script << "x = 5\n"
                << "for i in range(0,1):\n"
                << "    x = 100\n"
                << "x";
-        expected = SalaObj(5);
+        expected = SalaObj(100);
     }
 
     SalaGrf graph;
@@ -141,7 +138,7 @@ TEST_CASE("Trivial scripts with unexpected results") {
     SalaProgram program(context);
     program.parse(script);
     SalaObj result = program.evaluate();
-    REQUIRE(result == expected);
+    REQUIRE(result.toInt() == expected.toInt());
 }
 
 TEST_CASE("Shapemap scripts") {
@@ -286,8 +283,8 @@ TEST_CASE("Shapemap scripts with unexpected results") {
             expectedColVals.push_back(0.0);
             expectedColVals.push_back(0.0);
             expectedColVals.push_back(0.0);
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
+            expectedColVals.push_back(2.0);
+            expectedColVals.push_back(5.0);
     }
 
     SECTION("Total Depth Calculation") {
@@ -308,11 +305,11 @@ TEST_CASE("Shapemap scripts with unexpected results") {
                    << "        pop_list = push_list\n"
                    << "        push_list = []\n"
                    << "total_depth\n";
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
-            expectedColVals.push_back(-1.0);
+            expectedColVals.push_back(7.0);
+            expectedColVals.push_back(10.0);
+            expectedColVals.push_back(6.0);
+            expectedColVals.push_back(7.0);
+            expectedColVals.push_back(10.0);
     }
 
     SECTION("Shortest Cycle") {
