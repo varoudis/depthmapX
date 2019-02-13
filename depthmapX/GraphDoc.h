@@ -276,6 +276,7 @@ public:
     void OnAxialConnectionsExportAsPairCSV();
     void OnSegmentConnectionsExportAsPairCSV();
 	void OnToolsMakeGraph();
+    void OnToolsUnmakeGraph();
     void OnEditClear();
 	void OnToolsRun();
 	void OnEditUndo();

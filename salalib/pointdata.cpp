@@ -1287,6 +1287,35 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
    return true;
 }
 
+bool PointMap::unmake() {
+    for (size_t i = 0; i < m_cols; i++) {
+        for (size_t j = 0; j < m_rows; j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
+            Point &pnt = getPoint(curs);
+            if (pnt.filled()) {
+                pnt.m_merge = NoPixel;
+                pnt.m_grid_connections = 0;
+                pnt.m_node = nullptr;
+                pnt.m_lines.clear();
+                pnt.setBlock(false);
+            }
+        }
+    }
+
+    m_blockedlines = false;
+
+    m_merge_lines.clear();
+
+    m_attributes.clear();
+
+    m_processed = false;
+    m_boundarygraph = false;
+
+    m_displayed_attribute = -2;
+
+    return true;
+}
+
 // 'make' construct types are: 
 // 1 -- build this node
 // 2 -- register the reciprocal q octant in nodes you can see as requiring processing

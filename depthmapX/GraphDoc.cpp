@@ -1587,6 +1587,16 @@ void QGraphDoc::OnToolsMakeGraph()
    m_thread.render(this);
 }
 
+void QGraphDoc::OnToolsUnmakeGraph()
+{
+    int state = m_meta_graph->getState();
+    bool ok = m_meta_graph->unmakeGraph();
+    if (ok) {
+       SetUpdateFlag(QGraphDoc::NEW_DATA);
+    }
+    SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void QGraphDoc::OnToolsRun() 
