@@ -1590,6 +1590,24 @@ void QGraphDoc::OnToolsMakeGraph()
 void QGraphDoc::OnToolsUnmakeGraph()
 {
     int state = m_meta_graph->getState();
+    if (m_communicator) {
+       QMessageBox::warning(this, tr("Notice"), tr("Please wait, another task is running"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    if (~state & MetaGraph::LINEDATA) {
+       QMessageBox::warning(this, tr("Notice"), tr("Sorry, line drawing data must be loaded before points may be filled"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    if (~state & MetaGraph::POINTMAPS) {
+       QMessageBox::warning(this, tr("Notice"), tr("Please make grid before filling"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    if (m_meta_graph->viewingProcessed()) {
+       if ( QMessageBox::Yes != QMessageBox::question(this, tr("Notice"),
+                                                      tr("This will clear existing data and remove links. Do you want to continue?"),
+                                                      QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
+        return;
+    }
     bool ok = m_meta_graph->unmakeGraph();
     if (ok) {
        SetUpdateFlag(QGraphDoc::NEW_DATA);
