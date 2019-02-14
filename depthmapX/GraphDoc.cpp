@@ -1604,9 +1604,12 @@ void QGraphDoc::OnToolsUnmakeGraph()
                                                       QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
         return;
     }
-    bool removeLinks = QMessageBox::Yes == QMessageBox::question(this, tr("Notice"),
-                                                                 tr("Would you also like to clear the links?"),
-                                                                 QMessageBox::Yes|QMessageBox::No, QMessageBox::No);
+    bool removeLinks = false;
+    if(m_meta_graph->getDisplayedPointMap().getMergedPixelPairs().size() > 0) {
+        removeLinks = QMessageBox::Yes == QMessageBox::question(this, tr("Notice"),
+                                                                     tr("Would you also like to clear the links?"),
+                                                                     QMessageBox::Yes|QMessageBox::No, QMessageBox::No);
+    }
     bool ok = m_meta_graph->unmakeGraph(removeLinks);
     if (ok) {
        SetUpdateFlag(QGraphDoc::NEW_DATA);
