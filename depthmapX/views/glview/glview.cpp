@@ -282,7 +282,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
         }
         case MOUSE_MODE_PENCIL:
         {
-            m_pDoc.m_meta_graph->getDisplayedPointMap().fillPoint(worldPoint,true);
+            m_pDoc.m_meta_graph->getDisplayedPointMap().fillPoint(worldPoint, event->buttons() == Qt::LeftButton);
             break;
         }
         case MOUSE_MODE_SEED_ISOVIST:
