@@ -351,6 +351,9 @@ bool PointMap::fillPoint(const Point2f& p, bool add)
    else if (!add && (pt.m_state & Point::FILLED)) {
       m_filled_point_count--;
       pt.set( Point::EMPTY, ++m_undocounter );
+      if (pt.m_merge != NoPixel) {
+          unmergePixel(pix);
+      }
    }
    return true;
 }
@@ -1583,23 +1586,28 @@ bool PointMap::unmergePoints()
    }
    for (auto& sel: m_selection_set) {
       PixelRef a = sel;
-      mergePixels(a,a);
+      unmergePixel(a);
    }
    clearSel();
    return true;
+}
+
+// Either of the pixels can be given here and the other will also be unmerged
+bool PointMap::unmergePixel(PixelRef a) {
+    PixelRef c = getPoint(a).m_merge;
+    depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
+    getPoint(c).m_merge = NoPixel;
+    getPoint(c).m_state &= ~Point::MERGED;
+    getPoint(a).m_merge = NoPixel;
+    getPoint(a).m_state &= ~Point::MERGED;
+    return true;
 }
 
 bool PointMap::mergePixels(PixelRef a, PixelRef b)
 {
    bool altered = false;
    if (a == b && !getPoint(a).m_merge.empty()) {
-      PixelRef c = getPoint(a).m_merge;
-      depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
-      getPoint(c).m_merge = NoPixel;
-      getPoint(c).m_state &= ~Point::MERGED;
-      getPoint(a).m_merge = NoPixel;
-      getPoint(a).m_state &= ~Point::MERGED;
-      altered = true;
+       altered = unmergePixel(a);
    }
    if (a != b && getPoint(a).m_merge != b) {
       if (!getPoint(a).m_merge.empty()) {

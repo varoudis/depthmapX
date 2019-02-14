@@ -150,6 +150,7 @@ public:
    bool binDisplay(Communicator *comm);
    bool mergePoints(const Point2f& p);
    bool unmergePoints();
+   bool unmergePixel(PixelRef a);
    bool mergePixels(PixelRef a, PixelRef b);
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
