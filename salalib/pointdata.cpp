@@ -1290,13 +1290,15 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
    return true;
 }
 
-bool PointMap::unmake() {
+bool PointMap::unmake(bool removeLinks) {
     for (size_t i = 0; i < m_cols; i++) {
         for (size_t j = 0; j < m_rows; j++) {
             PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             Point &pnt = getPoint(curs);
             if (pnt.filled()) {
-                pnt.m_merge = NoPixel;
+                if(removeLinks) {
+                    pnt.m_merge = NoPixel;
+                }
                 pnt.m_grid_connections = 0;
                 pnt.m_node = nullptr;
                 pnt.m_lines.clear();
@@ -1307,7 +1309,9 @@ bool PointMap::unmake() {
 
     m_blockedlines = false;
 
-    m_merge_lines.clear();
+    if(removeLinks) {
+        m_merge_lines.clear();
+    }
 
     m_attributes.clear();
 
