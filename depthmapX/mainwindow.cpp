@@ -2825,7 +2825,7 @@ void MainWindow::updateToolbar()
         }
 
         if (( ( (m_p->m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) &&
-               (m_p->m_meta_graph->getDisplayedPointMap().isProcessed())) ||
+               (m_p->m_meta_graph->getDisplayedPointMap().getFilledPointCount() > 1)) ||
              ( (m_p->m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) &&
                (m_p->m_meta_graph->getState() & MetaGraph::SHAPEGRAPHS)) &&
                (!m_p->m_meta_graph->getDisplayedShapeGraph().isSegmentMap()) ) )
