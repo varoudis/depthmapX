@@ -26,6 +26,7 @@ TEST_CASE("StepDepthParserFail", "Error cases")
         ArgumentHolder ah{"prog", "-sdp"};
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-sdp requires an argument"));
     }
+
     SECTION("Missing argument to -sdf")
     {
         StepDepthParser parser;
@@ -33,11 +34,25 @@ TEST_CASE("StepDepthParserFail", "Error cases")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-sdf requires an argument"));
     }
 
+    SECTION("Missing argument to -sdt")
+    {
+        StepDepthParser parser;
+        ArgumentHolder ah{"prog", "-sdt"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-sdt requires an argument"));
+    }
+
     SECTION("rubbish input to -sdp")
     {
         StepDepthParser parser;
         ArgumentHolder ah{"prog", "-sdp", "foo"};
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid step depth point provided (foo). Should only contain digits dots and commas"));
+    }
+
+    SECTION("rubbish input to -sdt")
+    {
+        StepDepthParser parser;
+        ArgumentHolder ah{"prog", "-sdt", "foo"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid step type: foo"));
     }
 
     SECTION("Non-existing file provided")
@@ -119,7 +134,7 @@ TEST_CASE("StepDepthParserSuccess", "Read successfully")
         std::stringstream p2;
         p2 << x2 << "," << y2 << std::flush;
 
-        ArgumentHolder ah{"prog", "-sdp", p1.str(), "-sdp", p2.str()};
+        ArgumentHolder ah{"prog", "-sdp", p1.str(), "-sdp", p2.str(), "-sdt", "visual"};
         parser.parse(ah.argc(), ah.argv());
     }
 
@@ -131,7 +146,7 @@ TEST_CASE("StepDepthParserSuccess", "Read successfully")
             f << "x\ty\n" << x1 << "\t" << y1 << "\n"
                           << x2 << "\t" << y2 << "\n" << std::flush;
         }
-        ArgumentHolder ah{"prog", "-sdf", scf.Filename()};
+        ArgumentHolder ah{"prog", "-sdf", scf.Filename(), "-sdt", "visual"};
         parser.parse(ah.argc(), ah.argv() );
     }
 

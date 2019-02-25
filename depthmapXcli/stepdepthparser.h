@@ -22,7 +22,7 @@
 class StepDepthParser : public IModeParser
 {
 public:
-    StepDepthParser()
+    StepDepthParser() : m_stepType(StepType::NONE)
     {}
 
     virtual std::string getModeName() const
@@ -34,8 +34,16 @@ public:
     {
         return "Mode options for pointmap STEPDEPTH are:\n" \
                "  -sdp <step depth point> point where to calculate step depth from. Can be repeated\n" \
-               "  -sdf <step depth point file> a file with a point per line to calculate step depth from\n";
+               "  -sdf <step depth point file> a file with a point per line to calculate step depth from\n" \
+               "  -sdt <type> step type. One of metric, angular or visual\n";
     }
+
+    enum class StepType {
+        NONE,
+        ANGULAR,
+        METRIC,
+        VISUAL
+    };
 
     virtual void parse(int argc, char** argv);
 
@@ -43,8 +51,12 @@ public:
 
     std::vector<Point2f> getStepDepthPoints() const { return m_stepDepthPoints; }
 
+    StepType getStepType() const { return m_stepType; }
+
 private:
     std::vector<Point2f> m_stepDepthPoints;
+
+    StepType m_stepType;
 };
 
 
