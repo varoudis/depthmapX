@@ -2574,7 +2574,7 @@ bool ShapeMap::write( std::ofstream& stream, int version )
 
    // left here for backwards-compatibility
    // TODO: Remove at next iteration of the .graph file format
-   int largest_shape_ref = m_shapes.size() != 0 ? m_shapes.rbegin()->first : -1;
+   int largest_shape_ref = m_shapes.empty() ? -1 : m_shapes.rbegin()->first;
    stream.write((char *) &largest_shape_ref, sizeof(largest_shape_ref));
 
    // write shape data
