@@ -1472,6 +1472,7 @@ int ShapeMap::pointInPoly(const Point2f& p) const
                                                         static_cast<size_t>(pix.x));
    int drawlast = -1;
    int draworder = -1;
+
    for (const ShapeRef& shape: shapes) {
       auto iter = depthmapX::findBinary( testedshapes, shape.m_shape_ref );
       if (iter != testedshapes.end()) {
@@ -1482,10 +1483,11 @@ int ShapeMap::pointInPoly(const Point2f& p) const
       int shapeindex = testPointInPoly(p,shape);
 
       // if there's a shapeindex, then add:
-//      if (shapeindex != -1 && m_attributes->getDisplayPos(shapeindex) > draworder) {
-//         drawlast = shapeindex;
-//         draworder = m_attributes->getDisplayPos(shapeindex);
-//      }
+      int currentDrawOrder = m_attribHandle->findInIndex(dXreimpl::AttributeKey(shape.m_shape_ref));
+      if (shapeindex != -1 && currentDrawOrder > draworder) {
+         drawlast = shapeindex;
+         draworder = currentDrawOrder;
+      }
    }
    return drawlast;
 }
@@ -2916,10 +2918,11 @@ void ShapeMap::makeViewportShapes( const QtRegion& viewport ) const
                                                                  static_cast<size_t>(i));
          for (const ShapeRef& shape: shapeRefs) {
             // copy the index to the correct draworder position (draworder is formatted on display attribute)
-//            int x = std::distance(m_shapes.begin(), m_shapes.find(shape.m_shape_ref));
-//            if (m_layers.isVisible(shape.m_shape_ref)) {
-//               m_display_shapes[m_attributes->getDisplayPos(x)] = x;
-//            }
+            int x = std::distance(m_shapes.begin(), m_shapes.find(shape.m_shape_ref));
+            dXreimpl::AttributeKey shapeRefKey(shape.m_shape_ref);
+            if (isObjectVisible(m_layers, m_attributes->getRow(shapeRefKey) )) {
+                m_display_shapes[m_attribHandle->findInIndex(shapeRefKey)] = x;
+            }
          }
       }
    }
