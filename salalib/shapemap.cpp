@@ -3306,7 +3306,7 @@ bool ShapeMap::unlinkShapeSet(std::istream& idset, int refcol)
    std::vector<std::pair<int, int> > unlinks;
    do {
       std::pair<int, int> unlink;
-      idset >> line;
+      dXstring::safeGetline(idset, line);
       if (!line.empty()) {
          auto tokens = dXstring::split(line, '\t');
          if (tokens.size() < 2) {
