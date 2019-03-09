@@ -734,7 +734,6 @@ void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
       colindices.push_back(m_attributes->getOrInsertColumn(colname));
    }
    for (auto iter = m_attributes->begin(); iter != m_attributes->end(); iter++) {
-      int key = iter->getKey().value;
       int axialref = (int) iter->getRow().getValue("Axial Line Ref");
       // P.K: The original code here got the index of the row, but the column
       // "Axial Line Ref" should actually contain keys, not indices
