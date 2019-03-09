@@ -259,14 +259,9 @@ public:
    double getDisplayMinValue() const
    { return (m_displayed_attribute != -1) ? m_attributes->getColumn(m_displayed_attribute).getStats().min : 0; }
 
-   // Quick mod - TV
-#if defined(_WIN32)
-   double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes->getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right); }
-#else
    double getDisplayMaxValue() const
    { return (m_displayed_attribute != -1) ? m_attributes->getColumn(m_displayed_attribute).getStats().max : pixelate(m_region.top_right).x; }
-#endif
+
    const DisplayParams& getDisplayParams() const
    { return m_attributes->getColumn(m_displayed_attribute).getDisplayParams(); }
    // make a local copy of the display params for access speed:
