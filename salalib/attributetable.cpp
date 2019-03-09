@@ -478,26 +478,14 @@ namespace  dXreimpl {
 
     }
 
-    // TODO: Compatibility. Very inefficient method to retreive a column's index
+    // TODO: Compatibility. Method to retreive a column's index
     // if the set of columns was sorted
     size_t AttributeTable::getColumnSortedIndex(size_t index) const
     {
         if(index == size_t(-1) || index == size_t(-2)) return index;
-        std::vector<size_t> indices(m_columns.size());
-        std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+        if(index >= m_columns.size()) return -1;
 
-        std::sort(indices.begin(), indices.end(),
-            [&](size_t a, size_t b) {
-            return m_columns[a].getName() < m_columns[b].getName();
-        });
-        auto iter = std::find(indices.begin(), indices.end(), index);
-        if(iter == indices.end())
-        {
-            std::stringstream message;
-            message << "Unknown index " << index;
-            throw std::out_of_range(message.str());
-        }
-        return std::distance(indices.begin(), iter);
+        return std::distance(m_columnMapping.begin(), m_columnMapping.find(getColumnName(index)));
     }
 
 
