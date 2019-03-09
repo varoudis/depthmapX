@@ -273,7 +273,6 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
    dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
    AttributeTableHandle& tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
    LayerManagerImpl& layers = pDoc->m_meta_graph->getLayers();
-   int displaycol = pDoc->m_meta_graph->getDisplayedAttribute();
 
    QRect rect = QRect(0, 0, width(), height());
    int mindim = __min(rect.width(),rect.height());
