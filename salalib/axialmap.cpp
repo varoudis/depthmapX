@@ -722,7 +722,7 @@ void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
 
 void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
 {
-   if (m_attributes->getColumnIndex("Axial Line Ref") == -1) {
+   if (m_attributes->hasColumn("Axial Line Ref")) {
       // this should never happen
       // AT: I am converting this to throw an error
       throw depthmapX::RuntimeException("Axial line ref does not exist");
