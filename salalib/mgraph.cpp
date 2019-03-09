@@ -1818,11 +1818,10 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
    }
    else {
       // prepare a temporary value table to store counts and values
-      double *vals = new double [table_out.getNumRows()];
-      int *counts = new int [table_out.getNumRows()];
+      std::vector<double> vals(table_out.getNumRows());
+      std::vector<int> counts(table_out.getNumRows());
 
-      int i;
-      for (i = 0; i < table_out.getNumRows(); i++) {
+      for (size_t i = 0; i < table_out.getNumRows(); i++) {
          counts[i] = 0; // count set to zero for all
          vals[i] = -1;
       }
@@ -1838,7 +1837,6 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                 gatelist = m_dataMaps[size_t(destlayer)].pointInPolyList(m_pointMaps[size_t(sourcelayer)].getPoint(pix_in).m_location);
                 double thisval = iter_in->getRow().getValue(col_in);
                 for (int gate: gatelist) {
-                    int key_out = depthmapX::getMapAtIndex(m_dataMaps[destlayer].getAllShapes(), gate)->first;
                     dXreimpl::AttributeRow &row_out =
                         table_out.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(m_dataMaps[destlayer].getAllShapes(),
                                                                                         gate)->first));
@@ -1907,10 +1905,9 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             }
          }
       }
-      i = -1;
+      int i = -1;
       for (auto iter = table_out.begin(); iter != table_out.end(); iter++) {
           i++;
-          int key_out = iter->getKey().value;
 
          if (!isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), iter->getRow())) {
             continue;
@@ -1923,9 +1920,6 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
             iter->getRow().setValue(col_count,float(counts[i]));
          }
       }
-
-      delete [] vals;
-      delete [] counts;
    }
 
    // display new data in the relevant layer
