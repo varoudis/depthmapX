@@ -45,9 +45,8 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    // set up a list of readable columns from the headers:
    // 
    std::vector<std::string> colnames;
-   pvecint readable, colindexes;
-   size_t i;
-   for (i = 0; i < columnheads.size(); i++) {
+   std::vector<int> readable, colindexes;
+   for (size_t i = 0; i < columnheads.size(); i++) {
       dXstring::ltrim(columnheads[i]);
       auto tokens = dXstring::split(columnheads[i], ' ',true);
       if (dXstring::beginsWith<std::string>(tokens[1],"Integer")
@@ -61,14 +60,14 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
       }
    }
 
-   for (i = 0; i < colnames.size(); i++) {
-      colindexes.push_back(attributes.getColumnIndex(colnames[i]));
+   for (std::string colname: colnames) {
+      colindexes.push_back(attributes.getColumnIndex(colname));
    }
 
    std::string textline;
    std::vector<std::vector<Point2f>> pointsets;
-   pvecint duplicates;
-   pvecint types;
+   std::vector<int> duplicates;
+   std::vector<int> types;
 
    try {
    // now read line data into the axial map   
@@ -146,7 +145,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    dXreimpl::AttributeRow *lastrow;
 
    QtRegion region(pointsets[0][0],pointsets[0][0]);
-   for (i = 0; i < pointsets.size(); i++) {
+   for (size_t i = 0; i < pointsets.size(); i++) {
       for (size_t j = 0; j < pointsets[i].size(); j++) {
          region.encompass(pointsets[i][j]);
       }
@@ -166,8 +165,8 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
          // table data entries:
          if (nextduplicate < duplicates.size() && duplicates[nextduplicate] == i) {
             // duplicate last row:
-            for (size_t j = 0; j < colindexes.size(); j++) {
-               row.setValue(colindexes[i], lastrow->getValue(colindexes[i]));
+            for (int colindex: colindexes) {
+               row.setValue(colindex, lastrow->getValue(colindex));
             }
             nextduplicate++;
          }
