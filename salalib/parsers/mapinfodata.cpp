@@ -160,7 +160,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
             open = true;
          }
          map.makePolyShape(pointsets[i],open);
-         dXreimpl::AttributeRow &row = attributes.end()->getRow();
+         dXreimpl::AttributeRow &row = *attributes.back().second;
          //
          // table data entries:
          if (nextduplicate < duplicates.size() && duplicates[nextduplicate] == i) {

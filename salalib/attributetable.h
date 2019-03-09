@@ -476,6 +476,11 @@ namespace dXreimpl
         {
             return iterator(m_rows.find(key));
         }
+
+        std::pair<const AttributeKey, std::unique_ptr<AttributeRowImpl>>& back()
+        {
+            return *m_rows.rbegin();
+        }
     };
 
 }
