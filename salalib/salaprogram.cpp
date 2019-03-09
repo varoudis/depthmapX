@@ -1558,13 +1558,11 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                case SalaObj::S_FMARK:
                   {
                      param.ensureNone();
-                     dXreimpl::AttributeTable *table = obj.getTable();
                      data = m_program->marks[obj.data.graph.node];
                   }
                   break;
                case SalaObj::S_FSETMARK:
                   {
-                     dXreimpl::AttributeTable *table = obj.getTable();
                      m_program->marks[obj.data.graph.node] = param;
                      m_program->m_marked = true;   // <- this tells the program to tidy up marks between executions
                      data = SalaObj(); // returns none
