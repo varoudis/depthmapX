@@ -97,22 +97,20 @@ bool QPlotView::eventFilter(QObject *object, QEvent *e)
 			if (pDoc->m_meta_graph) {
                 if (pDoc->m_meta_graph->viewingProcessed()) {
                     dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-                    dXreimpl::AttributeKey dummykey(-1);
-                    dXreimpl::AttributeRowImpl dummyrow(table);
-                    auto xfloor = std::lower_bound(idx_x.begin(), idx_x.end(), dXreimpl::AttributeIndexItem(dummykey, dataX(hit_point.x()-2), dummyrow));
-                    auto xceil = std::upper_bound(idx_x.begin(), idx_x.end(), dXreimpl::AttributeIndexItem(dummykey, dataX(hit_point.x()+2), dummyrow));
-                    auto yfloor = std::lower_bound(idx_y.begin(), idx_y.end(), dXreimpl::AttributeIndexItem(dummykey, dataY(hit_point.y()+2), dummyrow));
-                    auto yceil = std::upper_bound(idx_y.begin(), idx_y.end(), dXreimpl::AttributeIndexItem(dummykey, dataY(hit_point.y()-2), dummyrow));
+
+                    auto xRange = dXreimpl::getIndexItemsInValueRange(idx_x, table, dataX(hit_point.x()-2), dataX(hit_point.x()+2));
+                    auto yRange = dXreimpl::getIndexItemsInValueRange(idx_y, table, dataY(hit_point.y()+2), dataY(hit_point.y()-2));
 
 					// work out anything near this point...
                     std::set<dXreimpl::AttributeKey> xkeys;
-                    for (; xfloor != xceil; xfloor++) {
-                        xkeys.insert(xfloor->key);
+                    for (auto iter = xRange.first; iter != xRange.second; iter++) {
+                        xkeys.insert(iter->key);
 					}
                     const dXreimpl::AttributeRow* displayRow = nullptr;
-                    for (; yfloor != yceil; yfloor++) {
-                        if (xkeys.find(yfloor->key) != xkeys.end()) {
-                            displayRow = yfloor->row;
+                    for (auto iter = yRange.first; iter != yRange.second; iter++) {
+                        if (xkeys.find(iter->key) != xkeys.end()) {
+                            displayRow = iter->row;
+                            break;
 						}
 					}
                     if (displayRow) {
@@ -736,12 +734,10 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
    m_selecting = false;
 
    dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-   dXreimpl::AttributeKey dummykey(-1);
-   dXreimpl::AttributeRowImpl dummyrow(table);
-   auto xfloor = std::lower_bound(idx_x.begin(), idx_x.end(), dXreimpl::AttributeIndexItem(dummykey, dataX(m_drag_rect_a.left()-2), dummyrow));
-   auto xceil = std::upper_bound(idx_x.begin(), idx_x.end(), dXreimpl::AttributeIndexItem(dummykey, dataX(m_drag_rect_a.right()+2), dummyrow));
-   auto yfloor = std::lower_bound(idx_y.begin(), idx_y.end(), dXreimpl::AttributeIndexItem(dummykey, dataY(m_drag_rect_a.bottom()+2), dummyrow));
-   auto yceil = std::upper_bound(idx_y.begin(), idx_y.end(), dXreimpl::AttributeIndexItem(dummykey, dataY(m_drag_rect_a.top()-2), dummyrow));
+
+
+   auto xRange = dXreimpl::getIndexItemsInValueRange(idx_x, table, dataX(m_drag_rect_a.left()-2), dataX(m_drag_rect_a.right()+2));
+   auto yRange = dXreimpl::getIndexItemsInValueRange(idx_y, table, dataY(m_drag_rect_a.bottom()+2), dataY(m_drag_rect_a.top()-2));
 
    // Stop drag rect...
    m_drag_rect_a = QRect(0,0,0,0);
@@ -750,13 +746,13 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
 
    // work out selection
    std::set<dXreimpl::AttributeKey> xkeys;
-   for (; xfloor != xceil; xfloor++) {
-       xkeys.insert(xfloor->key);
+   for (auto iter = xRange.first; iter != xRange.second; iter++) {
+       xkeys.insert(iter->key);
    }
    std::vector<int> finalkeys;
-   for (; yfloor != yceil; yfloor++) {
-       if (xkeys.find(yfloor->key) != xkeys.end()) {
-           finalkeys.push_back(yfloor->key.value);
+   for (auto iter = yRange.first; iter != yRange.second; iter++) {
+       if (xkeys.find(iter->key) != xkeys.end()) {
+           finalkeys.push_back(iter->key.value);
        }
    }
    
