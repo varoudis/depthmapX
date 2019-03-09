@@ -658,7 +658,7 @@ void QPlotView::SetAxis(int axis, int col, bool reset)
 void QPlotView::ResetRegression()
 {
    m_regression.clear();
-   if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
+   if (m_x_axis != -1 && m_y_axis != -1 && pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
       dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
       for (auto iter = table.begin(); iter != table.end(); iter++) {
          if (isObjectVisible(pDoc->m_meta_graph->getLayers(), iter->getRow())) {
