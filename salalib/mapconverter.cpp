@@ -535,7 +535,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertAxialToSegment(Communicator *co
     }
     // destroy unnecessary parts of axial map as quickly as possible in order not to overload memory
     if (!keeporiginal) {
-      axialMap.getAttributeTable() = dXreimpl::AttributeTable();
+      axialMap.getAttributeTable().clear();
     }
 
     return segmap;
