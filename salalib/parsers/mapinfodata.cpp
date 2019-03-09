@@ -143,7 +143,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    }
 
    size_t nextduplicate = 0;
-   int lastrowIdx = -1;
+   dXreimpl::AttributeRow *lastrow;
 
    QtRegion region(pointsets[0][0],pointsets[0][0]);
    for (i = 0; i < pointsets.size(); i++) {
@@ -161,17 +161,13 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
             open = true;
          }
          map.makePolyShape(pointsets[i],open);
-         int rowIdx = attributes.getNumRows() - 1;
-         dXreimpl::AttributeRow &row =
-             attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), rowIdx)->first));
+         dXreimpl::AttributeRow &row = attributes.end()->getRow();
          //
          // table data entries:
          if (nextduplicate < duplicates.size() && duplicates[nextduplicate] == i) {
             // duplicate last row:
-             dXreimpl::AttributeRow &lastrow =
-                 attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), lastrowIdx)->first));
             for (size_t j = 0; j < colindexes.size(); j++) {
-               row.setValue(colindexes[i], lastrow.getValue(colindexes[i]));
+               row.setValue(colindexes[i], lastrow->getValue(colindexes[i]));
             }
             nextduplicate++;
          }
@@ -205,7 +201,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
                }
             }
          }
-         lastrowIdx = rowIdx;
+         lastrow = &row;
       }
    }
    catch (pexception) {
