@@ -71,14 +71,15 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
         total_col.push_back(attributes.getColumnIndex(total_col_text.c_str()));
     }
 
-    std::vector<bool> covered(map.getConnections().size());
-    for (size_t i = 0; i < map.getConnections().size(); i++) {
-        for (size_t j = 0; j < map.getConnections().size(); j++) {
+    std::vector<bool> covered(map.getShapeCount());
+    size_t i = 0;
+    for (auto & iter : attributes){
+        for (size_t j = 0; j < map.getShapeCount(); j++) {
             covered[j] = false;
         }
         std::vector<std::pair<float, SegmentData>> anglebins;
         anglebins.push_back(std::make_pair(0.0f, SegmentData(0, i, SegmentRef(), 0, 0.0, 0)));
-        Connector &thisline = map.getConnections()[i];
+
         std::vector<double> total_depth;
         std::vector<int> node_count;
         for (size_t r = 0; r < radii.size(); r++) {
@@ -132,8 +133,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 anglebins.erase(iter);
             }
         }
-        dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), i)->first));
+        dXreimpl::AttributeRow &row = iter.getRow();
         // set the attributes for this node:
         int curs_node_count = 0;
         double curs_total_depth = 0.0;
@@ -160,6 +160,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 comm->CommPostMessage(Communicator::CURRENT_RECORD, i);
             }
         }
+        i++;
     }
 
     map.setDisplayedAttribute(-2); // <- override if it's already showing

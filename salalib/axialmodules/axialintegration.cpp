@@ -29,7 +29,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     time_t atime = 0;
     if (comm) {
         qtimer(atime, 0);
-        comm->CommPostMessage(Communicator::NUM_RECORDS, map.getConnections().size());
+        comm->CommPostMessage(Communicator::NUM_RECORDS, map.getShapeCount());
     }
 
     dXreimpl::AttributeTable &attributes = map.getAttributeTable();
@@ -54,7 +54,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     std::string weighting_col_text;
     if (options.weighted_measure_col != -1) {
         weighting_col_text = attributes.getColumnName(options.weighted_measure_col);
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
             weights.push_back(attributes.getRow(dXreimpl::AttributeKey(i)).getValue(options.weighted_measure_col));
         }
     }
@@ -221,8 +221,8 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     // for choice
     AnalysisInfo **audittrail;
     if (options.choice) {
-        audittrail = new AnalysisInfo *[map.getConnections().size()];
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        audittrail = new AnalysisInfo *[map.getShapeCount()];
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
             audittrail[i] = new AnalysisInfo[radii.size()];
         }
     }
@@ -231,15 +231,17 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     // has already failed due to this!  when intro hand drawn fewest line (where user may have deleted)
     // it's going to get worse...
 
-    bool *covered = new bool[map.getConnections().size()];
-    for (size_t i = 0; i < map.getConnections().size(); i++) {
-        dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), i)->first));
-        for (size_t j = 0; j < map.getConnections().size(); j++) {
+    bool *covered = new bool[map.getShapeCount()];
+
+    size_t i = -1;
+    for (auto & iter : attributes) {
+        i++;
+        dXreimpl::AttributeRow &row = iter.getRow();
+        for (size_t j = 0; j < map.getShapeCount(); j++) {
             covered[j] = false;
         }
         if (options.choice) {
-            for (size_t k = 0; k < map.getConnections().size(); k++) {
+            for (size_t k = 0; k < map.getShapeCount(); k++) {
                 audittrail[k][0].previous.ref = -1; // note, 0th member used as radius doesn't matter
                 // note, choice columns are not cleared, but cummulative over all shortest path pairs
             }
@@ -277,7 +279,6 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
 
         std::vector<int> depthcounts;
         depthcounts.push_back(0);
-        Connector &thisline = map.getConnections()[i];
         pflipper<IntPairVector> foundlist;
         foundlist.a().push_back(IntPair(i, -1));
         covered[i] = true;
@@ -302,7 +303,6 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                         previous; // note 0th member used here: can be used individually different radius previous
                 }
                 Connector &line = map.getConnections()[index];
-                double control = 0;
                 for (size_t k = 0; k < line.m_connections.size(); k++) {
                     if (!covered[line.m_connections[k]]) {
                         covered[line.m_connections[k]] = true;
@@ -473,9 +473,10 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     }
     delete[] covered;
     if (options.choice) {
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
-            dXreimpl::AttributeRow &row =
-                attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), i)->first));
+        i = -1;
+        for (auto & iter: attributes) {
+            i++;
+            dXreimpl::AttributeRow &row = iter.getRow();
             double total_choice = 0.0, w_total_choice = 0.0;
             int r = 0;
             for (int radius : radii) {
@@ -505,7 +506,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                 ++r;
             }
         }
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
             delete[] audittrail[i];
         }
         delete[] audittrail;
