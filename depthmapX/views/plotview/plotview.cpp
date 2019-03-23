@@ -277,7 +277,9 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
    QRect rect = QRect(0, 0, width(), height());
    int mindim = __min(rect.width(),rect.height());
 
-   // do all the calculations here for the moment
+   // TODO: the calculations are done here for the moment
+   // but should be placed in their own helper method
+
    int numVisible = 0;
    float minVisibleX = std::numeric_limits<float>::max();
    float maxVisibleX = std::numeric_limits<float>::min();
