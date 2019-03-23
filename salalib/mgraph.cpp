@@ -60,10 +60,6 @@
 #include <sstream>
 #include <tuple>
 
-// Quick mod - TV
-#pragma warning (disable: 4800)
-
-///////////////////////////////////////////////////////////////////////////////////
 
 MetaGraph::MetaGraph(std::string name)
 { 
@@ -2429,7 +2425,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
 
       conversion_required = true;
 
-      skipVirtualMem(stream,version);
+      skipVirtualMem(stream);
 
       // and set our filename:
       // Graph::m_nodes.setFilename( filename );
@@ -2614,7 +2610,7 @@ int MetaGraph::write( const std::string& filename, int version, bool currentlaye
 }
 
 
-std::streampos MetaGraph::skipVirtualMem(std::istream& stream, int version)
+std::streampos MetaGraph::skipVirtualMem(std::istream& stream)
 {
    // it's graph virtual memory: skip it
    int nodes = -1;

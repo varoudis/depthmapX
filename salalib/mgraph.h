@@ -488,5 +488,5 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   std::streampos skipVirtualMem(std::istream &stream, int version);
+   std::streampos skipVirtualMem(std::istream &stream);
 };
