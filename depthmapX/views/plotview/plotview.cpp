@@ -393,13 +393,12 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
 
    int sel_parity = 0;
    QPen pen2;
-   for (auto iter = table.begin(); iter != table.end(); iter++) {
-      auto& row = iter->getRow();
-      if (!isObjectVisible(layers, row)) {
+   for (const auto& iter: table) {
+      if (!isObjectVisible(layers, iter.getRow())) {
          continue;
       }
-      float x = row.getValue(m_x_axis);
-      float y = row.getValue(m_y_axis);
+      float x = iter.getRow().getValue(m_x_axis);
+      float y = iter.getRow().getValue(m_y_axis);
       if (!finite(x) || !finite(y) || x == -1.0f || y == -1.0f) {
          continue;
       }
@@ -408,11 +407,11 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
          rgb = m_foreground;
       }
       else {
-         PafColor color = dXreimpl::getDisplayColor(iter->getKey(), iter->getRow(), tableHandle);
+         PafColor color = dXreimpl::getDisplayColor(iter.getKey(), iter.getRow(), tableHandle);
          rgb = qRgb(color.redb(),color.greenb(),color.blueb());
       }
       int tempspacer = spacer;
-      if (row.isSelected()) {
+      if (iter.getRow().isSelected()) {
          tempspacer = (spacer + 1) * 2 - 1;
          if (m_view_monochrome) {
             rgb = qRgb(0xff,0,0);
@@ -425,10 +424,10 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
 		  pen2 = QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap);
          //pDC->setPen(QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap));
       }
-      else if (sel_parity != (row.isSelected() ? 1 : -1)) {
+      else if (sel_parity != (iter.getRow().isSelected() ? 1 : -1)) {
 		  pen2 = QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap);
          //pDC->setPen(QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap));
-         sel_parity = (row.isSelected() ? 1 : -1);
+         sel_parity = (iter.getRow().isSelected() ? 1 : -1);
       }
 	  pDC->setPen(pen2);
       //

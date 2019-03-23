@@ -461,8 +461,8 @@ void Q3DView::ReloadPointData()
       m_pixels.clear();
       PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
       dXreimpl::AttributeTable& table = map.getAttributeTable();
-      for (auto iter = table.begin(); iter != table.end(); iter++) {
-         PixelRef pix = iter->getKey().value;
+      for (const auto& iter: table) {
+         PixelRef pix = iter.getKey().value;
          Point2f p = map.depixelate(pix);
          p.normalScale(m_region);
          m_pixels[pix] = C3DPixelData(p);
