@@ -20,9 +20,13 @@
 #pragma once
 
 #include "salalib/importtypedefs.h"
-#include "salalib/attributes.h"
+#include "salalib/attributetable.h"
+#include "salalib/attributetableview.h"
+#include "salalib/attributetablehelpers.h"
+#include "salalib/layermanagerimpl.h"
 #include "salalib/spacepix.h"
 #include "salalib/parsers/mapinfodata.h"
+#include "salalib/connector.h"
 
 #include "genlib/bsptree.h"
 #include "genlib/containerutils.h"
@@ -170,8 +174,6 @@ public:
    }
 };
 
-struct Connector;
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct SalaEvent
@@ -211,14 +213,16 @@ protected:
    depthmapX::ColumnMatrix<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
-   mutable BSPNode *m_bsp_root;
-   mutable bool m_bsp_tree;
+   mutable BSPNode *m_bsp_root = nullptr;
+   mutable bool m_bsp_tree = false;
    //
    std::map<int,SalaShape> m_shapes;
    //
    std::vector<SalaEvent> m_undobuffer;
    //
-   AttributeTable m_attributes;
+   std::unique_ptr<dXreimpl::AttributeTable> m_attributes;
+   std::unique_ptr<AttributeTableHandle> m_attribHandle;
+   LayerManagerImpl m_layers;
    //
    // for graph functionality
    // Note: this list is stored PACKED for optimal performance on graph analysis
@@ -236,6 +240,49 @@ public:
    ShapeMap(const std::string& name = std::string(),int type = EMPTYMAP);
    virtual ~ShapeMap();
    void copy(const ShapeMap& shapemap, int copyflags = 0);
+
+   ShapeMap(ShapeMap&& other) :
+       m_name(std::move(other.m_name)),
+       m_pixel_shapes(std::move(other.m_pixel_shapes)),
+       m_attributes(std::move(other.m_attributes)),
+       m_attribHandle(std::move(other.m_attribHandle)),
+       m_layers(std::move(other.m_layers)) {
+       m_show = other.isShown();
+       copy(other);
+       m_displayed_attribute = other.m_displayed_attribute;
+   }
+   ShapeMap& operator =(ShapeMap&& other) {
+       m_name = std::move(other.m_name);
+       m_pixel_shapes = std::move(other.m_pixel_shapes);
+       m_attributes = std::move(other.m_attributes);
+       m_attribHandle = std::move(other.m_attribHandle);
+       m_layers = std::move(other.m_layers);
+       m_show = other.isShown();
+       copy(other);
+       m_displayed_attribute = other.m_displayed_attribute;
+       return *this;
+   }
+   ShapeMap(const ShapeMap&) = delete;
+   ShapeMap& operator =(const ShapeMap& other) = delete;
+
+
+   // TODO: These three functions should be refactored out of the code as much as possible
+   // they are only left here because they're being used by various components that still
+   // access the attribute table through indices. Once these are removed these functions
+   // should only appear sparingly or removed entirely. The bits of the application
+   // that still use them are the connections of the axial/segment maps and the point
+   // in polygon functions.
+   const std::map<int, SalaShape>::const_iterator getShapeRefFromIndex(size_t index) const {
+       return depthmapX::getMapAtIndex(m_shapes, index);
+   }
+   dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) {
+       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   }
+   const dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) const {
+       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   }
+
+
    void clearAll();
    // num shapes total
    const size_t getShapeCount() const
@@ -299,8 +346,6 @@ public:
    int moveDir(int side);
    //
    void pointPixelBorder(const PointMap& pointmap, std::map<int, int> &relations, SalaShape& shape, int side, PixelRef currpix, PixelRef minpix, bool first);
-   // quick find of topmost poly from a point (bit too inaccurate!)
-   int quickPointInPoly(const Point2f& p) const;
    // slower point in topmost poly test:
    int pointInPoly(const Point2f& p) const;
    // test if point is inside a particular shape
@@ -318,10 +363,6 @@ public:
    int getClosestLine(const Point2f& p) const;
    // this version simply finds the closest vertex to the point
    Point2f getClosestVertex(const Point2f& p) const;
-   // Find out which shapes a line cuts through:
-   void getShapeCuts(const Line& li_orig, std::vector<ValuePair> &cuts);
-   // Cut a line according to the first shape it cuts
-   void cutLine(Line& li);//, short dir);
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
@@ -356,42 +397,48 @@ public:
    const std::string& getName() const
       { return m_name; }
    int addAttribute(const std::string& name)
-      { return m_attributes.insertColumn(name); }
+      { return m_attributes->insertOrResetColumn(name); }
    void removeAttribute(int col)
-      { m_attributes.removeColumn(col); }
-   void setAttribute(int obj, const std::string& name, float val)
-      { m_attributes.setValue(m_attributes.getRowid(obj),name,val); }
-   void incrementAttribute(int obj, const std::string& name)
-      { m_attributes.incrValue(m_attributes.getRowid(obj),name); }
+      { m_attributes->removeColumn(col); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
-   AttributeTable& getAttributeTable()
-      { return m_attributes; }
-   const AttributeTable& getAttributeTable() const
-      { return m_attributes; }
+   dXreimpl::AttributeTable& getAttributeTable()
+      { return *m_attributes.get(); }
+   const dXreimpl::AttributeTable& getAttributeTable() const
+      { return *m_attributes.get(); }
+   LayerManagerImpl& getLayers()
+      { return m_layers; }
+   const LayerManagerImpl& getLayers() const
+      { return m_layers; }
+   AttributeTableHandle& getAttributeTableHandle()
+      { return *m_attribHandle.get(); }
+   const AttributeTableHandle& getAttributeTableHandle() const
+      { return *m_attribHandle.get(); }
 public:
    // layer functionality
    bool isLayerVisible(int layerid) const
-   { return m_attributes.isLayerVisible(layerid); }
+   { return m_layers.isLayerVisible(layerid); }
    void setLayerVisible(int layerid, bool show)
-   { m_attributes.setLayerVisible(layerid,show); }
+   { m_layers.setLayerVisible(layerid,show); }
    bool selectionToLayer(const std::string& name = std::string("Unnamed"));
 public:
    double getDisplayMinValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; } 
+   { return (m_displayed_attribute != -1) ?
+                   m_attributes->getColumn(m_displayed_attribute).getStats().min : 0; }
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : m_shapes.rbegin()->first; }
-   //
-   mutable DisplayParams m_display_params;
+   { return (m_displayed_attribute != -1) ?
+                   m_attributes->getColumn(m_displayed_attribute).getStats().max :
+                   (m_shapes.size() > 0 ? m_shapes.rbegin()->first : 0); }
+
    const DisplayParams& getDisplayParams() const
-   { return m_attributes.getDisplayParams(m_displayed_attribute); } 
+   { return m_attributes->getColumn(m_displayed_attribute).getDisplayParams(); }
    // make a local copy of the display params for access speed:
    void setDisplayParams(const DisplayParams& dp, bool apply_to_all = false)
    { if (apply_to_all)
-        m_attributes.setDisplayParams(dp); 
+        m_attributes->setDisplayParams(dp);
      else 
-        m_attributes.setDisplayParams(m_displayed_attribute, dp); 
-     m_display_params = dp; }
+        m_attributes->getColumn(m_displayed_attribute).setDisplayParams(dp);
+   }
    //
    mutable bool m_show_lines;
    mutable bool m_show_fill;
@@ -402,17 +449,17 @@ public:
    { m_show_lines = show_lines; m_show_fill = show_fill; m_show_centroids = show_centroids; }
    //
 public:
-   void setDisplayedAttribute( int col ) const;
+   void setDisplayedAttribute( int col );
    // use set displayed attribute instead unless you are deliberately changing the column order:
    void overrideDisplayedAttribute(int attribute)
    { m_displayed_attribute = attribute; }
    // now, there is a slightly odd thing here: the displayed attribute can go out of step with the underlying 
    // attribute data if there is a delete of an attribute in idepthmap.h, so it just needs checking before returning!
    int getDisplayedAttribute() const
-   { if (m_displayed_attribute == m_attributes.m_display_column) return m_displayed_attribute;
-     if (m_attributes.m_display_column != -2) {
-         m_displayed_attribute = m_attributes.m_display_column;
-         m_display_params = m_attributes.getDisplayParams(m_displayed_attribute);
+   {
+     if (m_displayed_attribute == m_attribHandle->getDisplayColIndex()) return m_displayed_attribute;
+     if (m_attribHandle->getDisplayColIndex() != -2) {
+         m_displayed_attribute = m_attribHandle->getDisplayColIndex();
       }
       return m_displayed_attribute; }
    //
@@ -420,13 +467,13 @@ public:
       { m_invalidate = true; }
    //
    double getDisplayedAverage()
-      { return m_attributes.getAvgValue( m_displayed_attribute ); }
+      { return m_attributes->getColumn(m_displayed_attribute).getStats().total/m_attributes->getNumRows(); }
    //
 protected:
    mutable bool m_show;              // used when shape map is a drawing layer
    bool m_editable;
    bool m_selection;
-   std::set<int> m_selection_set;   // note: uses rowids not keys
+   std::set<int> m_selection_set;   // note: uses keys
 public:
    // Selection
    bool isSelected() const
@@ -434,6 +481,7 @@ public:
    bool setCurSel( QtRegion& r, bool add = false );
    bool setCurSel(const std::vector<int> &selset, bool add = false );
    bool setCurSelDirect( const std::vector<int>& selset, bool add = false );
+   float getDisplayedSelectedAvg();
    bool clearSel();
    std::set<int>& getSelSet()
    { return m_selection_set; }
@@ -466,8 +514,11 @@ public:
    void makeViewportShapes( const QtRegion& viewport ) const;
    bool findNextShape(bool& nextlayer) const;
    const SalaShape& getNextShape() const;
-   const PafColor getShapeColor() const
-   { return m_attributes.getDisplayColor(m_display_shapes[m_current]); }
+   const PafColor getShapeColor() const {
+       dXreimpl::AttributeKey key(m_display_shapes[m_current]);
+       const dXreimpl::AttributeRow &row = m_attributes->getRow(key);
+       return dXreimpl::getDisplayColor(key, row, *m_attribHandle.get(), true);;
+   }
    bool getShapeSelected() const
    { return depthmapX::getMapAtIndex(m_shapes, m_display_shapes[m_current])->second.m_selected; }
    //
@@ -495,7 +546,7 @@ public:
    bool read(std::istream &stream, int version, bool drawinglayer = false );
    bool write( std::ofstream& stream, int version );
    //
-   bool output( std::ofstream& stream, char delimiter = '\t', bool updated_only = false );
+   bool output(std::ofstream& stream, char delimiter = '\t');
    //
    // links and unlinks
 protected:
@@ -512,6 +563,7 @@ public:
    bool unlinkShapes(const Point2f& p);
    bool unlinkShapesFromRefs(int index1, int index2, bool refresh = true);
    bool unlinkShapes(int index1, int index2, bool refresh = true);
+   bool unlinkShapesByKey(int key1, int key2, bool refresh = true);
    bool unlinkShapeSet(std::istream& idset, int refcol);
 public:
    // generic for all types of graphs

@@ -1,6 +1,10 @@
 #include "salalib/mapconverter.h"
 #include "salalib/tidylines.h"
+
 #include "genlib/exceptions.h"
+#include "genlib/paftl.h"
+
+#include <numeric>
 
 // convert line layers to an axial map
 
@@ -69,7 +73,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
     usermap->initialiseAttributesAxial();
     int layerCol = -1;
     if (recordlayer)   {
-        layerCol = usermap->getAttributeTable().insertColumn("Drawing Layer");
+        layerCol = usermap->getAttributeTable().getOrInsertColumn("Drawing Layer");
     }
     for (auto & line: lines) {
         if (recordlayer)
@@ -138,29 +142,49 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
    usermap->init(int(lines.size()),region);  // used to be double density
    usermap->initialiseAttributesAxial();
 
-   int dataMapShapeRefCol = usermap->getAttributeTable().insertColumn("Data Map Ref");
+   usermap->getAttributeTable().insertOrResetColumn("Data Map Ref");
 
    std::map<int, float> extraAttr;
-   std::vector<int> attrCols;
+   std::map<int, int> inOutColumns;
    if (copydata)   {
-       AttributeTable& input = shapemap.getAttributeTable();
-       AttributeTable& output = usermap->getAttributeTable();
-       for (int i = 0; i < input.getColumnCount(); i++) {
-          std::string colname = input.getColumnName(i);
-          for (size_t k = 1; output.getColumnIndex(colname) != -1; k++){
-             colname = dXstring::formatString(int(k),input.getColumnName(i) + " %d");
+       dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+       dXreimpl::AttributeTable& output = usermap->getAttributeTable();
+
+       // TODO: Compatibility. The columns are sorted in the old implementation so
+       // they are also passed sorted in the conversion:
+
+       std::vector<size_t> indices(input.getNumColumns());
+       std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+
+       std::sort(indices.begin(), indices.end(),
+           [&](size_t a, size_t b) {
+           return input.getColumnName(a) < input.getColumnName(b);
+       });
+
+       std::vector<std::string> newColumns;
+       for (int i = 0; i < indices.size(); i++) {
+          int idx = indices[i];
+          std::string colname = input.getColumnName(idx);
+          for (size_t k = 1; output.hasColumn(colname); k++){
+             colname = dXstring::formatString(int(k), input.getColumnName(idx) + " %d");
           }
-          attrCols.push_back( output.insertColumn(colname));
+          newColumns.push_back(colname);
+          output.insertOrResetColumn(colname);
+       }
+       for (int i = 0; i < indices.size(); i++) {
+          inOutColumns[indices[i]] = output.getOrInsertColumn(newColumns[i]);
        }
    }
 
-    AttributeTable& input = shapemap.getAttributeTable();
+   int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
+
+    dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
     auto keyIter = keys.begin();
     for (auto& line: lines) {
         if (copydata){
-            int rowid = input.getRowid(keyIter->second);
-            for (int i = 0; i < input.getColumnCount(); ++i){
-                extraAttr[attrCols[size_t(i)]] = input.getValue(rowid,i);
+            auto& row = input.getRow(dXreimpl::AttributeKey(keyIter->second));
+            for (auto inOutColumn: inOutColumns){
+                extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
             }
         }
         extraAttr[dataMapShapeRefCol] = keyIter->second;
@@ -191,7 +215,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
    pvecint polygon_refs;
 
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
-   int conn_col = usermap->getAttributeTable().insertLockedColumn("Connectivity");
+   int conn_col = usermap->getAttributeTable().insertOrResetLockedColumn("Connectivity");
 
    size_t count = 0;
 
@@ -202,9 +226,9 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
              for (const auto& refShape: refShapes) {
                const SalaShape& shape = refShape.second;
                if (shape.isPolygon()) {
-                  usermap->makeShape(shape);
+                  int newShapeRef = usermap->makeShape(shape);
                   usermap->getConnections().push_back( Connector() );
-                  usermap->getAttributeTable().setValue(int(count),conn_col,0);
+                  usermap->getAttributeTable().getRow(dXreimpl::AttributeKey(newShapeRef)).setValue(conn_col,0);
                   count++;
                }
             }
@@ -230,41 +254,38 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToConvex(Communicator *comm
    pvecint polygon_refs;
 
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
-   int conn_col = usermap->getAttributeTable().insertLockedColumn("Connectivity");
+   int conn_col = usermap->getAttributeTable().insertOrResetLockedColumn("Connectivity");
 
    pvecint lookup;
    auto refShapes = shapemap.getAllShapes();
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;
-   AttributeTable& input = shapemap.getAttributeTable();
+   dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
    if (copydata) {
-      AttributeTable& output = usermap->getAttributeTable();
-      for (int i = 0; i < input.getColumnCount(); i++) {
+      dXreimpl::AttributeTable& output = usermap->getAttributeTable();
+      for (int i = 0; i < input.getNumColumns(); i++) {
          std::string colname = input.getColumnName(i);
          for (int k = 1; output.getColumnIndex(colname) != -1; k++){
             colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
          }
-         attrCols.push_back(output.insertColumn(colname));
+         attrCols.push_back(output.insertOrResetColumn(colname));
       }
    }
 
-   int k = -1;
    for (auto refShape: refShapes) {
-      k++;
       if ( copydata ){
-          for ( int i = 0; i < input.getColumnCount(); ++i ){
-              extraAttr[attrCols[size_t(i)]] =input.getValue(k, i);
+          for ( int i = 0; i < input.getNumColumns(); ++i ){
+              extraAttr[attrCols[size_t(i)]] = input.getRow(dXreimpl::AttributeKey(refShape.first)).getValue(i);
           }
       }
       SalaShape& shape = refShape.second;
       if (shape.isPolygon()) {
          int n = usermap->makeShape(shape, -1, extraAttr);
          usermap->getConnections().push_back( Connector() );
-         usermap->getAttributeTable().setValue(n,conn_col,0);
-         lookup.push_back(k);
+         usermap->getAttributeTable().getRow(dXreimpl::AttributeKey(n)).setValue(conn_col,0);
       }
    }
-   if (lookup.size() == 0) {
+   if (usermap->getShapeCount() == 0) {
        throw depthmapX::RuntimeException("No polygons found in data map");
    }
 
@@ -339,7 +360,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
    usermap->initialiseAttributesSegment();
    int layerCol = -1;
    if (recordlayer)   {
-       layerCol = usermap->getAttributeTable().insertColumn("Drawing Layer");
+       layerCol = usermap->getAttributeTable().insertOrResetColumn("Drawing Layer");
    }
    for (auto & line: lines) {
       if (recordlayer)
@@ -412,34 +433,55 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
    usermap->init(int(lines.size()),region);
    usermap->initialiseAttributesSegment();
 
-   int dataMapShapeRefCol = usermap->getAttributeTable().insertColumn("Data Map Ref");
+   usermap->getAttributeTable().insertOrResetColumn("Data Map Ref");
 
-   std::map<int,float> extraAttr;
-   std::vector<int> attrCols;
-   AttributeTable& input = shapemap.getAttributeTable();
-   if (copydata) {
-      AttributeTable& output = usermap->getAttributeTable();
-      for (int i = 0; i < input.getColumnCount(); i++) {
-         std::string colname = input.getColumnName(i);
-         for (int k = 1; output.getColumnIndex(colname) != -1; k++){
-            colname = dXstring::formatString(k,input.getColumnName(i) + " %d");
-         }
-         attrCols.push_back(output.insertColumn(colname));
-      }
-   }
+   std::map<int, float> extraAttr;
+   std::map<int, int> inOutColumns;
+   if (copydata)   {
+       dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+       dXreimpl::AttributeTable& output = usermap->getAttributeTable();
 
-   auto keyIter = keys.begin();
-   for (auto& line: lines) {
-       if (copydata){
-           int rowid = input.getRowid(keyIter->second);
-           for (int i = 0; i < input.getColumnCount(); ++i){
-               extraAttr[attrCols[size_t(i)]] = input.getValue(rowid,i);
-           }
+       // TODO: Compatibility. The columns are sorted in the old implementation so
+       // they are also passed sorted in the conversion:
+
+       std::vector<size_t> indices(input.getNumColumns());
+       std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+
+       std::sort(indices.begin(), indices.end(),
+           [&](size_t a, size_t b) {
+           return input.getColumnName(a) < input.getColumnName(b);
+       });
+
+       std::vector<std::string> newColumns;
+       for (int i = 0; i < indices.size(); i++) {
+          int idx = indices[i];
+          std::string colname = input.getColumnName(idx);
+          for (size_t k = 1; output.hasColumn(colname); k++){
+             colname = dXstring::formatString(int(k), input.getColumnName(idx) + " %d");
+          }
+          newColumns.push_back(colname);
+          output.insertOrResetColumn(colname);
        }
-       extraAttr[dataMapShapeRefCol] = keyIter->second;
-      usermap->makeLineShape(line.second, false, false, extraAttr);
-      ++keyIter;
+       for (int i = 0; i < indices.size(); i++) {
+          inOutColumns[indices[i]] = output.getOrInsertColumn(newColumns[i]);
+       }
    }
+
+   int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
+
+    dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+    auto keyIter = keys.begin();
+    for (auto& line: lines) {
+        if (copydata){
+            auto& row = input.getRow(dXreimpl::AttributeKey(keyIter->second));
+            for (auto inOutColumn: inOutColumns){
+                extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
+            }
+        }
+        extraAttr[dataMapShapeRefCol] = keyIter->second;
+        usermap->makeLineShape(line.second, false, false, extraAttr);
+        ++keyIter;
+    }
 
    // start to be a little bit more efficient about memory now we are hitting the limits
    // from time to time:

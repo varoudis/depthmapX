@@ -152,7 +152,7 @@ void RenderThread::run()
 
       case CMSCommunicator::MAKEISOVIST:
          if (comm->GetSeedAngle() == -1.0) {
-            ok = pDoc->m_meta_graph->makeIsovist( comm, comm->GetSeedPoint() );
+            ok = pDoc->m_meta_graph->makeIsovist( comm, comm->GetSeedPoint(), 0, 0, comm->simple_version );
          }
          else {
             double ang1 = comm->GetSeedAngle() - comm->GetSeedFoV() * 0.5;
@@ -161,7 +161,7 @@ void RenderThread::run()
                ang1 += 2.0 * M_PI;
             if (ang2 > 2.0 * M_PI)
                ang2 -= 2.0 * M_PI;
-            ok = pDoc->m_meta_graph->makeIsovist( comm, comm->GetSeedPoint(), ang1, ang2 );
+            ok = pDoc->m_meta_graph->makeIsovist( comm, comm->GetSeedPoint(), ang1, ang2, comm->simple_version );
          }
          if (ok) {
             pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);

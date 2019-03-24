@@ -132,9 +132,13 @@ TEST_CASE("Complete proper MapInfo file", "")
     REQUIRE(mapinfodata.import(mifstream, midstream, shapeMap) == MINFO_OK);
 
     std::map<int, SalaShape> shapes = shapeMap.getAllShapes();
-    auto shape0 = depthmapX::getMapAtIndex(shapes, 0)->second;
-    auto shape1 = depthmapX::getMapAtIndex(shapes, 1)->second;
-    auto shape2 = depthmapX::getMapAtIndex(shapes, 2)->second;
+    auto shapeRef0 = depthmapX::getMapAtIndex(shapes, 0);
+    auto shapeRef1 = depthmapX::getMapAtIndex(shapes, 1);
+    auto shapeRef2 = depthmapX::getMapAtIndex(shapes, 2);
+
+    auto &shape0 = shapeRef0->second;
+    auto &shape1 = shapeRef1->second;
+    auto &shape2 = shapeRef2->second;
     REQUIRE(shapes.size() == 3);
     REQUIRE(shape0.isLine());
     REQUIRE(shape0.getLine().ax() == Approx(534014.29).epsilon(EPSILON));
@@ -150,16 +154,19 @@ TEST_CASE("Complete proper MapInfo file", "")
     REQUIRE(shape2.getPoint().x == Approx(534014.29).epsilon(EPSILON));
     REQUIRE(shape2.getPoint().y == Approx(182533.33).epsilon(EPSILON));
 
-    AttributeTable att = shapeMap.getAttributeTable();
-    REQUIRE(att.getColumnCount() == 2);
+    dXreimpl::AttributeTable& att = shapeMap.getAttributeTable();
+    REQUIRE(att.getNumColumns() == 2);
     REQUIRE(att.getColumnName(0) == "Id");
     REQUIRE(att.getColumnName(1) == "Length_M");
 
-    REQUIRE(att.getRowCount() == 3);
-    REQUIRE(att.getValue(0,"Id") == 1);
-    REQUIRE(att.getValue(1,"Id") == 2);
-    REQUIRE(att.getValue(2,"Id") == 3);
-    REQUIRE(att.getValue(0,"Length_M") == Approx(1017.81).epsilon(EPSILON));
-    REQUIRE(att.getValue(1,"Length_M") == Approx(568.795).epsilon(EPSILON));
-    REQUIRE(att.getValue(2,"Length_M") == Approx(216.026).epsilon(EPSILON));
+    REQUIRE(att.getNumRows() == 3);
+    auto &row0 = att.getRow(dXreimpl::AttributeKey(shapeRef0->first));
+    auto &row1 = att.getRow(dXreimpl::AttributeKey(shapeRef1->first));
+    auto &row2 = att.getRow(dXreimpl::AttributeKey(shapeRef2->first));
+    REQUIRE(row0.getValue("Id") == 1);
+    REQUIRE(row1.getValue("Id") == 2);
+    REQUIRE(row2.getValue("Id") == 3);
+    REQUIRE(row0.getValue("Length_M") == Approx(1017.81).epsilon(EPSILON));
+    REQUIRE(row1.getValue("Length_M") == Approx(568.795).epsilon(EPSILON));
+    REQUIRE(row2.getValue("Length_M") == Approx(216.026).epsilon(EPSILON));
 }

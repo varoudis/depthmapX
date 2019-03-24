@@ -49,10 +49,15 @@ public:
     typedef std::vector<dXreimpl::AttributeIndexItem> Index;
     const Index& getTableIndex() const {return m_mutableIndex;}
     virtual void setDisplayColIndex(int columnIndex);
+    int findInIndex(const dXreimpl::AttributeKey &key);
 private:
     dXreimpl::AttributeTable& m_mutableTable;
     Index m_mutableIndex;
 
 };
 
-
+struct index_item_key : public std::unary_function<dXreimpl::AttributeKey, bool> {
+    explicit index_item_key(const dXreimpl::AttributeKey &baseline) : m_baseline(baseline) {}
+    bool operator() (const dXreimpl::AttributeIndexItem &arg) { return arg.key.value == m_baseline.value; }
+    const dXreimpl::AttributeKey& m_baseline;
+};

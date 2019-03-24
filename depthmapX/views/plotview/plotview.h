@@ -51,8 +51,8 @@ public:
 	int curr_x;
 	int curr_y;
 
-	AttributeIndex idx_x;
-	AttributeIndex idx_y;
+    std::vector<dXreimpl::AttributeIndexItem> idx_x;
+    std::vector<dXreimpl::AttributeIndexItem> idx_y;
 	void RedoIndices();
 
 	bool m_queued_redraw;

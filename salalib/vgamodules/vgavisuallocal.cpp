@@ -29,9 +29,9 @@ bool VGAVisualLocal::run(Communicator *comm, const Options &options, PointMap &m
 
     int cluster_col = -1, control_col = -1, controllability_col = -1;
     if (!simple_version) {
-        cluster_col = map.getAttributeTable().insertColumn("Visual Clustering Coefficient");
-        control_col = map.getAttributeTable().insertColumn("Visual Control");
-        controllability_col = map.getAttributeTable().insertColumn("Visual Controllability");
+        cluster_col = map.getAttributeTable().insertOrResetColumn("Visual Clustering Coefficient");
+        control_col = map.getAttributeTable().insertOrResetColumn("Visual Control");
+        controllability_col = map.getAttributeTable().insertOrResetColumn("Visual Controllability");
     }
 
     int count = 0;
@@ -44,7 +44,7 @@ bool VGAVisualLocal::run(Communicator *comm, const Options &options, PointMap &m
                     count++;
                     continue;
                 }
-                int row = map.getAttributeTable().getRowid(curs);
+                dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(curs));
 
                 // This is much easier to do with a straight forward list:
                 PixelRefVector neighbourhood;
@@ -83,17 +83,15 @@ bool VGAVisualLocal::run(Communicator *comm, const Options &options, PointMap &m
 #ifndef _COMPILE_dX_SIMPLE_VERSION
                 if (!simple_version) {
                     if (neighbourhood.size() > 1) {
-                        map.getAttributeTable().setValue(
-                            row, cluster_col,
-                            float(cluster / double(neighbourhood.size() * (neighbourhood.size() - 1.0))));
-                        map.getAttributeTable().setValue(row, control_col, float(control));
-                        map.getAttributeTable().setValue(
-                            row, controllability_col,
-                            float(double(neighbourhood.size()) / double(totalneighbourhood.size())));
+                        row.setValue(cluster_col,
+                                     float(cluster / double(neighbourhood.size() * (neighbourhood.size() - 1.0))));
+                        row.setValue(control_col, float(control));
+                        row.setValue(controllability_col,
+                                     float(double(neighbourhood.size()) / double(totalneighbourhood.size())));
                     } else {
-                        map.getAttributeTable().setValue(row, cluster_col, -1);
-                        map.getAttributeTable().setValue(row, control_col, -1);
-                        map.getAttributeTable().setValue(row, controllability_col, -1);
+                        row.setValue(cluster_col, -1);
+                        row.setValue(control_col, -1);
+                        row.setValue(controllability_col, -1);
                     }
                 }
 #endif

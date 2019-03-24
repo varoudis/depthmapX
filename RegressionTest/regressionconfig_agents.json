@@ -31,6 +31,21 @@
                 "-alocseed": "0"
             }
         }],
+        "agents_line_of_sight_length_look_only_map": [{
+            "infile": "../../../testdata/gallery_connected.graph",
+            "outfile": "out.tsv",
+            "mode": "AGENTS",
+            "extraArgs": {
+                "-am": "los-length",
+                "-ats": "5000",
+                "-arr": "0.1",
+                "-afov": "15",
+                "-asteps": "3",
+                "-alife": "1000",
+                "-alocseed": "0",
+                "-ot": "gatecounts"
+            }
+        }],
         "agents_occluded_length_look": [{
             "infile": "../../../testdata/gallery_connected_with_isovist.graph",
             "outfile": "out.graph",

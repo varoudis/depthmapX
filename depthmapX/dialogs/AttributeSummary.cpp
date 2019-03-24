@@ -32,7 +32,7 @@ void CAttributeSummary::OnOK()
 void CAttributeSummary::OnDblclkList(int row, int column)
 {
 	if (row != -1) {
-		CColumnPropertiesDlg dlg(&(m_pDoc->m_meta_graph->getAttributeTable()), row);
+        CColumnPropertiesDlg dlg(&(m_pDoc->m_meta_graph->getAttributeTable()), &(m_pDoc->m_meta_graph->getLayers()), row);
 		dlg.exec();
 	}
 }
@@ -44,7 +44,7 @@ void CAttributeSummary::UpdateData(bool value)
 
 void CAttributeSummary::showEvent(QShowEvent * event)
 {
-	const AttributeTable& table = m_pDoc->m_meta_graph->getAttributeTable();
+    const dXreimpl::AttributeTable& table = m_pDoc->m_meta_graph->getAttributeTable();
 	
 	c_list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -73,26 +73,27 @@ void CAttributeSummary::showEvent(QShowEvent * event)
 	
 	c_list->clearContents();
 
-	c_list->setRowCount(table.getColumnCount());
-	for (int i = 0; i < table.getColumnCount(); i++) {
-		Item = new QTableWidgetItem(QString(table.getColumnName(i).c_str()));
+    c_list->setRowCount(table.getNumColumns());
+    for (int i = 0; i < table.getNumColumns(); i++) {
+        const dXreimpl::AttributeColumn& column = table.getColumn(i);
+        Item = new QTableWidgetItem(QString(column.getName().c_str()));
 		Item->setFlags(Qt::NoItemFlags);
 		c_list->setRowHeight(i, 20);
 		c_list->setItem(i, 0, Item);
 		//
 		char text[64];
 		// Min
-		sprintf(text, "%g", table.getMinValue(i));
+        sprintf(text, "%g", column.getStats().min);
 		Item = new QTableWidgetItem(QString(text));
 		Item->setFlags(Qt::NoItemFlags);
 		c_list->setItem(i, 1, Item);
 		// Avg
-		sprintf(text,"%g",table.getAvgValue(i));
+        sprintf(text,"%g", column.getStats().total/table.getNumRows());
 		Item = new QTableWidgetItem(QString(text));
 		Item->setFlags(Qt::NoItemFlags);
 		c_list->setItem(i, 2, Item);
 		// Max
-		sprintf(text,"%g",table.getMaxValue(i));
+        sprintf(text,"%g",column.getStats().max);
 		Item = new QTableWidgetItem(QString(text));
 		Item->setFlags(Qt::NoItemFlags);
 		c_list->setItem(i, 3, Item);
