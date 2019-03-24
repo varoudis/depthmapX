@@ -25,7 +25,6 @@
 #include "salalib/importtypedefs.h"
 
 // still call paftl:
-#include "salalib/attributes.h"
 #include "salalib/connector.h"
 #include "salalib/spacepix.h"
 #include "salalib/nagent.h" // for agent engine interface
@@ -195,7 +194,7 @@ public:
    bool hasAllLineMap()
    { return m_all_line_map != -1; }
    bool hasFewestLineMaps() {
-       for(auto& shapeGraph: m_shapeGraphs) {
+       for(const auto& shapeGraph: m_shapeGraphs) {
            if(shapeGraph->getName() == "Fewest-Line Map (Subsets)" ||
               shapeGraph->getName() == "Fewest Line Map (Subsets)" ||
               shapeGraph->getName() == "Fewest-Line Map (Minimal)" ||

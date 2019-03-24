@@ -37,7 +37,7 @@ struct ValuePair
 {
    double value;  // needs to be double for sorting in index at higher resolution than the stored data
    int index;
-   ValuePair(int i = -1, double v = -1.0) 
+   ValuePair(int i = -1, double v = -1.0)
    { index = i; value = v; }
    friend bool operator < (const ValuePair& vp1, const ValuePair& vp2);
    friend bool operator > (const ValuePair& vp1, const ValuePair& vp2);
@@ -59,7 +59,7 @@ int compareValuePair(const void *p1, const void *p2);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// These aren't really to do with attributes per se, but helpful to have 
+// These aren't really to do with attributes per se, but helpful to have
 // them around ValuePair definition
 
 // note! unsorted
@@ -278,7 +278,7 @@ public:
    //
    // note... retrieves from column index (which are sorted by name), not physical column
    const std::string& getColumnName(int col) const
-      { return col != -1 ? m_columns[col].m_name : g_ref_number_name; } 
+      { return col != -1 ? m_columns[col].m_name : g_ref_number_name; }
    int getColumnIndex(const std::string& name) const
       { size_t index = m_columns.searchindex(name); return (index == paftl::npos) ? -1 : int(index);} // note use -1 rather than paftl::npos for return value
    int getColumnCount() const
@@ -298,7 +298,7 @@ public:
       { return (int) size(); }
    int getVisibleRowCount() const
       { return m_visible_size; }
-   int getMaxRowKey() const 
+   int getMaxRowKey() const
       { return key(size()-1); }
    // this version uses known row and col indices
    float getValue(int row, int col) const
@@ -316,13 +316,13 @@ public:
       { float& theval = value(row).at(m_columns[col].m_physical_col); m_columns[col].changeValue(theval,val); theval = val; }
    void changeValue(int row, const std::string& name, float val)
       { int col = getColumnIndex(name); if (col != -1) changeValue(row,col,val); }
-   void changeSelValues(int col, float val) 
+   void changeSelValues(int col, float val)
       { for (size_t i = 0; i < size(); i++) { if (value(i).m_selected) changeValue((int)i,col,val);} }
-   void incrValue(int row, int col, float amount = 1.0f) 
+   void incrValue(int row, int col, float amount = 1.0f)
       { float& v = value(row).at(m_columns[col].m_physical_col); v = (v == -1.0f) ? amount : v+amount ; m_columns[col].changeValue(v-amount,v); }
    void incrValue(int row, const std::string& name, float amount = 1.0f)
       { int col = getColumnIndex(name);  if (col != -1) incrValue(row,col,amount); }
-   void decrValue(int row, int col, float amount = 1.0f) 
+   void decrValue(int row, int col, float amount = 1.0f)
       { float& v = value(row).at(m_columns[col].m_physical_col); v = (v != -1.0f) ? v-amount : -1.0f; m_columns[col].changeValue(v+amount,v); }
    void decrValue(int row, const std::string& name, float amount = 1.0f)
       { int col = getColumnIndex(name);  if (col != -1) decrValue(row,col,amount); }
@@ -342,12 +342,12 @@ public:
       { return col != -1 ? m_columns[col].getVisibleTotValue() / double(getVisibleRowCount()) : -1.0; }
    //
    void setColumnInfo(int col, double min, double max, double tot, double vismin, double vismax, double vistot) const
-      { m_columns[col].setInfo(min,max,tot,vismin,vismax,vistot); } 
+      { m_columns[col].setInfo(min,max,tot,vismin,vismax,vistot); }
    //
    const std::string& getColumnFormula(int col) const
-      { return col != -1 ? m_columns[col].m_formula : g_ref_number_formula; } 
+      { return col != -1 ? m_columns[col].m_formula : g_ref_number_formula; }
    void setColumnFormula(int col, const std::string& formula)
-      { m_columns[col].m_formula = formula; } 
+      { m_columns[col].m_formula = formula; }
    //
    // user-interface locking unlocking
    bool isColumnLocked(int col) const

@@ -37,12 +37,12 @@ int compareValuePair(const void *p1, const void *p2)
 ////////////////////////////////////////////////////////////////////////////////////
 
 AttributeTable::AttributeTable(const std::string& name)
-{ 
+{
    // need memory initialised somewhere for these...
    g_ref_number_name = std::string("Ref Number");
    g_ref_number_formula = std::string();
    //
-   m_name = name; 
+   m_name = name;
    // initially not showing any column:
    m_display_column = -2;
    // initially no selection:
@@ -199,23 +199,23 @@ void AttributeTable::deselectAll() const
 
 void AttributeTable::setDisplayParams(const DisplayParams& dp)
 {
-   m_ref_display_params = dp; 
+   m_ref_display_params = dp;
    for (unsigned int i = 0; i < m_columns.size(); i++) {
-      m_columns[i].setDisplayParams(dp); 
-   }      
+      m_columns[i].setDisplayParams(dp);
+   }
    m_display_params = dp;
 }
 
 void AttributeTable::setDisplayParams(int col, const DisplayParams& dp)
 {
-   if (col != -1) 
-      m_columns[col].setDisplayParams(dp); 
-   else 
-      m_ref_display_params = dp; 
+   if (col != -1)
+      m_columns[col].setDisplayParams(dp);
+   else
+      m_ref_display_params = dp;
 
    if (col == m_display_column) {
       m_display_params = dp;
-   } 
+   }
 }
 
 void AttributeTable::setVisibleLayers(int64 layers, bool override)
@@ -267,7 +267,7 @@ bool AttributeTable::selectionToLayer(const std::string& name)
       return false;
    }
    int64 newlayer = 0x1 << loc;
-   // now layer has been found, eliminate from available layers 
+   // now layer has been found, eliminate from available layers
    // and add a lookup for the name
    m_available_layers = (m_available_layers & (~newlayer));
    m_layers.add(newlayer,name);
@@ -292,11 +292,11 @@ void AttributeTable::setDisplayColumn(int col, bool override) const
          m_sel_value = 0.0; // reset selection total for new column
          // note, visible size is actually picked up by the display index
          m_visible_size = m_display_index.makeIndex(*this, col, true);
-         if (col == -1) 
-            m_display_params = m_ref_display_params; 
-         else 
+         if (col == -1)
+            m_display_params = m_ref_display_params;
+         else
             m_display_params = m_columns[col].getDisplayParams();
-      }   
+      }
       m_display_column = col;
    }
 }
@@ -416,7 +416,7 @@ bool AttributeTable::exportTable(std::ostream& stream, bool updated_only)
 }
 
 // From UrbanBuzz I-VALUL project (c) SSL licensed to UCL (written by Alasdair)
-// import values imports columns into an attribute tables 
+// import values imports columns into an attribute tables
 // uses ref numbers, does not overwrite geom locations
 // if "merge" is selected, column values are added together,
 // otherwise the columns are cleared
@@ -442,7 +442,7 @@ bool AttributeTable::importTable(std::istream& stream, bool merge)
       colrefs.push_back( col );
    }
 
-   // check no columns to import (note, this is not necessarily an error, there may 
+   // check no columns to import (note, this is not necessarily an error, there may
    // simply be no columns to import) -- handle false return appropriately
    if (colrefs.size() == 0) {
       return false;

@@ -20,7 +20,6 @@
 #pragma once
 
 #include "salalib/importtypedefs.h"
-#include "salalib/attributes.h"
 #include "salalib/attributetable.h"
 #include "salalib/attributetableview.h"
 #include "salalib/attributetablehelpers.h"

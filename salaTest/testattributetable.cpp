@@ -399,7 +399,6 @@ TEST_CASE("attibute table iterations")
     REQUIRE(table.getRow(AttributeKey(1)).getValue(1) == Approx(3.2));
 }
 
-#include "salalib/attributes.h"
 #include <salalib/attributetablehelpers.h>
 
 TEST_CASE("Attribute Table - serialisation")

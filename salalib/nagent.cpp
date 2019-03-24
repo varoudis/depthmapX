@@ -19,7 +19,6 @@
 // a simple agent demonstration for Salad (now within depthmapX)
 
 #include "salalib/pointdata.h"
-#include "salalib/attributes.h"
 #include "salalib/nagent.h"
 #include "salalib/ngraph.h"
 #include "genlib/comm.h"

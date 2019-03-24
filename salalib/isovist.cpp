@@ -16,7 +16,6 @@
 
 
 #include "salalib/isovist.h"
-#include "salalib/attributes.h"
 
 #include <math.h>
 #include <float.h>

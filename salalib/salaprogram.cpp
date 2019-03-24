@@ -34,7 +34,6 @@
 
 #include "salalib/salaprogram.h"
 #include "salalib/ngraph.h"
-#include "salalib/attributes.h"
 #include "salalib/shapemap.h"
 #include "salalib/pointdata.h"
 #include "salalib/connector.h"

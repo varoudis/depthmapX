@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include "salalib/attributes.h"
-
 #include "genlib/stringutils.h"
 
 #include <vector>
