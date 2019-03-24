@@ -36,10 +36,8 @@ HEADERS += \
     comm.h \
     p2dpoly.h \
     pafmath.h \
-    paftl.h \
     xmlparse.h \
     exceptions.h \
-    legacyconverters.h \
     stringutils.h \
     containerutils.h \
     linreg.h \

@@ -27,7 +27,6 @@
 #include <salalib/spacepix.h>
 
 #include "genlib/stringutils.h"
-#include "genlib/legacyconverters.h"
 #ifndef _WIN32
 #define _finite finite
 #endif
@@ -549,20 +548,14 @@ bool SpacePixel::intersect( const Line& l, double tolerance )
    for (size_t i = 0; i < list.size(); i++) {
       auto& pixel_lines = m_pixel_lines(static_cast<size_t>(list[i].y), static_cast<size_t>(list[i].x));
       for (int lineref: pixel_lines) {
-         try {
-            LineTest& linetest = m_lines.find(lineref)->second;
-            if (linetest.test != m_test) {
-               if ( intersect_region(linetest.line, l) ) {
-                  if ( intersect_line(linetest.line, l, tolerance) ) {
-                     return true;
-                  }
+         LineTest& linetest = m_lines.find(lineref)->second;
+         if (linetest.test != m_test) {
+            if ( intersect_region(linetest.line, l) ) {
+               if ( intersect_line(linetest.line, l, tolerance) ) {
+                  return true;
                }
-               linetest.test = m_test;
             }
-         }
-         catch (pexception) {
-            // the lineref may have been deleted -- this is supposed to be tidied up
-            // just ignore...
+            linetest.test = m_test;
          }
       }
    }
@@ -579,23 +572,17 @@ bool SpacePixel::intersect_exclude( const Line& l, double tolerance )
    for (size_t i = 0; i < list.size(); i++) {
       auto& pixel_lines = m_pixel_lines(static_cast<size_t>(list[i].y), static_cast<size_t>(list[i].x));
       for (int lineref: pixel_lines) {
-         try {
-            LineTest& linetest = m_lines.find(lineref)->second;
-            if (linetest.test != m_test) {
-               if ( intersect_region(linetest.line, l) ) {
-                  if ( intersect_line(linetest.line, l, tolerance) ) {
-                     if ( linetest.line.start() != l.start() && linetest.line.start() != l.end() && 
-                          linetest.line.end()   != l.start() && linetest.line.end()   != l.end() ) {
-                        return true;
-                     }
+         LineTest& linetest = m_lines.find(lineref)->second;
+         if (linetest.test != m_test) {
+            if ( intersect_region(linetest.line, l) ) {
+               if ( intersect_line(linetest.line, l, tolerance) ) {
+                  if ( linetest.line.start() != l.start() && linetest.line.start() != l.end() &&
+                       linetest.line.end()   != l.start() && linetest.line.end()   != l.end() ) {
+                     return true;
                   }
                }
-               linetest.test = m_test;
             }
-         }
-         catch (pexception) {
-            // the lineref may have been deleted -- this is supposed to be tidied up
-            // just ignore...
+            linetest.test = m_test;
          }
       }
    }
@@ -793,10 +780,7 @@ bool SpacePixel::read( std::istream& stream, int version )
 
 
    stream.read((char *) &m_ref, sizeof(m_ref));
-   pmap<int,LineTest> temp_m_lines;
-   temp_m_lines.read(stream);
-   m_lines = genshim::toSTLMap(temp_m_lines);
-
+   dXreadwrite::readIntoMap(stream, m_lines);
    // now load into structure:
    int n = -1;
    for (auto line: m_lines) {
@@ -832,7 +816,7 @@ bool SpacePixel::write( std::ofstream& stream )
    // write lines:
    stream.write( (char *) &m_ref, sizeof(m_ref) );
 
-   genshim::toPMap(m_lines).write( stream );
+   dXreadwrite::writeMap(stream, m_lines);
 
    return true;
 }

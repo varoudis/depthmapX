@@ -25,7 +25,6 @@
 #include <vector>
 #include "salalib/entityparsing.h"
 #include <salalib/gridproperties.h>
-#include <genlib/legacyconverters.h>
 #include <salalib/importutils.h>
 
 namespace dm_runmethods
@@ -89,7 +88,7 @@ namespace dm_runmethods
 
             depthmapX::importFile(*mgraph,
                                   file,
-                                  false,
+                                  0,
                                   cmdP.getFileName(),
                                   depthmapX::ImportType::DRAWINGMAP,
                                   importFileType);

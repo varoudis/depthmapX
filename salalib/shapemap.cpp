@@ -26,7 +26,6 @@
 #include "genlib/comm.h" // for communicator
 #include "genlib/stringutils.h"
 #include "genlib/exceptions.h"
-#include "genlib/legacyconverters.h"
 #include "genlib/containerutils.h"
 
 #include <math.h>
@@ -961,11 +960,11 @@ void ShapeMap::removeShape(int shaperef, bool undoing)
       // we rely on the index order matching the index order of the shapes
       // and the attributes, and simply change all references (ick!)
       int conn_col = m_attributes->getColumnIndex("Connectivity");
-      for (size_t i = m_connectors.size() - 1; i != paftl::npos; i--) {
+      for (size_t i = m_connectors.size() - 1; i != -1; i--) {
          if (i == rowid) {
             continue;   // it's going to be removed anyway
          }
-         for (size_t j = m_connectors[i].m_connections.size() - 1; j != paftl::npos; j--) {
+         for (size_t j = m_connectors[i].m_connections.size() - 1; j != -1; j--) {
             if (m_connectors[i].m_connections[j] == int(rowid)) {
                m_connectors[i].m_connections.erase(m_connectors[i].m_connections.begin() + int(j));
                if (conn_col != -1) {
@@ -2125,22 +2124,16 @@ std::vector<int> ShapeMap::getLineConnections(int lineref, double tolerance)
       }
    }
    for(ShapeRef shape: shapesToTest) {
-         if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == ShapeRef::SHAPE_OPEN) {
-            try {
-               const Line& line = m_shapes.find(int(shape.m_shape_ref))->second.getLine();
-               if ( intersect_region(line, l, line.length() * tolerance) ) {
-                  // n.b. originally this followed the logic that we must normalise intersect_line properly: tolerance * line length one * line length two
-                  // in fact, works better if it's just line.length() * tolerance...
-                  if ( intersect_line(line, l, line.length() * tolerance) ) {
-                     depthmapX::insert_sorted(connections, depthmapX::findIndexFromKey(m_shapes, int(shape.m_shape_ref)));
-                  }
-               }
-            }
-            catch (pexception) {
-               // the lineref may have been deleted -- this is supposed to be tidied up
-               // just ignore...
+      if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == ShapeRef::SHAPE_OPEN) {
+         const Line& line = m_shapes.find(int(shape.m_shape_ref))->second.getLine();
+         if ( intersect_region(line, l, line.length() * tolerance) ) {
+            // n.b. originally this followed the logic that we must normalise intersect_line properly: tolerance * line length one * line length two
+            // in fact, works better if it's just line.length() * tolerance...
+            if ( intersect_line(line, l, line.length() * tolerance) ) {
+               depthmapX::insert_sorted(connections, depthmapX::findIndexFromKey(m_shapes, int(shape.m_shape_ref)));
             }
          }
+      }
    }
 
    return connections;
