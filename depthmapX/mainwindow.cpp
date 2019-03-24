@@ -1190,7 +1190,6 @@ int MainWindow::OnFocusGraph(QGraphDoc* pDoc, int lParam)
         m_indexWidget->clear();
         ClearGraphTree();
         MakeTree();
-        MakeGraphTree();
     }
     else if (lParam == QGraphDoc::CONTROLS_LOADDRAWING && pDoc == m_treeDoc) {     // Force update if match current window
         m_backgraph = NULL;
