@@ -26,6 +26,8 @@
 #include "salalib/isovist.h"
 #include "salalib/mgraph.h" // Metagraphs are used...
 #include "salalib/ngraph.h"
+#include "salalib/attributetable.h"
+#include "salalib/attributetablehelpers.h"
 
 #include "genlib/comm.h"  // for communicator
 #include "genlib/stringutils.h"
@@ -33,12 +35,14 @@
 
 #include <math.h>
 #include <unordered_set>
+#include <numeric>
 
 
 /////////////////////////////////////////////////////////////////////////////////
 
 PointMap::PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles, const std::string& name):
-    m_parentRegion(&parentRegion), m_drawingFiles(&drawingFiles), m_points(0,0)
+    m_parentRegion(&parentRegion), m_drawingFiles(&drawingFiles), m_points(0,0),
+    m_attributes(new dXreimpl::AttributeTable()), m_attribHandle(new AttributeTableHandle(*m_attributes))
 {
    m_name = name;
 
@@ -67,6 +71,40 @@ PointMap::PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFil
 
    // -2 follows axial map convention, where -1 is the reference number
    m_displayed_attribute = -2;
+}
+
+void PointMap::copy(const PointMap& other)
+{
+   m_name = other.getName();
+   m_region = other.getRegion();
+
+   m_cols = other.getCols();
+   m_rows = other.getRows();
+   m_filled_point_count = other.getFilledPointCount();
+
+   m_spacing = other.getSpacing();
+
+   m_initialised = other.m_initialised;
+   m_blockedlines = other.m_blockedlines;
+   m_processed = other.m_processed;
+   m_boundarygraph = other.m_boundarygraph;
+
+   m_selection = other.m_selection;
+   m_pinned_selection = other.m_pinned_selection;
+   m_undocounter = other.m_undocounter;
+
+   // screen
+   m_viewing_deprecated = other.m_viewing_deprecated;
+   m_draw_step = other.m_draw_step;
+
+   s_bl = other.s_bl;
+   s_tr = other.s_tr;
+   curmergeline = other.curmergeline;
+   m_offset = other.m_offset;
+   m_bottom_left = other.m_bottom_left;
+
+   // -2 follows axial map convention, where -1 is the reference number
+   m_displayed_attribute = other.m_displayed_attribute;
 }
 
 void PointMap::communicate( time_t& atime, Communicator *comm, int record )
@@ -516,16 +554,33 @@ void PointMap::outputSummary(std::ostream& myout, char delimiter)
 {
    myout << "Ref" << delimiter << "x" << delimiter << "y";
 
-   m_attributes.outputHeader(myout, delimiter);
-   myout.precision(12);
+   // TODO: For compatibility write the columns in alphabetical order
+   // but the physical columns in the order inserted
 
-   for (int i = 0; i < m_attributes.getRowCount(); i++) {
-      if (m_attributes.isVisible(i)) {
-         PixelRef pix = m_attributes.getRowKey(i);
+   std::vector<size_t> indices(m_attributes->getNumColumns());
+   std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+
+   std::sort(indices.begin(), indices.end(),
+       [&](size_t a, size_t b) {
+       return m_attributes->getColumnName(a) < m_attributes->getColumnName(b);
+   });
+   for (int idx: indices) {
+       myout << delimiter << m_attributes->getColumnName(idx);
+   }
+
+   myout << std::endl;
+   myout.precision(8);
+
+   for (auto iter = m_attributes->begin(); iter != m_attributes->end(); iter++) {
+       PixelRef pix = iter->getKey().value;
+      if (isObjectVisible(m_layers, iter->getRow())) {
          myout << pix << delimiter;
          Point2f p = depixelate(pix);
          myout << p.x << delimiter << p.y;
-         m_attributes.outputRow(i, myout, delimiter); // , update_only = false
+         for (int idx: indices) {
+             myout << delimiter << iter->getRow().getValue(idx);
+         }
+         myout << std::endl;
       }
    }
 }
@@ -570,7 +625,7 @@ void PointMap::outputNet(std::ostream& netfile)
       PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = depthmapX::findIndexFromKey(graph, list[m]);
-         if (n != paftl::npos && k < n) {
+         if (n != -1 && k < n) {
             netfile << (k+1) << " " << (n+1) << " 1" << std::endl;
          }
       }
@@ -698,10 +753,8 @@ void PointMap::setDisplayedAttribute(int col)
    else {
       m_displayed_attribute = col;
    }
-   // make a local copy of the display params for access speed:
-   m_display_params = m_attributes.getDisplayParams(m_displayed_attribute);
 
-   m_attributes.setDisplayColumn(m_displayed_attribute,true);
+   m_attribHandle->setDisplayColIndex(m_displayed_attribute);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -839,7 +892,10 @@ PafColor PointMap::getPointColor(PixelRef pixelRef) const
    else {
       if (state & Point::FILLED) {
          if (m_processed) {
-            return m_attributes.getDisplayColorByKey( pixelRef );
+            return dXreimpl::getDisplayColor(dXreimpl::AttributeKey(pixelRef),
+                                             m_attributes->getRow(dXreimpl::AttributeKey(pixelRef)),
+                                             *m_attribHandle.get(),
+                                             true);
          }
          else if (state & Point::EDGE) {
             return PafColor( 0x0077BB77 );
@@ -879,7 +935,7 @@ bool PointMap::clearSel()
    }
    m_selection_set.clear();
    m_selection = NO_SELECTION;
-   m_attributes.deselectAll();
+   m_attributes->deselectAllRows();
    return true;
 }
 
@@ -921,7 +977,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
                m_selection |= SINGLE_SELECTION;
             }
             if (pnt.m_node) {
-               m_attributes.selectRowByKey(PixelRef(i,j));
+               m_attributes->getRow(dXreimpl::AttributeKey(PixelRef(i,j))).setSelection(true);
             }
          }
       }
@@ -944,13 +1000,12 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
    for (size_t i = 0; i < selset.size(); i++) {
       PixelRef pix = selset[i];
       if (includes(pix)) {
-         int row = m_attributes.getRowid(pix);
-         if (row != -1) {
             m_points(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x)).m_state |= Point::SELECTED;
-            if (m_attributes.selectRowByKey(pix)) {
+            dXreimpl::AttributeRow& row = m_attributes->getRow(dXreimpl::AttributeKey(pix));
+            if (!row.isSelected()) {
+               row.setSelection(true);
                m_selection_set.insert(pix);
             }
-         }
       }
    }
    return true;
@@ -1050,7 +1105,7 @@ bool PointMap::read(std::istream& stream, int version )
 
    // our data read
    stream.read((char *)&displayed_attribute,sizeof(displayed_attribute));
-   m_attributes.read( stream, version );
+   m_attributes->read( stream, m_layers, version );
 
    m_points = depthmapX::ColumnMatrix<Point>(m_rows, m_cols);
    
@@ -1121,8 +1176,12 @@ bool PointMap::write( std::ofstream& stream, int version )
 
    stream.write( (char *) &m_bottom_left, sizeof(m_bottom_left) );
 
-   stream.write( (char *) &m_displayed_attribute, sizeof(m_displayed_attribute) );
-   m_attributes.write( stream, version );
+   // TODO: Compatibility. The attribute columns will be stored sorted alphabetically
+   // so the displayed attribute needs to match that
+   int sortedDisplayedAttribute = m_attributes->getColumnSortedIndex(m_displayed_attribute);
+   stream.write( (char *) &sortedDisplayedAttribute, sizeof(sortedDisplayedAttribute) );
+
+   m_attributes->write( stream, m_layers );
    
    for (auto& point: m_points) {
        point.write( stream, version );
@@ -1212,9 +1271,9 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
 
    // attributes table set up
    // n.b. these must be entered in alphabetical order to preserve col indexing:
-   int connectivity_col = m_attributes.insertLockedColumn("Connectivity");
-   m_attributes.insertColumn("Point First Moment");
-   m_attributes.insertColumn("Point Second Moment");
+   int connectivity_col = m_attributes->insertOrResetLockedColumn("Connectivity");
+   m_attributes->insertOrResetColumn("Point First Moment");
+   m_attributes->insertOrResetColumn("Point Second Moment");
 
    // pre-label --- allows faster node access later on
    int count = tagState( true, true );
@@ -1238,7 +1297,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
          if ( getPoint( curs ).getState() & Point::FILLED ) {
 
             getPoint( curs ).m_node = std::unique_ptr<Node>(new Node());
-            m_attributes.insertRow( curs );
+            m_attributes->addRow( dXreimpl::AttributeKey(curs) );
 
             sparkPixel2(curs,1,maxdist); // make flag of 1 suggests make this node, don't set reciprocral process flags on those you can see
                                          // maxdist controls how far to see out to
@@ -1253,7 +1312,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
                      // Should clear all nodes and attributes here:
                      // Clear nodes
                      // Clear attributes
-                     m_attributes.clear();
+                     m_attributes->clear();
                      m_displayed_attribute = -2;
                      //
                      throw Communicator::CancelledException();
@@ -1408,10 +1467,10 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
       // The bins are cleared in the make function!
       Point& pt = getPoint( curs );
       pt.m_node->make(curs, bins_b, far_bin_dists, pt.m_processflag);   // note: make clears bins!
-      int row = m_attributes.getRowid( curs );
-      m_attributes.setValue( row, "Connectivity", float(neighbourhood_size) );
-      m_attributes.setValue( row, "Point First Moment", float(total_dist) );
-      m_attributes.setValue( row, "Point Second Moment", float(total_dist_sqr) );
+      dXreimpl::AttributeRow& row = m_attributes->getRow( dXreimpl::AttributeKey(curs) );
+      row.setValue( "Connectivity", float(neighbourhood_size) );
+      row.setValue( "Point First Moment", float(total_dist) );
+      row.setValue( "Point Second Moment", float(total_dist_sqr) );
    }
    else {
       // Clear bins by hand if not using them to make
@@ -1485,11 +1544,7 @@ bool PointMap::sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q,
 
 bool PointMap::binDisplay(Communicator *comm)
 {
-   int bindisplay_col = m_attributes.insertColumn("Node Bins");
-
-   for (int i = 0; i < m_attributes.getRowCount(); i++) {
-      m_attributes.setValue( i, bindisplay_col, -1 );
-   }
+   int bindisplay_col = m_attributes->insertOrResetColumn("Node Bins");
 
    for (auto& sel: m_selection_set) {
       Point& p = getPoint(sel);
@@ -1500,9 +1555,8 @@ bool PointMap::binDisplay(Communicator *comm)
          Bin& b = p.m_node->bin(i);
          b.first();
          while(!b.is_tail()) {
-            int row = m_attributes.getRowid( b.cursor() );
-            //m_attributes.setValue( row, bindisplay_col, float((i % 8) + 1) );
-            m_attributes.setValue( row, bindisplay_col, float(b.distance()) );
+            //m_attributes->setValue( row, bindisplay_col, float((i % 8) + 1) );
+            m_attributes->getRow(dXreimpl::AttributeKey(b.cursor())).setValue( bindisplay_col, float(b.distance()) );
             b.next();   
          }
       }
@@ -1635,12 +1689,13 @@ double PointMap::getLocationValue(const Point2f& point)
       return val;
    }
 
-   int index = m_attributes.getRowid(pix);
-   if (index == -1) {
+   if (!getPoint(pix).filled()) {
       val = -2;
    }
-   else {
-      val = m_attributes.getValue(index,m_displayed_attribute);
+   else if (m_displayed_attribute == -1) {
+      val = static_cast<float>(pix);
+   } else {
+      val = m_attributes->getRow(dXreimpl::AttributeKey(pix)).getValue(m_displayed_attribute);
    }
 
    return val;
@@ -1651,8 +1706,8 @@ double PointMap::getLocationValue(const Point2f& point)
 
 void PointMap::addGridConnections()
 {
-   for (int i = 0; i < m_attributes.getRowCount(); i++) {
-      PixelRef curs = m_attributes.getRowKey(i);
+   for (auto iter = m_attributes->begin(); iter != m_attributes->end(); iter++) {
+      PixelRef curs = iter->getKey().value;
       PixelRef node = curs.right();
       Point& point = getPoint(curs);
       point.m_grid_connections = 0;

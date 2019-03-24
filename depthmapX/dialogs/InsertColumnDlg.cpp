@@ -16,7 +16,7 @@
 #include "InsertColumnDlg.h"
 #include "mainwindow.h"
 
-CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *parent)
+CInsertColumnDlg::CInsertColumnDlg(dXreimpl::AttributeTable *table, int col, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);
@@ -24,7 +24,7 @@ CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *pare
 	m_col = col;
 
 	m_col_names.push_back("Ref Number");
-	for (int i = 0; i < table->getColumnCount(); i++) {
+    for (int i = 0; i < table->getNumColumns(); i++) {
 		m_col_names.push_back(table->getColumnName(i));
 	}
 	if (m_col == -1) {
@@ -38,7 +38,7 @@ CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *pare
 		}
 	}
 	else {
-		m_formula_text = table->getColumnFormula(m_col);
+        m_formula_text = table->getColumn(m_col).getFormula();
 	}
 	c_use_column->setEnabled(true);
 }

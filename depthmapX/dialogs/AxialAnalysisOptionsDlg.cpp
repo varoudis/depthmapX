@@ -224,8 +224,8 @@ void CAxialAnalysisOptionsDlg::UpdateData(bool value) {
 
 void CAxialAnalysisOptionsDlg::showEvent(QShowEvent *event) {
     const ShapeGraph &map = m_meta_graph->getDisplayedShapeGraph();
-    const AttributeTable &table = map.getAttributeTable();
-    for (int i = 0; i < table.getColumnCount(); i++) {
+    const dXreimpl::AttributeTable &table = map.getAttributeTable();
+    for (int i = 0; i < table.getNumColumns(); i++) {
         c_attribute_chooser->addItem(QString(table.getColumnName(i).c_str()));
     }
 

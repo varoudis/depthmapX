@@ -1917,7 +1917,7 @@ void QGraphDoc::OnPushToLayer()
       int toplayerclass = (m_meta_graph->getViewClass() & MetaGraph::VIEWFRONT);
       std::string origin_layer;
       std::string origin_attribute;
-      std::map<IntPair,std::string> names;
+      std::map<std::pair<int, int>, std::string> names;
       // I'm just going to allow push from any layer to any other layer
       // (apart from VGA graphs, which cannot map onto themselves
       if (toplayerclass == MetaGraph::VIEWVGA) {
@@ -1948,13 +1948,13 @@ void QGraphDoc::OnPushToLayer()
       std::vector<ShapeMap>& datamaps = m_meta_graph->getDataMaps();
       for (i = 0; i < datamaps.size(); i++) {
          if (toplayerclass != MetaGraph::VIEWDATA || i != m_meta_graph->getDisplayedDataMapRef()) {
-            names.insert(std::make_pair(IntPair(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps[i].getName()));
+            names.insert(std::make_pair(std::pair<int, int>(MetaGraph::VIEWDATA,int(i)),std::string("Data Maps: ") + datamaps[i].getName()));
          }
       }
       auto& shapegraphs = m_meta_graph->getShapeGraphs();
       for (i = 0; i < shapegraphs.size(); i++) {
          if (toplayerclass != MetaGraph::VIEWAXIAL || i != m_meta_graph->getDisplayedShapeGraphRef()) {
-            names.insert(std::make_pair(IntPair(MetaGraph::VIEWAXIAL,int(i)),
+            names.insert(std::make_pair(std::pair<int, int>(MetaGraph::VIEWAXIAL,int(i)),
                                         std::string("Shape Graphs: ") + shapegraphs[i]->getName()));
          }
       }
@@ -1962,7 +1962,7 @@ void QGraphDoc::OnPushToLayer()
          // note 1: no VGA graph can push to another VGA graph (point onto point transforms)
          // note 2: I simply haven't written "axial" -> vga yet, not that it can't be possible (e.g., "axial" could actually be a convex map)
          if (toplayerclass != MetaGraph::VIEWVGA && toplayerclass != MetaGraph::VIEWAXIAL) {
-            names.insert(std::make_pair(IntPair(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->getPointMaps()[i].getName()));
+            names.insert(std::make_pair(std::pair<int, int>(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->getPointMaps()[i].getName()));
          }
       }
       CPushDialog dlg(names);
@@ -1972,9 +1972,9 @@ void QGraphDoc::OnPushToLayer()
          m_communicator = new CMSCommunicator;   // dummy value to prevent draw while this operation is in progress
          // now have to separate vga and axial layers again:
          int sel = dlg.m_layer_selection;
-         IntPair dest = depthmapX::getMapAtIndex(names, sel)->first;
+         std::pair<int, int> dest = depthmapX::getMapAtIndex(names, sel)->first;
 //         CWaitCursor c;
-         m_meta_graph->pushValuesToLayer(dest.a, dest.b, dlg.m_function, dlg.m_count_intersections);
+         m_meta_graph->pushValuesToLayer(dest.first, dest.second, dlg.m_function, dlg.m_count_intersections);
          delete m_communicator;
          m_communicator = NULL;
          SetUpdateFlag(NEW_TABLE);
@@ -1991,9 +1991,9 @@ void QGraphDoc::OnAddColumn()
 		  QMessageBox::warning(this, tr("Warning"), tr("Column name cannot be empty"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         AttributeTable& tab = m_meta_graph->getAttributeTable();
+         dXreimpl::AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
-         for (int i = 0; i < tab.getColumnCount(); i++) {
+         for (int i = 0; i < tab.getNumColumns(); i++) {
             if (tab.getColumnName(i) == dlg.m_object_name.toStdString()) {
 				QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
                found = true;
@@ -2017,7 +2017,7 @@ void QGraphDoc::OnAddColumn()
 
 void QGraphDoc::OnRenameColumn() 
 {
-   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    int col = m_meta_graph->getDisplayedAttribute();
    // -1 is reference number, -2 is displaying nothing (-2 shouldn't happen but is)
    if (col == -1 || col == -2 || m_meta_graph->isAttributeLocked(col)) {
@@ -2033,18 +2033,19 @@ void QGraphDoc::OnRenameColumn()
    }
 }
 
-int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
+int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
 {
    QString colname = QString(tab->getColumnName(col).c_str());
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
    bool success = false;
    while (dlg.exec() == QDialog::Accepted && !success && dlg.m_object_name != colname) {
-      int newcol = tab->renameColumn(col,dlg.m_object_name.toStdString());
-      if (newcol == -1) {
+       std::string newColName = dlg.m_object_name.toStdString();
+      if (tab->hasColumn(newColName)) {
 		  QMessageBox::warning(this, tr("Notice"), tr("Sorry, another column already has this name, please choose a unique column name"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         return newcol;
+         tab->renameColumn(tab->getColumnName(col), newColName);
+         return tab->getColumnIndex(newColName);
       }
    }
    return -1;
@@ -2052,10 +2053,11 @@ int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
 
 void QGraphDoc::OnColumnProperties() 
 {
-   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   LayerManagerImpl *layers = &(m_meta_graph->getLayers());
    int col = m_meta_graph->getDisplayedAttribute();
 
-   CColumnPropertiesDlg dlg(tab,col);
+   CColumnPropertiesDlg dlg(tab, layers, col);
    
    dlg.exec();
 }
@@ -2110,7 +2112,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
       return false;
    }
 
-   AttributeTable *table = program_context.getTable();
+   dXreimpl::AttributeTable *table = program_context.getTable();
 
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,col);  // Using a column number sets it to use the replace text rather than select text
@@ -2152,7 +2154,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
          }
       }
       if (!error) {
-         table->setColumnFormula(col,text);
+         table->getColumn(col).setFormula(text);
       }
       delete [] text;
    }
@@ -2198,7 +2200,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       return false;
    }
 
-   AttributeTable *table = program_context.getTable();
+   dXreimpl::AttributeTable *table = program_context.getTable();
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,-1);  // -1 sets it to use the select text rather than replace text
    bool error = true;

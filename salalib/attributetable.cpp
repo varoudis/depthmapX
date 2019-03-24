@@ -20,6 +20,7 @@
 #include <genlib/readwritehelpers.h>
 
 #include <sstream>
+#include <numeric>
 
 namespace  dXreimpl {
 
@@ -48,6 +49,11 @@ namespace  dXreimpl {
     void AttributeColumnImpl::setHidden(bool hidden)
     {
         m_hidden = hidden;
+    }
+
+    void AttributeColumnImpl::setFormula(std::string newFormula)
+    {
+        m_formula = newFormula;
     }
 
     const std::string &AttributeColumnImpl::getFormula() const
@@ -279,8 +285,21 @@ namespace  dXreimpl {
         return *res.first->second;
     }
 
+    void AttributeTable::removeRow(const AttributeKey &key)
+    {
+        auto iter = m_rows.find(key);
+        if (iter == m_rows.end())
+        {
+            throw new std::invalid_argument("Row does not exist");
+        }
+        m_rows.erase(iter);
+    }
+
     AttributeColumn &AttributeTable::getColumn(size_t index)
     {
+        if(index == size_t(-1)) {
+            return m_keyColumn;
+        }
         checkColumnIndex(index);
         return m_columns[index];
     }
@@ -389,6 +408,7 @@ namespace  dXreimpl {
             AttributeColumnImpl col("");
             tmp[col.read(stream, METAGRAPH_VERSION)] = col;
         }
+
         for (auto & c : tmp)
         {
             m_columnMapping[c.second.getName()] = m_columns.size();
@@ -413,9 +433,20 @@ namespace  dXreimpl {
         layerManager.write(stream);
         int colCount = (int)m_columns.size();
         stream.write((char *)&colCount, sizeof(int));
-        for (size_t i = 0; i < m_columns.size(); ++i)
-        {
-            m_columns[i].write(stream, (int)i);
+
+        // TODO: For binary compatibility write the columns in alphabetical order
+        // but the physical columns in the order inserted
+
+        std::vector<size_t> indices(m_columns.size());
+        std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+
+        std::sort(indices.begin(), indices.end(),
+            [&](size_t a, size_t b) {
+            return m_columns[a].getName() < m_columns[b].getName();
+        });
+
+        for (int idx: indices) {
+            m_columns[idx].write(stream, m_columnMapping[m_columns[idx].getName()]);
         }
 
         int rowcount = (int)m_rows.size();
@@ -426,6 +457,12 @@ namespace  dXreimpl {
             kvp.second->write(stream);
         }
         stream.write((const char *)&m_displayParams, sizeof(DisplayParams));
+    }
+
+    void AttributeTable::clear() {
+        m_rows.clear();
+        m_columns.clear();
+        m_columnMapping.clear();
     }
 
     size_t AttributeTable::getColumnIndex(const std::string &name) const
@@ -441,22 +478,40 @@ namespace  dXreimpl {
 
     }
 
+    // TODO: Compatibility. Method to retreive a column's index
+    // if the set of columns was sorted
+    size_t AttributeTable::getColumnSortedIndex(size_t index) const
+    {
+        if(index == size_t(-1) || index == size_t(-2)) return index;
+        if(index >= m_columns.size()) return -1;
+
+        return std::distance(m_columnMapping.begin(), m_columnMapping.find(getColumnName(index)));
+    }
+
 
     const AttributeColumn &AttributeTable::getColumn(size_t index) const
     {
+        if(index == size_t(-1)) {
+            return m_keyColumn;
+        }
         checkColumnIndex(index);
         return m_columns[index];
     }
 
     const std::string &AttributeTable::getColumnName(size_t index) const
     {
-        checkColumnIndex(index);
-        return m_columns[index].getName();
+        return getColumn(index).getName();
     }
 
     size_t AttributeTable::getNumColumns() const
     {
         return m_columns.size();
+    }
+
+    bool AttributeTable::hasColumn(const std::string &name) const
+    {
+        auto iter = m_columnMapping.find(name);
+        return(iter != m_columnMapping.end());
     }
 
     void AttributeTable::checkColumnIndex(size_t index) const

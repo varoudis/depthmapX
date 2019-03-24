@@ -85,6 +85,7 @@ namespace dXreimpl
         virtual const DisplayParams& getDisplayParams() const = 0;
 
         virtual const std::string& getFormula() const = 0;
+        virtual void setFormula(std::string newFormula) = 0;
 
         virtual const AttributeColumnStats& getStats() const = 0;
 
@@ -131,6 +132,7 @@ namespace dXreimpl
         virtual bool isHidden() const;
         virtual void setHidden(bool hidden);
         virtual const std::string &getFormula() const;
+        virtual void setFormula(std::string newFormula);
         virtual const AttributeColumnStats& getStats() const;
         virtual void setDisplayParams(const DisplayParams &params){ m_displayParams = params; }
         virtual const DisplayParams &getDisplayParams() const{return m_displayParams;}
@@ -153,6 +155,17 @@ namespace dXreimpl
         bool m_hidden;
         std::string m_formula;
         DisplayParams m_displayParams;
+    };
+
+    // Implementation of AttributeColumn that actually links to the keys of the table
+
+    class KeyColumn : public AttributeColumnImpl
+    {
+    public:
+        KeyColumn() : AttributeColumnImpl(), m_name("Ref")
+        {}
+    private:
+        std::string m_name;
     };
 
 
@@ -228,6 +241,8 @@ namespace dXreimpl
         // AttributeTable "interface" - the actual table handling
     public:
         AttributeTable(){}
+        AttributeTable(AttributeTable&&) = default;
+        AttributeTable& operator =(AttributeTable&&) = default;
         AttributeTable(const AttributeTable& ) = delete;
         AttributeTable& operator =(const AttributeTable&) = delete;
 
@@ -274,6 +289,21 @@ namespace dXreimpl
         void setDisplayParamsForAllAttributes(const DisplayParams& params);
         void read(std::istream &stream, LayerManager &layerManager, int version);
         void write(std::ostream &stream, const LayerManager &layerManager);
+        void clear();
+        float getSelAvg(size_t columnIndex) {
+            float selTotal = 0;
+            int selNum = 0;
+            for(auto& pair: m_rows) {
+                if(pair.second->isSelected()) {
+                    selTotal += pair.second->getValue(columnIndex);
+                    selNum++;
+                }
+            }
+            if(selNum == 0) {
+                return(-1);
+            }
+            return(selTotal/selNum);
+        }
 
    // interface AttributeColumnManager
     public:
@@ -281,12 +311,18 @@ namespace dXreimpl
         virtual const AttributeColumn& getColumn(size_t index) const;
         virtual const std::string& getColumnName(size_t index) const;
         virtual size_t getNumColumns() const;
+        virtual bool hasColumn(const std::string &name) const;
+
+        // TODO: Compatibility. Very inefficient method to retreive a column's index
+        // if the set of columns was sorted
+        size_t getColumnSortedIndex(size_t index) const;
 
     private:
         typedef std::map<AttributeKey, std::unique_ptr<AttributeRowImpl>> StorageType;
         StorageType m_rows;
         std::map<std::string, size_t> m_columnMapping;
         std::vector<AttributeColumnImpl> m_columns;
+        KeyColumn m_keyColumn;
         int64_t m_visibleLayers;
         DisplayParams m_displayParams;
 
@@ -434,6 +470,16 @@ namespace dXreimpl
         iterator end()
         {
             return iterator(m_rows.end());
+        }
+
+        iterator find(AttributeKey key)
+        {
+            return iterator(m_rows.find(key));
+        }
+
+        std::pair<const AttributeKey, std::unique_ptr<AttributeRowImpl>>& back()
+        {
+            return *m_rows.rbegin();
         }
     };
 

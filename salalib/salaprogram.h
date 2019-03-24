@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "salalib/attributetable.h"
+
 #include "genlib/stringutils.h"
 
 #include <cmath>
@@ -245,8 +247,7 @@ public:
    { if (type != SalaObj::S_NONE) throw SalaError("Does not take any parameters"); }
    //
    // operations for graphs / graph nodes:
-   AttributeTable *getTable();
-   std::map<int, SalaObj> marks;
+   dXreimpl::AttributeTable *getTable();
    //
    const std::string getTypeStr() const;
    const std::string getTypeIndefArt() const;
@@ -308,6 +309,9 @@ class SalaProgram
    SalaObj m_thisobj;
    //
    bool m_marked; // this is used to tell the program that a node has been "marked" -- all marks are cleared at the end of the execution
+   // marks for state management in maps
+   std::map<int, SalaObj> marks;
+
 public:
    SalaProgram(SalaObj context);
    ~SalaProgram();

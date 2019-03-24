@@ -22,13 +22,13 @@
 
 bool VGAAngularDepth::run(Communicator *, const Options &, PointMap &map, bool) {
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
-    int path_angle_col = attributes.insertColumn("Angular Step Depth");
+    int path_angle_col = attributes.insertOrResetColumn("Angular Step Depth");
 
-    for (int i = 0; i < attributes.getRowCount(); i++) {
-        PixelRef pix = attributes.getRowKey(i);
+    for (auto iter = attributes.begin(); iter != attributes.end(); iter++) {
+        PixelRef pix = iter->getKey().value;
         map.getPoint(pix).m_misc = 0;
         map.getPoint(pix).m_dist = 0.0f;
         map.getPoint(pix).m_cumangle = -1.0f;
@@ -52,14 +52,14 @@ bool VGAAngularDepth::run(Communicator *, const Options &, PointMap &map, bool) 
         if (p.filled() && p.m_misc != ~0) {
             p.getNode().extractAngular(search_list, &map, here);
             p.m_misc = ~0;
-            int row = attributes.getRowid(here.pixel);
-            attributes.setValue(row, path_angle_col, float(p.m_cumangle));
+            dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(here.pixel));
+            row.setValue(path_angle_col, float(p.m_cumangle));
             if (!p.getMergePixel().empty()) {
                 Point &p2 = map.getPoint(p.getMergePixel());
                 if (p2.m_misc != ~0) {
                     p2.m_cumangle = p.m_cumangle;
-                    int row = attributes.getRowid(p.getMergePixel());
-                    attributes.setValue(row, path_angle_col, float(p2.m_cumangle));
+                    dXreimpl::AttributeRow &mergePixelRow = map.getAttributeTable().getRow(dXreimpl::AttributeKey(p.getMergePixel()));
+                    mergePixelRow.setValue(path_angle_col, float(p2.m_cumangle));
                     p2.getNode().extractAngular(search_list, &map,
                                                 AngularTriple(here.angle, p.getMergePixel(), NoPixel));
                     p2.m_misc = ~0;
