@@ -3483,7 +3483,6 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
 
 std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
     std::map<std::vector<Point2f>, PafColor> colouredPolygons;
-    const AttributeTable &attributeTable = getAttributeTable();
     std::map<int,SalaShape>& allShapes = getAllShapes();
     for (auto& refShape: allShapes) {
         SalaShape& shape = refShape.second;
@@ -3504,14 +3503,13 @@ std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
 
 std::vector<std::pair<Point2f, PafColor> > ShapeMap::getAllPointsWithColour() {
     std::vector<std::pair<Point2f, PafColor> > colouredPoints;
-    const AttributeTable &attributeTable = getAttributeTable();
     std::map<int,SalaShape>& allShapes = getAllShapes();
-    int k = -1;
     for (auto& refShape: allShapes) {
-        k++;
         SalaShape& shape = refShape.second;
         if (shape.isPoint()) {
-            PafColor colour(attributeTable.getDisplayColor(k));
+            PafColor colour(dXreimpl::getDisplayColor(AttributeKey(refShape.first),
+                                                      m_attributes->getRow(AttributeKey(refShape.first)),
+                                                      *m_attribHandle.get(), true));
             colouredPoints.push_back(std::make_pair(shape.getCentroid(), colour));
         }
     }
