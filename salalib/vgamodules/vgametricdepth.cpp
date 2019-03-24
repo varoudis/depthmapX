@@ -22,7 +22,7 @@
 
 bool VGAMetricDepth::run(Communicator *comm, const Options &options, PointMap &map, bool) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
     int path_angle_col = attributes.insertOrResetColumn("Metric Step Shortest-Path Angle");
@@ -58,7 +58,7 @@ bool VGAMetricDepth::run(Communicator *comm, const Options &options, PointMap &m
         if (p.filled() && p.m_misc != ~0) {
             p.getNode().extractMetric(search_list, &map, here);
             p.m_misc = ~0;
-            dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(here.pixel));
+            AttributeRow &row = map.getAttributeTable().getRow(AttributeKey(here.pixel));
             row.setValue(path_length_col, float(map.getSpacing() * here.dist));
             row.setValue(path_angle_col, float(p.m_cumangle));
             if (map.getSelSet().size() == 1) {
@@ -69,8 +69,8 @@ bool VGAMetricDepth::run(Communicator *comm, const Options &options, PointMap &m
                 Point &p2 = map.getPoint(p.getMergePixel());
                 if (p2.m_misc != ~0) {
                     p2.m_cumangle = p.m_cumangle;
-                    dXreimpl::AttributeRow &mergePixelRow =
-                        map.getAttributeTable().getRow(dXreimpl::AttributeKey(p.getMergePixel()));
+                    AttributeRow &mergePixelRow =
+                        map.getAttributeTable().getRow(AttributeKey(p.getMergePixel()));
                     mergePixelRow.setValue(path_length_col, float(map.getSpacing() * here.dist));
                     mergePixelRow.setValue(path_angle_col, float(p2.m_cumangle));
                     if (map.getSelSet().size() == 1) {

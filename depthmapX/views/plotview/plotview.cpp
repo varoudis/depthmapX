@@ -96,17 +96,17 @@ bool QPlotView::eventFilter(QObject *object, QEvent *e)
          // first, check you have a meta graph
 			if (pDoc->m_meta_graph) {
                 if (pDoc->m_meta_graph->viewingProcessed()) {
-                    dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+                    AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
 
-                    auto xRange = dXreimpl::getIndexItemsInValueRange(idx_x, table, dataX(hit_point.x()-2), dataX(hit_point.x()+2));
-                    auto yRange = dXreimpl::getIndexItemsInValueRange(idx_y, table, dataY(hit_point.y()+2), dataY(hit_point.y()-2));
+                    auto xRange = getIndexItemsInValueRange(idx_x, table, dataX(hit_point.x()-2), dataX(hit_point.x()+2));
+                    auto yRange = getIndexItemsInValueRange(idx_y, table, dataY(hit_point.y()+2), dataY(hit_point.y()-2));
 
 					// work out anything near this point...
-                    std::set<dXreimpl::AttributeKey> xkeys;
+                    std::set<AttributeKey> xkeys;
                     for (auto iter = xRange.first; iter != xRange.second; iter++) {
                         xkeys.insert(iter->key);
 					}
-                    const dXreimpl::AttributeRow* displayRow = nullptr;
+                    const AttributeRow* displayRow = nullptr;
                     for (auto iter = yRange.first; iter != yRange.second; iter++) {
                         if (xkeys.find(iter->key) != xkeys.end()) {
                             displayRow = iter->row;
@@ -270,7 +270,7 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
       return false;
    }
 
-   dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+   AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
    AttributeTableHandle& tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
    LayerManagerImpl& layers = pDoc->m_meta_graph->getLayers();
 
@@ -583,9 +583,9 @@ void QPlotView::keyPressEvent(QKeyEvent *e)
 void QPlotView::RedoIndices()
 {
    if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
-      dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-      idx_x = dXreimpl::makeAttributeIndex(table, m_x_axis);
-      idx_y = dXreimpl::makeAttributeIndex(table, m_y_axis);
+      AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+      idx_x = makeAttributeIndex(table, m_x_axis);
+      idx_y = makeAttributeIndex(table, m_y_axis);
    }
 }
 
@@ -657,7 +657,7 @@ void QPlotView::ResetRegression()
 {
    m_regression.clear();
    if (m_x_axis != -1 && m_y_axis != -1 && pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
-      dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+      AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
       for (auto iter = table.begin(); iter != table.end(); iter++) {
          if (isObjectVisible(pDoc->m_meta_graph->getLayers(), iter->getRow())) {
             float x = iter->getRow().getValue(m_x_axis);
@@ -733,11 +733,11 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
    }
    m_selecting = false;
 
-   dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+   AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
 
 
-   auto xRange = dXreimpl::getIndexItemsInValueRange(idx_x, table, dataX(m_drag_rect_a.left()-2), dataX(m_drag_rect_a.right()+2));
-   auto yRange = dXreimpl::getIndexItemsInValueRange(idx_y, table, dataY(m_drag_rect_a.bottom()+2), dataY(m_drag_rect_a.top()-2));
+   auto xRange = getIndexItemsInValueRange(idx_x, table, dataX(m_drag_rect_a.left()-2), dataX(m_drag_rect_a.right()+2));
+   auto yRange = getIndexItemsInValueRange(idx_y, table, dataY(m_drag_rect_a.bottom()+2), dataY(m_drag_rect_a.top()-2));
 
    // Stop drag rect...
    m_drag_rect_a = QRect(0,0,0,0);
@@ -745,7 +745,7 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
    update();
 
    // work out selection
-   std::set<dXreimpl::AttributeKey> xkeys;
+   std::set<AttributeKey> xkeys;
    for (auto iter = xRange.first; iter != xRange.second; iter++) {
        xkeys.insert(iter->key);
    }

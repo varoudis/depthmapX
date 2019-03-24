@@ -31,7 +31,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     int routeweight_col = -1;
     bool interactive = true;
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     int processed_rows = 0;
 
@@ -331,7 +331,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     std::vector<float> lengths;
     if (length_col != -1) {
         for (size_t i = 0; i < map.getConnections().size(); i++) {
-            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(i);
+            AttributeRow& row = map.getAttributeRowFromShapeIndex(i);
             lengths.push_back(row.getValue(length_col));
         }
     }
@@ -343,7 +343,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     }
 
     for (size_t cursor = 0; cursor < map.getConnections().size(); cursor++) {
-        dXreimpl::AttributeRow &row =
+        AttributeRow &row =
             map.getAttributeRowFromShapeIndex(cursor);
 
         if (options.sel_only) {
@@ -677,8 +677,8 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     }
     if (options.choice) {
         for (size_t cursor = 0; cursor < map.getConnections().size(); cursor++) {
-            dXreimpl::AttributeRow &row =
-                attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+            AttributeRow &row =
+                attributes.getRow(AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
             for (size_t r = 0; r < radius.size(); r++) {
                 // according to Eva's correction, total choice and total weighted choice
                 // should already have been accumulated by radius at this stage

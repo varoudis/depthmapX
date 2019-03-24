@@ -267,7 +267,7 @@ void Q3DView::DrawScene()
          if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessedPoints()) {
             // okay, you can go for it and draw all the squares in cutesy 3d:
             PointMap& pointmap = pDoc->m_meta_graph->getDisplayedPointMap();
-            dXreimpl::AttributeTable& table = pointmap.getAttributeTable();
+            AttributeTable& table = pointmap.getAttributeTable();
 
             for (auto iter = table.begin(); iter != table.end(); iter++) {
                PixelRef pix = iter->getKey().value;
@@ -460,7 +460,7 @@ void Q3DView::ReloadPointData()
       //
       m_pixels.clear();
       PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
-      dXreimpl::AttributeTable& table = map.getAttributeTable();
+      AttributeTable& table = map.getAttributeTable();
       for (const auto& iter: table) {
          PixelRef pix = iter.getKey().value;
          Point2f p = map.depixelate(pix);

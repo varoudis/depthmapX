@@ -44,7 +44,7 @@ bool VGAVisualLocal::run(Communicator *comm, const Options &options, PointMap &m
                     count++;
                     continue;
                 }
-                dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(curs));
+                AttributeRow &row = map.getAttributeTable().getRow(AttributeKey(curs));
 
                 // This is much easier to do with a straight forward list:
                 PixelRefVector neighbourhood;

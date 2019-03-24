@@ -26,7 +26,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
         return false;
     }
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     time_t atime = 0;
     if (comm) {
@@ -133,7 +133,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 anglebins.erase(iter);
             }
         }
-        dXreimpl::AttributeRow &row = iter.getRow();
+        AttributeRow &row = iter.getRow();
         // set the attributes for this node:
         int curs_node_count = 0;
         double curs_total_depth = 0.0;

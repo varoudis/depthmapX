@@ -64,7 +64,7 @@ void tableView::RedoTable()
    clear();
 
    if (pDoc->m_meta_graph->viewingProcessed()) {
-      const dXreimpl::AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+      const AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
       int col = pDoc->m_meta_graph->getDisplayedAttribute();
 	  int i;
 
@@ -156,7 +156,7 @@ void tableView::itemChanged(QTableWidgetItem * item)
 	int row = item->row();
 	int col = item->column();
     MetaGraph *graph = pDoc->m_meta_graph;
-    dXreimpl::AttributeTable& table = graph->getAttributeTable();
+    AttributeTable& table = graph->getAttributeTable();
     AttributeTableHandle& tableHandle = graph->getAttributeTableHandle();
     auto& index = tableHandle.getTableIndex();
 	if(col == 0)

@@ -85,7 +85,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
       comm->CommPostMessage( Communicator::NUM_RECORDS, m_timesteps );
    }
    
-   dXreimpl::AttributeTable& table = pointmap->getAttributeTable();
+   AttributeTable& table = pointmap->getAttributeTable();
    int displaycol = table.getOrInsertColumn(g_col_total_counts);
 
    int output_mode = Agent::OUTPUT_COUNTS;
@@ -605,7 +605,7 @@ void Agent::onInit(PixelRef node, int trail_num)
    if (m_output_mode & OUTPUT_GATE_COUNTS) {
        // see note about gates in Through vision analysis
        m_gate = (m_pointmap->getPoint(node).filled())
-                    ? (int)m_pointmap->getAttributeTable().getRow(dXreimpl::AttributeKey(m_node)).getValue(g_col_gate)
+                    ? (int)m_pointmap->getAttributeTable().getRow(AttributeKey(m_node)).getValue(g_col_gate)
                     : -1;
    }
    else {
@@ -667,7 +667,7 @@ void Agent::onMove()
    onStep();
    if (m_node != lastnode && m_output_mode != OUTPUT_NOTHING) {
       if (m_pointmap->getPoint(m_node).filled()) {
-         dXreimpl::AttributeRow& row = m_pointmap->getAttributeTable().getRow(dXreimpl::AttributeKey(m_node));
+         AttributeRow& row = m_pointmap->getAttributeTable().getRow(AttributeKey(m_node));
          if (m_output_mode & OUTPUT_COUNTS) {
             row.incrValue(g_col_total_counts);
          }

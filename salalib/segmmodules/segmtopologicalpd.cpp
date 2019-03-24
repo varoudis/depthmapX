@@ -22,7 +22,7 @@
 
 bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     bool retvar = true;
 
@@ -32,7 +32,7 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
         axialrefs.push_back(row.getValue("Axial Line Ref"));
         seglengths.push_back(row.getValue("Segment Length"));
         if (seglengths.back() > maxseglength) {
@@ -60,7 +60,7 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
         double length = seglengths[cursor];
         audittrail[cursor] = TopoMetSegmentRef(cursor, Connector::SEG_CONN_ALL, length * 0.5, -1);
         list[0].push_back(cursor);
-        attributes.getRow(dXreimpl::AttributeKey(cursor)).setValue(depthcol.c_str(), 0);
+        attributes.getRow(AttributeKey(cursor)).setValue(depthcol.c_str(), 0);
     }
 
     unsigned int segdepth = 0;
@@ -101,7 +101,7 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
             }
 
             connected_cursor = iter->first.ref;
-            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(connected_cursor);
+            AttributeRow& row = map.getAttributeRowFromShapeIndex(connected_cursor);
             if (seen[connected_cursor] > segdepth) {
                 float length = seglengths[connected_cursor];
                 int axialref = axialrefs[connected_cursor];
