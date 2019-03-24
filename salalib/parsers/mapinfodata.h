@@ -65,7 +65,7 @@ public:
    bool readheader(std::istream& miffile);
    bool readcolumnheaders(std::istream& miffile, std::istream& midfile, std::vector<std::string>& columnheads);
    void writeheader(std::ostream& miffile);
-   void writetable(std::ostream& miffile, std::ostream& midfile, const dXreimpl::AttributeTable& attributes, const LayerManagerImpl layers);
+   void writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes, const LayerManagerImpl layers);
    //
    std::istream& read(std::istream& stream, int version);
    std::ostream& write(std::ostream& stream);

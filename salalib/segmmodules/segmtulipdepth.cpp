@@ -24,7 +24,7 @@
 
 bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     std::string stepdepth_col_text = "Angular Step Depth";
     int stepdepth_col = attributes.insertOrResetColumn(stepdepth_col_text.c_str());

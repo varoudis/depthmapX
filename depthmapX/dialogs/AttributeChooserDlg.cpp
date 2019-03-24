@@ -15,7 +15,7 @@
 
 #include "AttributeChooserDlg.h"
 
-CAttributeChooserDlg::CAttributeChooserDlg(dXreimpl::AttributeTable& table, QWidget *parent)
+CAttributeChooserDlg::CAttributeChooserDlg(AttributeTable& table, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);

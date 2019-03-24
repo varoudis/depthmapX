@@ -220,7 +220,7 @@ protected:
    //
    std::vector<SalaEvent> m_undobuffer;
    //
-   std::unique_ptr<dXreimpl::AttributeTable> m_attributes;
+   std::unique_ptr<AttributeTable> m_attributes;
    std::unique_ptr<AttributeTableHandle> m_attribHandle;
    LayerManagerImpl m_layers;
    //
@@ -275,11 +275,11 @@ public:
    const std::map<int, SalaShape>::const_iterator getShapeRefFromIndex(size_t index) const {
        return depthmapX::getMapAtIndex(m_shapes, index);
    }
-   dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) {
-       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   AttributeRow& getAttributeRowFromShapeIndex(size_t index) {
+       return m_attributes->getRow(AttributeKey(getShapeRefFromIndex(index)->first));
    }
-   const dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) const {
-       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   const AttributeRow& getAttributeRowFromShapeIndex(size_t index) const {
+       return m_attributes->getRow(AttributeKey(getShapeRefFromIndex(index)->first));
    }
 
 
@@ -402,9 +402,9 @@ public:
       { m_attributes->removeColumn(col); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
-   dXreimpl::AttributeTable& getAttributeTable()
+   AttributeTable& getAttributeTable()
       { return *m_attributes.get(); }
-   const dXreimpl::AttributeTable& getAttributeTable() const
+   const AttributeTable& getAttributeTable() const
       { return *m_attributes.get(); }
    LayerManagerImpl& getLayers()
       { return m_layers; }
@@ -515,8 +515,8 @@ public:
    bool findNextShape(bool& nextlayer) const;
    const SalaShape& getNextShape() const;
    const PafColor getShapeColor() const {
-       dXreimpl::AttributeKey key(m_display_shapes[m_current]);
-       const dXreimpl::AttributeRow &row = m_attributes->getRow(key);
+       AttributeKey key(m_display_shapes[m_current]);
+       const AttributeRow &row = m_attributes->getRow(key);
        return dXreimpl::getDisplayColor(key, row, *m_attribHandle.get(), true);;
    }
    bool getShapeSelected() const

@@ -267,7 +267,7 @@ void Isovist::addBlock(const Line& li, int tag, double startangle, double endang
    }
 }
 
-void Isovist::setData(dXreimpl::AttributeTable& table, dXreimpl::AttributeRow& row, bool simple_version)
+void Isovist::setData(AttributeTable& table, AttributeRow& row, bool simple_version)
 {
    // the area / centre of gravity calculation is a duplicate of the SalaPolygon version,
    // included here for general information about the isovist

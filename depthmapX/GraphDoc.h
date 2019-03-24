@@ -257,7 +257,7 @@ public:
    void OnFillPoints(const Point2f& p, int fill_type = 0 );
    void OnMakeIsovist(const Point2f& seed, double angle = -1.0);
    void OnToolsAxialMap( const Point2f& seed );
-   int RenameColumn(dXreimpl::AttributeTable *tab, int col);
+   int RenameColumn(AttributeTable *tab, int col);
    bool ReplaceColumnContents(PointMap* pointmap, ShapeMap *shapemap, int col);
    bool SelectByQuery(PointMap* pointmap, ShapeMap *shapemap);
    void OnToolsTopomet();

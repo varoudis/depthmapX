@@ -285,8 +285,8 @@ public:
    int addAttribute(const std::string& name);
    void removeAttribute(int col);
    bool isAttributeLocked(int col);
-   dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1);
-   const dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
+   AttributeTable& getAttributeTable(int type = -1, int layer = -1);
+   const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
    LayerManagerImpl& getLayers(int type = -1, int layer = -1);
    const LayerManagerImpl& getLayers(int type = -1, int layer = -1) const;
    AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1);

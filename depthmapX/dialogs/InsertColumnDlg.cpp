@@ -16,7 +16,7 @@
 #include "InsertColumnDlg.h"
 #include "mainwindow.h"
 
-CInsertColumnDlg::CInsertColumnDlg(dXreimpl::AttributeTable *table, int col, QWidget *parent)
+CInsertColumnDlg::CInsertColumnDlg(AttributeTable *table, int col, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);

@@ -22,8 +22,8 @@ class CColumnPropertiesDlg : public QDialog, public Ui::CColumnPropertiesDlg
 {
 	Q_OBJECT
 public:
-    CColumnPropertiesDlg(dXreimpl::AttributeTable *table = NULL, LayerManagerImpl *layers = NULL, int col = -1, QWidget *parent = 0);
-    dXreimpl::AttributeTable *m_table;
+    CColumnPropertiesDlg(AttributeTable *table = NULL, LayerManagerImpl *layers = NULL, int col = -1, QWidget *parent = 0);
+    AttributeTable *m_table;
     LayerManagerImpl *m_layers;
 	int		m_col;
 	QString	m_formula;

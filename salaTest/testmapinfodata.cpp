@@ -154,15 +154,15 @@ TEST_CASE("Complete proper MapInfo file", "")
     REQUIRE(shape2.getPoint().x == Approx(534014.29).epsilon(EPSILON));
     REQUIRE(shape2.getPoint().y == Approx(182533.33).epsilon(EPSILON));
 
-    dXreimpl::AttributeTable& att = shapeMap.getAttributeTable();
+    AttributeTable& att = shapeMap.getAttributeTable();
     REQUIRE(att.getNumColumns() == 2);
     REQUIRE(att.getColumnName(0) == "Id");
     REQUIRE(att.getColumnName(1) == "Length_M");
 
     REQUIRE(att.getNumRows() == 3);
-    auto &row0 = att.getRow(dXreimpl::AttributeKey(shapeRef0->first));
-    auto &row1 = att.getRow(dXreimpl::AttributeKey(shapeRef1->first));
-    auto &row2 = att.getRow(dXreimpl::AttributeKey(shapeRef2->first));
+    auto &row0 = att.getRow(AttributeKey(shapeRef0->first));
+    auto &row1 = att.getRow(AttributeKey(shapeRef1->first));
+    auto &row2 = att.getRow(AttributeKey(shapeRef2->first));
     REQUIRE(row0.getValue("Id") == 1);
     REQUIRE(row1.getValue("Id") == 2);
     REQUIRE(row2.getValue("Id") == 3);

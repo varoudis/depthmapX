@@ -40,7 +40,7 @@ bool VGAMetric::run(Communicator *comm, const Options &options, PointMap &map, b
             radius_text = std::string(" R") + dXstring::formatString(options.radius, "%.2f");
         }
     }
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // n.b. these must be entered in alphabetical order to preserve col indexing:
     std::string mspa_col_text = std::string("Metric Mean Shortest-Path Angle") + radius_text;
@@ -110,7 +110,7 @@ bool VGAMetric::run(Communicator *comm, const Options &options, PointMap &map, b
                     }
                 }
 
-                dXreimpl::AttributeRow &row = attributes.getRow(dXreimpl::AttributeKey(curs));
+                AttributeRow &row = attributes.getRow(AttributeKey(curs));
                 row.setValue(mspa_col, float(double(total_angle) / double(total_nodes)));
                 row.setValue(mspl_col, float(double(total_depth) / double(total_nodes)));
                 row.setValue(dist_col, float(double(euclid_depth) / double(total_nodes)));

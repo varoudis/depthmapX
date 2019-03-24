@@ -101,7 +101,7 @@ protected:
    int m_undocounter;
    std::vector<PixelRefPair> m_merge_lines;
 private:
-   std::unique_ptr<dXreimpl::AttributeTable> m_attributes;
+   std::unique_ptr<AttributeTable> m_attributes;
    std::unique_ptr<AttributeTableHandle> m_attribHandle;
    LayerManagerImpl m_layers;
 public:
@@ -243,9 +243,9 @@ public:
       { m_attributes->removeColumn(col); }
    // I don't want to do this, but every so often you will need to update this table
    // use const version by preference
-   dXreimpl::AttributeTable& getAttributeTable()
+   AttributeTable& getAttributeTable()
       { return *m_attributes.get(); }
-   const dXreimpl::AttributeTable& getAttributeTable() const
+   const AttributeTable& getAttributeTable() const
       { return *m_attributes.get(); }
    LayerManagerImpl& getLayers()
       { return m_layers; }

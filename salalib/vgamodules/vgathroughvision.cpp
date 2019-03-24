@@ -32,7 +32,7 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
         comm->CommPostMessage(Communicator::NUM_RECORDS, map.getFilledPointCount());
     }
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // current version (not sure of differences!)
     for (size_t i = 0; i < map.getCols(); i++) {
@@ -62,7 +62,7 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
                         // TODO: Undocumented functionality. Shows how many times a gate is passed?
 
                         if(hasGateColumn) {
-                            auto iter = attributes.find(dXreimpl::AttributeKey(key));
+                            auto iter = attributes.find(AttributeKey(key));
                             if(iter != attributes.end()) {
                                 int gate = static_cast<int>(iter->getRow().getValue(g_col_gate));
                                 if (gate != -1 && seengates.searchindex(gate) == paftl::npos) {

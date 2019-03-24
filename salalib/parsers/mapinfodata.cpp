@@ -34,7 +34,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
 
    std::vector<std::string> columnheads;
 
-   dXreimpl::AttributeTable& attributes = map.getAttributeTable();
+   AttributeTable& attributes = map.getAttributeTable();
 
    // read mif table
    if (!readcolumnheaders(miffile,midfile,columnheads)) {
@@ -142,7 +142,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    }
 
    size_t nextduplicate = 0;
-   dXreimpl::AttributeRow *lastrow;
+   AttributeRow *lastrow;
 
    QtRegion region(pointsets[0][0],pointsets[0][0]);
    for (size_t i = 0; i < pointsets.size(); i++) {
@@ -160,7 +160,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
             open = true;
          }
          map.makePolyShape(pointsets[i],open);
-         dXreimpl::AttributeRow &row = *attributes.back().second;
+         AttributeRow &row = *attributes.back().second;
          //
          // table data entries:
          if (nextduplicate < duplicates.size() && duplicates[nextduplicate] == i) {
@@ -299,7 +299,7 @@ bool MapInfoData::exportFile(std::ostream& miffile, std::ostream& midfile, const
 
    for (auto shape: map.m_shapes) {
       // note, attributes must align for this:
-      if (isObjectVisible(map.m_layers, map.getAttributeTable().getRow(dXreimpl::AttributeKey(shape.first)))) {
+      if (isObjectVisible(map.m_layers, map.getAttributeTable().getRow(AttributeKey(shape.first)))) {
          const SalaShape& poly = shape.second;
          if (poly.isPoint()) {
             miffile << "POINT " << poly.getPoint().x << " " << poly.getPoint().y << std::endl;
@@ -353,9 +353,9 @@ bool MapInfoData::exportPolygons(std::ostream& miffile, std::ostream& midfile, c
    writeheader(miffile);
 
    // dummy attributes table:
-   dXreimpl::AttributeTable attributes;
+   AttributeTable attributes;
    for (size_t i = 0; i < polygons.size(); i++) {
-      attributes.addRow(dXreimpl::AttributeKey(i));
+      attributes.addRow(AttributeKey(i));
    }
 
    // dummy layers:
@@ -486,7 +486,7 @@ void MapInfoData::writeheader(std::ostream& miffile)
 // note: stopped using m_table and m_columnheads as of VERSION_MAPINFO_SHAPES
 // simply hack up the table now for own purposes
 
-void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const dXreimpl::AttributeTable& attributes, const LayerManagerImpl layers)
+void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes, const LayerManagerImpl layers)
 {
    miffile << "Columns " << attributes.getNumColumns() + 1 << std::endl;
    /*

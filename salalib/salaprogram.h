@@ -247,7 +247,7 @@ public:
    { if (type != SalaObj::S_NONE) throw SalaError("Does not take any parameters"); }
    //
    // operations for graphs / graph nodes:
-   dXreimpl::AttributeTable *getTable();
+   AttributeTable *getTable();
    //
    const std::string getTypeStr() const;
    const std::string getTypeIndefArt() const;

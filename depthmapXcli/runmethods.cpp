@@ -356,7 +356,7 @@ namespace dm_runmethods
 
         if(!sp.getAttribute().empty()) {
             const ShapeGraph& map = mGraph->getDisplayedShapeGraph();
-            const dXreimpl::AttributeTable& table = map.getAttributeTable();
+            const AttributeTable& table = map.getAttributeTable();
             for (int i = 0; i < table.getNumColumns(); i++) {
                 if(sp.getAttribute() == table.getColumnName(i).c_str()) {
                     options.weighted_measure_col = i;

@@ -1707,7 +1707,7 @@ void MainWindow::MakeAttributeList()
         int cx = 0;
         QString name;
         if (graph->viewingProcessed()) {
-            const dXreimpl::AttributeTable& table = graph->getAttributeTable();
+            const AttributeTable& table = graph->getAttributeTable();
             m_attrWindow->addItem(tr("Ref Number"));
             m_attribute_locked.push_back(true);
 
@@ -2176,7 +2176,7 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           if (view_class == MetaGraph::VIEWVGA) {
              PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
 
-             const dXreimpl::AttributeTable& table = map.getAttributeTable();
+             const AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
              for (int i = 0; i < table.getNumColumns(); i++) {
                 m_view_map_entries.insert(std::make_pair(i+1, table.getColumnName(i)));
@@ -2188,7 +2188,7 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           else if (view_class == MetaGraph::VIEWAXIAL) {
              // using attribute tables is very, very simple...
              const ShapeGraph& map = pDoc->m_meta_graph->getDisplayedShapeGraph();
-             const dXreimpl::AttributeTable& table = map.getAttributeTable();
+             const AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
              curr_j = 0;
              for (int i = 0; i < table.getNumColumns(); i++) {
@@ -2201,7 +2201,7 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           else if (view_class == MetaGraph::VIEWDATA) {
              // using attribute tables is very, very simple...
              const ShapeMap& map = pDoc->m_meta_graph->getDisplayedDataMap();
-             const dXreimpl::AttributeTable& table = map.getAttributeTable();
+             const AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
              curr_j = 0;
              for (int i = 0; i < table.getNumColumns(); i++) {
