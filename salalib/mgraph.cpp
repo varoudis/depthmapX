@@ -1409,7 +1409,11 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
          m_drawingFiles.pop_back();
          return 0;
       }
-      catch (pexception) {
+      catch (std::invalid_argument&) {
+         m_drawingFiles.pop_back();
+         return -1;
+      }
+      catch (std::out_of_range&) {
          m_drawingFiles.pop_back();
          return -1;
       }
@@ -1592,7 +1596,11 @@ int MetaGraph::loadRT1(const std::vector<std::string>& fileset, Communicator *co
       m_drawingFiles.pop_back();
       return 0;
    }
-   catch (pexception) {
+   catch (std::invalid_argument&) {
+      m_drawingFiles.pop_back();
+      return -1;
+   }
+   catch (std::out_of_range&) {
       m_drawingFiles.pop_back();
       return -1;
    }
@@ -2439,25 +2447,23 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       }
    }
    if (type == 'l') {
-      try {
-         m_name = dXstring::readString(stream);
-         stream.read( (char *) &m_region, sizeof(m_region) );
-         int count;
-         stream.read( (char *) &count, sizeof(count) );
-         for (int i = 0; i < count; i++) {
-             m_drawingFiles.emplace_back();
-             m_drawingFiles.back().read(stream,version,true);
-         }
-
-         if (m_name.empty()) {
-             m_name = "<unknown>";
-         }
-         temp_state |= LINEDATA;
-         if (!stream.eof()) {
-            stream.read( &type, 1 );         
-         }
+      m_name = dXstring::readString(stream);
+      stream.read( (char *) &m_region, sizeof(m_region) );
+      int count;
+      stream.read( (char *) &count, sizeof(count) );
+      for (int i = 0; i < count; i++) {
+          m_drawingFiles.emplace_back();
+          m_drawingFiles.back().read(stream,version,true);
       }
-      catch (pexception) {
+
+      if (m_name.empty()) {
+          m_name = "<unknown>";
+      }
+      temp_state |= LINEDATA;
+      if (!stream.eof()) {
+         stream.read( &type, 1 );
+      }
+      if (!stream.good()) {
          // erk... this shouldn't happen
          return DAMAGED_FILE;
       }
@@ -2867,11 +2873,13 @@ bool MetaGraph::writeShapeGraphs( std::ofstream& stream, int version, bool displ
 void MetaGraph::makeViewportShapes( const QtRegion& viewport ) const
 {
    m_current_layer = -1;
-   for (size_t i = m_drawingFiles.size() - 1; i != paftl::npos; i--) {
-      if (m_drawingFiles[i].isShown()) {
+   size_t i = m_drawingFiles.size() - 1;
+   for (auto iter = m_drawingFiles.rbegin(); iter != m_drawingFiles.rend(); iter++) {
+      if (iter->isShown()) {
          m_current_layer = (int) i;
-         m_drawingFiles[i].makeViewportShapes( (viewport.atZero() ? m_region : viewport) );
+         iter->makeViewportShapes( (viewport.atZero() ? m_region : viewport) );
       }
+      i--;
    }
 }
 

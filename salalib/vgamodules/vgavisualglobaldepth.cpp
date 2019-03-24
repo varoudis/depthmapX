@@ -19,7 +19,6 @@
 #include "salalib/vgamodules/vgavisualglobaldepth.h"
 
 #include "genlib/stringutils.h"
-#include "genlib/paftl.h"
 
 bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, bool) {
 
@@ -43,13 +42,14 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
 
     size_t level = 0;
     while (search_tree[level].size()) {
+        const PixelRefVector& searchTreeAtLevel = search_tree[level];
         search_tree.push_back(PixelRefVector());
-        for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-            Point &p = map.getPoint(search_tree[level][n]);
+        for (auto currLvlIter = searchTreeAtLevel.rbegin(); currLvlIter != searchTreeAtLevel.rend(); currLvlIter++) {
+            Point &p = map.getPoint(*currLvlIter);
             if (p.filled() && p.m_misc != ~0) {
-                AttributeRow &row = attributes.getRow(AttributeKey(search_tree[level][n]));
+                AttributeRow &row = attributes.getRow(AttributeKey(*currLvlIter));
                 row.setValue(col, float(level));
-                if (!p.contextfilled() || search_tree[level][n].iseven() || level == 0) {
+                if (!p.contextfilled() || currLvlIter->iseven() || level == 0) {
                     p.getNode().extractUnseen(search_tree[level + 1], &map, p.m_misc);
                     p.m_misc = ~0;
                     if (!p.getMergePixel().empty()) {

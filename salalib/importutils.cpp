@@ -16,7 +16,6 @@
 #include "importutils.h"
 
 #include "genlib/stringutils.h"
-#include "genlib/paftl.h"
 
 #include <sstream>
 
@@ -103,7 +102,10 @@ namespace depthmapX {
                     catch (Communicator::CancelledException) {
                         return 0;
                     }
-                    catch (pexception) {
+                    catch (std::invalid_argument&) {
+                        return -1;
+                    }
+                    catch (std::out_of_range&) {
                         return -1;
                     }
 

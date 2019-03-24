@@ -19,7 +19,6 @@
 #include "salalib/vgamodules/vgavisualglobal.h"
 
 #include "genlib/stringutils.h"
-#include "genlib/paftl.h"
 
 bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) {
     time_t atime = 0;
@@ -94,19 +93,19 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
 
                 int level = 0;
                 while (search_tree[level].size()) {
+                    const PixelRefVector& searchTreeAtLevel = search_tree[level];
                     search_tree.push_back(PixelRefVector());
                     distribution.push_back(0);
-                    for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-                        PixelRef &ref = search_tree[level][n];
-                        int &pmisc = miscs(ref.y, ref.x);
-                        Point &p = map.getPoint(ref);
+                    for (auto currLvlIter = searchTreeAtLevel.rbegin(); currLvlIter != searchTreeAtLevel.rend(); currLvlIter++) {
+                        int &pmisc = miscs(currLvlIter->y, currLvlIter->x);
+                        Point &p = map.getPoint(*currLvlIter);
                         if (p.filled() && pmisc != ~0) {
                             total_depth += level;
                             total_nodes += 1;
                             distribution.back() += 1;
                             if ((int)options.radius == -1 ||
                                 level < (int)options.radius &&
-                                    (!p.contextfilled() || search_tree[level][n].iseven())) {
+                                    (!p.contextfilled() || currLvlIter->iseven())) {
                                 extractUnseen(p.getNode(), search_tree[level + 1], miscs, extents);
                                 pmisc = ~0;
                                 if (!p.getMergePixel().empty()) {
