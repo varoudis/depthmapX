@@ -37,7 +37,7 @@ bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool)
     for(auto& lineindex: map.getSelSet()) {
        foundlist.a().push_back(lineindex);
        covered[lineindex] = true;
-       attributes.getRow(dXreimpl::AttributeKey(lineindex)).setValue(stepdepth_col,0.0f);
+       map.getAttributeRowFromShapeIndex(lineindex).setValue(stepdepth_col,0.0f);
     }
     int depth = 1;
     while (foundlist.a().size()) {
@@ -46,7 +46,7 @@ bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool)
           if (!covered[line.m_connections[k]]) {
              covered[line.m_connections[k]] = true;
              foundlist.b().push_back(line.m_connections[k]);
-             attributes.getRow(dXreimpl::AttributeKey(line.m_connections[k])).setValue(stepdepth_col,float(depth));
+             map.getAttributeRowFromShapeIndex(line.m_connections[k]).setValue(stepdepth_col,float(depth));
           }
        }
        foundlist.a().pop_back();

@@ -80,7 +80,7 @@ bool SegmentTulipDepth::run(Communicator *comm, const Options &options, ShapeGra
           // convert depth from tulip_bins normalised to standard angle
           // (note the -1)
           double depth_to_line = depthlevel / ((tulip_bins - 1) * 0.5);
-          attributes.getRow(dXreimpl::AttributeKey(lineindex.ref)).setValue(stepdepth_col,depth_to_line);
+          map.getAttributeRowFromShapeIndex(lineindex.ref).setValue(stepdepth_col,depth_to_line);
           register int extradepth;
           if (lineindex.dir != -1) {
              for (auto& segconn: line.m_forward_segconns) {

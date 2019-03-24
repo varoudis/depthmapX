@@ -68,7 +68,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     if (options.weighted_measure_col != -1) {
         weighting_col_text = attributes.getColumnName(options.weighted_measure_col);
         for (size_t i = 0; i < map.getConnections().size(); i++) {
-            weights.push_back(attributes.getRow(dXreimpl::AttributeKey(i)).getValue(options.weighted_measure_col));
+            weights.push_back(map.getAttributeRowFromShapeIndex(i).getValue(options.weighted_measure_col));
         }
     } else { // Normal run // TV
         for (size_t i = 0; i < map.getConnections().size(); i++) {
@@ -83,7 +83,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
         double max_value = attributes.getColumn(routeweight_col).getStats().max;
         routeweight_col_text = attributes.getColumnName(routeweight_col);
         for (size_t i = 0; i < map.getConnections().size(); i++) {
-            routeweights.push_back(1.0 - (attributes.getRow(dXreimpl::AttributeKey(i)).getValue(routeweight_col) /
+            routeweights.push_back(1.0 - (map.getAttributeRowFromShapeIndex(i).getValue(routeweight_col) /
                                           max_value)); // scale and revert!
         }
     } else { // Normal run // TV
@@ -100,7 +100,7 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     if (weighting_col2 != -1) {
         weighting_col_text2 = attributes.getColumnName(weighting_col2);
         for (size_t i = 0; i < map.getConnections().size(); i++) {
-            weights2.push_back(attributes.getRow(dXreimpl::AttributeKey(i)).getValue(weighting_col2));
+            weights2.push_back(map.getAttributeRowFromShapeIndex(i).getValue(weighting_col2));
         }
     } else { // Normal run // TV
         for (size_t i = 0; i < map.getConnections().size(); i++) {
@@ -331,7 +331,8 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
     std::vector<float> lengths;
     if (length_col != -1) {
         for (size_t i = 0; i < map.getConnections().size(); i++) {
-            lengths.push_back(attributes.getRow(dXreimpl::AttributeKey(i)).getValue(length_col));
+            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(i);
+            lengths.push_back(row.getValue(length_col));
         }
     }
 
@@ -343,13 +344,13 @@ bool SegmentTulip::run(Communicator *comm, const Options &options, ShapeGraph &m
 
     for (size_t cursor = 0; cursor < map.getConnections().size(); cursor++) {
         dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+            map.getAttributeRowFromShapeIndex(cursor);
 
         if (options.sel_only) {
             // could use m_selection_set.searchindex(rowid) to find
             // if this row is selected as m_selection_set is ordered for axial and segment maps, etc
             // BUT, actually quicker to check the tag in the attributes that shows it's selected
-            if (!attributes.getRow(dXreimpl::AttributeKey(cursor)).isSelected()) {
+            if (!row.isSelected()) {
                 continue;
             }
         }

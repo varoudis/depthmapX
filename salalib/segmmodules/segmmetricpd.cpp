@@ -32,8 +32,7 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+        dXreimpl::AttributeRow &row = map.getAttributeRowFromShapeIndex(cursor);
         axialrefs.push_back(row.getValue("Axial Line Ref"));
         seglengths.push_back(row.getValue("Segment Length"));
         if (seglengths.back() > maxseglength) {
@@ -64,8 +63,7 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
         audittrail[cursor] = TopoMetSegmentRef(cursor, Connector::SEG_CONN_ALL, length * 0.5, -1);
         // better to divide by 511 but have 512 bins...
         list[(int(floor(0.5 + 511 * length / maxseglength))) % 512].push_back(cursor);
-        dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+        dXreimpl::AttributeRow &row = map.getAttributeRowFromShapeIndex(cursor);
         row.setValue(depthcol.c_str(), 0);
     }
 
@@ -118,8 +116,7 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
                 //
                 // better to divide by 511 but have 512 bins...
                 list[(bin + int(floor(0.5 + 511 * length / maxseglength))) % 512].push_back(connected_cursor);
-                dXreimpl::AttributeRow &row = attributes.getRow(
-                    dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), connected_cursor)->first));
+                dXreimpl::AttributeRow &row = map.getAttributeRowFromShapeIndex(connected_cursor);
                 row.setValue(depthcol.c_str(), here.dist + length * 0.5);
             }
             iter++;

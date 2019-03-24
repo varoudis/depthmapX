@@ -1673,9 +1673,12 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       list = SalaObj( SalaObj::S_LIST, count);
       int cursor = 0;
       for (int i = 0; i < count; i++) {
-         graphobj.data.graph.node = connector.getConnectedRef(cursor, mode);
-         if (graphobj.data.graph.node == -1) {
+         int connectedIndex = connector.getConnectedRef(cursor, mode);
+         if (connectedIndex == -1) {
             cursor = -1;
+            graphobj.data.graph.node = -1;
+         } else {
+            graphobj.data.graph.node = graphobj.data.graph.map.shape->getShapeRefFromIndex(connectedIndex)->first;
          }
          list.data.list.list->at(i) = graphobj;
          cursor++;

@@ -41,10 +41,9 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        axialrefs.push_back(
-            attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue(attributes.getColumnIndex("Axial Line Ref")));
-        seglengths.push_back(
-            attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue(attributes.getColumnIndex("Segment Length")));
+        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        axialrefs.push_back(row.getValue(attributes.getColumnIndex("Axial Line Ref")));
+        seglengths.push_back(row.getValue(attributes.getColumnIndex("Segment Length")));
         if (seglengths.back() > maxseglength) {
             maxseglength = seglengths.back();
         }
@@ -79,7 +78,8 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
     std::vector<TopoMetSegmentChoice> choicevals(map.getShapeCount());
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        if (options.sel_only && !attributes.getRow(dXreimpl::AttributeKey(cursor)).isSelected()) {
+        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        if (options.sel_only && !row.isSelected()) {
             continue;
         }
         for (size_t i = 0; i < map.getShapeCount(); i++) {
@@ -178,9 +178,6 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
             }
         }
         // also put in mean depth:
-        //
-        dXreimpl::AttributeRow &row =
-            attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
         row.setValue(meandepthcol.c_str(), totalsegdepth / (total - 1));
         row.setValue(totaldcol.c_str(), totalsegdepth);
         row.setValue(wmeandepthcol.c_str(), wtotaldepth / (wtotal - rootseglength));
@@ -200,8 +197,7 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     if (!options.sel_only) {
         // note, I've stopped sel only from calculating choice values:
         for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-            dXreimpl::AttributeRow &row =
-                attributes.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first));
+            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
             row.setValue(choicecol.c_str(), choicevals[cursor].choice);
             row.setValue(wchoicecol.c_str(), choicevals[cursor].wchoice);
         }

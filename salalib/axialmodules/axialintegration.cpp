@@ -55,7 +55,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     if (options.weighted_measure_col != -1) {
         weighting_col_text = attributes.getColumnName(options.weighted_measure_col);
         for (size_t i = 0; i < map.getShapeCount(); i++) {
-            weights.push_back(attributes.getRow(dXreimpl::AttributeKey(i)).getValue(options.weighted_measure_col));
+            weights.push_back(map.getAttributeRowFromShapeIndex(i).getValue(options.weighted_measure_col));
         }
     }
 

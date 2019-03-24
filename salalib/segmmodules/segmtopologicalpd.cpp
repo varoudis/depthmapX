@@ -32,8 +32,9 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        axialrefs.push_back(attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue("Axial Line Ref"));
-        seglengths.push_back(attributes.getRow(dXreimpl::AttributeKey(cursor)).getValue("Segment Length"));
+        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        axialrefs.push_back(row.getValue("Axial Line Ref"));
+        seglengths.push_back(row.getValue("Segment Length"));
         if (seglengths.back() > maxseglength) {
             maxseglength = seglengths.back();
         }
@@ -100,8 +101,7 @@ bool SegmentTopologicalPD::run(Communicator *comm, const Options &options, Shape
             }
 
             connected_cursor = iter->first.ref;
-            dXreimpl::AttributeRow &row = attributes.getRow(
-                dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), connected_cursor)->first));
+            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(connected_cursor);
             if (seen[connected_cursor] > segdepth) {
                 float length = seglengths[connected_cursor];
                 int axialref = axialrefs[connected_cursor];

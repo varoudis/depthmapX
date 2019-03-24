@@ -266,6 +266,24 @@ public:
    ShapeMap(const ShapeMap&) = delete;
    ShapeMap& operator =(const ShapeMap& other) = delete;
 
+
+   // TODO: These three functions should be refactored out of the code as much as possible
+   // they are only left here because they're being used by various components that still
+   // access the attribute table through indices. Once these are removed these functions
+   // should only appear sparingly or removed entirely. The bits of the application
+   // that still use them are the connections of the axial/segment maps and the point
+   // in polygon functions.
+   const std::map<int, SalaShape>::const_iterator getShapeRefFromIndex(size_t index) const {
+       return depthmapX::getMapAtIndex(m_shapes, index);
+   }
+   dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) {
+       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   }
+   const dXreimpl::AttributeRow& getAttributeRowFromShapeIndex(size_t index) const {
+       return m_attributes->getRow(dXreimpl::AttributeKey(getShapeRefFromIndex(index)->first));
+   }
+
+
    void clearAll();
    // num shapes total
    const size_t getShapeCount() const
@@ -387,10 +405,6 @@ public:
       { return m_attributes->insertOrResetColumn(name); }
    void removeAttribute(int col)
       { m_attributes->removeColumn(col); }
-   void setAttribute(int obj, const std::string& name, float val)
-      { m_attributes->getRow(dXreimpl::AttributeKey(obj)).setValue(m_attributes->getColumnIndex(name),val); }
-   void incrementAttribute(int obj, const std::string& name)
-      { m_attributes->getRow(dXreimpl::AttributeKey(obj)).incrValue(m_attributes->getColumnIndex(name)); }
    // I don't want to do this, but every so often you will need to update this table 
    // use const version by preference
    dXreimpl::AttributeTable& getAttributeTable()

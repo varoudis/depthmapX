@@ -1794,9 +1794,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          double val = -1.0;
          int count = 0;
          for (int gate: gatelist) {
-             int key_in = depthmapX::getMapAtIndex(m_dataMaps[sourcelayer].getAllShapes(), gate)->first;
              dXreimpl::AttributeRow &row_in =
-                 table_in.getRow(dXreimpl::AttributeKey(key_in));
+                 m_dataMaps[sourcelayer].getAttributeRowFromShapeIndex(gate);
 
             if (isObjectVisible(m_dataMaps[sourcelayer].getLayers(), row_in)) {
                double thisval = row_in.getValue(col_in);
@@ -1834,8 +1833,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                 double thisval = iter_in->getRow().getValue(col_in);
                 for (int gate: gatelist) {
                     dXreimpl::AttributeRow &row_out =
-                        table_out.getRow(dXreimpl::AttributeKey(depthmapX::getMapAtIndex(m_dataMaps[destlayer].getAllShapes(),
-                                                                                        gate)->first));
+                        m_dataMaps[destlayer].getAttributeRowFromShapeIndex(gate);
                    if (isObjectVisible(m_dataMaps[destlayer].getLayers(), row_out)) {
                       double& val = vals[gate];
                       int& count = counts[gate];
@@ -1847,7 +1845,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                gatelist = m_shapeGraphs[size_t(destlayer)]->pointInPolyList(m_pointMaps[size_t(sourcelayer)].getPoint(pix_in).m_location);
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
-                   int key_out = depthmapX::getMapAtIndex(m_shapeGraphs[destlayer]->getAllShapes(), gate)->first;
+                   int key_out = m_shapeGraphs[destlayer]->getShapeRefFromIndex(gate)->first;
                    dXreimpl::AttributeRow &row_out =
                        table_out.getRow(dXreimpl::AttributeKey(key_out));
                   if (isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), row_out)) {
@@ -1875,7 +1873,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                gatelist = m_dataMaps[size_t(destlayer)].shapeInPolyList(dataMap[key_in]);
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
-                   int key_out = depthmapX::getMapAtIndex(m_dataMaps[destlayer].getAllShapes(), gate)->first;
+                   int key_out = m_dataMaps[destlayer].getShapeRefFromIndex(gate)->first;
                    dXreimpl::AttributeRow &row_out =
                        table_out.getRow(dXreimpl::AttributeKey(key_out));
                    if (isObjectVisible(m_dataMaps[size_t(destlayer)].getLayers(), row_out)) {
@@ -1890,7 +1888,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                gatelist = m_shapeGraphs[size_t(destlayer)]->shapeInPolyList(shapeMap[key_in]);
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
-                   int key_out = depthmapX::getMapAtIndex(m_shapeGraphs[destlayer]->getAllShapes(), gate)->first;
+                   int key_out = m_shapeGraphs[destlayer]->getShapeRefFromIndex(gate)->first;
                    dXreimpl::AttributeRow &row_out =  table_out.getRow(dXreimpl::AttributeKey(key_out));
                    if (isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), row_out)) {
                      double& val = vals[gate];

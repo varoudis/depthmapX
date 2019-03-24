@@ -41,9 +41,9 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        dXreimpl::AttributeKey key = dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first);
-        axialrefs.push_back(attributes.getRow(key).getValue(attributes.getColumnIndex("Axial Line Ref")));
-        seglengths.push_back(attributes.getRow(key).getValue(attributes.getColumnIndex("Segment Length")));
+        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        axialrefs.push_back(row.getValue(attributes.getColumnIndex("Axial Line Ref")));
+        seglengths.push_back(row.getValue(attributes.getColumnIndex("Segment Length")));
         if (seglengths.back() > maxseglength) {
             maxseglength = seglengths.back();
         }
@@ -78,7 +78,8 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
     std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
     std::vector<TopoMetSegmentChoice> choicevals(map.getShapeCount());
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        if (options.sel_only && !attributes.getRow(dXreimpl::AttributeKey(cursor)).isSelected()) {
+        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        if (options.sel_only && !row.isSelected()) {
             continue;
         }
         for (size_t i = 0; i < map.getShapeCount(); i++) {
@@ -170,12 +171,11 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
         }
         // also put in mean depth:
         //
-        dXreimpl::AttributeKey key = dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first);
-        attributes.getRow(key).setValue(meandepthcol.c_str(), totalmetdepth / (total - 1));
-        attributes.getRow(key).setValue(totaldcol.c_str(), totalmetdepth);
-        attributes.getRow(key).setValue(wmeandepthcol.c_str(), wtotaldepth / (wtotal - rootseglength));
-        attributes.getRow(key).setValue(totalcol.c_str(), total);
-        attributes.getRow(key).setValue(wtotalcol.c_str(), wtotal);
+        row.setValue(meandepthcol.c_str(), totalmetdepth / (total - 1));
+        row.setValue(totaldcol.c_str(), totalmetdepth);
+        row.setValue(wmeandepthcol.c_str(), wtotaldepth / (wtotal - rootseglength));
+        row.setValue(totalcol.c_str(), total);
+        row.setValue(wtotalcol.c_str(), wtotal);
         //
         if (comm) {
             if (qtimer(atime, 500)) {
@@ -190,9 +190,9 @@ bool SegmentMetric::run(Communicator *comm, const Options &options, ShapeGraph &
     if (!options.sel_only) {
         // note, I've stopped sel only from calculating choice values:
         for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-            dXreimpl::AttributeKey key = dXreimpl::AttributeKey(depthmapX::getMapAtIndex(map.getAllShapes(), cursor)->first);
-            attributes.getRow(key).setValue(choicecol.c_str(), choicevals[cursor].choice);
-            attributes.getRow(key).setValue(wchoicecol.c_str(), choicevals[cursor].wchoice);
+            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+            row.setValue(choicecol.c_str(), choicevals[cursor].choice);
+            row.setValue(wchoicecol.c_str(), choicevals[cursor].wchoice);
         }
     }
 
