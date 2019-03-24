@@ -15,7 +15,6 @@
 
 #include "ui_MakeLayerDlg.h"
 #include <salalib/mgraph.h>
-#include <salalib/attributes.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
 
@@ -41,7 +40,7 @@ public:
 	int m_mapin;
 	int m_mapout;
 
-	pvecint m_lookup;
+    std::vector<int> m_lookup;
 	bool m_keeporiginal;
 	void UpdateData(bool value);
 	void showEvent(QShowEvent * event);

@@ -22,19 +22,19 @@
 
 bool VGAMetricDepth::run(Communicator *comm, const Options &options, PointMap &map, bool) {
 
-    AttributeTable &attributes = map.getAttributeTable();
+    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
-    int path_angle_col = attributes.insertColumn("Metric Step Shortest-Path Angle");
-    int path_length_col = attributes.insertColumn("Metric Step Shortest-Path Length");
+    int path_angle_col = attributes.insertOrResetColumn("Metric Step Shortest-Path Angle");
+    int path_length_col = attributes.insertOrResetColumn("Metric Step Shortest-Path Length");
     int dist_col;
     if (map.getSelSet().size() == 1) {
         // Note: Euclidean distance is currently only calculated from a single point
-        dist_col = attributes.insertColumn("Metric Straight-Line Distance");
+        dist_col = attributes.insertOrResetColumn("Metric Straight-Line Distance");
     }
 
-    for (int i = 0; i < attributes.getRowCount(); i++) {
-        PixelRef pix = attributes.getRowKey(i);
+    for (auto iter = attributes.begin(); iter != attributes.end(); iter++) {
+        PixelRef pix = iter->getKey().value;
         map.getPoint(pix).m_misc = 0;
         map.getPoint(pix).m_dist = -1.0f;
         map.getPoint(pix).m_cumangle = 0.0f;
@@ -58,26 +58,25 @@ bool VGAMetricDepth::run(Communicator *comm, const Options &options, PointMap &m
         if (p.filled() && p.m_misc != ~0) {
             p.getNode().extractMetric(search_list, &map, here);
             p.m_misc = ~0;
-            int row = attributes.getRowid(here.pixel);
-            attributes.setValue(row, path_length_col, float(map.getSpacing() * here.dist));
-            attributes.setValue(row, path_angle_col, float(p.m_cumangle));
+            dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(here.pixel));
+            row.setValue(path_length_col, float(map.getSpacing() * here.dist));
+            row.setValue(path_angle_col, float(p.m_cumangle));
             if (map.getSelSet().size() == 1) {
                 // Note: Euclidean distance is currently only calculated from a single point
-                attributes.setValue(row, dist_col,
-                                    float(map.getSpacing() * dist(here.pixel, *map.getSelSet().begin())));
+                row.setValue(dist_col, float(map.getSpacing() * dist(here.pixel, *map.getSelSet().begin())));
             }
             if (!p.getMergePixel().empty()) {
                 Point &p2 = map.getPoint(p.getMergePixel());
                 if (p2.m_misc != ~0) {
                     p2.m_cumangle = p.m_cumangle;
-                    int row = attributes.getRowid(p.getMergePixel());
-                    attributes.setValue(row, path_length_col, float(map.getSpacing() * here.dist));
-                    attributes.setValue(row, path_angle_col, float(p2.m_cumangle));
+                    dXreimpl::AttributeRow &mergePixelRow =
+                        map.getAttributeTable().getRow(dXreimpl::AttributeKey(p.getMergePixel()));
+                    mergePixelRow.setValue(path_length_col, float(map.getSpacing() * here.dist));
+                    mergePixelRow.setValue(path_angle_col, float(p2.m_cumangle));
                     if (map.getSelSet().size() == 1) {
                         // Note: Euclidean distance is currently only calculated from a single point
-                        attributes.setValue(
-                            row, dist_col,
-                            float(map.getSpacing() * dist(p.getMergePixel(), *map.getSelSet().begin())));
+                        mergePixelRow.setValue(
+                            dist_col, float(map.getSpacing() * dist(p.getMergePixel(), *map.getSelSet().begin())));
                     }
                     p2.getNode().extractMetric(search_list, &map, MetricTriple(here.dist, p.getMergePixel(), NoPixel));
                     p2.m_misc = ~0;

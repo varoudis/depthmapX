@@ -49,3 +49,36 @@ namespace dXreimpl{
     }
 
 }
+
+struct OrderedIntPair
+{
+   int a;
+   int b;
+   OrderedIntPair(int x = -1, int y = -1) {
+      a = (int) x < y ? x : y;
+      b = (int) x < y ? y : x;
+   }
+   // inlined at end of file
+   friend bool operator == (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator != (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator <  (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator >  (const OrderedIntPair& x, const OrderedIntPair& y);
+};
+
+// note: these are made with a is always less than b
+inline bool operator == (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
+}

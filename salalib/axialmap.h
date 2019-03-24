@@ -26,8 +26,6 @@ struct AxialVertexKey;
 struct RadialLine;
 struct PolyConnector;
 
-struct ValuePair;
-
 // used during angular analysis
 struct AnalysisInfo
 {

@@ -72,4 +72,7 @@ namespace dXreimpl
 
     std::vector<ConstAttributeIndexItem> makeAttributeIndex(const AttributeTable &table, int colIndex);
     std::vector<AttributeIndexItem> makeAttributeIndex(AttributeTable &table, int colIndex);
+    std::pair<std::vector<AttributeIndexItem>::iterator, std::vector<AttributeIndexItem>::iterator>
+    getIndexItemsInValueRange(std::vector<AttributeIndexItem> &index, AttributeTable &table, float fromValue,
+                              float toValue);
 }

@@ -62,3 +62,11 @@ void AttributeTableHandle::setDisplayColIndex(int columnIndex){
     }
     AttributeTableView::setDisplayColIndex(columnIndex);
 }
+int AttributeTableHandle::findInIndex(const dXreimpl::AttributeKey &key) {
+
+    auto iter = std::find_if(m_mutableIndex.begin(), m_mutableIndex.end(), index_item_key(key));
+    if (iter != m_mutableIndex.end()) {
+        return(std::distance(m_mutableIndex.begin(), iter));
+    }
+    return -1;
+}

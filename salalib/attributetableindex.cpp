@@ -103,4 +103,13 @@ namespace dXreimpl {
         return index;
     }
 
+    std::pair<std::vector<AttributeIndexItem>::iterator, std::vector<AttributeIndexItem>::iterator>
+    getIndexItemsInValueRange(std::vector<AttributeIndexItem> &index, AttributeTable &table, float fromValue,
+                              float toValue) {
+        dXreimpl::AttributeKey dummykey(-1);
+        dXreimpl::AttributeRowImpl dummyrow(table);
+        return std::pair<std::vector<AttributeIndexItem>::iterator, std::vector<AttributeIndexItem>::iterator>(
+            std::lower_bound(index.begin(), index.end(), dXreimpl::AttributeIndexItem(dummykey, fromValue, dummyrow)),
+            std::upper_bound(index.begin(), index.end(), dXreimpl::AttributeIndexItem(dummykey, toValue, dummyrow)));
+    }
 }

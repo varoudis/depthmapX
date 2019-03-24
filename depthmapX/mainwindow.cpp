@@ -1590,10 +1590,10 @@ void MainWindow::MakeGraphTree()
             m_indexWidget->setItemEditability(hItem, Qt::Unchecked);
             ItemTreeEntry entry(1,(short)i,-1);
             m_treegraphmap.insert(std::make_pair(hItem,entry));
-            AttributeTable& table = m_treeDoc->m_meta_graph->getShapeGraphs()[i]->getAttributeTable();
-            if(table.getLayerCount() > 1) {
-                for (int j = 0; j < table.getLayerCount(); j++) {
-                    QString name = QString(table.getLayerName(j).c_str());
+            LayerManagerImpl& layers = m_treeDoc->m_meta_graph->getShapeGraphs()[i]->getLayers();
+            if(layers.getNumLayers() > 1) {
+                for (int j = 0; j < layers.getNumLayers(); j++) {
+                    QString name = QString(layers.getLayerName(j).c_str());
                     QTreeWidgetItem* hNewItem = m_indexWidget->addNewItem(name, hItem);
                     ItemTreeEntry entry(1,(short)i,j);
                     m_treegraphmap[hNewItem] = entry;
@@ -1626,10 +1626,10 @@ void MainWindow::MakeGraphTree()
             ItemTreeEntry entry(2,(short)i,-1);
             m_treegraphmap[hItem] = entry;
 
-            AttributeTable& table = m_treeDoc->m_meta_graph->getDataMaps()[i].getAttributeTable();
-            if(table.getLayerCount() > 1) {
-                for (int j = 0; j < table.getLayerCount(); j++) {
-                    QString name = QString(table.getLayerName(j).c_str());
+            LayerManagerImpl layers = m_treeDoc->m_meta_graph->getDataMaps()[i].getLayers();
+            if(layers.getNumLayers() > 1) {
+                for (int j = 0; j < layers.getNumLayers(); j++) {
+                    QString name = QString(layers.getLayerName(j).c_str());
                     QTreeWidgetItem* hNewItem = m_indexWidget->addNewItem(name, hItem);
                     m_indexWidget->setItemVisibility(hNewItem, Qt::Unchecked);
                     ItemTreeEntry entry(2,(short)i,j);
@@ -1707,14 +1707,14 @@ void MainWindow::MakeAttributeList()
         int cx = 0;
         QString name;
         if (graph->viewingProcessed()) {
-            const AttributeTable& table = graph->getAttributeTable();
+            const dXreimpl::AttributeTable& table = graph->getAttributeTable();
             m_attrWindow->addItem(tr("Ref Number"));
             m_attribute_locked.push_back(true);
 
-            for (int i = 0; i < table.getColumnCount(); i++) {
+            for (int i = 0; i < table.getNumColumns(); i++) {
                 name = QString(table.getColumnName(i).c_str());
                     m_attrWindow->addItem(name);
-                    m_attribute_locked.push_back(table.isColumnLocked(i));
+                    m_attribute_locked.push_back(table.getColumn(i).isLocked());
                 //}
             }
         }
@@ -2175,11 +2175,10 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           m_view_map_entries.clear();
           if (view_class == MetaGraph::VIEWVGA) {
              PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
-             int displayed_ref = map.getDisplayedAttribute();
 
-             const AttributeTable& table = map.getAttributeTable();
+             const dXreimpl::AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
-             for (int i = 0; i < table.getColumnCount(); i++) {
+             for (int i = 0; i < table.getNumColumns(); i++) {
                 m_view_map_entries.insert(std::make_pair(i+1, table.getColumnName(i)));
                 if (map.getDisplayedAttribute() == i) {
                    curr_j = i + 1;
@@ -2189,10 +2188,10 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           else if (view_class == MetaGraph::VIEWAXIAL) {
              // using attribute tables is very, very simple...
              const ShapeGraph& map = pDoc->m_meta_graph->getDisplayedShapeGraph();
-             const AttributeTable& table = map.getAttributeTable();
+             const dXreimpl::AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
              curr_j = 0;
-             for (int i = 0; i < table.getColumnCount(); i++) {
+             for (int i = 0; i < table.getNumColumns(); i++) {
                 m_view_map_entries.insert(std::make_pair(i+1, table.getColumnName(i)));
                 if (map.getDisplayedAttribute() == i) {
                    curr_j = i + 1;
@@ -2202,10 +2201,10 @@ void MainWindow::RedoPlotViewMenu(QGraphDoc* pDoc)
           else if (view_class == MetaGraph::VIEWDATA) {
              // using attribute tables is very, very simple...
              const ShapeMap& map = pDoc->m_meta_graph->getDisplayedDataMap();
-             const AttributeTable& table = map.getAttributeTable();
+             const dXreimpl::AttributeTable& table = map.getAttributeTable();
              m_view_map_entries.insert(std::make_pair(0, "Ref Number"));
              curr_j = 0;
-             for (int i = 0; i < table.getColumnCount(); i++) {
+             for (int i = 0; i < table.getNumColumns(); i++) {
                 m_view_map_entries.insert(std::make_pair(i+1, table.getColumnName(i)));
                 if (map.getDisplayedAttribute() == i) {
                    curr_j = i + 1;
