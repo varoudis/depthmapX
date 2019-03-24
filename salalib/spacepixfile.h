@@ -46,9 +46,6 @@ public:
    const SalaShape& getNextShape() const
       { return m_spacePixels[m_current_layer].getNextShape(); }
 
-   //
-   void cutLine(Line& l);//, short dir);
-   //
    // Is any one sublayer shown?
 
    bool isShown() const

@@ -364,10 +364,6 @@ public:
    int getClosestLine(const Point2f& p) const;
    // this version simply finds the closest vertex to the point
    Point2f getClosestVertex(const Point2f& p) const;
-   // Find out which shapes a line cuts through:
-   void getShapeCuts(const Line& li_orig, std::vector<ValuePair> &cuts);
-   // Cut a line according to the first shape it cuts
-   void cutLine(Line& li);//, short dir);
    // Connect a particular shape into the graph
    int connectIntersected(int rowid, bool linegraph);
    // Get the connections for a particular line
