@@ -214,8 +214,8 @@ protected:
    depthmapX::ColumnMatrix<std::vector<ShapeRef> > m_pixel_shapes;    // i rows of j columns
    //
    // allow quick closest line test (note only works for a given layer, with many layers will be tricky)
-   mutable BSPNode *m_bsp_root;
-   mutable bool m_bsp_tree;
+   mutable BSPNode *m_bsp_root = nullptr;
+   mutable bool m_bsp_tree = false;
    //
    std::map<int,SalaShape> m_shapes;
    //
