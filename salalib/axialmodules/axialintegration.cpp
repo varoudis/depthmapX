@@ -280,7 +280,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         std::vector<int> depthcounts;
         depthcounts.push_back(0);
         pflipper<IntPairVector> foundlist;
-        foundlist.a().push_back(IntPair(i, -1));
+        foundlist.a().push_back(std::pair<int, int>(i, -1));
         covered[i] = true;
         int total_depth = 0, depth = 1, node_count = 1, pos = -1, previous = -1; // node_count includes this 1
         double weight = 0.0, rootweight = 0.0, total_weight = 0.0, w_total_depth = 0.0;
@@ -294,11 +294,11 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         for (int radius : radii) {
             while (foundlist.a().size()) {
                 if (!options.choice) {
-                    index = foundlist.a().back().a;
+                    index = foundlist.a().back().first;
                 } else {
                     pos = pafrand() % foundlist.a().size();
-                    index = foundlist.a().at(pos).a;
-                    previous = foundlist.a().at(pos).b;
+                    index = foundlist.a().at(pos).first;
+                    previous = foundlist.a().at(pos).second;
                     audittrail[index][0].previous.ref =
                         previous; // note 0th member used here: can be used individually different radius previous
                 }
@@ -306,7 +306,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                 for (size_t k = 0; k < line.m_connections.size(); k++) {
                     if (!covered[line.m_connections[k]]) {
                         covered[line.m_connections[k]] = true;
-                        foundlist.b().push_back(IntPair(line.m_connections[k], index));
+                        foundlist.b().push_back(std::pair<int, int>(line.m_connections[k], index));
                         if (options.weighted_measure_col != -1) {
                             // the weight is taken from the discovered node:
                             weight = weights[line.m_connections[k]];

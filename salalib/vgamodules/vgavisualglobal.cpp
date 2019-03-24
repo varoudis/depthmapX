@@ -19,6 +19,7 @@
 #include "salalib/vgamodules/vgavisualglobal.h"
 
 #include "genlib/stringutils.h"
+#include "genlib/paftl.h"
 
 bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &map, bool simple_version) {
     time_t atime = 0;

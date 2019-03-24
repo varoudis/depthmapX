@@ -352,7 +352,7 @@ void ShapeGraph::writeSegmentConnectionsAsPairsCSV(std::ostream &stream)
 
 void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
     std::vector<Point2f> closepoints;
-    std::vector<IntPair> intersections;
+    std::vector<std::pair<int, int>> intersections;
     PixelRef pix = pixelate(unlinkPoint);
     std::vector<ShapeRef>& pix_shapes = m_pixel_shapes(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x));
     auto iter = pix_shapes.begin();
@@ -367,7 +367,7 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
                   && aIter->second.isLine() && bIter->second.isLine()
                   && std::find(connections.begin(), connections.end(), b) != connections.end()) {
              closepoints.push_back( intersection_point(aIter->second.getLine(), bIter->second.getLine(), TOLERANCE_A) );
-             intersections.push_back( IntPair(a,b) );
+             intersections.push_back( std::pair<int, int>(a,b) );
           }
        }
     }
@@ -383,7 +383,7 @@ void ShapeGraph::unlinkAtPoint(const Point2f& unlinkPoint) {
     }
     if (minpair != -1) {
        auto& intersection = intersections[size_t(minpair)];
-       unlinkShapes(intersection.a, intersection.b, false);
+       unlinkShapes(intersection.first, intersection.second, false);
     }
     else {
        std::cerr << "eek!";
@@ -511,7 +511,7 @@ void ShapeGraph::makeNewSegMap()
 void ShapeGraph::makeSegmentMap(std::vector<Line>& lines, std::vector<Connector>& connectors, double stubremoval)
 {
    // the first (key) pair is the line / line intersection, second is the pair of associated segments for the first line
-   std::map<OrderedIntPair,IntPair> segmentlist;
+   std::map<OrderedIntPair, std::pair<int, int>> segmentlist;
 
    // this code relies on the polygon order being the same as the connections
 
@@ -606,8 +606,8 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lines, std::vector<Connector>
                // and join segments together nicely
                auto segIter = segmentlist.find(OrderedIntPair(keylist[j],i));
                if (segIter != segmentlist.end()) {   // <- if it isn't -1 something has gone badly wrong!
-                  int seg_1 = segIter->second.a;
-                  int seg_2 = segIter->second.b;
+                  int seg_1 = segIter->second.first;
+                  int seg_2 = segIter->second.second;
                   if (seg_a != -1) {
                      if (seg_1 != -1) {
                         Point2f alpha = lines[size_t(seg_a)].start() - lines[size_t(seg_a)].end();
@@ -653,7 +653,7 @@ void ShapeGraph::makeSegmentMap(std::vector<Line>& lines, std::vector<Connector>
             else {
                // other line still to be segmented, add ourselves to segment list
                // to be added later
-               segmentlist.insert(std::make_pair( OrderedIntPair(i,keylist[j]), IntPair(seg_a,seg_b) ));
+               segmentlist.insert(std::make_pair( OrderedIntPair(i,keylist[j]), std::pair<int, int>(seg_a,seg_b) ));
             }
          }
          if (seg_a != -1 && seg_b != -1) {

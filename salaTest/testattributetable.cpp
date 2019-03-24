@@ -442,7 +442,6 @@ TEST_CASE("Attribute Table - serialisation")
 
 
     SelfCleaningFile newTableFile("newtable.bin");
-    SelfCleaningFile legacyTableFile("legacytable.bin");
 
     {
         std::ofstream outfile(newTableFile.Filename());
@@ -472,73 +471,6 @@ TEST_CASE("Attribute Table - serialisation")
 
     REQUIRE(copyTable.getColumn(colIndex1).getDisplayParams().blue == Approx(fooDp.blue));
     REQUIRE(copyTable.getDisplayParams().blue == Approx(overAllDp.blue));
-
-
-    AttributeTable oldTable;
-    {
-        std::ifstream infile(newTableFile.Filename());
-        oldTable.read(infile, METAGRAPH_VERSION);
-    }
-
-    int row1Ind = oldTable.getRowid(0);
-    REQUIRE(row1Ind == 0);
-    int row2Ind = oldTable.getRowid(10);
-    REQUIRE(row2Ind == 1);
-
-    REQUIRE(oldTable.getValue(0, "foo") == Approx(1.0));
-    REQUIRE(oldTable.getValue(1, "foo") == Approx(11.0));
-    REQUIRE(oldTable.getValue(0, "bar") == Approx(2.0));
-    REQUIRE(oldTable.getValue(1, "bar") == Approx(12.0));
-
-    REQUIRE(oldTable.getColumnIndex("foo") == 1);
-
-    REQUIRE(oldTable.isVisible(1));
-    REQUIRE_FALSE(oldTable.isVisible(0));
-
-    auto fooOldColIndex = oldTable.getColumnIndex("foo");
-    REQUIRE(fooOldColIndex == 1);
-    REQUIRE(oldTable.getColumnFormula(fooOldColIndex) == "foo formula");
-
-    auto barOldColIndex = oldTable.getColumnIndex("bar");
-    REQUIRE(barOldColIndex == 0);
-
-
-    // the old attribute table is a bit rubbish, and what display params you see is stateful
-    // the index you pass in is ignored.
-    REQUIRE(oldTable.getDisplayParams(527).blue == Approx(overAllDp.blue));
-
-    oldTable.setDisplayColumn(fooOldColIndex);
-    REQUIRE(oldTable.getDisplayParams(527).blue == Approx(fooDp.blue));
-
-
-    {
-        std::ofstream outfile(legacyTableFile.Filename());
-        oldTable.write(outfile, METAGRAPH_VERSION);
-    }
-
-
-    dXreimpl::AttributeTable roundTripTable;
-    LayerManagerImpl roundTripManager;
-    {
-        std::ifstream infile(legacyTableFile.Filename());
-        roundTripTable.read(infile, roundTripManager, METAGRAPH_VERSION);
-    }
-
-    auto& roundtripRow = roundTripTable.getRow(dXreimpl::AttributeKey(0));
-    REQUIRE(roundtripRow.getValue(0) == Approx(1.0f));
-    REQUIRE(roundtripRow.getValue(1) == Approx(2.0f));
-
-    auto& roundtripRow2 = roundTripTable.getRow(dXreimpl::AttributeKey(10));
-    REQUIRE(roundtripRow2.getValue(0) == Approx(11.0f));
-    REQUIRE(roundtripRow2.getValue(1) == Approx(12.0f));
-
-    REQUIRE(isObjectVisible(roundTripManager, roundtripRow2));
-    REQUIRE_FALSE(isObjectVisible(roundTripManager, roundtripRow));
-
-    REQUIRE(roundTripTable.getColumn(colIndex1).getDisplayParams().blue == Approx(fooDp.blue));
-    // the overall display params have gone AWOL in the old implementation :-/
-    REQUIRE(roundTripTable.getDisplayParams().blue == Approx(fooDp.blue));
-
 
 }
 

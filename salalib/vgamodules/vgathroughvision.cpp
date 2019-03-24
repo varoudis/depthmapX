@@ -20,6 +20,7 @@
 #include "salalib/nagent.h"
 
 #include "genlib/stringutils.h"
+#include "genlib/paftl.h"
 
 // This is a slow algorithm, but should give the correct answer
 // for demonstrative purposes

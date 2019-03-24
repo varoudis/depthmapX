@@ -14,7 +14,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ColumnPropertiesDlg.h"
+
 #include "genlib/stringutils.h"
+#include "genlib/paftl.h"
 
 CColumnPropertiesDlg::CColumnPropertiesDlg(dXreimpl::AttributeTable *table, LayerManagerImpl *layers, int col, QWidget *parent)
 : QDialog(parent)

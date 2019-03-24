@@ -625,7 +625,7 @@ void PointMap::outputNet(std::ostream& netfile)
       PixelRefVector& list = iter.second;
       for (size_t m = 0; m < list.size(); m++) {
          size_t n = depthmapX::findIndexFromKey(graph, list[m]);
-         if (n != paftl::npos && k < n) {
+         if (n != -1 && k < n) {
             netfile << (k+1) << " " << (n+1) << " 1" << std::endl;
          }
       }

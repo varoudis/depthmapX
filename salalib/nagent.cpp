@@ -21,9 +21,11 @@
 #include "salalib/pointdata.h"
 #include "salalib/nagent.h"
 #include "salalib/ngraph.h"
+
 #include "genlib/comm.h"
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+#include "genlib/paftl.h"
 
 int thisrun = 0;
 

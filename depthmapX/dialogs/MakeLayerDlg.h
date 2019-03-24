@@ -40,7 +40,7 @@ public:
 	int m_mapin;
 	int m_mapout;
 
-	pvecint m_lookup;
+    std::vector<int> m_lookup;
 	bool m_keeporiginal;
 	void UpdateData(bool value);
 	void showEvent(QShowEvent * event);
