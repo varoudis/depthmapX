@@ -568,6 +568,22 @@
                 "-con": "Segment Map Test"
             }
         }],
+        "convert_drawing_segment_only_map":[{
+            "infile": "../../../testdata/barnsbury_drawing.graph",
+            "outfile": "out.graph",
+            "mode": "MAPCONVERT",
+            "extraArgs": {
+                "-co": "segment",
+                "-con": "Segment Map Test"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.csv",
+            "mode": "EXPORT",
+            "extraArgs": {
+                "-em": "shapegraph-map-csv"
+            }
+        }],
         "convert_drawing_convex":[{
             "infile": "../../../testdata/polygons_drawing.graph",
             "outfile": "out.graph",

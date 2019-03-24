@@ -23,7 +23,6 @@
 
 TEST_CASE("test attribute column")
 {
-    using namespace dXreimpl;
     AttributeColumnImpl col("colName");
     REQUIRE(col.getName() == "colName");
     REQUIRE(col.getFormula() == "");
@@ -97,7 +96,6 @@ TEST_CASE("test attribute column")
 
 TEST_CASE("test attribute row")
 {
-    using namespace dXreimpl;
     using namespace fakeit;
     Mock<AttributeColumnManager> colMan;
     When(Method(colMan,getColumnIndex).Using(std::string("col1"))).AlwaysReturn(0);
@@ -177,8 +175,6 @@ TEST_CASE("test attribute row")
 
 TEST_CASE("test attribute table")
 {
-    using namespace dXreimpl;
-
     AttributeTable table;
 
     table.insertOrResetColumn("col1");
@@ -285,7 +281,6 @@ TEST_CASE("test attribute table")
 
 TEST_CASE("Existing and non-existing rows")
 {
-    using namespace dXreimpl;
     AttributeTable table;
     table.getOrInsertColumn("col1");
     table.getOrInsertColumn("col2");
@@ -308,7 +303,6 @@ TEST_CASE("Existing and non-existing rows")
 }
 
 TEST_CASE("normalised values"){
-    using namespace dXreimpl;
     AttributeTable table;
     table.getOrInsertColumn("col1");
     table.getOrInsertColumn("col2");
@@ -335,7 +329,6 @@ TEST_CASE("normalised values"){
 
 TEST_CASE("attibute table iterations")
 {
-    using namespace dXreimpl;
     AttributeTable table;
 
     table.insertOrResetColumn("col1");
@@ -399,7 +392,6 @@ TEST_CASE("attibute table iterations")
     REQUIRE(table.getRow(AttributeKey(1)).getValue(1) == Approx(3.2));
 }
 
-#include "salalib/attributes.h"
 #include <salalib/attributetablehelpers.h>
 
 TEST_CASE("Attribute Table - serialisation")
@@ -408,7 +400,7 @@ TEST_CASE("Attribute Table - serialisation")
     layerManager.addLayer("extra layer");
     REQUIRE(layerManager.getLayerIndex("extra layer") == 1);
 
-    dXreimpl::AttributeTable newTable;
+    AttributeTable newTable;
     size_t colIndex1 = newTable.getOrInsertColumn("foo", "foo formula");
     size_t colIndex2 = newTable.getOrInsertColumn("bar");
 
@@ -426,8 +418,8 @@ TEST_CASE("Attribute Table - serialisation")
     newTable.getColumn(colIndex2).setDisplayParams(barDp);
     newTable.setDisplayParams(overAllDp);
 
-    auto& row = newTable.addRow(dXreimpl::AttributeKey(0));
-    auto& row2 = newTable.addRow(dXreimpl::AttributeKey(10));
+    auto& row = newTable.addRow(AttributeKey(0));
+    auto& row2 = newTable.addRow(AttributeKey(10));
 
     row.setValue(0,1.0f);
     row.setValue(1,2.0f);
@@ -443,25 +435,24 @@ TEST_CASE("Attribute Table - serialisation")
 
 
     SelfCleaningFile newTableFile("newtable.bin");
-    SelfCleaningFile legacyTableFile("legacytable.bin");
 
     {
         std::ofstream outfile(newTableFile.Filename());
         newTable.write(outfile, layerManager);
     }
 
-    dXreimpl::AttributeTable copyTable;
+    AttributeTable copyTable;
     LayerManagerImpl copyLayerManager;
     {
         std::ifstream infile(newTableFile.Filename());
         copyTable.read(infile, copyLayerManager, METAGRAPH_VERSION);
     }
 
-    auto& copyRow = copyTable.getRow(dXreimpl::AttributeKey(0));
+    auto& copyRow = copyTable.getRow(AttributeKey(0));
     REQUIRE(copyRow.getValue(0) == Approx(1.0f));
     REQUIRE(copyRow.getValue(1) == Approx(2.0f));
 
-    auto& copyRow2 = copyTable.getRow(dXreimpl::AttributeKey(10));
+    auto& copyRow2 = copyTable.getRow(AttributeKey(10));
     REQUIRE(copyRow2.getValue(0) == Approx(11.0f));
     REQUIRE(copyRow2.getValue(1) == Approx(12.0f));
 
@@ -473,73 +464,6 @@ TEST_CASE("Attribute Table - serialisation")
 
     REQUIRE(copyTable.getColumn(colIndex1).getDisplayParams().blue == Approx(fooDp.blue));
     REQUIRE(copyTable.getDisplayParams().blue == Approx(overAllDp.blue));
-
-
-    AttributeTable oldTable;
-    {
-        std::ifstream infile(newTableFile.Filename());
-        oldTable.read(infile, METAGRAPH_VERSION);
-    }
-
-    int row1Ind = oldTable.getRowid(0);
-    REQUIRE(row1Ind == 0);
-    int row2Ind = oldTable.getRowid(10);
-    REQUIRE(row2Ind == 1);
-
-    REQUIRE(oldTable.getValue(0, "foo") == Approx(1.0));
-    REQUIRE(oldTable.getValue(1, "foo") == Approx(11.0));
-    REQUIRE(oldTable.getValue(0, "bar") == Approx(2.0));
-    REQUIRE(oldTable.getValue(1, "bar") == Approx(12.0));
-
-    REQUIRE(oldTable.getColumnIndex("foo") == 1);
-
-    REQUIRE(oldTable.isVisible(1));
-    REQUIRE_FALSE(oldTable.isVisible(0));
-
-    auto fooOldColIndex = oldTable.getColumnIndex("foo");
-    REQUIRE(fooOldColIndex == 1);
-    REQUIRE(oldTable.getColumnFormula(fooOldColIndex) == "foo formula");
-
-    auto barOldColIndex = oldTable.getColumnIndex("bar");
-    REQUIRE(barOldColIndex == 0);
-
-
-    // the old attribute table is a bit rubbish, and what display params you see is stateful
-    // the index you pass in is ignored.
-    REQUIRE(oldTable.getDisplayParams(527).blue == Approx(overAllDp.blue));
-
-    oldTable.setDisplayColumn(fooOldColIndex);
-    REQUIRE(oldTable.getDisplayParams(527).blue == Approx(fooDp.blue));
-
-
-    {
-        std::ofstream outfile(legacyTableFile.Filename());
-        oldTable.write(outfile, METAGRAPH_VERSION);
-    }
-
-
-    dXreimpl::AttributeTable roundTripTable;
-    LayerManagerImpl roundTripManager;
-    {
-        std::ifstream infile(legacyTableFile.Filename());
-        roundTripTable.read(infile, roundTripManager, METAGRAPH_VERSION);
-    }
-
-    auto& roundtripRow = roundTripTable.getRow(dXreimpl::AttributeKey(0));
-    REQUIRE(roundtripRow.getValue(0) == Approx(1.0f));
-    REQUIRE(roundtripRow.getValue(1) == Approx(2.0f));
-
-    auto& roundtripRow2 = roundTripTable.getRow(dXreimpl::AttributeKey(10));
-    REQUIRE(roundtripRow2.getValue(0) == Approx(11.0f));
-    REQUIRE(roundtripRow2.getValue(1) == Approx(12.0f));
-
-    REQUIRE(isObjectVisible(roundTripManager, roundtripRow2));
-    REQUIRE_FALSE(isObjectVisible(roundTripManager, roundtripRow));
-
-    REQUIRE(roundTripTable.getColumn(colIndex1).getDisplayParams().blue == Approx(fooDp.blue));
-    // the overall display params have gone AWOL in the old implementation :-/
-    REQUIRE(roundTripTable.getDisplayParams().blue == Approx(fooDp.blue));
-
 
 }
 

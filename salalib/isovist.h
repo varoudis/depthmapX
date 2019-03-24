@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "salalib/attributetable.h"
+
 #include "genlib/bsptree.h"
 #include <set>
 
@@ -80,7 +82,7 @@ public:
    void make(BSPNode *here);
    void drawnode(const Line& li, int tag);
    void addBlock(const Line& li, int tag, double startangle, double endangle);
-   void setData(AttributeTable& table, int row, bool simple_version);
+   void setData(AttributeTable &table, AttributeRow &row, bool simple_version);
    //
    int getClosestLine(BSPNode *root, const Point2f& p);
 };

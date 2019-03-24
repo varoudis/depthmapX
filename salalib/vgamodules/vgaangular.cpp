@@ -42,11 +42,14 @@ bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, 
 
     // n.b. these must be entered in alphabetical order to preserve col indexing:
     std::string mean_depth_col_text = std::string("Angular Mean Depth") + radius_text;
-    int mean_depth_col = attributes.insertColumn(mean_depth_col_text.c_str());
+    int mean_depth_col = attributes.getOrInsertColumn(mean_depth_col_text.c_str());
     std::string total_detph_col_text = std::string("Angular Total Depth") + radius_text;
-    int total_depth_col = attributes.insertColumn(total_detph_col_text.c_str());
+    int total_depth_col = attributes.getOrInsertColumn(total_detph_col_text.c_str());
     std::string count_col_text = std::string("Angular Node Count") + radius_text;
-    int count_col = attributes.insertColumn(count_col_text.c_str());
+    int count_col = attributes.getOrInsertColumn(count_col_text.c_str());
+
+    // TODO: Binary compatibility. Remove in re-examination
+    total_depth_col = attributes.getOrInsertColumn(total_detph_col_text.c_str());
 
     int count = 0;
 
@@ -103,12 +106,12 @@ bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, 
                     }
                 }
 
-                int row = attributes.getRowid(curs);
+                AttributeRow &row = map.getAttributeTable().getRow(AttributeKey(curs));
                 if (total_nodes > 0) {
-                    attributes.setValue(row, mean_depth_col, float(double(total_angle) / double(total_nodes)));
+                    row.setValue(mean_depth_col, float(double(total_angle) / double(total_nodes)));
                 }
-                attributes.setValue(row, total_depth_col, total_angle);
-                attributes.setValue(row, count_col, float(total_nodes));
+                row.setValue(total_depth_col, total_angle);
+                row.setValue(count_col, float(total_nodes));
 
                 count++; // <- increment count
             }

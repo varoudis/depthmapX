@@ -100,12 +100,38 @@ protected:
    bool m_boundarygraph;
    int m_undocounter;
    std::vector<PixelRefPair> m_merge_lines;
-   // The attributes table replaces AttrHeader / AttrRow data format
-   AttributeTable m_attributes;
+private:
+   std::unique_ptr<AttributeTable> m_attributes;
+   std::unique_ptr<AttributeTableHandle> m_attribHandle;
+   LayerManagerImpl m_layers;
 public:
-   PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles, const std::string& name = std::string("VGA Map"));
+   PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles,
+            const std::string& name = std::string("VGA Map"));
+   void copy(const PointMap& other);
    const std::string& getName() const
    { return m_name; }
+
+   PointMap(PointMap&& other):
+              m_parentRegion(std::move(other.m_parentRegion)),
+              m_drawingFiles(std::move(other.m_drawingFiles)),
+              m_points(std::move(other.m_points)),
+              m_attributes(std::move(other.m_attributes)),
+              m_attribHandle(std::move(other.m_attribHandle)),
+              m_layers(std::move(other.m_layers)) {
+       copy(other);
+   }
+   PointMap& operator =(PointMap&& other) {
+       m_parentRegion = std::move(other.m_parentRegion);
+       m_drawingFiles = std::move(other.m_drawingFiles);
+       m_points = std::move(other.m_points);
+       m_attributes = std::move(other.m_attributes);
+       m_attribHandle = std::move(other.m_attribHandle);
+       m_layers = std::move(other.m_layers);
+       copy(other);
+       return *this;
+   }
+   PointMap(const PointMap& ) = delete;
+   PointMap& operator =(const PointMap&) = delete;
 
    void communicate( time_t& atime, Communicator *comm, int record );
    // constrain is constrain to existing rows / cols
@@ -212,38 +238,39 @@ protected:
    mutable int m_displayed_attribute;
 public:
    int addAttribute(const std::string& name)
-      { return m_attributes.insertColumn(name); }
+      { return m_attributes->insertOrResetColumn(name); }
    void removeAttribute(int col)
-      { m_attributes.removeColumn(col); }
+      { m_attributes->removeColumn(col); }
    // I don't want to do this, but every so often you will need to update this table
    // use const version by preference
    AttributeTable& getAttributeTable()
-      { return m_attributes; }
+      { return *m_attributes.get(); }
    const AttributeTable& getAttributeTable() const
-      { return m_attributes; }
+      { return *m_attributes.get(); }
+   LayerManagerImpl& getLayers()
+      { return m_layers; }
+   const LayerManagerImpl& getLayers() const
+      { return m_layers; }
+   AttributeTableHandle& getAttributeTableHandle()
+      { return *m_attribHandle.get(); }
+   const AttributeTableHandle& getAttributeTableHandle() const
+      { return *m_attribHandle.get(); }
 public:
    double getDisplayMinValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMinValue(m_displayed_attribute) : 0; }
+   { return (m_displayed_attribute != -1) ? m_attributes->getColumn(m_displayed_attribute).getStats().min : 0; }
 
-   // Quick mod - TV
-#if defined(_WIN32)
    double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right); }
-#else
-   double getDisplayMaxValue() const
-   { return (m_displayed_attribute != -1) ? m_attributes.getMaxValue(m_displayed_attribute) : pixelate(m_region.top_right).x; }
-#endif
-   //
-   mutable DisplayParams m_display_params;
+   { return (m_displayed_attribute != -1) ? m_attributes->getColumn(m_displayed_attribute).getStats().max : pixelate(m_region.top_right).x; }
+
    const DisplayParams& getDisplayParams() const
-   { return m_attributes.getDisplayParams(m_displayed_attribute); }
+   { return m_attributes->getColumn(m_displayed_attribute).getDisplayParams(); }
    // make a local copy of the display params for access speed:
    void setDisplayParams(const DisplayParams& dp, bool apply_to_all = false)
    { if (apply_to_all)
-        m_attributes.setDisplayParams(dp);
+        m_attributes->setDisplayParams(dp);
      else
-        m_attributes.setDisplayParams(m_displayed_attribute, dp);
-     m_display_params = dp; }
+        m_attributes->getColumn(m_displayed_attribute).setDisplayParams(dp);
+   }
    //
 public:
    void setDisplayedAttribute( int col );
@@ -253,12 +280,16 @@ public:
    // now, there is a slightly odd thing here: the displayed attribute can go out of step with the underlying
    // attribute data if there is a delete of an attribute in idepthmap.h, so it just needs checking before returning!
    int getDisplayedAttribute() const
-   { if (m_displayed_attribute == m_attributes.m_display_column) return m_displayed_attribute;
-     if (m_attributes.m_display_column != -2) {
-        m_displayed_attribute = m_attributes.m_display_column;
-        m_display_params = m_attributes.getDisplayParams(m_displayed_attribute);
+   {
+     if (m_displayed_attribute == m_attribHandle->getDisplayColIndex()) return m_displayed_attribute;
+     if (m_attribHandle->getDisplayColIndex() != -2) {
+        m_displayed_attribute = m_attribHandle->getDisplayColIndex();
      }
      return m_displayed_attribute; }
+
+   float getDisplayedSelectedAvg() {
+       return(m_attributes->getSelAvg(m_displayed_attribute));
+   }
 
    double getLocationValue(const Point2f& point);
    //

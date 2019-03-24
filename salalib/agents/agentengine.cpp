@@ -41,7 +41,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap) {
     }
 
     AttributeTable &table = pointmap->getAttributeTable();
-    int displaycol = table.insertColumn(g_col_total_counts);
+    int displaycol = table.getOrInsertColumn(g_col_total_counts);
 
     int output_mode = Agent::OUTPUT_COUNTS;
     if (m_gatelayer != -1) {

@@ -14,12 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
 
-
-#ifndef __MAPINFODATA_H__
-#define __MAPINFODATA_H__
+#include "salalib/attributetable.h"
+#include "salalib/layermanagerimpl.h"
 
 #include "genlib/p2dpoly.h"
+
 #include <istream>
 #include <ostream>
 #include <string>
@@ -64,10 +65,8 @@ public:
    bool readheader(std::istream& miffile);
    bool readcolumnheaders(std::istream& miffile, std::istream& midfile, std::vector<std::string>& columnheads);
    void writeheader(std::ostream& miffile);
-   void writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes);
+   void writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes, const LayerManagerImpl layers);
    //
    std::istream& read(std::istream& stream, int version);
    std::ostream& write(std::ostream& stream);
 };
-
-#endif

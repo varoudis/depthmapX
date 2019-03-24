@@ -29,7 +29,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     time_t atime = 0;
     if (comm) {
         qtimer(atime, 0);
-        comm->CommPostMessage(Communicator::NUM_RECORDS, map.getConnections().size());
+        comm->CommPostMessage(Communicator::NUM_RECORDS, map.getShapeCount());
     }
 
     AttributeTable &attributes = map.getAttributeTable();
@@ -54,8 +54,8 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     std::string weighting_col_text;
     if (options.weighted_measure_col != -1) {
         weighting_col_text = attributes.getColumnName(options.weighted_measure_col);
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
-            weights.push_back(attributes.getValue(i, options.weighted_measure_col));
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
+            weights.push_back(map.getAttributeRowFromShapeIndex(i).getValue(options.weighted_measure_col));
         }
     }
 
@@ -67,75 +67,75 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         }
         if (options.choice) {
             std::string choice_col_text = std::string("Choice") + radius_text;
-            attributes.insertColumn(choice_col_text.c_str());
+            attributes.insertOrResetColumn(choice_col_text.c_str());
             std::string n_choice_col_text = std::string("Choice [Norm]") + radius_text;
-            attributes.insertColumn(n_choice_col_text.c_str());
+            attributes.insertOrResetColumn(n_choice_col_text.c_str());
             if (options.weighted_measure_col != -1) {
                 std::string w_choice_col_text = std::string("Choice [") + weighting_col_text + " Wgt]" + radius_text;
-                attributes.insertColumn(w_choice_col_text.c_str());
+                attributes.insertOrResetColumn(w_choice_col_text.c_str());
                 std::string nw_choice_col_text =
                     std::string("Choice [") + weighting_col_text + " Wgt][Norm]" + radius_text;
-                attributes.insertColumn(nw_choice_col_text.c_str());
+                attributes.insertOrResetColumn(nw_choice_col_text.c_str());
             }
         }
 
         if (!simple_version) {
             std::string entropy_col_text = std::string("Entropy") + radius_text;
-            attributes.insertColumn(entropy_col_text.c_str());
+            attributes.insertOrResetColumn(entropy_col_text.c_str());
         }
 
         std::string integ_dv_col_text = std::string("Integration [HH]") + radius_text;
-        attributes.insertColumn(integ_dv_col_text.c_str());
+        attributes.insertOrResetColumn(integ_dv_col_text.c_str());
 
         if (!simple_version) {
             std::string integ_pv_col_text = std::string("Integration [P-value]") + radius_text;
-            attributes.insertColumn(integ_pv_col_text.c_str());
+            attributes.insertOrResetColumn(integ_pv_col_text.c_str());
             std::string integ_tk_col_text = std::string("Integration [Tekl]") + radius_text;
-            attributes.insertColumn(integ_tk_col_text.c_str());
+            attributes.insertOrResetColumn(integ_tk_col_text.c_str());
             std::string intensity_col_text = std::string("Intensity") + radius_text;
-            attributes.insertColumn(intensity_col_text.c_str());
+            attributes.insertOrResetColumn(intensity_col_text.c_str());
             std::string harmonic_col_text = std::string("Harmonic Mean Depth") + radius_text;
-            attributes.insertColumn(harmonic_col_text.c_str());
+            attributes.insertOrResetColumn(harmonic_col_text.c_str());
         }
 
         std::string depth_col_text = std::string("Mean Depth") + radius_text;
-        attributes.insertColumn(depth_col_text.c_str());
+        attributes.insertOrResetColumn(depth_col_text.c_str());
         std::string count_col_text = std::string("Node Count") + radius_text;
-        attributes.insertColumn(count_col_text.c_str());
+        attributes.insertOrResetColumn(count_col_text.c_str());
 
         if (!simple_version) {
             std::string rel_entropy_col_text = std::string("Relativised Entropy") + radius_text;
-            attributes.insertColumn(rel_entropy_col_text);
+            attributes.insertOrResetColumn(rel_entropy_col_text);
         }
 
         if (options.weighted_measure_col != -1) {
             std::string w_md_col_text = std::string("Mean Depth [") + weighting_col_text + " Wgt]" + radius_text;
-            attributes.insertColumn(w_md_col_text.c_str());
+            attributes.insertOrResetColumn(w_md_col_text.c_str());
             std::string total_weight_text = std::string("Total ") + weighting_col_text + radius_text;
-            attributes.insertColumn(total_weight_text.c_str());
+            attributes.insertOrResetColumn(total_weight_text.c_str());
         }
         if (options.fulloutput) {
             if (!simple_version) {
                 std::string penn_norm_text = std::string("RA [Penn]") + radius_text;
-                attributes.insertColumn(penn_norm_text);
+                attributes.insertOrResetColumn(penn_norm_text);
             }
             std::string ra_col_text = std::string("RA") + radius_text;
-            attributes.insertColumn(ra_col_text.c_str());
+            attributes.insertOrResetColumn(ra_col_text.c_str());
 
             if (!simple_version) {
                 std::string rra_col_text = std::string("RRA") + radius_text;
-                attributes.insertColumn(rra_col_text.c_str());
+                attributes.insertOrResetColumn(rra_col_text.c_str());
             }
 
             std::string td_col_text = std::string("Total Depth") + radius_text;
-            attributes.insertColumn(td_col_text.c_str());
+            attributes.insertOrResetColumn(td_col_text.c_str());
         }
         //
     }
     if (options.local) {
         if (!simple_version) {
-            attributes.insertColumn("Control");
-            attributes.insertColumn("Controllability");
+            attributes.insertOrResetColumn("Control");
+            attributes.insertOrResetColumn("Controllability");
         }
     }
     // then look up all the columns... eek:
@@ -221,8 +221,8 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     // for choice
     AnalysisInfo **audittrail;
     if (options.choice) {
-        audittrail = new AnalysisInfo *[map.getConnections().size()];
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        audittrail = new AnalysisInfo *[map.getShapeCount()];
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
             audittrail[i] = new AnalysisInfo[radii.size()];
         }
     }
@@ -231,13 +231,17 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     // has already failed due to this!  when intro hand drawn fewest line (where user may have deleted)
     // it's going to get worse...
 
-    bool *covered = new bool[map.getConnections().size()];
-    for (size_t i = 0; i < map.getConnections().size(); i++) {
-        for (size_t j = 0; j < map.getConnections().size(); j++) {
+    bool *covered = new bool[map.getShapeCount()];
+
+    size_t i = -1;
+    for (auto & iter : attributes) {
+        i++;
+        AttributeRow &row = iter.getRow();
+        for (size_t j = 0; j < map.getShapeCount(); j++) {
             covered[j] = false;
         }
         if (options.choice) {
-            for (size_t k = 0; k < map.getConnections().size(); k++) {
+            for (size_t k = 0; k < map.getShapeCount(); k++) {
                 audittrail[k][0].previous.ref = -1; // note, 0th member used as radius doesn't matter
                 // note, choice columns are not cleared, but cummulative over all shortest path pairs
             }
@@ -263,21 +267,20 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
 
             if (!simple_version) {
                 if (connections.size() > 0) {
-                    attributes.setValue(i, control_col, float(control));
-                    attributes.setValue(i, controllability_col,
-                                          float(double(connections.size()) / double(totalneighbourhood.size() - 1)));
+                    row.setValue(control_col, float(control));
+                    row.setValue(controllability_col,
+                                 float(double(connections.size()) / double(totalneighbourhood.size() - 1)));
                 } else {
-                    attributes.setValue(i, control_col, -1);
-                    attributes.setValue(i, controllability_col, -1);
+                    row.setValue(control_col, -1);
+                    row.setValue(controllability_col, -1);
                 }
             }
         }
 
         std::vector<int> depthcounts;
         depthcounts.push_back(0);
-        Connector &thisline = map.getConnections()[i];
         pflipper<IntPairVector> foundlist;
-        foundlist.a().push_back(IntPair(i, -1));
+        foundlist.a().push_back(std::pair<int, int>(i, -1));
         covered[i] = true;
         int total_depth = 0, depth = 1, node_count = 1, pos = -1, previous = -1; // node_count includes this 1
         double weight = 0.0, rootweight = 0.0, total_weight = 0.0, w_total_depth = 0.0;
@@ -291,20 +294,19 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         for (int radius : radii) {
             while (foundlist.a().size()) {
                 if (!options.choice) {
-                    index = foundlist.a().back().a;
+                    index = foundlist.a().back().first;
                 } else {
                     pos = pafrand() % foundlist.a().size();
-                    index = foundlist.a().at(pos).a;
-                    previous = foundlist.a().at(pos).b;
+                    index = foundlist.a().at(pos).first;
+                    previous = foundlist.a().at(pos).second;
                     audittrail[index][0].previous.ref =
                         previous; // note 0th member used here: can be used individually different radius previous
                 }
                 Connector &line = map.getConnections()[index];
-                double control = 0;
                 for (size_t k = 0; k < line.m_connections.size(); k++) {
                     if (!covered[line.m_connections[k]]) {
                         covered[line.m_connections[k]] = true;
-                        foundlist.b().push_back(IntPair(line.m_connections[k], index));
+                        foundlist.b().push_back(std::pair<int, int>(line.m_connections[k], index));
                         if (options.weighted_measure_col != -1) {
                             // the weight is taken from the discovered node:
                             weight = weights[line.m_connections[k]];
@@ -347,18 +349,18 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                 }
             }
             // set the attributes for this node:
-            attributes.setValue(i, count_col[r], float(node_count));
+            row.setValue(count_col[r], float(node_count));
             if (options.weighted_measure_col != -1) {
-                attributes.setValue(i, total_weight_col[r], float(total_weight));
+                row.setValue(total_weight_col[r], float(total_weight));
             }
             // node count > 1 to avoid divide by zero (was > 2)
             if (node_count > 1) {
                 // note -- node_count includes this one -- mean depth as per p.108 Social Logic of Space
                 double mean_depth = double(total_depth) / double(node_count - 1);
-                attributes.setValue(i, depth_col[r], float(mean_depth));
+                row.setValue(depth_col[r], float(mean_depth));
                 if (options.weighted_measure_col != -1) {
                     // weighted mean depth:
-                    attributes.setValue(i, w_depth_col[r], float(w_total_depth / total_weight));
+                    row.setValue(w_depth_col[r], float(w_total_depth / total_weight));
                 }
                 // total nodes > 2 to avoid divide by 0 (was > 3)
                 if (node_count > 2 && mean_depth > 1.0) {
@@ -367,53 +369,52 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                     double rra_d = ra / dvalue(node_count);
                     double rra_p = ra / dvalue(node_count);
                     double integ_tk = teklinteg(node_count, total_depth);
-                    attributes.setValue(i, integ_dv_col[r], float(1.0 / rra_d));
+                    row.setValue(integ_dv_col[r], float(1.0 / rra_d));
 
                     if (!simple_version) {
-                        attributes.setValue(i, integ_pv_col[r], float(1.0 / rra_p));
+                        row.setValue(integ_pv_col[r], float(1.0 / rra_p));
                         if (total_depth - node_count + 1 > 1) {
-                            attributes.setValue(i, integ_tk_col[r], float(integ_tk));
+                            row.setValue(integ_tk_col[r], float(integ_tk));
                         } else {
-                            attributes.setValue(i, integ_tk_col[r], -1.0f);
+                            row.setValue(integ_tk_col[r], -1.0f);
                         }
                     }
 
                     if (options.fulloutput) {
-                        attributes.setValue(i, ra_col[r], float(ra));
+                        row.setValue(ra_col[r], float(ra));
 
                         if (!simple_version) {
-                            attributes.setValue(i, rra_col[r], float(rra_d));
+                            row.setValue(rra_col[r], float(rra_d));
                         }
-                        attributes.setValue(i, td_col[r], float(total_depth));
+                        row.setValue(td_col[r], float(total_depth));
 
                         if (!simple_version) {
                             // alan's palm-tree normalisation: palmtree
                             double dmin = node_count - 1;
                             double dmax = palmtree(node_count, depth - 1);
                             if (dmax != dmin) {
-                                attributes.setValue(i, penn_norm_col[r],
-                                                      float((dmax - total_depth) / (dmax - dmin)));
+                                row.setValue(penn_norm_col[r], float((dmax - total_depth) / (dmax - dmin)));
                             }
                         }
                     }
                 } else {
-                    attributes.setValue(i, integ_dv_col[r], -1.0f);
+                    row.setValue(integ_dv_col[r], -1.0f);
 
                     if (!simple_version) {
-                        attributes.setValue(i, integ_pv_col[r], -1.0f);
-                        attributes.setValue(i, integ_tk_col[r], -1.0f);
+                        row.setValue(integ_pv_col[r], -1.0f);
+                        row.setValue(integ_tk_col[r], -1.0f);
                     }
                     if (options.fulloutput) {
-                        attributes.setValue(i, ra_col[r], -1.0f);
+                        row.setValue(ra_col[r], -1.0f);
 
                         if (!simple_version) {
-                            attributes.setValue(i, rra_col[r], -1.0f);
+                            row.setValue(rra_col[r], -1.0f);
                         }
 
-                        attributes.setValue(i, td_col[r], -1.0f);
+                        row.setValue(td_col[r], -1.0f);
 
                         if (!simple_version) {
-                            attributes.setValue(i, penn_norm_col[r], -1.0f);
+                            row.setValue(penn_norm_col[r], -1.0f);
                         }
                     }
                 }
@@ -440,21 +441,21 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
                     } else {
                         intensity = -1;
                     }
-                    attributes.setValue(i, entropy_col[r], float(entropy));
-                    attributes.setValue(i, rel_entropy_col[r], float(rel_entropy));
-                    attributes.setValue(i, intensity_col[r], float(intensity));
-                    attributes.setValue(i, harmonic_col[r], float(harmonic));
+                    row.setValue(entropy_col[r], float(entropy));
+                    row.setValue(rel_entropy_col[r], float(rel_entropy));
+                    row.setValue(intensity_col[r], float(intensity));
+                    row.setValue(harmonic_col[r], float(harmonic));
                 }
             } else {
-                attributes.setValue(i, depth_col[r], -1.0f);
-                attributes.setValue(i, integ_dv_col[r], -1.0f);
+                row.setValue(depth_col[r], -1.0f);
+                row.setValue(integ_dv_col[r], -1.0f);
 
                 if (!simple_version) {
-                    attributes.setValue(i, integ_pv_col[r], -1.0f);
-                    attributes.setValue(i, integ_tk_col[r], -1.0f);
-                    attributes.setValue(i, entropy_col[r], -1.0f);
-                    attributes.setValue(i, rel_entropy_col[r], -1.0f);
-                    attributes.setValue(i, harmonic_col[r], -1.0f);
+                    row.setValue(integ_pv_col[r], -1.0f);
+                    row.setValue(integ_tk_col[r], -1.0f);
+                    row.setValue(entropy_col[r], -1.0f);
+                    row.setValue(rel_entropy_col[r], -1.0f);
+                    row.setValue(harmonic_col[r], -1.0f);
                 }
             }
             ++r;
@@ -472,39 +473,40 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     }
     delete[] covered;
     if (options.choice) {
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        i = -1;
+        for (auto & iter: attributes) {
+            i++;
+            AttributeRow &row = iter.getRow();
             double total_choice = 0.0, w_total_choice = 0.0;
             int r = 0;
             for (int radius : radii) {
                 total_choice += audittrail[i][r].choice;
                 w_total_choice += audittrail[i][r].weighted_choice;
                 // n.b., normalise choice according to (n-1)(n-2)/2 (maximum possible through routes)
-                double node_count = attributes.getValue(i, count_col[r]);
+                double node_count = row.getValue(count_col[r]);
                 double total_weight;
                 if (options.weighted_measure_col != -1) {
-                    total_weight = attributes.getValue(i, total_weight_col[r]);
+                    total_weight = row.getValue(total_weight_col[r]);
                 }
                 if (node_count > 2) {
-                    attributes.setValue(i, choice_col[r], float(total_choice));
-                    attributes.setValue(i, n_choice_col[r],
-                                          float(2.0 * total_choice / ((node_count - 1) * (node_count - 2))));
+                    row.setValue(choice_col[r], float(total_choice));
+                    row.setValue(n_choice_col[r], float(2.0 * total_choice / ((node_count - 1) * (node_count - 2))));
                     if (options.weighted_measure_col != -1) {
-                        attributes.setValue(i, w_choice_col[r], float(w_total_choice));
-                        attributes.setValue(i, nw_choice_col[r],
-                                              float(2.0 * w_total_choice / (total_weight * total_weight)));
+                        row.setValue(w_choice_col[r], float(w_total_choice));
+                        row.setValue(nw_choice_col[r], float(2.0 * w_total_choice / (total_weight * total_weight)));
                     }
                 } else {
-                    attributes.setValue(i, choice_col[r], -1);
-                    attributes.setValue(i, n_choice_col[r], -1);
+                    row.setValue(choice_col[r], -1);
+                    row.setValue(n_choice_col[r], -1);
                     if (options.weighted_measure_col != -1) {
-                        attributes.setValue(i, w_choice_col[r], -1);
-                        attributes.setValue(i, nw_choice_col[r], -1);
+                        row.setValue(w_choice_col[r], -1);
+                        row.setValue(nw_choice_col[r], -1);
                     }
                 }
                 ++r;
             }
         }
-        for (size_t i = 0; i < map.getConnections().size(); i++) {
+        for (size_t i = 0; i < map.getShapeCount(); i++) {
             delete[] audittrail[i];
         }
         delete[] audittrail;

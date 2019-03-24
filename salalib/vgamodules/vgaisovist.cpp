@@ -49,7 +49,8 @@ bool VGAIsovist::run(Communicator *comm, const Options &, PointMap &map, bool si
                 }
                 Isovist isovist;
                 isovist.makeit(&bspRoot, map.depixelate(curs), map.getRegion(), 0, 0);
-                int row = attributes.getRowid(curs);
+
+                AttributeRow &row = attributes.getRow(AttributeKey(curs));
                 isovist.setData(attributes, row, simple_version);
                 Node &node = map.getPoint(curs).getNode();
                 std::vector<PixelRef> *occ = node.m_occlusion_bins;
@@ -85,7 +86,7 @@ bool VGAIsovist::run(Communicator *comm, const Options &, PointMap &map, bool si
     return true;
 }
 
-BSPNode VGAIsovist::makeBSPtree(Communicator *communicator, std::vector<SpacePixelFile> drawingFiles) {
+BSPNode VGAIsovist::makeBSPtree(Communicator *communicator, const std::vector<SpacePixelFile>& drawingFiles) {
     std::vector<TaggedLine> partitionlines;
     for (const auto &pixelGroup : drawingFiles) {
         for (const auto &pixel : pixelGroup.m_spacePixels) {
