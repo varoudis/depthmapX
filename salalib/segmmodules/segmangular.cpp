@@ -23,7 +23,7 @@
 bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
     if (map.getMapType() != ShapeMap::SEGMENTMAP) {
-       return false;
+        return false;
     }
 
     AttributeTable &attributes = map.getAttributeTable();
@@ -54,11 +54,11 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
     for (int radius : radii) {
         std::string radius_text = makeRadiusText(Options::RADIUS_ANGULAR, radius);
         std::string depth_col_text = std::string("Angular Mean Depth") + radius_text;
-        attributes.insertColumn(depth_col_text.c_str());
+        attributes.insertOrResetColumn(depth_col_text.c_str());
         std::string count_col_text = std::string("Angular Node Count") + radius_text;
-        attributes.insertColumn(count_col_text.c_str());
+        attributes.insertOrResetColumn(count_col_text.c_str());
         std::string total_col_text = std::string("Angular Total Depth") + radius_text;
-        attributes.insertColumn(total_col_text.c_str());
+        attributes.insertOrResetColumn(total_col_text.c_str());
     }
 
     for (int radius : radii) {
@@ -71,14 +71,15 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
         total_col.push_back(attributes.getColumnIndex(total_col_text.c_str()));
     }
 
-    std::vector<bool> covered(map.getConnections().size());
-    for (size_t i = 0; i < map.getConnections().size(); i++) {
-        for (size_t j = 0; j < map.getConnections().size(); j++) {
+    std::vector<bool> covered(map.getShapeCount());
+    size_t i = 0;
+    for (auto & iter : attributes){
+        for (size_t j = 0; j < map.getShapeCount(); j++) {
             covered[j] = false;
         }
         std::vector<std::pair<float, SegmentData>> anglebins;
         anglebins.push_back(std::make_pair(0.0f, SegmentData(0, i, SegmentRef(), 0, 0.0, 0)));
-        Connector &thisline = map.getConnections()[i];
+
         std::vector<double> total_depth;
         std::vector<int> node_count;
         for (size_t r = 0; r < radii.size(); r++) {
@@ -132,21 +133,22 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 anglebins.erase(iter);
             }
         }
+        AttributeRow &row = iter.getRow();
         // set the attributes for this node:
         int curs_node_count = 0;
         double curs_total_depth = 0.0;
         for (size_t r = 0; r < radii.size(); r++) {
             curs_node_count += node_count[r];
             curs_total_depth += total_depth[r];
-            attributes.setValue(i, count_col[r], float(curs_node_count));
+            row.setValue(count_col[r], float(curs_node_count));
             if (curs_node_count > 1) {
                 // note -- node_count includes this one -- mean depth as per p.108 Social Logic of Space
                 double mean_depth = curs_total_depth / double(curs_node_count - 1);
-                attributes.setValue(i, depth_col[r], float(mean_depth));
-                attributes.setValue(i, total_col[r], float(curs_total_depth));
+                row.setValue(depth_col[r], float(mean_depth));
+                row.setValue(total_col[r], float(curs_total_depth));
             } else {
-                attributes.setValue(i, depth_col[r], -1);
-                attributes.setValue(i, total_col[r], -1);
+                row.setValue(depth_col[r], -1);
+                row.setValue(total_col[r], -1);
             }
         }
         //
@@ -158,6 +160,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
                 comm->CommPostMessage(Communicator::CURRENT_RECORD, i);
             }
         }
+        i++;
     }
 
     map.setDisplayedAttribute(-2); // <- override if it's already showing

@@ -17,11 +17,14 @@
 
 // PlotView.cpp : implementation file
 //
-#include <qpainter.h>
-#include <qevent.h>
 
 #include "mainwindow.h"
 #include "plotview.h"
+
+#include "salalib/attributetablehelpers.h"
+
+#include <qpainter.h>
+#include <qevent.h>
 
 #ifdef _WIN32
 #define finite _finite
@@ -92,29 +95,28 @@ bool QPlotView::eventFilter(QObject *object, QEvent *e)
 		if (!pDoc->m_communicator) {
          // first, check you have a meta graph
 			if (pDoc->m_meta_graph) {
-				if (pDoc->m_meta_graph->viewingProcessed()) {
-					AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-					size_t xfloor = idx_x.searchfloorindex(ValuePair(-1,dataX(hit_point.x()-2)));
-					size_t xceil = idx_x.searchceilindex(ValuePair(-1,dataX(hit_point.x()+2)));
-					size_t yfloor = idx_y.searchfloorindex(ValuePair(-1,dataY(hit_point.y()+2)));
-					size_t yceil = idx_y.searchceilindex(ValuePair(-1,dataY(hit_point.y()-2)));
+                if (pDoc->m_meta_graph->viewingProcessed()) {
+                    AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+
+                    auto xRange = getIndexItemsInValueRange(idx_x, table, dataX(hit_point.x()-2), dataX(hit_point.x()+2));
+                    auto yRange = getIndexItemsInValueRange(idx_y, table, dataY(hit_point.y()+2), dataY(hit_point.y()-2));
+
 					// work out anything near this point...
-                    std::set<int> xkeys;
-					for (size_t i = xfloor + 1; i < xceil; i++) {
-						int index = idx_x[i].index;
-                        xkeys.insert(index);
+
+                    std::set<AttributeKey> xkeys;
+                    for (auto iter = xRange.first; iter != xRange.second; iter++) {
+                        xkeys.insert(iter->key);
 					}
-                    std::vector<int> finalkeys;
-					for (size_t j = yfloor + 1; j < yceil; j++) {
-						size_t index = idx_y[j].index;
-                        if (xkeys.find(index) != xkeys.end()) {
-							finalkeys.push_back( table.getRowKey(index) );
+                    const AttributeRow* displayRow = nullptr;
+                    for (auto iter = yRange.first; iter != yRange.second; iter++) {
+                        if (xkeys.find(iter->key) != xkeys.end()) {
+                            displayRow = iter->row;
+                            break;
 						}
 					}
-					if (finalkeys.size()) {
-						AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+                    if (displayRow) {
 						// and that it has an appropriate state to display a hover wnd
-						float val = table.getValue( finalkeys[0], pDoc->m_meta_graph->getDisplayedAttribute() );
+                        float val = displayRow->getValue( pDoc->m_meta_graph->getDisplayedAttribute() );
 						if (val == -1.0f) 
 							setToolTip("No value");
 						else if (val != -2.0f)
@@ -270,14 +272,36 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
    }
 
    AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-   int displaycol = pDoc->m_meta_graph->getDisplayedAttribute();
+   AttributeTableHandle& tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
+   LayerManagerImpl& layers = pDoc->m_meta_graph->getLayers();
 
    QRect rect = QRect(0, 0, width(), height());
    int mindim = __min(rect.width(),rect.height());
-   int viscount = table.getVisibleRowCount();
-   if(!viscount) m_x_axis = m_y_axis = 0;
 
-   int spacer = floor(2.0 * sqrt(double(mindim)/double(viscount != 0 ? viscount : 1)));
+   // TODO: the calculations are done here for the moment
+   // but should be placed in their own helper method
+
+   int numVisible = 0;
+   float minVisibleX = std::numeric_limits<float>::max();
+   float maxVisibleX = std::numeric_limits<float>::min();
+   float minVisibleY = std::numeric_limits<float>::max();
+   float maxVisibleY = std::numeric_limits<float>::min();
+
+   for (auto iter = table.begin(); iter != table.end(); iter++) {
+       if(isObjectVisible(layers, iter->getRow())) {
+           numVisible++;
+           float xVal = iter->getRow().getValue(m_x_axis);
+           float yVal = iter->getRow().getValue(m_y_axis);
+           minVisibleX = std::min(minVisibleX, xVal);
+           maxVisibleX = std::max(maxVisibleX, xVal);
+           minVisibleY = std::min(minVisibleY, yVal);
+           maxVisibleY = std::max(maxVisibleY, yVal);
+       }
+   }
+
+   if(numVisible == 0) m_x_axis = m_y_axis = 0;
+
+   int spacer = floor(2.0 * sqrt(double(mindim)/double(numVisible != 0 ? numVisible : 1)));
    if (!screendraw && spacer < 4) {
       spacer = 4;
    }
@@ -301,10 +325,10 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
    float minx, miny, maxx, maxy;
    QString str_minx, str_miny, str_maxx, str_maxy;
 
-   minx = m_data_bounds.bottom_left.x = m_view_origin ? 0.0 : table.getVisibleMinValue(m_x_axis);
-   miny = m_data_bounds.bottom_left.y = m_view_origin ? 0.0 : table.getVisibleMinValue(m_y_axis);
-   maxx = m_data_bounds.top_right.x = table.getVisibleMaxValue(m_x_axis);
-   maxy = m_data_bounds.top_right.y = table.getVisibleMaxValue(m_y_axis);
+   minx = m_data_bounds.bottom_left.x = m_view_origin ? 0.0 : minVisibleX;
+   miny = m_data_bounds.bottom_left.y = m_view_origin ? 0.0 : minVisibleY;
+   maxx = m_data_bounds.top_right.x = maxVisibleX;
+   maxy = m_data_bounds.top_right.y = maxVisibleY;
 
    str_minx = QString(tr("%1")).arg(minx);
    str_miny = QString(tr("%1")).arg(miny);
@@ -372,12 +396,12 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
 
    int sel_parity = 0;
    QPen pen2;
-   for (int i = 0; i < table.getRowCount(); i++) {
-      if (!table.isVisible(i)) {
+   for (const auto& iter: table) {
+      if (!isObjectVisible(layers, iter.getRow())) {
          continue;
       }
-      float x = table.getValue(i,m_x_axis);
-      float y = table.getValue(i,m_y_axis);
+      float x = iter.getRow().getValue(m_x_axis);
+      float y = iter.getRow().getValue(m_y_axis);
       if (!finite(x) || !finite(y) || x == -1.0f || y == -1.0f) {
          continue;
       }
@@ -386,11 +410,11 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
          rgb = m_foreground;
       }
       else {
-         PafColor color = table.getDisplayColor(i);
+         PafColor color = dXreimpl::getDisplayColor(iter.getKey(), iter.getRow(), tableHandle);
          rgb = qRgb(color.redb(),color.greenb(),color.blueb());
       }
       int tempspacer = spacer;
-      if (table.isSelected(i)) {
+      if (iter.getRow().isSelected()) {
          tempspacer = (spacer + 1) * 2 - 1;
          if (m_view_monochrome) {
             rgb = qRgb(0xff,0,0);
@@ -403,10 +427,10 @@ bool QPlotView::Output(QPainter *pDC, QGraphDoc *pDoc, bool screendraw)
 		  pen2 = QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap);
          //pDC->setPen(QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap));
       }
-      else if (sel_parity != (table.isSelected(i) ? 1 : -1)) {
+      else if (sel_parity != (iter.getRow().isSelected() ? 1 : -1)) {
 		  pen2 = QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap);
          //pDC->setPen(QPen(QBrush(QColor(rgb)), spacer, Qt::SolidLine, Qt::FlatCap));
-         sel_parity = (table.isSelected(i) ? 1 : -1);
+         sel_parity = (iter.getRow().isSelected() ? 1 : -1);
       }
 	  pDC->setPen(pen2);
       //
@@ -561,8 +585,8 @@ void QPlotView::RedoIndices()
 {
    if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
       AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-      idx_x.makeIndex(table, m_x_axis, false);
-      idx_y.makeIndex(table, m_y_axis, false);
+      idx_x = makeAttributeIndex(table, m_x_axis);
+      idx_y = makeAttributeIndex(table, m_y_axis);
    }
 }
 
@@ -633,12 +657,12 @@ void QPlotView::SetAxis(int axis, int col, bool reset)
 void QPlotView::ResetRegression()
 {
    m_regression.clear();
-   if (pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
+   if (m_x_axis != -1 && m_y_axis != -1 && pDoc->m_meta_graph && pDoc->m_meta_graph->viewingProcessed()) {
       AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-      for (int i = 0; i < table.getRowCount(); i++) {
-         if (table.isVisible(i)) {
-            float x = table.getValue(i,m_x_axis);
-            float y = table.getValue(i,m_y_axis);
+      for (auto iter = table.begin(); iter != table.end(); iter++) {
+         if (isObjectVisible(pDoc->m_meta_graph->getLayers(), iter->getRow())) {
+            float x = iter->getRow().getValue(m_x_axis);
+            float y = iter->getRow().getValue(m_y_axis);
             if (finite(x) && finite(y) && x != -1.0f && y != -1.0f) {
                m_regression.add(x,y);
             }
@@ -710,29 +734,27 @@ void QPlotView::mouseReleaseEvent(QMouseEvent *e)
    }
    m_selecting = false;
 
-   size_t xfloor = idx_x.searchfloorindex(ValuePair(-1,dataX(m_drag_rect_a.left()-2)));
-   size_t xceil = idx_x.searchceilindex(ValuePair(-1,dataX(m_drag_rect_a.right()+2)));
-   size_t yfloor = idx_y.searchfloorindex(ValuePair(-1,dataY(m_drag_rect_a.bottom()+2)));
-   size_t yceil = idx_y.searchceilindex(ValuePair(-1,dataY(m_drag_rect_a.top()-2)));
+   AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
+
+
+   auto xRange = getIndexItemsInValueRange(idx_x, table, dataX(m_drag_rect_a.left()-2), dataX(m_drag_rect_a.right()+2));
+   auto yRange = getIndexItemsInValueRange(idx_y, table, dataY(m_drag_rect_a.bottom()+2), dataY(m_drag_rect_a.top()-2));
 
    // Stop drag rect...
    m_drag_rect_a = QRect(0,0,0,0);
    m_drawdragrect = false;
    update();
-   AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
 
    // work out selection
-   std::set<int> xkeys;
-   for (size_t i = xfloor + 1; i < xceil; i++) {
-      int index = idx_x[i].index;
-      xkeys.insert(index);
+   std::set<AttributeKey> xkeys;
+   for (auto iter = xRange.first; iter != xRange.second; iter++) {
+       xkeys.insert(iter->key);
    }
    std::vector<int> finalkeys;
-   for (size_t j = yfloor + 1; j < yceil; j++) {
-      int index = idx_y[j].index;
-      if (xkeys.find(index) != xkeys.end()) {
-         finalkeys.push_back( table.getRowKey(index) );
-      }
+   for (auto iter = yRange.first; iter != yRange.second; iter++) {
+       if (xkeys.find(iter->key) != xkeys.end()) {
+           finalkeys.push_back(iter->key.value);
+       }
    }
    
    // redraw selection set

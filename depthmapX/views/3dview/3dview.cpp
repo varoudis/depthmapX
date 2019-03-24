@@ -268,11 +268,12 @@ void Q3DView::DrawScene()
             // okay, you can go for it and draw all the squares in cutesy 3d:
             PointMap& pointmap = pDoc->m_meta_graph->getDisplayedPointMap();
             AttributeTable& table = pointmap.getAttributeTable();
-            for (int i = 0; i < table.getRowCount(); i++) {
-               PixelRef pix = table.getRowKey(i);
+
+            for (auto iter = table.begin(); iter != table.end(); iter++) {
+               PixelRef pix = iter->getKey().value;
                PafColor color;
                int col = pointmap.getDisplayedAttribute();
-               float value = table.getNormValue(i,col);
+               float value = iter->getRow().getNormalisedValue(col);
                if (value != -1.0f) {
                   color.makeAxmanesque(value);
                   glColor3f(color.redf(),color.greenf(),color.bluef());
@@ -460,8 +461,8 @@ void Q3DView::ReloadPointData()
       m_pixels.clear();
       PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
       AttributeTable& table = map.getAttributeTable();
-      for (int i = 0; i < table.getRowCount(); i++) {
-         PixelRef pix = table.getRowKey(i);
+      for (const auto& iter: table) {
+         PixelRef pix = iter.getKey().value;
          Point2f p = map.depixelate(pix);
          p.normalScale(m_region);
          m_pixels[pix] = C3DPixelData(p);

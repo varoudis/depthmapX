@@ -19,12 +19,13 @@
 // a simple agent demonstration for Salad (now within depthmapX)
 
 #include "salalib/pointdata.h"
-#include "salalib/attributes.h"
 #include "salalib/nagent.h"
 #include "salalib/ngraph.h"
+
 #include "genlib/comm.h"
 #include "genlib/stringutils.h"
 #include "genlib/containerutils.h"
+#include "genlib/paftl.h"
 
 int thisrun = 0;
 
@@ -85,7 +86,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap)
    }
    
    AttributeTable& table = pointmap->getAttributeTable();
-   int displaycol = table.insertColumn(g_col_total_counts);
+   int displaycol = table.getOrInsertColumn(g_col_total_counts);
 
    int output_mode = Agent::OUTPUT_COUNTS;
    if (m_gatelayer != -1) {
@@ -602,8 +603,10 @@ void Agent::onInit(PixelRef node, int trail_num)
    m_node = node;
    m_loc = m_pointmap->depixelate(m_node);
    if (m_output_mode & OUTPUT_GATE_COUNTS) {
-      int index = m_pointmap->getAttributeTable().getRowid(m_node);
-      m_gate = (index != -1) ? (int)m_pointmap->getAttributeTable().getValue(index,g_col_gate) : -1;
+       // see note about gates in Through vision analysis
+       m_gate = (m_pointmap->getPoint(node).filled())
+                    ? (int)m_pointmap->getAttributeTable().getRow(AttributeKey(m_node)).getValue(g_col_gate)
+                    : -1;
    }
    else {
       m_gate = -1;
@@ -663,17 +666,17 @@ void Agent::onMove()
    PixelRef lastnode = m_node;
    onStep();
    if (m_node != lastnode && m_output_mode != OUTPUT_NOTHING) {
-      int index = m_pointmap->getAttributeTable().getRowid(m_node);
-      if (index != -1) {
+      if (m_pointmap->getPoint(m_node).filled()) {
+         AttributeRow& row = m_pointmap->getAttributeTable().getRow(AttributeKey(m_node));
          if (m_output_mode & OUTPUT_COUNTS) {
-            m_pointmap->getAttributeTable().incrValue(index, g_col_total_counts);
+            row.incrValue(g_col_total_counts);
          }
          if (m_output_mode & OUTPUT_GATE_COUNTS) {
-            int obj = (int)m_pointmap->getAttributeTable().getValue(index, g_col_gate);
+            int obj = (int)row.getValue(g_col_gate);
             if (m_gate != obj) {
                m_gate = obj;
                if (m_gate != -1) {
-                  m_pointmap->getAttributeTable().incrValue(index, g_col_gate_counts);
+                  row.incrValue(g_col_gate_counts);
                   // actually crossed into a new gate:
                   m_gate_encountered = true;
                }

@@ -34,7 +34,6 @@
 
 #include "salalib/salaprogram.h"
 #include "salalib/ngraph.h"
-#include "salalib/attributes.h"
 #include "salalib/shapemap.h"
 #include "salalib/pointdata.h"
 #include "salalib/connector.h"
@@ -42,6 +41,7 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
+#include <cstring>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,10 +261,7 @@ SalaObj SalaProgram::evaluate()
 
    // clear marks if they've been used:
    if (m_marked) {
-      AttributeTable *table = m_thisobj.getTable();
-      for (int i = 0; i < table->getRowCount(); i++) {
-          m_thisobj.marks[i] = SalaObj();
-      }
+      marks.clear();
       m_marked = false;
    }
 
@@ -277,14 +274,13 @@ SalaObj SalaProgram::evaluate()
 bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 {
    AttributeTable *table = m_thisobj.getTable();
-   bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
    //
    // note: reference, will change object directly, which is important for commands running the program
    int& row = m_thisobj.data.graph.node;
    m_col = col;
    if (selset.size()) {
       for (auto& sel: selset) {
-         row = sel;  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+         row = sel;
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
@@ -296,7 +292,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 #endif            
                v = -1.0f;
             }
-            table->changeValue(pointmap ? table->getRowid(row) : row,m_col,v);
+            table->getRow(AttributeKey(sel)).setValue(m_col,v);
          }
          catch (SalaError e) {
             // error
@@ -306,8 +302,8 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
       }
    }
    else {
-      for (int i = 0; i < table->getRowCount(); i++) {
-         row = pointmap ? table->getRowKey(i) : i; // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+      for (auto iter = table->begin(); iter != table->end(); iter++) {
+         row = iter->getKey().value;
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
@@ -319,7 +315,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 #endif            
                v = -1.0f;
             }
-            table->changeValue(i,m_col,v);
+            iter->getRow().setValue(m_col,v);
          }
          catch (SalaError e) {
             // error
@@ -339,15 +335,13 @@ bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& se
    AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
    //
-   int& row = m_thisobj.data.graph.node;
    if (selsetin.size()) {
-      for (auto& sel: selsetin) {
-         row = sel;  // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+      for (auto& key: selsetin) {
          try {
             SalaObj val = evaluate();
             bool v = val.toBool();   // note, toBool will type check and throw if there's a problem
             if (v) {
-               selsetout.push_back(sel);
+               selsetout.push_back(key);
             }
          }
          catch (SalaError e) {
@@ -358,13 +352,13 @@ bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& se
       }
    }
    else {
-      for (int i = 0; i < table->getRowCount(); i++) {
-         row = pointmap ? table->getRowKey(i) : i; // *** NB! selsets for vga store pixelrefs keys, *all* others use rowids directly ***
+      for (auto iter = table->begin(); iter != table->end(); iter++) {
+          int key = iter->getKey().value;
          try {
             SalaObj val = evaluate();
             bool v = val.toBool();   // note, toBool will type check and throw if there's a problem
             if (v) {
-               selsetout.push_back(row);
+               selsetout.push_back(key);
             }
          }
          catch (SalaError e) {
@@ -885,12 +879,14 @@ int SalaCommand::decode(std::string string)   // string copied as makelower appl
             SalaCommand *parent = m_parent;
             auto n = parent->m_var_names.end();
             int x = -1;
-            while (parent != NULL && n == parent->m_var_names.end()) {
+            while (parent != NULL) {
                n = parent->m_var_names.find(string);
                if (n != parent->m_var_names.end()) {
                   x = n->second;
+                  parent = NULL;
+               } else {
+                  parent = parent->m_parent;
                }
-               parent = parent->m_parent;
             }
             if (x != -1) {
                m_eval_stack.push_back( SalaObj( SalaObj::S_VAR, x) );
@@ -1522,16 +1518,15 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   {
                      const std::string& str = param.toStringRef();
                      AttributeTable *table = obj.getTable();
-                     int col = -1;
-                     if (str != "Ref Number") {
-                        col = table->getColumnIndex(str);
-                        if (col == -1) {
-                           throw SalaError(str + " is an unknown column",m_line);
-                        }
+                     if (str == "Ref Number") {
+                         data = SalaObj(obj.data.graph.node);
+                     } else {
+                         if (!table->hasColumn(str)) {
+                            throw SalaError(str + " is an unknown column",m_line);
+                         }
+                         data = SalaObj(table->getRow(AttributeKey(obj.data.graph.node)).getValue(
+                                            table->getColumnIndex(str)));
                      }
-                     // *** NB! vga is keyed off pixelrefs *all* others use rowids directly ***
-                     // (this may seem an odd way to do it, but it speeds up connection hunting to use whichever method the map uses -- note idepthmap uses the method to access attributes)
-                     data = SalaObj(table->getValue((obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node,col));
                   }
                   break;
                case SalaObj::S_FSETVALUE:
@@ -1544,14 +1539,14 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      AttributeTable *table = obj.getTable();
                      int col = -1;
                      if (str != "Ref Number") {
-                        col = table->getColumnIndex(str);
-                        if (col == -1) {
+                        if (!table->hasColumn(str)) {
                            throw SalaError(str + " is an unknown column",m_line);
                         }
+                        col = table->getColumnIndex(str);
+                     } else {
+                         throw SalaError("The reference number can not be changed",m_line);
                      }
-                     // *** NB! vga is keyed off pixelrefs *all* others use rowids directly ***
-                     // (this may seem an odd way to do it, but it speeds up connection hunting to use whichever method the map uses -- note idepthmap uses the method to access attributes)
-                     table->setValue((obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node, col, val);
+                     table->getRow(AttributeKey(obj.data.graph.node)).setValue(col, val);
                      data = SalaObj(); // returns none
                   }
                   break;
@@ -1563,14 +1558,12 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                case SalaObj::S_FMARK:
                   {
                      param.ensureNone();
-                     AttributeTable *table = obj.getTable();
-                     data = obj.marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node];
+                     data = m_program->marks[obj.data.graph.node];
                   }
                   break;
                case SalaObj::S_FSETMARK:
                   {
-                     AttributeTable *table = obj.getTable();
-                     obj.marks[(obj.type == SalaObj::S_POINTMAPOBJ) ? table->getRowid(obj.data.graph.node) : obj.data.graph.node] = param;
+                     m_program->marks[obj.data.graph.node] = param;
                      m_program->m_marked = true;   // <- this tells the program to tidy up marks between executions
                      data = SalaObj(); // returns none
                   }
@@ -1657,7 +1650,9 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       }
    }
    else {
-      const Connector& connector = graphobj.data.graph.map.shape->getConnections()[graphobj.data.graph.node];
+      int idx = std::distance(graphobj.data.graph.map.shape->getAllShapes().begin(),
+                                graphobj.data.graph.map.shape->getAllShapes().find(graphobj.data.graph.node));
+      const Connector& connector = graphobj.data.graph.map.shape->getConnections()[idx];
       int mode = Connector::CONN_ALL;
       if (graphobj.data.graph.map.shape->isSegmentMap()) {
          const std::string& str = param.toStringRef();
@@ -1678,9 +1673,12 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
       list = SalaObj( SalaObj::S_LIST, count);
       int cursor = 0;
       for (int i = 0; i < count; i++) {
-         graphobj.data.graph.node = connector.getConnectedRef(cursor, mode);
-         if (graphobj.data.graph.node == -1) {
+         int connectedIndex = connector.getConnectedRef(cursor, mode);
+         if (connectedIndex == -1) {
             cursor = -1;
+            graphobj.data.graph.node = -1;
+         } else {
+            graphobj.data.graph.node = graphobj.data.graph.map.shape->getShapeRefFromIndex(connectedIndex)->first;
          }
          list.data.list.list->at(i) = graphobj;
          cursor++;

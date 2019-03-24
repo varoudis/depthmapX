@@ -16,6 +16,7 @@
 #include "importutils.h"
 
 #include "genlib/stringutils.h"
+#include "genlib/paftl.h"
 
 #include <sstream>
 

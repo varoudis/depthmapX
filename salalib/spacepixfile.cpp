@@ -1,18 +1,9 @@
 #include "salalib/spacepixfile.h"
 
-void SpacePixelFile::cutLine(Line& l)//, short dir)
-{
-   for (auto& pixelGroup: m_spacePixels) {
-      if (pixelGroup.isShown()) {
-         pixelGroup.cutLine(l);
-      }
-   }
-}
-
 void SpacePixelFile::makeViewportShapes( const QtRegion& viewport ) const
 {
    m_current_layer = -1;
-   for (size_t i = m_spacePixels.size() - 1; i != paftl::npos; i--) {
+   for (size_t i = m_spacePixels.size() - 1; i != -1; i--) {
       if (m_spacePixels[i].isShown()) {
          m_current_layer = (int) i;
          m_spacePixels[i].makeViewportShapes( (viewport.atZero() ? m_region : viewport) );

@@ -20,8 +20,7 @@
 #include "mgraph_consts.h"
 
 namespace dXreimpl{
-    template<typename RowKeyType>
-    inline void pushSelectionToLayer(AttributeTable<RowKeyType> &table, LayerManager& layerManager, const std::string &layerName)
+    inline void pushSelectionToLayer(AttributeTable &table, LayerManager& layerManager, const std::string &layerName)
     {
         size_t layerIndex = layerManager.addLayer(layerName);
         LayerManager::KeyType layerKey = layerManager.getKey(layerIndex);
@@ -37,7 +36,7 @@ namespace dXreimpl{
         layerManager.setLayerVisible(layerIndex);
     }
 
-    inline PafColor getDisplayColor( const SerialisedPixelRef& key, const AttributeRow& row, const AttributeTableView& tableView, bool checkSelectionStatus = false)
+    inline PafColor getDisplayColor( const AttributeKey& key, const AttributeRow& row, const AttributeTableView& tableView, bool checkSelectionStatus = false)
     {
         if ( checkSelectionStatus && row.isSelected())
         {
@@ -49,4 +48,37 @@ namespace dXreimpl{
 
     }
 
+}
+
+struct OrderedIntPair
+{
+   int a;
+   int b;
+   OrderedIntPair(int x = -1, int y = -1) {
+      a = (int) x < y ? x : y;
+      b = (int) x < y ? y : x;
+   }
+   // inlined at end of file
+   friend bool operator == (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator != (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator <  (const OrderedIntPair& x, const OrderedIntPair& y);
+   friend bool operator >  (const OrderedIntPair& x, const OrderedIntPair& y);
+};
+
+// note: these are made with a is always less than b
+inline bool operator == (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a == y.a && x.b == y.b);
+}
+inline bool operator != (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return (x.a != y.a || x.b != y.b);
+}
+inline bool operator < (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b < y.b : x.a < y.a );
+}
+inline bool operator > (const OrderedIntPair& x, const OrderedIntPair& y)
+{
+   return ( (x.a == y.a) ? x.b > y.b : x.a > y.a );
 }

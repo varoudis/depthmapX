@@ -20,7 +20,6 @@ CONFIG        += staticlib c++11
 DEFINES += SALALIB_LIBRARY
 
 SOURCES += \
-    attributes.cpp \
     axialmap.cpp \
     connector.cpp \
     isovist.cpp \
@@ -47,10 +46,10 @@ SOURCES += \
     axialpolygons.cpp \
     tidylines.cpp \
     mapconverter.cpp \
-    importutils.cpp
+    importutils.cpp \
+    attributetableindex.cpp
 
 HEADERS += \
-    attributes.h \
     axialmap.h \
     connector.h \
     fileproperties.h \

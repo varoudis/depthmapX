@@ -15,7 +15,6 @@
 
 #include "ui_MakeLayerDlg.h"
 #include <salalib/mgraph.h>
-#include <salalib/attributes.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
 

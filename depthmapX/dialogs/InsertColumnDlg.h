@@ -15,7 +15,6 @@
 
 #include "ui_InsertColumnDlg.h"
 #include <salalib/mgraph.h>
-#include <salalib/attributes.h>
 #include <salalib/shapemap.h>
 #include <salalib/axialmap.h>
 #include <string>
@@ -25,7 +24,7 @@ class CInsertColumnDlg : public QDialog, public Ui::CInsertColumnDlg
 {
 	Q_OBJECT
 public:
-	CInsertColumnDlg(AttributeTable *table = NULL, int col = -1, QWidget *parent = 0);
+    CInsertColumnDlg(AttributeTable *table = NULL, int col = -1, QWidget *parent = 0);
 	bool	m_selection_only;
 	int m_col;
     std::vector<std::string> m_col_names;

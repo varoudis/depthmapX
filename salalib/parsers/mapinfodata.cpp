@@ -18,9 +18,10 @@
 
 #include "mapinfodata.h"
 #include "salalib/mgraph.h"
-#include "salalib/attributes.h"
 #include "salalib/shapemap.h"
 #include "salalib/axialmap.h"
+
+#include <numeric>
 
 int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& map)
 {
@@ -33,7 +34,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
 
    std::vector<std::string> columnheads;
 
-   AttributeTable& table = map.getAttributeTable();
+   AttributeTable& attributes = map.getAttributeTable();
 
    // read mif table
    if (!readcolumnheaders(miffile,midfile,columnheads)) {
@@ -44,8 +45,7 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
    // 
    std::vector<std::string> colnames;
    std::vector<int> readable, colindexes;
-   size_t i;
-   for (i = 0; i < columnheads.size(); i++) {
+   for (size_t i = 0; i < columnheads.size(); i++) {
       dXstring::ltrim(columnheads[i]);
       auto tokens = dXstring::split(columnheads[i], ' ',true);
       if (dXstring::beginsWith<std::string>(tokens[1],"Integer")
@@ -54,13 +54,13 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
               || dXstring::beginsWith<std::string>(tokens[1],"Float"))
       {
          colnames.push_back(tokens[0]);
-         table.insertColumn(colnames.back());
+         attributes.insertOrResetColumn(colnames.back());
          readable.push_back(i);
       }
    }
 
-   for (i = 0; i < colnames.size(); i++) {
-      colindexes.push_back(table.getColumnIndex(colnames[i]));
+   for (std::string colname: colnames) {
+      colindexes.push_back(attributes.getColumnIndex(colname));
    }
 
    std::string textline;
@@ -135,16 +135,17 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
       }
    }
    }
-   catch (pexception) {
+   // TODO: Use the proper exception
+   catch (std::exception) {
       // unhandled parsing exceptions return read error:
       return MINFO_MIFPARSE;
    }
 
    size_t nextduplicate = 0;
-   int lastrow = -1;
+   AttributeRow *lastrow;
 
    QtRegion region(pointsets[0][0],pointsets[0][0]);
-   for (i = 0; i < pointsets.size(); i++) {
+   for (size_t i = 0; i < pointsets.size(); i++) {
       for (size_t j = 0; j < pointsets[i].size(); j++) {
          region.encompass(pointsets[i][j]);
       }
@@ -159,13 +160,13 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
             open = true;
          }
          map.makePolyShape(pointsets[i],open);
-         int row = table.getRowCount() - 1;
+         AttributeRow &row = *attributes.back().second;
          //
          // table data entries:
          if (nextduplicate < duplicates.size() && duplicates[nextduplicate] == i) {
             // duplicate last row:
-            for (size_t i = 0; i < colindexes.size(); i++) {
-               table.setValue(row,colindexes[i],table.getValue(lastrow,colindexes[i]));
+            for (int colindex: colindexes) {
+               row.setValue(colindex, lastrow->getValue(colindex));
             }
             nextduplicate++;
          }
@@ -192,17 +193,18 @@ int MapInfoData::import(std::istream& miffile, std::istream& midfile, ShapeMap& 
                   first = here;
                   if (reading == readable[nextreadable]) {
                      float val = stof(field);
-                     table.setValue(row,colindexes[nextreadable],val);
+                     row.setValue(colindexes[nextreadable],val);
                      nextreadable++;
                   }
                   reading++;
                }
             }
          }
-         lastrow = row;
+         lastrow = &row;
       }
    }
-   catch (pexception) {
+   // TODO: use a proper exception
+   catch (std::exception) {
       // unhandled parsing exceptions return read error:
       return MINFO_TABLE;
    }
@@ -257,12 +259,12 @@ bool MapInfoData::exportFile(std::ostream& miffile, std::ostream& midfile, const
    writeheader(miffile);
       
    // write the mif table
-   writetable(miffile,midfile,points.m_attributes);
+   writetable(miffile, midfile, points.getAttributeTable(), points.m_layers);
 
    miffile.precision(16);
 
-   for (int i = 0; i < points.m_attributes.getRowCount(); i++) {
-      PixelRef pix = points.m_attributes.getRowKey(i);
+   for (auto iter = points.getAttributeTable().begin(); iter != points.getAttributeTable().end(); iter++) {
+      PixelRef pix = iter->getKey().value;
       Point2f p = points.depixelate(pix);
       miffile << "Point " << p.x << " " << p.y << std::endl;
       miffile << "    Symbol (32,0,10)" << std::endl;
@@ -283,19 +285,21 @@ bool MapInfoData::exportFile(std::ostream& miffile, std::ostream& midfile, const
       m_bounds = bounds;
    }
 
+   miffile.precision(8);
+   midfile.precision(8);
+
    // write the header...
    writeheader(miffile);
 
    // write the mid table
-   writetable(miffile,midfile,map.m_attributes);
+   writetable(miffile, midfile, *map.m_attributes, map.m_layers);
 
    miffile.precision(16);
+   midfile.precision(16);
 
-   int i = -1;
    for (auto shape: map.m_shapes) {
-      i++;
       // note, attributes must align for this:
-      if (map.getAttributeTable().isVisible(i)) {
+      if (isObjectVisible(map.m_layers, map.getAttributeTable().getRow(AttributeKey(shape.first)))) {
          const SalaShape& poly = shape.second;
          if (poly.isPoint()) {
             miffile << "POINT " << poly.getPoint().x << " " << poly.getPoint().y << std::endl;
@@ -351,11 +355,14 @@ bool MapInfoData::exportPolygons(std::ostream& miffile, std::ostream& midfile, c
    // dummy attributes table:
    AttributeTable attributes;
    for (size_t i = 0; i < polygons.size(); i++) {
-      attributes.insertRow(i);
+      attributes.addRow(AttributeKey(i));
    }
 
+   // dummy layers:
+   LayerManagerImpl layers;
+
    // write the mid table
-   writetable(miffile,midfile,attributes);
+   writetable(miffile, midfile, attributes, layers);
 
    miffile.precision(16);
    for (auto& polygon: polygons) {
@@ -479,9 +486,9 @@ void MapInfoData::writeheader(std::ostream& miffile)
 // note: stopped using m_table and m_columnheads as of VERSION_MAPINFO_SHAPES
 // simply hack up the table now for own purposes
 
-void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes)
+void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes, const LayerManagerImpl layers)
 {
-   miffile << "Columns " << attributes.getColumnCount() + 1 << std::endl;
+   miffile << "Columns " << attributes.getNumColumns() + 1 << std::endl;
    /*
    miffile << "Columns " << m_columnheads.size() + 1 + attributes.getColumnCount() << std::endl;
 
@@ -491,8 +498,19 @@ void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const
    */
    miffile << "  Depthmap_Ref Integer" << std::endl;
 
-   for (int j = 0; j < attributes.getColumnCount(); j++) {
-      std::string colname = attributes.getColumnName(j);
+   // TODO: For compatibility write the columns in alphabetical order
+   // but the physical columns in the order inserted
+
+   std::vector<size_t> indices(attributes.getNumColumns());
+   std::iota(indices.begin(), indices.end(), static_cast<size_t>(0));
+
+   std::sort(indices.begin(), indices.end(),
+       [&](size_t a, size_t b) {
+       return attributes.getColumnName(a) < attributes.getColumnName(b);
+   });
+
+   for (int idx: indices) {
+      std::string colname = attributes.getColumnName(idx);
       miffile << "  ";
       bool lastalpha = false;
       for (size_t i = 0; i < colname.length(); i++) {
@@ -511,16 +529,19 @@ void MapInfoData::writetable(std::ostream& miffile, std::ostream& midfile, const
 
    miffile << "Data" << std::endl << std::endl;
 
-   for (int k = 0; k < attributes.getRowCount(); k++) {
+   for (auto iter = attributes.begin(); iter != attributes.end(); iter++) {
+       int rowKey = iter->getKey().value;
       /*
       if (k < m_table.size()) {
          midfile << m_table[k] << m_delimiter;
       }
       */
-      if (attributes.isVisible(k)) {
-         midfile << attributes.getRowKey(k);
-         // note: outputRow prefixes delimiter, so no delimiter necessary first
-         attributes.outputRow( k, midfile, m_delimiter );
+      if (isObjectVisible(layers, iter->getRow())) {
+         midfile << rowKey;
+         for (int idx: indices) {
+             midfile << m_delimiter << iter->getRow().getValue(idx);
+         }
+         midfile << std::endl;
       }
    }
 }
