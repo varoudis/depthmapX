@@ -147,8 +147,8 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
    std::map<int, float> extraAttr;
    std::map<int, int> inOutColumns;
    if (copydata)   {
-       dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
-       dXreimpl::AttributeTable& output = usermap->getAttributeTable();
+       AttributeTable& input = shapemap.getAttributeTable();
+       AttributeTable& output = usermap->getAttributeTable();
 
        // TODO: Compatibility. The columns are sorted in the old implementation so
        // they are also passed sorted in the conversion:
@@ -178,11 +178,11 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
 
    int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
 
-    dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+    AttributeTable& input = shapemap.getAttributeTable();
     auto keyIter = keys.begin();
     for (auto& line: lines) {
         if (copydata){
-            auto& row = input.getRow(dXreimpl::AttributeKey(keyIter->second));
+            auto& row = input.getRow(AttributeKey(keyIter->second));
             for (auto inOutColumn: inOutColumns){
                 extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
             }
@@ -228,7 +228,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
                if (shape.isPolygon()) {
                   int newShapeRef = usermap->makeShape(shape);
                   usermap->getConnections().push_back( Connector() );
-                  usermap->getAttributeTable().getRow(dXreimpl::AttributeKey(newShapeRef)).setValue(conn_col,0);
+                  usermap->getAttributeTable().getRow(AttributeKey(newShapeRef)).setValue(conn_col,0);
                   count++;
                }
             }
@@ -260,9 +260,9 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToConvex(Communicator *comm
    auto refShapes = shapemap.getAllShapes();
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;
-   dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+   AttributeTable& input = shapemap.getAttributeTable();
    if (copydata) {
-      dXreimpl::AttributeTable& output = usermap->getAttributeTable();
+      AttributeTable& output = usermap->getAttributeTable();
       for (int i = 0; i < input.getNumColumns(); i++) {
          std::string colname = input.getColumnName(i);
          for (int k = 1; output.getColumnIndex(colname) != -1; k++){
@@ -275,14 +275,14 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToConvex(Communicator *comm
    for (auto refShape: refShapes) {
       if ( copydata ){
           for ( int i = 0; i < input.getNumColumns(); ++i ){
-              extraAttr[attrCols[size_t(i)]] = input.getRow(dXreimpl::AttributeKey(refShape.first)).getValue(i);
+              extraAttr[attrCols[size_t(i)]] = input.getRow(AttributeKey(refShape.first)).getValue(i);
           }
       }
       SalaShape& shape = refShape.second;
       if (shape.isPolygon()) {
          int n = usermap->makeShape(shape, -1, extraAttr);
          usermap->getConnections().push_back( Connector() );
-         usermap->getAttributeTable().getRow(dXreimpl::AttributeKey(n)).setValue(conn_col,0);
+         usermap->getAttributeTable().getRow(AttributeKey(n)).setValue(conn_col,0);
       }
    }
    if (usermap->getShapeCount() == 0) {
@@ -438,8 +438,8 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
    std::map<int, float> extraAttr;
    std::map<int, int> inOutColumns;
    if (copydata)   {
-       dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
-       dXreimpl::AttributeTable& output = usermap->getAttributeTable();
+       AttributeTable& input = shapemap.getAttributeTable();
+       AttributeTable& output = usermap->getAttributeTable();
 
        // TODO: Compatibility. The columns are sorted in the old implementation so
        // they are also passed sorted in the conversion:
@@ -469,11 +469,11 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
 
    int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
 
-    dXreimpl::AttributeTable& input = shapemap.getAttributeTable();
+    AttributeTable& input = shapemap.getAttributeTable();
     auto keyIter = keys.begin();
     for (auto& line: lines) {
         if (copydata){
-            auto& row = input.getRow(dXreimpl::AttributeKey(keyIter->second));
+            auto& row = input.getRow(AttributeKey(keyIter->second));
             for (auto inOutColumn: inOutColumns){
                 extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
             }

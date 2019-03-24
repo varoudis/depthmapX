@@ -42,7 +42,7 @@
 
 PointMap::PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles, const std::string& name):
     m_parentRegion(&parentRegion), m_drawingFiles(&drawingFiles), m_points(0,0),
-    m_attributes(new dXreimpl::AttributeTable()), m_attribHandle(new AttributeTableHandle(*m_attributes))
+    m_attributes(new AttributeTable()), m_attribHandle(new AttributeTableHandle(*m_attributes))
 {
    m_name = name;
 
@@ -892,8 +892,8 @@ PafColor PointMap::getPointColor(PixelRef pixelRef) const
    else {
       if (state & Point::FILLED) {
          if (m_processed) {
-            return dXreimpl::getDisplayColor(dXreimpl::AttributeKey(pixelRef),
-                                             m_attributes->getRow(dXreimpl::AttributeKey(pixelRef)),
+            return dXreimpl::getDisplayColor(AttributeKey(pixelRef),
+                                             m_attributes->getRow(AttributeKey(pixelRef)),
                                              *m_attribHandle.get(),
                                              true);
          }
@@ -977,7 +977,7 @@ bool PointMap::setCurSel(QtRegion &r, bool add )
                m_selection |= SINGLE_SELECTION;
             }
             if (pnt.m_node) {
-               m_attributes->getRow(dXreimpl::AttributeKey(PixelRef(i,j))).setSelection(true);
+               m_attributes->getRow(AttributeKey(PixelRef(i,j))).setSelection(true);
             }
          }
       }
@@ -1001,7 +1001,7 @@ bool PointMap::setCurSel(const std::vector<int>& selset, bool add)
       PixelRef pix = selset[i];
       if (includes(pix)) {
             m_points(static_cast<size_t>(pix.y), static_cast<size_t>(pix.x)).m_state |= Point::SELECTED;
-            dXreimpl::AttributeRow& row = m_attributes->getRow(dXreimpl::AttributeKey(pix));
+            AttributeRow& row = m_attributes->getRow(AttributeKey(pix));
             if (!row.isSelected()) {
                row.setSelection(true);
                m_selection_set.insert(pix);
@@ -1297,7 +1297,7 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
          if ( getPoint( curs ).getState() & Point::FILLED ) {
 
             getPoint( curs ).m_node = std::unique_ptr<Node>(new Node());
-            m_attributes->addRow( dXreimpl::AttributeKey(curs) );
+            m_attributes->addRow( AttributeKey(curs) );
 
             sparkPixel2(curs,1,maxdist); // make flag of 1 suggests make this node, don't set reciprocral process flags on those you can see
                                          // maxdist controls how far to see out to
@@ -1467,7 +1467,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
       // The bins are cleared in the make function!
       Point& pt = getPoint( curs );
       pt.m_node->make(curs, bins_b, far_bin_dists, pt.m_processflag);   // note: make clears bins!
-      dXreimpl::AttributeRow& row = m_attributes->getRow( dXreimpl::AttributeKey(curs) );
+      AttributeRow& row = m_attributes->getRow( AttributeKey(curs) );
       row.setValue( "Connectivity", float(neighbourhood_size) );
       row.setValue( "Point First Moment", float(total_dist) );
       row.setValue( "Point Second Moment", float(total_dist_sqr) );
@@ -1556,7 +1556,7 @@ bool PointMap::binDisplay(Communicator *comm)
          b.first();
          while(!b.is_tail()) {
             //m_attributes->setValue( row, bindisplay_col, float((i % 8) + 1) );
-            m_attributes->getRow(dXreimpl::AttributeKey(b.cursor())).setValue( bindisplay_col, float(b.distance()) );
+            m_attributes->getRow(AttributeKey(b.cursor())).setValue( bindisplay_col, float(b.distance()) );
             b.next();   
          }
       }
@@ -1695,7 +1695,7 @@ double PointMap::getLocationValue(const Point2f& point)
    else if (m_displayed_attribute == -1) {
       val = static_cast<float>(pix);
    } else {
-      val = m_attributes->getRow(dXreimpl::AttributeKey(pix)).getValue(m_displayed_attribute);
+      val = m_attributes->getRow(AttributeKey(pix)).getValue(m_displayed_attribute);
    }
 
    return val;

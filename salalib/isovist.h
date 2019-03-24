@@ -82,7 +82,7 @@ public:
    void make(BSPNode *here);
    void drawnode(const Line& li, int tag);
    void addBlock(const Line& li, int tag, double startangle, double endangle);
-   void setData(dXreimpl::AttributeTable &table, dXreimpl::AttributeRow &row, bool simple_version);
+   void setData(AttributeTable &table, AttributeRow &row, bool simple_version);
    //
    int getClosestLine(BSPNode *root, const Point2f& p);
 };

@@ -23,7 +23,6 @@
 
 TEST_CASE("test attribute column")
 {
-    using namespace dXreimpl;
     AttributeColumnImpl col("colName");
     REQUIRE(col.getName() == "colName");
     REQUIRE(col.getFormula() == "");
@@ -97,7 +96,6 @@ TEST_CASE("test attribute column")
 
 TEST_CASE("test attribute row")
 {
-    using namespace dXreimpl;
     using namespace fakeit;
     Mock<AttributeColumnManager> colMan;
     When(Method(colMan,getColumnIndex).Using(std::string("col1"))).AlwaysReturn(0);
@@ -177,8 +175,6 @@ TEST_CASE("test attribute row")
 
 TEST_CASE("test attribute table")
 {
-    using namespace dXreimpl;
-
     AttributeTable table;
 
     table.insertOrResetColumn("col1");
@@ -285,7 +281,6 @@ TEST_CASE("test attribute table")
 
 TEST_CASE("Existing and non-existing rows")
 {
-    using namespace dXreimpl;
     AttributeTable table;
     table.getOrInsertColumn("col1");
     table.getOrInsertColumn("col2");
@@ -308,7 +303,6 @@ TEST_CASE("Existing and non-existing rows")
 }
 
 TEST_CASE("normalised values"){
-    using namespace dXreimpl;
     AttributeTable table;
     table.getOrInsertColumn("col1");
     table.getOrInsertColumn("col2");
@@ -335,7 +329,6 @@ TEST_CASE("normalised values"){
 
 TEST_CASE("attibute table iterations")
 {
-    using namespace dXreimpl;
     AttributeTable table;
 
     table.insertOrResetColumn("col1");
@@ -407,7 +400,7 @@ TEST_CASE("Attribute Table - serialisation")
     layerManager.addLayer("extra layer");
     REQUIRE(layerManager.getLayerIndex("extra layer") == 1);
 
-    dXreimpl::AttributeTable newTable;
+    AttributeTable newTable;
     size_t colIndex1 = newTable.getOrInsertColumn("foo", "foo formula");
     size_t colIndex2 = newTable.getOrInsertColumn("bar");
 
@@ -425,8 +418,8 @@ TEST_CASE("Attribute Table - serialisation")
     newTable.getColumn(colIndex2).setDisplayParams(barDp);
     newTable.setDisplayParams(overAllDp);
 
-    auto& row = newTable.addRow(dXreimpl::AttributeKey(0));
-    auto& row2 = newTable.addRow(dXreimpl::AttributeKey(10));
+    auto& row = newTable.addRow(AttributeKey(0));
+    auto& row2 = newTable.addRow(AttributeKey(10));
 
     row.setValue(0,1.0f);
     row.setValue(1,2.0f);
@@ -448,18 +441,18 @@ TEST_CASE("Attribute Table - serialisation")
         newTable.write(outfile, layerManager);
     }
 
-    dXreimpl::AttributeTable copyTable;
+    AttributeTable copyTable;
     LayerManagerImpl copyLayerManager;
     {
         std::ifstream infile(newTableFile.Filename());
         copyTable.read(infile, copyLayerManager, METAGRAPH_VERSION);
     }
 
-    auto& copyRow = copyTable.getRow(dXreimpl::AttributeKey(0));
+    auto& copyRow = copyTable.getRow(AttributeKey(0));
     REQUIRE(copyRow.getValue(0) == Approx(1.0f));
     REQUIRE(copyRow.getValue(1) == Approx(2.0f));
 
-    auto& copyRow2 = copyTable.getRow(dXreimpl::AttributeKey(10));
+    auto& copyRow2 = copyTable.getRow(AttributeKey(10));
     REQUIRE(copyRow2.getValue(0) == Approx(11.0f));
     REQUIRE(copyRow2.getValue(1) == Approx(12.0f));
 

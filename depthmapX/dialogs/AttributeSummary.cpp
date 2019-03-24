@@ -44,7 +44,7 @@ void CAttributeSummary::UpdateData(bool value)
 
 void CAttributeSummary::showEvent(QShowEvent * event)
 {
-    const dXreimpl::AttributeTable& table = m_pDoc->m_meta_graph->getAttributeTable();
+    const AttributeTable& table = m_pDoc->m_meta_graph->getAttributeTable();
 	
 	c_list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -75,7 +75,7 @@ void CAttributeSummary::showEvent(QShowEvent * event)
 
     c_list->setRowCount(table.getNumColumns());
     for (int i = 0; i < table.getNumColumns(); i++) {
-        const dXreimpl::AttributeColumn& column = table.getColumn(i);
+        const AttributeColumn& column = table.getColumn(i);
         Item = new QTableWidgetItem(QString(column.getName().c_str()));
 		Item->setFlags(Qt::NoItemFlags);
 		c_list->setRowHeight(i, 20);

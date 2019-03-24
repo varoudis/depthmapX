@@ -22,7 +22,7 @@
 
 bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     bool retvar = true;
 
@@ -41,7 +41,7 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
         axialrefs.push_back(row.getValue(attributes.getColumnIndex("Axial Line Ref")));
         seglengths.push_back(row.getValue(attributes.getColumnIndex("Segment Length")));
         if (seglengths.back() > maxseglength) {
@@ -78,7 +78,7 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
     std::vector<TopoMetSegmentChoice> choicevals(map.getShapeCount());
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+        AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
         if (options.sel_only && !row.isSelected()) {
             continue;
         }
@@ -197,7 +197,7 @@ bool SegmentTopological::run(Communicator *comm, const Options &options, ShapeGr
     if (!options.sel_only) {
         // note, I've stopped sel only from calculating choice values:
         for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-            dXreimpl::AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
+            AttributeRow& row = map.getAttributeRowFromShapeIndex(cursor);
             row.setValue(choicecol.c_str(), choicevals[cursor].choice);
             row.setValue(wchoicecol.c_str(), choicevals[cursor].wchoice);
         }

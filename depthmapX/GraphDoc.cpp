@@ -1988,7 +1988,7 @@ void QGraphDoc::OnAddColumn()
 		  QMessageBox::warning(this, tr("Warning"), tr("Column name cannot be empty"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         dXreimpl::AttributeTable& tab = m_meta_graph->getAttributeTable();
+         AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
          for (int i = 0; i < tab.getNumColumns(); i++) {
             if (tab.getColumnName(i) == dlg.m_object_name.toStdString()) {
@@ -2014,7 +2014,7 @@ void QGraphDoc::OnAddColumn()
 
 void QGraphDoc::OnRenameColumn() 
 {
-   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    int col = m_meta_graph->getDisplayedAttribute();
    // -1 is reference number, -2 is displaying nothing (-2 shouldn't happen but is)
    if (col == -1 || col == -2 || m_meta_graph->isAttributeLocked(col)) {
@@ -2030,7 +2030,7 @@ void QGraphDoc::OnRenameColumn()
    }
 }
 
-int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
+int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
 {
    QString colname = QString(tab->getColumnName(col).c_str());
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
@@ -2050,7 +2050,7 @@ int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
 
 void QGraphDoc::OnColumnProperties() 
 {
-   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    LayerManagerImpl *layers = &(m_meta_graph->getLayers());
    int col = m_meta_graph->getDisplayedAttribute();
 
@@ -2109,7 +2109,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
       return false;
    }
 
-   dXreimpl::AttributeTable *table = program_context.getTable();
+   AttributeTable *table = program_context.getTable();
 
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,col);  // Using a column number sets it to use the replace text rather than select text
@@ -2197,7 +2197,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       return false;
    }
 
-   dXreimpl::AttributeTable *table = program_context.getTable();
+   AttributeTable *table = program_context.getTable();
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,-1);  // -1 sets it to use the select text rather than replace text
    bool error = true;

@@ -32,7 +32,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         comm->CommPostMessage(Communicator::NUM_RECORDS, map.getShapeCount());
     }
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // note: radius must be sorted lowest to highest, but if -1 occurs ("radius n") it needs to be last...
     // ...to ensure no mess ups, we'll re-sort here:
@@ -236,7 +236,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
     size_t i = -1;
     for (auto & iter : attributes) {
         i++;
-        dXreimpl::AttributeRow &row = iter.getRow();
+        AttributeRow &row = iter.getRow();
         for (size_t j = 0; j < map.getShapeCount(); j++) {
             covered[j] = false;
         }
@@ -476,7 +476,7 @@ bool AxialIntegration::run(Communicator *comm, const Options &options, ShapeGrap
         i = -1;
         for (auto & iter: attributes) {
             i++;
-            dXreimpl::AttributeRow &row = iter.getRow();
+            AttributeRow &row = iter.getRow();
             double total_choice = 0.0, w_total_choice = 0.0;
             int r = 0;
             for (int radius : radii) {

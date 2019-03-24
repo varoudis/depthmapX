@@ -73,8 +73,8 @@ void ShapeGraph::makeConnections(const KeyVertices &keyvertices)
    for (auto shape: m_shapes) {
       i++;
       int key = shape.first;
-      dXreimpl::AttributeRow &row =
-          m_attributes->getRow(dXreimpl::AttributeKey(key));
+      AttributeRow &row =
+          m_attributes->getRow(AttributeKey(key));
       // all indices should match...
       m_connectors.push_back( Connector() );
       m_connectors[i].m_connections = getLineConnections( key, TOLERANCE_B*__max(m_region.height(),m_region.width()));
@@ -692,7 +692,7 @@ void ShapeGraph::makeSegmentConnections(std::vector<Connector>& connectionset)
    for (auto shape: m_shapes) {
        i++;
        Connector& connector = connectionset[size_t(i)];
-      dXreimpl::AttributeRow& row = m_attributes->getRow(dXreimpl::AttributeKey(shape.first));
+      AttributeRow& row = m_attributes->getRow(AttributeKey(shape.first));
 
       row.setValue(ref_col, float(connector.m_segment_axialref));
       row.setValue(leng_col, float(shape.second.getLine().length()));
@@ -737,7 +737,7 @@ void ShapeGraph::pushAxialValues(ShapeGraph& axialmap)
       int axialref = (int) iter->getRow().getValue("Axial Line Ref");
       // P.K: The original code here got the index of the row, but the column
       // "Axial Line Ref" should actually contain keys, not indices
-      dXreimpl::AttributeRow& row = axialmap.m_attributes->getRow(dXreimpl::AttributeKey(axialref));
+      AttributeRow& row = axialmap.m_attributes->getRow(AttributeKey(axialref));
       for (int k = 0; k < axialmap.m_attributes->getNumColumns(); k++) {
          float val = row.getValue(k);
          // need to look up the column index:

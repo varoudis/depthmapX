@@ -27,7 +27,7 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
         qtimer(atime, 0);
         comm->CommPostMessage(Communicator::NUM_RECORDS, map.getFilledPointCount());
     }
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     int entropy_col, rel_entropy_col, integ_dv_col, integ_pv_col, integ_tk_col, depth_col, count_col;
     std::string radius_text;
@@ -127,7 +127,7 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
                     }
                     level++;
                 }
-                dXreimpl::AttributeRow &row = attributes.getRow(dXreimpl::AttributeKey(curs));
+                AttributeRow &row = attributes.getRow(AttributeKey(curs));
                 // only set to single float precision after divide
                 // note -- total_nodes includes this one -- mean depth as per p.108 Social Logic of Space
                 if (!simple_version) {
