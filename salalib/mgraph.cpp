@@ -2463,7 +2463,7 @@ int MetaGraph::readFromStream( std::istream &stream, const std::string& filename
       if (!stream.eof()) {
          stream.read( &type, 1 );
       }
-      if (!stream.good()) {
+      if (!stream.eof() && !stream.good()) {
          // erk... this shouldn't happen
          return DAMAGED_FILE;
       }
