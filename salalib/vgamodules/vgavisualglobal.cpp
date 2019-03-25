@@ -93,8 +93,8 @@ bool VGAVisualGlobal::run(Communicator *comm, const Options &options, PointMap &
 
                 int level = 0;
                 while (search_tree[level].size()) {
-                    const PixelRefVector& searchTreeAtLevel = search_tree[level];
                     search_tree.push_back(PixelRefVector());
+                    const PixelRefVector& searchTreeAtLevel = search_tree[level];
                     distribution.push_back(0);
                     for (auto currLvlIter = searchTreeAtLevel.rbegin(); currLvlIter != searchTreeAtLevel.rend(); currLvlIter++) {
                         int &pmisc = miscs(currLvlIter->y, currLvlIter->x);

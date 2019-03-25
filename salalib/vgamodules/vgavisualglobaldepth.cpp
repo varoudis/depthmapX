@@ -42,8 +42,8 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
 
     size_t level = 0;
     while (search_tree[level].size()) {
-        const PixelRefVector& searchTreeAtLevel = search_tree[level];
         search_tree.push_back(PixelRefVector());
+        const PixelRefVector& searchTreeAtLevel = search_tree[level];
         for (auto currLvlIter = searchTreeAtLevel.rbegin(); currLvlIter != searchTreeAtLevel.rend(); currLvlIter++) {
             Point &p = map.getPoint(*currLvlIter);
             if (p.filled() && p.m_misc != ~0) {
