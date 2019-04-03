@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 CONFIG+=ordered
 SUBDIRS = \
     mgraph440 \
+    mgraph440Test \
     genlib \
     salalib \
     depthmapX \
