@@ -1677,8 +1677,8 @@ std::vector<int> ShapeMap::polyInPolyList(int polyref, double tolerance) const
                                     Line lineb = Line(polyb.m_points[shaperefb.m_polyrefs[kk]],polyb.m_points[((shaperefb.m_polyrefs[kk]+1)%polyb.m_points.size())]);
                                     if (intersect_region(line,lineb)) {
                                        if (intersect_line(line,lineb,tolerance)) {
-                                          auto iterInternal = std::lower_bound(testedlist.begin(), testedlist.end(), shaperefb.m_shape_ref);
-                                          if (iterInternal == testedlist.end() || shaperefb.m_shape_ref < *iterInternal) {
+                                          auto iterInternal = depthmapX::findBinary(testedlist, shaperefb.m_shape_ref);
+                                          if (iterInternal == testedlist.end()) {
                                              testedlist.insert(iterInternal, shaperefb.m_shape_ref);
                                              shapeindexlist.push_back(int(indexb));
                                              break;
