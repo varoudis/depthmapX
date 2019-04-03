@@ -15,7 +15,6 @@
 
 #include "../salalib/mapconverter.h"
 #include "catch.hpp"
-#include "genlib/paftl.h"
 #include "salalib/salaprogram.h"
 #include "genlib/p2dpoly.h"
 #include "salalib/mgraph.h"
@@ -231,11 +230,12 @@ TEST_CASE("Shapemap scripts") {
     program.parse(script);
     program.runupdate(newCol);
 
-    REQUIRE(shapeGraph->getAttributeTable().getRowCount() == expectedColVals.size());
+    REQUIRE(shapeGraph->getAttributeTable().getNumRows() == expectedColVals.size());
 
     auto iter = expectedColVals.begin();
-    for(int i = 0; i < shapeGraph->getAttributeTable().getRowCount(); i++) {
-        REQUIRE(shapeGraph->getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
+    auto &attributes = shapeGraph->getAttributeTable();
+    for (auto rowIter = attributes.begin(); rowIter != attributes.end(); rowIter++) {
+        REQUIRE(rowIter->getRow().getValue(newCol) == Approx(*iter).epsilon(EPSILON));
         iter++;
     }
 }
@@ -363,11 +363,12 @@ TEST_CASE("Shapemap scripts with unexpected results") {
     program.parse(script);
     program.runupdate(newCol);
 
-    REQUIRE(shapeGraph->getAttributeTable().getRowCount() == expectedColVals.size());
+    REQUIRE(shapeGraph->getAttributeTable().getNumRows() == expectedColVals.size());
 
     auto iter = expectedColVals.begin();
-    for(int i = 0; i < shapeGraph->getAttributeTable().getRowCount(); i++) {
-        REQUIRE(shapeGraph->getAttributeTable().getValue(i, newCol) == Approx(*iter).epsilon(EPSILON));
+    auto &attributes = shapeGraph->getAttributeTable();
+    for (auto rowIter = attributes.begin(); rowIter != attributes.end(); rowIter++) {
+        REQUIRE(rowIter->getRow().getValue(newCol) == Approx(*iter).epsilon(EPSILON));
         iter++;
     }
 }

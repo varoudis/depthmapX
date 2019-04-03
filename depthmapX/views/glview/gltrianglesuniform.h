@@ -26,6 +26,10 @@
 #include <QOpenGLFunctions>
 #include <QRgb>
 
+/**
+ * @brief General triangles representation. All same colour
+ */
+
 class GLTrianglesUniform
 {
 public:

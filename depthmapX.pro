@@ -4,6 +4,7 @@ SUBDIRS = \
     mgraph440 \
     genlib \
     salalib \
+    mgraph440Test \
     depthmapX \
     GuiUnitTest \
     GuiApp \

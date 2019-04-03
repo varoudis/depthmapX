@@ -8,6 +8,7 @@ include(vgamodules/vgamodules.pri)
 include(axialmodules/axialmodules.pri)
 include(segmmodules/segmmodules.pri)
 include(parsers/parsers.pri)
+include(agents/agents.pri)
 
 QT       -= qt
 CONFIG   -= qt
@@ -20,12 +21,10 @@ CONFIG        += staticlib c++11
 DEFINES += SALALIB_LIBRARY
 
 SOURCES += \
-    attributes.cpp \
     axialmap.cpp \
     connector.cpp \
     isovist.cpp \
     mgraph.cpp \
-    nagent.cpp \
     ngraph.cpp \
     pointdata.cpp \
     salaprogram.cpp \
@@ -51,13 +50,11 @@ SOURCES += \
     attributetableindex.cpp
 
 HEADERS += \
-    attributes.h \
     axialmap.h \
     connector.h \
     fileproperties.h \
     isovist.h \
     mgraph.h \
-    nagent.h \
     ngraph.h \
     pointdata.h \
     salaprogram.h \

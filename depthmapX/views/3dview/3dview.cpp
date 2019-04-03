@@ -268,11 +268,12 @@ void Q3DView::DrawScene()
             // okay, you can go for it and draw all the squares in cutesy 3d:
             PointMap& pointmap = pDoc->m_meta_graph->getDisplayedPointMap();
             AttributeTable& table = pointmap.getAttributeTable();
-            for (int i = 0; i < table.getRowCount(); i++) {
-               PixelRef pix = table.getRowKey(i);
+
+            for (auto iter = table.begin(); iter != table.end(); iter++) {
+               PixelRef pix = iter->getKey().value;
                PafColor color;
                int col = pointmap.getDisplayedAttribute();
-               float value = table.getNormValue(i,col);
+               float value = iter->getRow().getNormalisedValue(col);
                if (value != -1.0f) {
                   color.makeAxmanesque(value);
                   glColor3f(color.redf(),color.greenf(),color.bluef());
@@ -361,7 +362,7 @@ void Q3DView::ReloadLineData()
       auto mgraphLock = pDoc->m_meta_graph->getLock();
       std::unique_lock<std::mutex> drawLock(m_draw_mutex);
 
-      prefvec<Line> lines;
+      std::vector<Line> lines;
       for (const auto& pixelGroup: pDoc->m_meta_graph->m_drawingFiles) {
          for (const auto& pixel: pixelGroup.m_spacePixels) {
             if (pixel.isShown()) {
@@ -460,8 +461,8 @@ void Q3DView::ReloadPointData()
       m_pixels.clear();
       PointMap& map = pDoc->m_meta_graph->getDisplayedPointMap();
       AttributeTable& table = map.getAttributeTable();
-      for (int i = 0; i < table.getRowCount(); i++) {
-         PixelRef pix = table.getRowKey(i);
+      for (const auto& iter: table) {
+         PixelRef pix = iter.getKey().value;
          Point2f p = map.depixelate(pix);
          p.normalScale(m_region);
          m_pixels[pix] = C3DPixelData(p);
@@ -760,14 +761,14 @@ void Q3DView::CreateAgent(QPoint point)
          PixelRef pix = pointmap.pixelate(p);
          if (pointmap.getPoint(pix).filled()) {
             m_agents.push_back( Agent(&m_agent_program, &pointmap) );
-            m_agents.tail().onInit(pix);
-            Point2f p2 = m_agents.tail().getLocation();
+            m_agents.back().onInit(pix);
+            Point2f p2 = m_agents.back().getLocation();
             p2.normalScale(m_region);
             m_mannequins.push_back( QMannequin(p2, m_agents.size()-1) );
-            m_agents.tail().onMove();
-            p2 = m_agents.tail().getLocation();
+            m_agents.back().onMove();
+            p2 = m_agents.back().getLocation();
             p2.normalScale(m_region);
-            m_mannequins.tail().advance(p2);
+            m_mannequins.back().advance(p2);
 
             m_animating = true;
          }
@@ -1159,19 +1160,19 @@ void Q3DView::OnToolsImportTraces()
                   double x = QString(traceevent.attributes["x"].c_str()).toDouble();
                   double y = QString(traceevent.attributes["y"].c_str()).toDouble();
                   double t = QString(traceevent.attributes["t"].c_str()).toDouble();
-                  m_traces.tail().events.push_back(Event2f(x,y,t));
+                  m_traces.back().events.push_back(Event2f(x,y,t));
                   if (firstevent) {
-                     m_traces.tail().starttime = t;
+                     m_traces.back().starttime = t;
                      firstevent = false;
                   }
                }
             }
-            if (m_traces.tail().events.size() >= 1) {
-               m_traces.tail().endtime = m_traces.tail().events.back().t;
-               Point2f p = m_traces.tail().events[0];
+            if (m_traces.back().events.size() >= 1) {
+               m_traces.back().endtime = m_traces.back().events.back().t;
+               Point2f p = m_traces.back().events[0];
                p.normalScale(m_region);
                m_mannequins.push_back( QMannequin(p,m_traces.size()-1,true) );
-               m_mannequins.tail().m_active = false;
+               m_mannequins.back().m_active = false;
             }
          }
       }

@@ -45,7 +45,7 @@ void CAttributeChooserDlg::UpdateData(bool value)
 void CAttributeChooserDlg::showEvent(QShowEvent * event)
 {
 	c_attribute_chooser->addItem(QString(tr("Ref Number")));
-	for (int i = 0; i < m_table->getColumnCount(); i++) {
+    for (int i = 0; i < m_table->getNumColumns(); i++) {
 		c_attribute_chooser->addItem( QString(m_table->getColumnName(i).c_str()) );
 	}
 	c_attribute_chooser->setCurrentIndex(0);

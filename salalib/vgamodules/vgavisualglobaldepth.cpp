@@ -25,37 +25,38 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
     AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
-    int col = attributes.insertColumn("Visual Step Depth");
+    int col = attributes.insertOrResetColumn("Visual Step Depth");
 
-    for (int i = 0; i < attributes.getRowCount(); i++) {
-        PixelRef pix = attributes.getRowKey(i);
+    for (auto iter = attributes.begin(); iter != attributes.end(); iter++) {
+        PixelRef pix = iter->getKey().value;
         map.getPoint(pix).m_misc = 0;
         map.getPoint(pix).m_extent = pix;
     }
 
-    prefvec<PixelRefVector> search_tree;
+    std::vector<PixelRefVector> search_tree;
     search_tree.push_back(PixelRefVector());
     for (auto &sel : map.getSelSet()) {
         // need to convert from ints (m_selection_set) to pixelrefs for this op:
-        search_tree.tail().push_back(sel);
+        search_tree.back().push_back(sel);
     }
 
     size_t level = 0;
     while (search_tree[level].size()) {
         search_tree.push_back(PixelRefVector());
-        for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
-            Point &p = map.getPoint(search_tree[level][n]);
+        const PixelRefVector& searchTreeAtLevel = search_tree[level];
+        for (auto currLvlIter = searchTreeAtLevel.rbegin(); currLvlIter != searchTreeAtLevel.rend(); currLvlIter++) {
+            Point &p = map.getPoint(*currLvlIter);
             if (p.filled() && p.m_misc != ~0) {
-                int row = attributes.getRowid(search_tree[level][n]);
-                attributes.setValue(row, col, float(level));
-                if (!p.contextfilled() || search_tree[level][n].iseven() || level == 0) {
+                AttributeRow &row = attributes.getRow(AttributeKey(*currLvlIter));
+                row.setValue(col, float(level));
+                if (!p.contextfilled() || currLvlIter->iseven() || level == 0) {
                     p.getNode().extractUnseen(search_tree[level + 1], &map, p.m_misc);
                     p.m_misc = ~0;
                     if (!p.getMergePixel().empty()) {
                         Point &p2 = map.getPoint(p.getMergePixel());
                         if (p2.m_misc != ~0) {
-                            int row = attributes.getRowid(p.getMergePixel());
-                            attributes.setValue(row, col, float(level));
+                            AttributeRow &mergePixelRow = attributes.getRow(AttributeKey(p.getMergePixel()));
+                            mergePixelRow.setValue(col, float(level));
                             p2.getNode().extractUnseen(search_tree[level + 1], &map, p2.m_misc); // did say p.misc
                             p2.m_misc = ~0;
                         }

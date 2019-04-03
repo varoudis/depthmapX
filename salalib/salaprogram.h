@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "salalib/attributetable.h"
+
 #include "genlib/stringutils.h"
 
 #include <cmath>

@@ -19,4 +19,5 @@
 void GLShapeMap::loadGLObjects(ShapeMap &shapeMap) {
     m_lines.loadLineData(shapeMap.getAllLinesWithColour());
     m_polygons.loadPolygonData(shapeMap.getAllPolygonsWithColour());
+    m_points.loadPolygonData(shapeMap.getAllPointsWithColour(), 8, shapeMap.getSpacing()*0.1);
 }

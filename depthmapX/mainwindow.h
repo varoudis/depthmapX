@@ -128,6 +128,7 @@ private slots:
     void OnLayerConvertDrawing();
     void OnConvertMapShapes();
     void OnFileExport();
+    void OnFileExportMapGeometry();
     void OnFileExportLinks();
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();
@@ -251,7 +252,7 @@ private:
     QVector<QIcon> m_tree_icon;
     std::map<int, std::string> m_view_map_entries;
 
-    pvector<bool> m_attribute_locked;
+    std::vector<bool> m_attribute_locked;
     std::map<QTreeWidgetItem*, ItemTreeEntry> m_treegraphmap;
     std::map<QTreeWidgetItem*, ItemTreeEntry> m_treedrawingmap;
     QTreeWidgetItem* m_topgraph;
@@ -344,6 +345,7 @@ private:
     QAction *convertMapShapesAct;
     QAction *importAct;
     QAction *exportAct;
+    QAction *exportGeometryAct;
     QAction *exportLinksAct;
     QAction *exportAxialConnectionsDotAct;
     QAction *exportAxialConnectionsPairAct;

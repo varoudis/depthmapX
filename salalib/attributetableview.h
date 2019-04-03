@@ -21,21 +21,21 @@
 class AttributeTableView
 {
 public:
-    AttributeTableView(const dXreimpl::AttributeTable& table );
+    AttributeTableView(const AttributeTable& table );
 
-    const dXreimpl::AttributeTable &m_table;
+    const AttributeTable &m_table;
 
     // columnIndex < 0 -> not set
     virtual void setDisplayColIndex(int columnIndex);
     int getDisplayColIndex() const{ return m_displayColumn;}
 
-    float getNormalisedValue(const dXreimpl::AttributeKey& key, const dXreimpl::AttributeRow &row) const;
+    float getNormalisedValue(const AttributeKey& key, const AttributeRow &row) const;
     const DisplayParams& getDisplayParams() const;
 
-    typedef std::vector<dXreimpl::ConstAttributeIndexItem> ConstIndex;
+    typedef std::vector<ConstAttributeIndexItem> ConstIndex;
     const ConstIndex& getConstTableIndex() const{return m_index;}
 
-    const dXreimpl::AttributeColumn& getDisplayedColumn() const;
+    const AttributeColumn& getDisplayedColumn() const;
 
 private:
     ConstIndex m_index;
@@ -45,14 +45,19 @@ private:
 class AttributeTableHandle : public AttributeTableView
 {
 public:
-    AttributeTableHandle(dXreimpl::AttributeTable &table) : m_mutableTable(table), AttributeTableView(table){}
-    typedef std::vector<dXreimpl::AttributeIndexItem> Index;
+    AttributeTableHandle(AttributeTable &table) : m_mutableTable(table), AttributeTableView(table){}
+    typedef std::vector<AttributeIndexItem> Index;
     const Index& getTableIndex() const {return m_mutableIndex;}
     virtual void setDisplayColIndex(int columnIndex);
+    int findInIndex(const AttributeKey &key);
 private:
-    dXreimpl::AttributeTable& m_mutableTable;
+    AttributeTable& m_mutableTable;
     Index m_mutableIndex;
 
 };
 
-
+struct index_item_key : public std::unary_function<AttributeKey, bool> {
+    explicit index_item_key(const AttributeKey &baseline) : m_baseline(baseline) {}
+    bool operator() (const AttributeIndexItem &arg) { return arg.key.value == m_baseline.value; }
+    const AttributeKey& m_baseline;
+};

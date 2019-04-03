@@ -106,20 +106,66 @@ void LayerManagerImpl::read(std::istream &stream)
 
 void LayerManagerImpl::write(std::ostream &stream) const
 {
-    KeyType availableLayers = 0;
-    for (size_t i = m_layers.size(); i < 64; ++i)
-    {
-        availableLayers |= ((KeyType)1) << i;
+    //    KeyType availableLayers = 0;
+    //    for (size_t i = m_layers.size(); i < 64; ++i)
+    //    {
+    //        availableLayers |= ((KeyType)1) << i;
+    //    }
+
+    // TODO: (PK) While the above seems to me like the sane solution and potentially
+    // what the intention was in the original implementation, the one in the old
+    // attributes table seems to be messed up because of its starting value.
+    // Therefore, for temporary binary compatibility at least until the new
+    // attributes table is in place the original solution is used here as found
+    // in AttributeTable::selectionToLayer():
+
+    int64_t availableLayers = 0xffffffff << 32 + 0xfffffffe;
+    // should have been:
+    // int64_t availableLayers = (int64_t(0xffffffff) << 32) + 0xfffffffe;
+
+    for (size_t i = 1; i < 64 & i < m_layers.size(); ++i) {
+        int loc = 1;
+        while (loc < 64 && ((availableLayers>>loc) & 0x1) == 0) {
+           loc++;
+        }
+        if (loc == 64) {
+           // too many layers -- maximum 64
+           throw OutOfLayersException();
+        }
+        int64_t newlayer = 0x1 << loc;
+        // now layer has been found, eliminate from available layers
+        // and add a lookup for the name
+        availableLayers = (availableLayers & (~newlayer));
     }
+
+
     stream.write((const char *)&availableLayers, sizeof(KeyType));
     stream.write((const char *)&m_visibleLayers, sizeof(KeyType));
     int size_as_int = (int)m_layers.size();
     stream.write((const char *)&size_as_int, sizeof(int));
-    for ( size_t i = 0; i < m_layers.size(); ++i)
+
+    availableLayers = 0xffffffff << 32 + 0xfffffffe;
+    int64_t newlayer = 0x1;
+    stream.write((const char *)&newlayer, sizeof(KeyType));
+    dXstring::writeString(stream, m_layers[0]);
+    for ( size_t i = 1; i < m_layers.size(); ++i)
     {
-        KeyType key = ((KeyType)1) << i;
-        stream.write((const char *)&key, sizeof(KeyType));
-        dXstring::writeString(stream,m_layers[i]);
+        // again keeping binary comatibility
+//        KeyType key = ((KeyType)1) << i;
+//        stream.write((const char *)&key, sizeof(KeyType));
+//        dXstring::writeString(stream,m_layers[i]);
+
+        int loc = 1;
+        while (loc < 64 && ((availableLayers>>loc) & 0x1) == 0) {
+           loc++;
+        }
+        if (loc == 64) {
+           // too many layers -- maximum 64
+           throw OutOfLayersException();
+        }
+        newlayer = 0x1 << loc;
+        stream.write((const char *)&newlayer, sizeof(KeyType));
+        dXstring::writeString(stream, m_layers[i]);
     }
 }
 

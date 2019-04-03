@@ -25,7 +25,6 @@
 #include <vector>
 #include "salalib/entityparsing.h"
 #include <salalib/gridproperties.h>
-#include <genlib/legacyconverters.h>
 #include <salalib/importutils.h>
 
 namespace dm_runmethods
@@ -89,7 +88,7 @@ namespace dm_runmethods
 
             depthmapX::importFile(*mgraph,
                                   file,
-                                  false,
+                                  0,
                                   cmdP.getFileName(),
                                   depthmapX::ImportType::DRAWINGMAP,
                                   importFileType);
@@ -357,7 +356,7 @@ namespace dm_runmethods
         if(!sp.getAttribute().empty()) {
             const ShapeGraph& map = mGraph->getDisplayedShapeGraph();
             const AttributeTable& table = map.getAttributeTable();
-            for (int i = 0; i < table.getColumnCount(); i++) {
+            for (int i = 0; i < table.getNumColumns(); i++) {
                 if(sp.getAttribute() == table.getColumnName(i).c_str()) {
                     options.weighted_measure_col = i;
                 }
@@ -496,7 +495,6 @@ namespace dm_runmethods
         // note, trails currently per run, but output per engine
         if (agentP.recordTrailsForAgents() == 0) {
             eng.m_record_trails = true;
-            eng.m_trail_count = MAX_TRAILS;
         }
         else if (agentP.recordTrailsForAgents() > 0) {
                 eng.m_record_trails = true;
@@ -535,7 +533,9 @@ namespace dm_runmethods
                 case AgentParser::OutputType::TRAILS:
                 {
                     std::ofstream trailStream(cmdP.getOuputFile().c_str());
-                    DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+                    ShapeMap trailMap("Agent Trails");
+                    eng.insertTrailsInMap(trailMap);
+                    DO_TIMED("Writing trails", mgraph->writeMapShapesAsCat(trailMap, trailStream))
                     break;
                 }
             }
@@ -560,7 +560,9 @@ namespace dm_runmethods
             if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::TRAILS) != resultTypes.end()) {
                 std::string outFile = cmdP.getOuputFile() + "_trails.cat";
                 std::ofstream trailStream(outFile.c_str());
-                 DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+                ShapeMap trailMap("Agent Trails");
+                eng.insertTrailsInMap(trailMap);
+                DO_TIMED("Writing trails", mgraph->writeMapShapesAsCat(trailMap, trailStream))
             }
         }
     }

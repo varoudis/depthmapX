@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "depthmapX/GraphDoc.h"
-#include "salalib/nagent.h"
+#include "salalib/agents/agentprogram.h"
 
 #include <QOpenGLWidget>
 #include <QRect>
@@ -73,6 +73,14 @@ struct QMannequin
    float m_points[150];
    int m_pointstart;
    int m_pointcount;
+};
+
+
+struct Trace
+{
+   double starttime;
+   double endtime;
+   std::vector<Event2f> events;
 };
 
 struct C3DPixelData
@@ -133,9 +141,9 @@ public:
    // use to initialise mannequintemplate:
    CMannequinTemplate m_male_template;
    CMannequinTemplate m_female_template;
-   prefvec<QMannequin> m_mannequins;
-   prefvec<Agent> m_agents;
-   prefvec<Trace> m_traces;
+   std::vector<QMannequin> m_mannequins;
+   std::vector<Agent> m_agents;
+   std::vector<Trace> m_traces;
    AgentProgram m_agent_program;
    //
    // used to keep track of internal time for all agents

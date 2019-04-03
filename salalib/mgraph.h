@@ -25,10 +25,9 @@
 #include "salalib/importtypedefs.h"
 
 // still call paftl:
-#include "salalib/attributes.h"
 #include "salalib/connector.h"
 #include "salalib/spacepix.h"
-#include "salalib/nagent.h" // for agent engine interface
+#include "salalib/agents/agentengine.h" // for agent engine interface
 
 // still need paftl:
 #include "salalib/shapemap.h"
@@ -146,6 +145,7 @@ public:
       { m_state = state; }
 
    int loadLineData( Communicator *communicator, int load_type );
+   void writeMapShapesAsCat(ShapeMap& map, std::ostream &stream);
    int loadCat( std::istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<std::string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
@@ -196,7 +196,7 @@ public:
    bool hasAllLineMap()
    { return m_all_line_map != -1; }
    bool hasFewestLineMaps() {
-       for(auto& shapeGraph: m_shapeGraphs) {
+       for(const auto& shapeGraph: m_shapeGraphs) {
            if(shapeGraph->getName() == "Fewest-Line Map (Subsets)" ||
               shapeGraph->getName() == "Fewest Line Map (Subsets)" ||
               shapeGraph->getName() == "Fewest-Line Map (Minimal)" ||
@@ -289,6 +289,10 @@ public:
    bool isAttributeLocked(int col);
    AttributeTable& getAttributeTable(int type = -1, int layer = -1);
    const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
+   LayerManagerImpl& getLayers(int type = -1, int layer = -1);
+   const LayerManagerImpl& getLayers(int type = -1, int layer = -1) const;
+   AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1);
+   const AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1) const;
 
    int getLineFileCount() const
       { return (int) m_drawingFiles.size(); }
@@ -403,11 +407,11 @@ public:
    float getSelAvg()
    {
       if (m_view_class & VIEWVGA)
-         return (float)getDisplayedPointMap().getAttributeTable().getSelAvg();
+         return (float)getDisplayedPointMap().getDisplayedSelectedAvg();
       else if (m_view_class & VIEWAXIAL) 
-         return (float)getDisplayedShapeGraph().getAttributeTable().getSelAvg();
+         return (float)getDisplayedShapeGraph().getDisplayedSelectedAvg();
       else if (m_view_class & VIEWDATA) 
-         return (float)getDisplayedDataMap().getAttributeTable().getSelAvg();
+         return (float)getDisplayedDataMap().getDisplayedSelectedAvg();
       else
          return -1.0f;
    }
@@ -485,5 +489,5 @@ public:
    //
    std::vector<SimpleLine> getVisibleDrawingLines();
 protected:
-   std::streampos skipVirtualMem(std::istream &stream, int version);
+   std::streampos skipVirtualMem(std::istream &stream);
 };

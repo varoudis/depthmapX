@@ -74,7 +74,9 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
     }
     SECTION("ShapeMap::getAllLinesWithColour")
     {
-        // displayed attribute is shape_ref
+        shapeMap->overrideDisplayedAttribute(-2);
+        shapeMap->setDisplayedAttribute(-1); // displayed attribute is shape_ref
+
         std::vector<std::pair<SimpleLine, PafColor>> colouredLines = shapeMap->getAllLinesWithColour();
 
         REQUIRE(colouredLines.size() == 2);
@@ -83,21 +85,23 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         REQUIRE(colouredLines[0].first.start().y == Approx(std::min(line0Start.y, line0End.y)).epsilon(EPSILON));
         REQUIRE(colouredLines[0].first.end().x == Approx(std::max(line0Start.x, line0End.x)).epsilon(EPSILON));
         REQUIRE(colouredLines[0].first.end().y == Approx(std::max(line0Start.y, line0End.y)).epsilon(EPSILON));
-        REQUIRE(colouredLines[0].second.redf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colouredLines[0].second.greenf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colouredLines[0].second.bluef() == Approx(0.49804f).epsilon(EPSILON));
+        REQUIRE(colouredLines[0].second.redf() == Approx(0.2f).epsilon(EPSILON));
+        REQUIRE(colouredLines[0].second.greenf() == Approx(0.2f).epsilon(EPSILON));
+        REQUIRE(colouredLines[0].second.bluef() == Approx(0.86667f).epsilon(EPSILON));
 
         REQUIRE(colouredLines[1].first.start().x == Approx(line1Start.x).epsilon(EPSILON));
         REQUIRE(colouredLines[1].first.start().y == Approx(line1Start.y).epsilon(EPSILON));
         REQUIRE(colouredLines[1].first.end().x == Approx(line1End.x).epsilon(EPSILON));
         REQUIRE(colouredLines[1].first.end().y == Approx(line1End.y).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].second.redf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].second.greenf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colouredLines[1].second.bluef() == Approx(0.49804f).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].second.redf() == Approx(0.13333f).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].second.greenf() == Approx(0.86667f).epsilon(EPSILON));
+        REQUIRE(colouredLines[1].second.bluef() == Approx(0.53333f).epsilon(EPSILON));
     }
     SECTION("ShapeMap::getAllPolygonsWithColour")
     {
-        // displayed attribute is shape_ref
+        shapeMap->overrideDisplayedAttribute(-2);
+        shapeMap->setDisplayedAttribute(-1); // displayed attribute is shape_ref
+
         std::map<std::vector<Point2f>, PafColor> colouredPolygons = shapeMap->getAllPolygonsWithColour();
 
         REQUIRE(colouredPolygons.size() == 1);
@@ -112,8 +116,8 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         REQUIRE(vertices[1].y == Approx(polyVertices[1].y).epsilon(EPSILON));
         REQUIRE(vertices[2].x == Approx(polyVertices[2].x).epsilon(EPSILON));
         REQUIRE(vertices[2].y == Approx(polyVertices[2].y).epsilon(EPSILON));
-        REQUIRE(colour.redf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colour.greenf() == Approx(0.49804f).epsilon(EPSILON));
-        REQUIRE(colour.bluef() == Approx(0.49804f).epsilon(EPSILON));
+        REQUIRE(colour.redf() == Approx(0.86667f).epsilon(EPSILON));
+        REQUIRE(colour.greenf() == Approx(0.2f).epsilon(EPSILON));
+        REQUIRE(colour.bluef() == Approx(0.2f).epsilon(EPSILON));
     }
 }

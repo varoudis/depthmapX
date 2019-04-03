@@ -18,7 +18,6 @@
 
 TEST_CASE("Check index creation")
 {
-    using namespace dXreimpl;
     AttributeTable table;
     table.getOrInsertColumn("col1");
     table.getOrInsertColumn("col2");

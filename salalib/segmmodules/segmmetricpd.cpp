@@ -32,8 +32,9 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
     std::vector<float> seglengths;
     float maxseglength = 0.0f;
     for (size_t cursor = 0; cursor < map.getShapeCount(); cursor++) {
-        axialrefs.push_back(attributes.getValue(cursor, "Axial Line Ref"));
-        seglengths.push_back(attributes.getValue(cursor, "Segment Length"));
+        AttributeRow &row = map.getAttributeRowFromShapeIndex(cursor);
+        axialrefs.push_back(row.getValue("Axial Line Ref"));
+        seglengths.push_back(row.getValue("Segment Length"));
         if (seglengths.back() > maxseglength) {
             maxseglength = seglengths.back();
         }
@@ -45,7 +46,7 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
     maxbin = 512;
     std::string depthcol = prefix + "Step Depth";
 
-    attributes.insertColumn(depthcol.c_str());
+    attributes.insertOrResetColumn(depthcol.c_str());
 
     std::vector<unsigned int> seen(map.getShapeCount());
     std::vector<TopoMetSegmentRef> audittrail(map.getShapeCount());
@@ -62,7 +63,8 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
         audittrail[cursor] = TopoMetSegmentRef(cursor, Connector::SEG_CONN_ALL, length * 0.5, -1);
         // better to divide by 511 but have 512 bins...
         list[(int(floor(0.5 + 511 * length / maxseglength))) % 512].push_back(cursor);
-        attributes.setValue(cursor, depthcol.c_str(), 0);
+        AttributeRow &row = map.getAttributeRowFromShapeIndex(cursor);
+        row.setValue(depthcol.c_str(), 0);
     }
 
     unsigned int segdepth = 0;
@@ -114,7 +116,8 @@ bool SegmentMetricPD::run(Communicator *comm, const Options &options, ShapeGraph
                 //
                 // better to divide by 511 but have 512 bins...
                 list[(bin + int(floor(0.5 + 511 * length / maxseglength))) % 512].push_back(connected_cursor);
-                attributes.setValue(connected_cursor, depthcol.c_str(), here.dist + length * 0.5);
+                AttributeRow &row = map.getAttributeRowFromShapeIndex(connected_cursor);
+                row.setValue(depthcol.c_str(), here.dist + length * 0.5);
             }
             iter++;
         }
