@@ -59,14 +59,16 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
                         map.getPoint(key).m_misc += 1;
 
                         // TODO: Undocumented functionality. Shows how many times a gate is passed?
-                        if(hasGateColumn) {
+                        if (hasGateColumn) {
                             auto iter = attributes.find(AttributeKey(key));
-                            if(iter != attributes.end()) {
+                            if (iter != attributes.end()) {
                                 int gate = static_cast<int>(iter->getRow().getValue(g_col_gate));
-                                auto gateIter = depthmapX::findBinary( seengates, gate );
-                                if (gate != -1 && gateIter == seengates.end()) {
-                                    iter->getRow().incrValue(g_col_gate_counts);
-                                    seengates.insert(gateIter, int(gate));
+                                if (gate != -1) {
+                                    auto gateIter = depthmapX::findBinary(seengates, gate);
+                                    if (gateIter == seengates.end()) {
+                                        iter->getRow().incrValue(g_col_gate_counts);
+                                        seengates.insert(gateIter, int(gate));
+                                    }
                                 }
                             }
                         }
