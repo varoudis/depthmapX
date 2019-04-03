@@ -103,8 +103,7 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap) {
     pointmap->setDisplayedAttribute(displaycol);
 }
 
-ShapeMap AgentEngine::getTrailsAsMap(std::string mapName) {
-    ShapeMap trailsMap(mapName, ShapeMap::DATAMAP);
+void AgentEngine::insertTrailsInMap(ShapeMap& trailsMap) {
     for (auto &agentSet : agentSets) {
         // there is currently only one AgentSet. If at any point there are more then
         // this could be amended to put the AgentSet id as a property of the trail
@@ -113,5 +112,4 @@ ShapeMap AgentEngine::getTrailsAsMap(std::string mapName) {
             trailsMap.makePolyShape(trailGeometry, true, false);
         }
     }
-    return (trailsMap);
 }

@@ -1984,7 +1984,9 @@ void MetaGraph::runAgentEngine(Communicator *comm)
            mapName = "Agent Trails " + std::to_string(count);
            count++;
        }
-       m_dataMaps.push_back(m_agent_engine.getTrailsAsMap(mapName));
+       m_dataMaps.emplace_back(mapName);
+       m_agent_engine.insertTrailsInMap(m_dataMaps.back());
+
        m_state |= DATAMAPS;
    }
 

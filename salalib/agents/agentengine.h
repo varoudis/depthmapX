@@ -33,5 +33,5 @@ class AgentEngine {
   public:
     AgentEngine();
     void run(Communicator *comm, PointMap *pointmap);
-    ShapeMap getTrailsAsMap(std::string mapName = "Agent Trails");
+    void insertTrailsInMap(ShapeMap& trailsMap);
 };
