@@ -1,4 +1,4 @@
-\// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2011-2012, Tasos Varoudis
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@
 #include "genlib/stringutils.h"
 
 CColumnPropertiesDlg::CColumnPropertiesDlg(AttributeTable *table, LayerManagerImpl *layers, int col, QWidget *parent)
-: QDialog(parent)
-{
+    : QDialog(parent) {
     setupUi(this);
     m_formula = tr("");
     m_name = tr("");
@@ -31,35 +30,31 @@ CColumnPropertiesDlg::CColumnPropertiesDlg(AttributeTable *table, LayerManagerIm
     m_layers = layers;
     m_col = col;
 
-    AttributeColumn& column = m_table->getColumn(m_col);
+    AttributeColumn &column = m_table->getColumn(m_col);
     m_name = column.getName().c_str();
     m_formula = column.getFormula().c_str();
 
     if (!column.isLocked()) {
         m_name_text = "Name";
-    }
-    else {
+    } else {
         m_name_text = "Name (column locked and cannot be edited)";
     }
 
     if (m_formula.isEmpty()) {
-        //m_formula_note.Empty();
-    }
-    else {
+        // m_formula_note.Empty();
+    } else {
         m_formula_note = tr("Note: the formula may have been applied to a subset of objects");
     }
 
     UpdateData(false);
 }
 
-void CColumnPropertiesDlg::OnOK()
-{
+void CColumnPropertiesDlg::OnOK() {
     UpdateData(true);
     accept();
 }
 
-void CColumnPropertiesDlg::UpdateData(bool value)
-{
+void CColumnPropertiesDlg::UpdateData(bool value) {
     std::vector<QString> rows;
     std::vector<double> summary_all;
     std::vector<double> summary_sel;
@@ -76,15 +71,14 @@ void CColumnPropertiesDlg::UpdateData(bool value)
             // minimum and maximum
             summary_all.push_back(-1.0);
             summary_sel.push_back(-1.0);
-        }
-        else {
+        } else {
             summary_all.push_back(0.0);
             summary_sel.push_back(0.0);
         }
     }
 
     for (auto iter = m_table->begin(); iter != m_table->end(); iter++) {
-        auto& row = iter->getRow();
+        auto &row = iter->getRow();
         double val = row.getValue(m_col);
         if (val != -1.0 && isObjectVisible(*m_layers, iter->getRow())) {
             summary_all[0] += val;
@@ -116,17 +110,15 @@ void CColumnPropertiesDlg::UpdateData(bool value)
         for (int i = 0; i < 10; i++) {
             std::string name;
             if (i == 0) {
-                name = dXstring::formatString(summary_all[1]+unit,"< %f");
-            }
-            else if (i == 9) {
-                name = dXstring::formatString(summary_all[2]-unit,"> %f");
-            }
-            else {
-                name = dXstring::formatString(summary_all[1]+unit*i,"%f") + " to " +
-                    dXstring::formatString(summary_all[1]+unit*(i+1),"%f");
+                name = dXstring::formatString(summary_all[1] + unit, "< %f");
+            } else if (i == 9) {
+                name = dXstring::formatString(summary_all[2] - unit, "> %f");
+            } else {
+                name = dXstring::formatString(summary_all[1] + unit * i, "%f") + " to " +
+                       dXstring::formatString(summary_all[1] + unit * (i + 1), "%f");
             }
             // Unicode conversion a bit of a mess here AT (01.02.11)
-            rows.push_back( QString(name.c_str()) );
+            rows.push_back(QString(name.c_str()));
         }
     }
 
@@ -142,22 +134,24 @@ void CColumnPropertiesDlg::UpdateData(bool value)
     double var_all = 0.0;
     double var_sel = 0.0;
     for (auto iter = m_table->begin(); iter != m_table->end(); iter++) {
-        auto& row = iter->getRow();
+        auto &row = iter->getRow();
         double val = row.getValue(m_col);
         if (val != -1.0 && isObjectVisible(*m_layers, iter->getRow())) {
-            var_all += sqr(val-summary_all[0]);
+            var_all += sqr(val - summary_all[0]);
             if (freqrows) {
-                int pos = floor((val - summary_all[1])/unit);
-                if (pos == 10) pos = 9; // irritating exactly equal to max
-                summary_all[5+pos] += 1;
+                int pos = floor((val - summary_all[1]) / unit);
+                if (pos == 10)
+                    pos = 9; // irritating exactly equal to max
+                summary_all[5 + pos] += 1;
             }
             if (row.isSelected()) {
-                var_sel += sqr(val-summary_sel[0]);
+                var_sel += sqr(val - summary_sel[0]);
                 if (freqrows) {
                     // note: must use summary_all even on selected to make difference
-                    int pos = floor((val - summary_all[1])/unit);
-                    if (pos == 10) pos = 9; // irritating exactly equal to max
-                    summary_sel[5+pos] += 1;
+                    int pos = floor((val - summary_all[1]) / unit);
+                    if (pos == 10)
+                        pos = 9; // irritating exactly equal to max
+                    summary_sel[5 + pos] += 1;
                 }
             }
         }
@@ -204,34 +198,29 @@ void CColumnPropertiesDlg::UpdateData(bool value)
         char text[64];
         // All
         if (i == 4 || summary_all[4] != 0) {
-            sprintf(text,"%g",summary_all[i]);
-        }
-        else {
-            strcpy(text,"No Value");
+            sprintf(text, "%g", summary_all[i]);
+        } else {
+            strcpy(text, "No Value");
         }
         Item = new QTableWidgetItem(QString(text));
         Item->setFlags(Qt::NoItemFlags);
         c_summary->setItem(i, 1, Item);
         // Sel
         if (i == 4 || summary_sel[4] != 0) {
-            sprintf(text,"%g",summary_sel[i]);
-        }
-        else {
-            strcpy(text,"No Value");
+            sprintf(text, "%g", summary_sel[i]);
+        } else {
+            strcpy(text, "No Value");
         }
         Item = new QTableWidgetItem(QString(text));
         Item->setFlags(Qt::NoItemFlags);
         c_summary->setItem(i, 2, Item);
     }
-    if (value)
-    {
+    if (value) {
         m_formula = c_formula->toPlainText();
         m_name = c_name->text();
         m_name_text = c_name_text->text();
         m_formula_note = c_formula_note->text();
-    }
-    else
-    {
+    } else {
         c_formula->setPlainText(m_formula);
         c_name->setText(m_name);
         c_name_text->setText(m_name_text);
@@ -239,7 +228,4 @@ void CColumnPropertiesDlg::UpdateData(bool value)
     }
 }
 
-void CColumnPropertiesDlg::showEvent(QShowEvent * event)
-{
-    UpdateData(false);
-}
+void CColumnPropertiesDlg::showEvent(QShowEvent *event) { UpdateData(false); }
