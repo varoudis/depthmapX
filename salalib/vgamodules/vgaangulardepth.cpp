@@ -22,7 +22,7 @@
 
 bool VGAAngularDepth::run(Communicator *, const Options &, PointMap &map, bool) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
     int path_angle_col = attributes.insertOrResetColumn("Angular Step Depth");
@@ -52,13 +52,13 @@ bool VGAAngularDepth::run(Communicator *, const Options &, PointMap &map, bool) 
         if (p.filled() && p.m_misc != ~0) {
             p.getNode().extractAngular(search_list, &map, here);
             p.m_misc = ~0;
-            dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(here.pixel));
+            AttributeRow &row = map.getAttributeTable().getRow(AttributeKey(here.pixel));
             row.setValue(path_angle_col, float(p.m_cumangle));
             if (!p.getMergePixel().empty()) {
                 Point &p2 = map.getPoint(p.getMergePixel());
                 if (p2.m_misc != ~0) {
                     p2.m_cumangle = p.m_cumangle;
-                    dXreimpl::AttributeRow &mergePixelRow = map.getAttributeTable().getRow(dXreimpl::AttributeKey(p.getMergePixel()));
+                    AttributeRow &mergePixelRow = map.getAttributeTable().getRow(AttributeKey(p.getMergePixel()));
                     mergePixelRow.setValue(path_angle_col, float(p2.m_cumangle));
                     p2.getNode().extractAngular(search_list, &map,
                                                 AngularTriple(here.angle, p.getMergePixel(), NoPixel));

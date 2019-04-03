@@ -18,7 +18,7 @@
 #include "genlib/stringutils.h"
 #include "genlib/paftl.h"
 
-CColumnPropertiesDlg::CColumnPropertiesDlg(dXreimpl::AttributeTable *table, LayerManagerImpl *layers, int col, QWidget *parent)
+CColumnPropertiesDlg::CColumnPropertiesDlg(AttributeTable *table, LayerManagerImpl *layers, int col, QWidget *parent)
 : QDialog(parent)
 {
 	setupUi(this);
@@ -32,7 +32,7 @@ CColumnPropertiesDlg::CColumnPropertiesDlg(dXreimpl::AttributeTable *table, Laye
     m_layers = layers;
 	m_col = col;
 
-    dXreimpl::AttributeColumn& column = m_table->getColumn(m_col);
+    AttributeColumn& column = m_table->getColumn(m_col);
     m_name = column.getName().c_str();
     m_formula = column.getFormula().c_str();
 

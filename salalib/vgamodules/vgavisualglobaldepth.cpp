@@ -23,7 +23,7 @@
 
 bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, bool) {
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // n.b., insert columns sets values to -1 if the column already exists
     int col = attributes.insertOrResetColumn("Visual Step Depth");
@@ -47,7 +47,7 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
         for (size_t n = search_tree[level].size() - 1; n != paftl::npos; n--) {
             Point &p = map.getPoint(search_tree[level][n]);
             if (p.filled() && p.m_misc != ~0) {
-                dXreimpl::AttributeRow &row = attributes.getRow(dXreimpl::AttributeKey(search_tree[level][n]));
+                AttributeRow &row = attributes.getRow(AttributeKey(search_tree[level][n]));
                 row.setValue(col, float(level));
                 if (!p.contextfilled() || search_tree[level][n].iseven() || level == 0) {
                     p.getNode().extractUnseen(search_tree[level + 1], &map, p.m_misc);
@@ -55,7 +55,7 @@ bool VGAVisualGlobalDepth::run(Communicator *, const Options &, PointMap &map, b
                     if (!p.getMergePixel().empty()) {
                         Point &p2 = map.getPoint(p.getMergePixel());
                         if (p2.m_misc != ~0) {
-                            dXreimpl::AttributeRow &mergePixelRow = attributes.getRow(dXreimpl::AttributeKey(p.getMergePixel()));
+                            AttributeRow &mergePixelRow = attributes.getRow(AttributeKey(p.getMergePixel()));
                             mergePixelRow.setValue(col, float(level));
                             p2.getNode().extractUnseen(search_tree[level + 1], &map, p2.m_misc); // did say p.misc
                             p2.m_misc = ~0;

@@ -38,7 +38,7 @@ bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, 
         }
     }
 
-    dXreimpl::AttributeTable &attributes = map.getAttributeTable();
+    AttributeTable &attributes = map.getAttributeTable();
 
     // n.b. these must be entered in alphabetical order to preserve col indexing:
     std::string mean_depth_col_text = std::string("Angular Mean Depth") + radius_text;
@@ -106,7 +106,7 @@ bool VGAAngular::run(Communicator *comm, const Options &options, PointMap &map, 
                     }
                 }
 
-                dXreimpl::AttributeRow &row = map.getAttributeTable().getRow(dXreimpl::AttributeKey(curs));
+                AttributeRow &row = map.getAttributeTable().getRow(AttributeKey(curs));
                 if (total_nodes > 0) {
                     row.setValue(mean_depth_col, float(double(total_angle) / double(total_nodes)));
                 }

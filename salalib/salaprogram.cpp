@@ -273,7 +273,7 @@ SalaObj SalaProgram::evaluate()
 
 bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 {
-   dXreimpl::AttributeTable *table = m_thisobj.getTable();
+   AttributeTable *table = m_thisobj.getTable();
    //
    // note: reference, will change object directly, which is important for commands running the program
    int& row = m_thisobj.data.graph.node;
@@ -292,7 +292,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 #endif            
                v = -1.0f;
             }
-            table->getRow(dXreimpl::AttributeKey(sel)).setValue(m_col,v);
+            table->getRow(AttributeKey(sel)).setValue(m_col,v);
          }
          catch (SalaError e) {
             // error
@@ -332,7 +332,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 
 bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& selsetin)
 {
-   dXreimpl::AttributeTable *table = m_thisobj.getTable();
+   AttributeTable *table = m_thisobj.getTable();
    bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
    //
    if (selsetin.size()) {
@@ -1517,14 +1517,14 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                case SalaObj::S_FVALUE:
                   {
                      const std::string& str = param.toStringRef();
-                     dXreimpl::AttributeTable *table = obj.getTable();
+                     AttributeTable *table = obj.getTable();
                      if (str == "Ref Number") {
                          data = SalaObj(obj.data.graph.node);
                      } else {
                          if (!table->hasColumn(str)) {
                             throw SalaError(str + " is an unknown column",m_line);
                          }
-                         data = SalaObj(table->getRow(dXreimpl::AttributeKey(obj.data.graph.node)).getValue(
+                         data = SalaObj(table->getRow(AttributeKey(obj.data.graph.node)).getValue(
                                             table->getColumnIndex(str)));
                      }
                   }
@@ -1536,7 +1536,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      }
                      const std::string& str = param.list_at(0).toStringRef();
                      float val = (float) param.list_at(1).toDouble();
-                     dXreimpl::AttributeTable *table = obj.getTable();
+                     AttributeTable *table = obj.getTable();
                      int col = -1;
                      if (str != "Ref Number") {
                         if (!table->hasColumn(str)) {
@@ -1546,7 +1546,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      } else {
                          throw SalaError("The reference number can not be changed",m_line);
                      }
-                     table->getRow(dXreimpl::AttributeKey(obj.data.graph.node)).setValue(col, val);
+                     table->getRow(AttributeKey(obj.data.graph.node)).setValue(col, val);
                      data = SalaObj(); // returns none
                   }
                   break;
@@ -1689,7 +1689,7 @@ SalaObj SalaCommand::connections(SalaObj graphobj, SalaObj param)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-dXreimpl::AttributeTable *SalaObj::getTable()
+AttributeTable *SalaObj::getTable()
 {
    if ((type & SalaObj::S_MAP) == SalaObj::S_POINTMAP) {
       return &(data.graph.map.point->getAttributeTable());

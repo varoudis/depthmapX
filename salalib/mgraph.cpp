@@ -46,6 +46,7 @@
 #include "salalib/vgamodules/vgaangular.h"
 #include "salalib/vgamodules/vgaangulardepth.h"
 #include "salalib/vgamodules/vgathroughvision.h"
+#include "salalib/agents/agenthelpers.h"
 
 #include "mgraph440/mgraph.h"
 
@@ -501,8 +502,8 @@ int MetaGraph::makeIsovist(Communicator *communicator, const Point2f& p, double 
       map.overrideDisplayedAttribute(-2);
       map.setDisplayedAttribute(-1);
       setViewClass(SHOWSHAPETOP);
-      dXreimpl::AttributeTable& table = map.getAttributeTable();
-      dXreimpl::AttributeRow& row = table.getRow(dXreimpl::AttributeKey(polyref));
+      AttributeTable& table = map.getAttributeTable();
+      AttributeRow& row = table.getRow(AttributeKey(polyref));
       iso.setData(table,row, simple_version);
    }
    return retvar;
@@ -581,8 +582,8 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                iso.makeit(m_bsp_root, start, m_region, angles.first, angles.second);
                int polyref = isovists->makePolyShape(iso.getPolygon(),false);  
                isovists->getAllShapes()[polyref].setCentroid(start);
-               dXreimpl::AttributeTable& table = isovists->getAttributeTable();
-               dXreimpl::AttributeRow& row = table.getRow(dXreimpl::AttributeKey(polyref));
+               AttributeTable& table = isovists->getAttributeTable();
+               AttributeRow& row = table.getRow(AttributeKey(polyref));
                iso.setData(table,row, simple_version);
             }
             else {
@@ -596,8 +597,8 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
                   iso.makeit(m_bsp_root, start, m_region, angles.first, angles.second);
                   int polyref = isovists->makePolyShape(iso.getPolygon(),false);  
                   isovists->getAllShapes().find(polyref)->second.setCentroid(start);
-                  dXreimpl::AttributeTable& table = isovists->getAttributeTable();
-                  dXreimpl::AttributeRow& row = table.getRow(dXreimpl::AttributeKey(polyref));
+                  AttributeTable& table = isovists->getAttributeTable();
+                  AttributeRow& row = table.getRow(AttributeKey(polyref));
                   iso.setData(table,row, simple_version);
                }
             }
@@ -698,7 +699,7 @@ int MetaGraph::addShapeGraph(const std::string& name, int type)
     std::unique_ptr<ShapeGraph> shapeGraph(new ShapeGraph(name, type));
     int mapref = addShapeGraph(shapeGraph);
     // add a couple of default columns:
-    dXreimpl::AttributeTable& table = m_shapeGraphs[size_t(mapref)]->getAttributeTable();
+    AttributeTable& table = m_shapeGraphs[size_t(mapref)]->getAttributeTable();
     int connIdx = table.insertOrResetLockedColumn("Connectivity");
     if ((type & ShapeMap::LINEMAP) != 0) {
         table.insertOrResetLockedColumn("Line Length");
@@ -943,7 +944,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
       m_dataMaps.emplace_back(layer_name,ShapeMap::DATAMAP);
       int destmapref = m_dataMaps.size() - 1;
       ShapeMap& destmap = m_dataMaps.back();
-      dXreimpl::AttributeTable& table = destmap.getAttributeTable();
+      AttributeTable& table = destmap.getAttributeTable();
       int count = 0;
       //
       // drawing to data
@@ -957,7 +958,7 @@ bool MetaGraph::convertToData(Communicator *comm, std::string layer_name, bool k
                   auto refShapes = pixel.getAllShapes();
                   for (const auto& refShape: refShapes) {
                      int key = destmap.makeShape(refShape.second);
-                     table.getRow(dXreimpl::AttributeKey(key)).setValue(layercol,float(j+1));
+                     table.getRow(AttributeKey(key)).setValue(layercol,float(j+1));
                      count++;
                   }
                   pixel.setShow(false);
@@ -1451,6 +1452,28 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    return 1;
 }
 
+// From: Alasdair Turner (2004) - Depthmap 4: a researcher's handbook (p. 6):
+// [..] CAT, which stands for Chiron and Alasdair Transfer Format [..]
+
+void MetaGraph::writeMapShapesAsCat(ShapeMap& map, std::ostream &stream) {
+    stream << "CAT" << std::endl;
+    for (auto refShape: map.getAllShapes()) {
+        SalaShape& shape = refShape.second;
+        if(shape.isPolyLine() || shape.isPolygon()) {
+            stream << "Begin " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
+            for (Point2f p: shape.m_points) {
+                stream << p.x << " " << p.y << std::endl;
+            }
+            stream << "End " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
+        } else if(shape.isLine()) {
+            stream << "Begin Polyline" << std::endl;
+            stream << shape.getLine().ax() << " " << shape.getLine().ay() << std::endl;
+            stream << shape.getLine().bx() << " " << shape.getLine().by() << std::endl;
+            stream << "End Polyline" << std::endl;
+        }
+    }
+}
+
 int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
 {
    if (communicator) {
@@ -1743,8 +1766,8 @@ void pushValue(double& val, int& count, double thisval, int push_func)
 
 bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype, int destlayer, int col_in, int col_out, int push_func, bool count_col)
 {
-   dXreimpl::AttributeTable& table_in = getAttributeTable(sourcetype, sourcelayer);
-   dXreimpl::AttributeTable& table_out = getAttributeTable(desttype, destlayer);
+   AttributeTable& table_in = getAttributeTable(sourcetype, sourcelayer);
+   AttributeTable& table_out = getAttributeTable(desttype, destlayer);
 
    if (col_out == -2) {
       std::string name = table_in.getColumnName(col_in);
@@ -1794,7 +1817,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
          double val = -1.0;
          int count = 0;
          for (int gate: gatelist) {
-             dXreimpl::AttributeRow &row_in =
+             AttributeRow &row_in =
                  m_dataMaps[sourcelayer].getAttributeRowFromShapeIndex(gate);
 
             if (isObjectVisible(m_dataMaps[sourcelayer].getLayers(), row_in)) {
@@ -1832,7 +1855,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                 gatelist = m_dataMaps[size_t(destlayer)].pointInPolyList(m_pointMaps[size_t(sourcelayer)].getPoint(pix_in).m_location);
                 double thisval = iter_in->getRow().getValue(col_in);
                 for (int gate: gatelist) {
-                    dXreimpl::AttributeRow &row_out =
+                    AttributeRow &row_out =
                         m_dataMaps[destlayer].getAttributeRowFromShapeIndex(gate);
                    if (isObjectVisible(m_dataMaps[destlayer].getLayers(), row_out)) {
                       double& val = vals[gate];
@@ -1846,8 +1869,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
                    int key_out = m_shapeGraphs[destlayer]->getShapeRefFromIndex(gate)->first;
-                   dXreimpl::AttributeRow &row_out =
-                       table_out.getRow(dXreimpl::AttributeKey(key_out));
+                   AttributeRow &row_out =
+                       table_out.getRow(AttributeKey(key_out));
                   if (isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), row_out)) {
                      double& val = vals[gate];
                      int& count = counts[gate];
@@ -1874,8 +1897,8 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
                    int key_out = m_dataMaps[destlayer].getShapeRefFromIndex(gate)->first;
-                   dXreimpl::AttributeRow &row_out =
-                       table_out.getRow(dXreimpl::AttributeKey(key_out));
+                   AttributeRow &row_out =
+                       table_out.getRow(AttributeKey(key_out));
                    if (isObjectVisible(m_dataMaps[size_t(destlayer)].getLayers(), row_out)) {
                      double& val = vals[gate];
                      int& count = counts[gate];
@@ -1889,7 +1912,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                double thisval = iter_in->getRow().getValue(col_in);
                for (int gate: gatelist) {
                    int key_out = m_shapeGraphs[destlayer]->getShapeRefFromIndex(gate)->first;
-                   dXreimpl::AttributeRow &row_out =  table_out.getRow(dXreimpl::AttributeKey(key_out));
+                   AttributeRow &row_out =  table_out.getRow(AttributeKey(key_out));
                    if (isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), row_out)) {
                      double& val = vals[gate];
                      int& count = counts[gate];
@@ -1939,7 +1962,7 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
 
 void MetaGraph::runAgentEngine(Communicator *comm)
 {
-   dXreimpl::AttributeTable& table = getDisplayedPointMap().getAttributeTable();
+   AttributeTable& table = getDisplayedPointMap().getAttributeTable();
 
    if (m_agent_engine.m_gatelayer != -1) {
       // switch the reference numbers from the gates layer to the vga layer
@@ -1950,12 +1973,27 @@ void MetaGraph::runAgentEngine(Communicator *comm)
       table.insertOrResetColumn(g_col_gate_counts);
    }
 
+
    m_agent_engine.run(comm, &(getDisplayedPointMap()) );
+
+   if(m_agent_engine.m_record_trails) {
+       std::string mapName = "Agent Trails";
+       int count = 1;
+       while(std::find_if(std::begin(m_dataMaps), std::end(m_dataMaps),
+                          [&] (ShapeMap const& m) {return m.getName() == mapName; }) != m_dataMaps.end()) {
+           mapName = "Agent Trails " + std::to_string(count);
+           count++;
+       }
+       m_dataMaps.emplace_back(mapName);
+       m_agent_engine.insertTrailsInMap(m_dataMaps.back());
+
+       m_state |= DATAMAPS;
+   }
 
    if (m_agent_engine.m_gatelayer != -1) {
       // switch column counts from vga layer to gates layer...
       int colcounts = table.getColumnIndex(g_col_gate_counts);
-      dXreimpl::AttributeTable& tableout = m_dataMaps[m_agent_engine.m_gatelayer].getAttributeTable();
+      AttributeTable& tableout = m_dataMaps[m_agent_engine.m_gatelayer].getAttributeTable();
       int targetcol = tableout.insertOrResetColumn("Agent Counts");
       pushValuesToLayer(VIEWVGA,getDisplayedPointMapRef(),
                         VIEWDATA,m_agent_engine.m_gatelayer,
@@ -1973,7 +2011,7 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
 {
    bool retvar = false;
 
-   dXreimpl::AttributeTable& table = getDisplayedPointMap().getAttributeTable();
+   AttributeTable& table = getDisplayedPointMap().getAttributeTable();
 
    // always have temporary gate counting layers -- makes it easier to code
    int colgates = table.insertOrResetColumn(g_col_gate);
@@ -1999,7 +2037,7 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
    colcounts = table.getColumnIndex(g_col_gate_counts);
 
    if (retvar && gatelayer != -1) {
-      dXreimpl::AttributeTable& tableout = m_dataMaps[gatelayer].getAttributeTable();
+      AttributeTable& tableout = m_dataMaps[gatelayer].getAttributeTable();
       int targetcol = tableout.insertOrResetColumn("Thru Vision Counts");
       pushValuesToLayer(VIEWVGA,getDisplayedPointMapRef(),
                         VIEWDATA,gatelayer,
@@ -2199,9 +2237,9 @@ void MetaGraph::setDisplayedAttribute(int col)
 
 // const and non-const versions:
 
-dXreimpl::AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
+AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
 {
-   dXreimpl::AttributeTable *tab = NULL;
+   AttributeTable *tab = NULL;
    if (type == -1) {
       type = m_view_class;
    }
@@ -2219,9 +2257,9 @@ dXreimpl::AttributeTable& MetaGraph::getAttributeTable(int type, int layer)
    return *tab;
 }
 
-const dXreimpl::AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
+const AttributeTable& MetaGraph::getAttributeTable(int type, int layer) const
 {
-   const dXreimpl::AttributeTable *tab = NULL;
+   const AttributeTable *tab = NULL;
    if (type == -1) {
       type = m_view_class & VIEWFRONT;
    }

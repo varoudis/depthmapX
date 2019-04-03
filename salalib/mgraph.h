@@ -27,7 +27,7 @@
 // still call paftl:
 #include "salalib/connector.h"
 #include "salalib/spacepix.h"
-#include "salalib/nagent.h" // for agent engine interface
+#include "salalib/agents/agentengine.h" // for agent engine interface
 
 // still need paftl:
 #include "salalib/shapemap.h"
@@ -145,6 +145,7 @@ public:
       { m_state = state; }
 
    int loadLineData( Communicator *communicator, int load_type );
+   void writeMapShapesAsCat(ShapeMap& map, std::ostream &stream);
    int loadCat( std::istream& stream, Communicator *communicator );
    int loadRT1(const std::vector<std::string>& fileset, Communicator *communicator);
    ShapeMap &createNewShapeMap(depthmapX::ImportType mapType, std::string name);
@@ -285,8 +286,8 @@ public:
    int addAttribute(const std::string& name);
    void removeAttribute(int col);
    bool isAttributeLocked(int col);
-   dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1);
-   const dXreimpl::AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
+   AttributeTable& getAttributeTable(int type = -1, int layer = -1);
+   const AttributeTable& getAttributeTable(int type = -1, int layer = -1) const;
    LayerManagerImpl& getLayers(int type = -1, int layer = -1);
    const LayerManagerImpl& getLayers(int type = -1, int layer = -1) const;
    AttributeTableHandle& getAttributeTableHandle(int type = -1, int layer = -1);

@@ -17,7 +17,6 @@
 #include <salalib/attributetableview.h>
 
 TEST_CASE("Test Attribute view"){
-    using namespace dXreimpl;
     AttributeTable table;
 
     table.insertOrResetColumn("foo");
@@ -54,7 +53,6 @@ TEST_CASE("Test Attribute view"){
 
 TEST_CASE("Test attribute table handle")
 {
-    using namespace  dXreimpl;
     AttributeTable table;
 
     table.insertOrResetColumn("foo");

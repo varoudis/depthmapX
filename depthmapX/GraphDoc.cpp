@@ -717,6 +717,79 @@ void QGraphDoc::OnFileExport()
     }
 }
 
+void QGraphDoc::OnFileExportMapGeometry() {
+    if (m_communicator) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return; // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return; // No graph to export
+    }
+
+    QString suffix;
+    int mode = -1;
+
+    int view_class = m_meta_graph->getViewClass();
+    if (view_class & MetaGraph::VIEWAXIAL) {
+        mode = 0;
+        suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
+    } else if (view_class & MetaGraph::VIEWDATA) {
+        mode = 1;
+        suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
+    }
+
+    if (mode == -1) {
+        QMessageBox::warning(this, tr("Notice"),
+                             tr("Sorry, depthmapX does not support saving the currently displayed layer"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+    suffix.replace(' ', '_');
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("Chiron and Alasdair Transfer Format file (*.cat)\n");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile =
+        QFileDialog::getSaveFileName(0, tr("Save Output As"), defaultname, template_string, &selectedFilter, options);
+    if (outfile.isEmpty()) {
+        return;
+    }
+
+    FILE *fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    QFilePath filepath(outfile);
+    QString ext = filepath.m_ext;
+
+    if (ext == "CAT") {
+        std::ofstream stream(outfile.toLatin1());
+        if (stream.fail() || stream.bad()) {
+            QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok,
+                                 QMessageBox::Ok);
+            mode = -1;
+        }
+
+        switch (mode) {
+        case 0:
+            m_meta_graph->writeMapShapesAsCat(m_meta_graph->getDisplayedShapeGraph(), stream);
+            break;
+        case 1:
+            m_meta_graph->writeMapShapesAsCat(m_meta_graph->getDisplayedDataMap(), stream);
+            break;
+        default:
+            break;
+        }
+        stream.close();
+    }
+}
+
 void QGraphDoc::OnFileExportLinks()
 {
     if (m_communicator) {
@@ -1991,7 +2064,7 @@ void QGraphDoc::OnAddColumn()
 		  QMessageBox::warning(this, tr("Warning"), tr("Column name cannot be empty"), QMessageBox::Ok, QMessageBox::Ok);
       }
       else {
-         dXreimpl::AttributeTable& tab = m_meta_graph->getAttributeTable();
+         AttributeTable& tab = m_meta_graph->getAttributeTable();
          bool found = false;
          for (int i = 0; i < tab.getNumColumns(); i++) {
             if (tab.getColumnName(i) == dlg.m_object_name.toStdString()) {
@@ -2017,7 +2090,7 @@ void QGraphDoc::OnAddColumn()
 
 void QGraphDoc::OnRenameColumn() 
 {
-   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    int col = m_meta_graph->getDisplayedAttribute();
    // -1 is reference number, -2 is displaying nothing (-2 shouldn't happen but is)
    if (col == -1 || col == -2 || m_meta_graph->isAttributeLocked(col)) {
@@ -2033,7 +2106,7 @@ void QGraphDoc::OnRenameColumn()
    }
 }
 
-int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
+int QGraphDoc::RenameColumn(AttributeTable *tab, int col)
 {
    QString colname = QString(tab->getColumnName(col).c_str());
    CRenameObjectDlg dlg("Column",colname);  // using the column name sets the dialog to replace column name mode
@@ -2053,7 +2126,7 @@ int QGraphDoc::RenameColumn(dXreimpl::AttributeTable *tab, int col)
 
 void QGraphDoc::OnColumnProperties() 
 {
-   dXreimpl::AttributeTable *tab = &(m_meta_graph->getAttributeTable());
+   AttributeTable *tab = &(m_meta_graph->getAttributeTable());
    LayerManagerImpl *layers = &(m_meta_graph->getLayers());
    int col = m_meta_graph->getDisplayedAttribute();
 
@@ -2112,7 +2185,7 @@ bool QGraphDoc::ReplaceColumnContents(PointMap *pointmap, ShapeMap *shapemap, in
       return false;
    }
 
-   dXreimpl::AttributeTable *table = program_context.getTable();
+   AttributeTable *table = program_context.getTable();
 
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,col);  // Using a column number sets it to use the replace text rather than select text
@@ -2200,7 +2273,7 @@ bool QGraphDoc::SelectByQuery(PointMap *pointmap, ShapeMap *shapemap)
       return false;
    }
 
-   dXreimpl::AttributeTable *table = program_context.getTable();
+   AttributeTable *table = program_context.getTable();
    // insert dialog is a misnomer now!
    CInsertColumnDlg dlg(table,-1);  // -1 sets it to use the select text rather than replace text
    bool error = true;
