@@ -1451,6 +1451,28 @@ int MetaGraph::loadLineData( Communicator *communicator, int load_type )
    return 1;
 }
 
+// From: Alasdair Turner (2004) - Depthmap 4: a researcher's handbook (p. 6):
+// [..] CAT, which stands for Chiron and Alasdair Transfer Format [..]
+
+void MetaGraph::writeMapShapesAsCat(ShapeMap& map, std::ostream &stream) {
+    stream << "CAT" << std::endl;
+    for (auto refShape: map.getAllShapes()) {
+        SalaShape& shape = refShape.second;
+        if(shape.isPolyLine() || shape.isPolygon()) {
+            stream << "Begin " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
+            for (Point2f p: shape.m_points) {
+                stream << p.x << " " << p.y << std::endl;
+            }
+            stream << "End " << (shape.isPolyLine() ? "Polyline" : "Polygon") << std::endl;
+        } else if(shape.isLine()) {
+            stream << "Begin Polyline" << std::endl;
+            stream << shape.getLine().ax() << " " << shape.getLine().ay() << std::endl;
+            stream << shape.getLine().bx() << " " << shape.getLine().by() << std::endl;
+            stream << "End Polyline" << std::endl;
+        }
+    }
+}
+
 int MetaGraph::loadCat( std::istream& stream, Communicator *communicator )
 {
    if (communicator) {
@@ -1950,7 +1972,20 @@ void MetaGraph::runAgentEngine(Communicator *comm)
       table.insertOrResetColumn(g_col_gate_counts);
    }
 
+
    m_agent_engine.run(comm, &(getDisplayedPointMap()) );
+
+   if(m_agent_engine.m_record_trails) {
+       std::string mapName = "Agent Trails";
+       int count = 1;
+       while(std::find_if(std::begin(m_dataMaps), std::end(m_dataMaps),
+                          [&] (ShapeMap const& m) {return m.getName() == mapName; }) != m_dataMaps.end()) {
+           mapName = "Agent Trails " + std::to_string(count);
+           count++;
+       }
+       m_dataMaps.push_back(m_agent_engine.getTrailsAsMap(mapName));
+       m_state |= DATAMAPS;
+   }
 
    if (m_agent_engine.m_gatelayer != -1) {
       // switch column counts from vga layer to gates layer...

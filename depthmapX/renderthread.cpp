@@ -435,7 +435,7 @@ void RenderThread::run()
          {
             try {
               pDoc->m_meta_graph->runAgentEngine( comm );
-              pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
+              pDoc->SetUpdateFlag(QGraphDoc::NEW_TABLE);
               pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_DATA );
             } catch (depthmapX::PointMapException const & e) {
               emit runtimeExceptionThrown(e.getErrorType(), e.what());

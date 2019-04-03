@@ -22,6 +22,9 @@
 
 #include "salalib/pixelref.h"
 #include "salalib/point.h"
+#include "salalib/pointdata.h"
+#include "salalib/shapemap.h"
+
 #include "genlib/pflipper.h"
 
 const char g_col_total_counts[] = "Gate Counts";
@@ -127,8 +130,6 @@ struct AgentSet;
 struct AgentProgram;
 class Agent;
 
-const int MAX_TRAILS = 50;
-
 class AgentEngine
 {
 public: // public for now for speed
@@ -137,11 +138,11 @@ public: // public for now for speed
    int m_timesteps;
 public:
    bool m_record_trails;
-   int m_trail_count;
+   int m_trail_count = 50;
 public:
    AgentEngine();
    void run(Communicator *comm, PointMap *pointmap);
-   void outputTrails(std::ostream& trailsFile);
+   ShapeMap getTrailsAsMap(std::string mapName = "Agent Trails");
 };
 
 struct AgentProgram
@@ -190,6 +191,7 @@ struct AgentProgram
    // to reload later:
    void save(const std::string& filename);
    bool open(const std::string& filename);
+   std::vector<std::vector<Event2f>> m_trails;
 };
 
 struct AgentSet : public AgentProgram
