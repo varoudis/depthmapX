@@ -1,5 +1,7 @@
-// depthmapX - spatial network analysis platform
-// Copyright (C) 2017, Petros Koutsolampros
+// sala - a component of the depthmapX - spatial network analysis platform
+// Copyright (C) 2000-2010, University College London, Alasdair Turner
+// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2019, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,10 +16,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "glshapemap.h"
+#pragma once
 
-void GLShapeMap::loadGLObjects(ShapeMap &shapeMap) {
-    m_lines.loadLineData(shapeMap.getAllLinesWithColour());
-    m_polygons.loadPolygonData(shapeMap.getAllPolygonsWithColour());
-    m_points.loadPolygonData(shapeMap.getAllPointsWithColour(), 8, shapeMap.getSpacing()*0.1);
-}
+#include "agentset.h"
+
+class AgentEngine {
+  public: // public for now for speed
+    std::vector<AgentSet> agentSets;
+    int m_gatelayer;
+    int m_timesteps;
+
+  public:
+    bool m_record_trails;
+    int m_trail_count = 50;
+
+  public:
+    AgentEngine();
+    void run(Communicator *comm, PointMap *pointmap);
+    void insertTrailsInMap(ShapeMap& trailsMap);
+};

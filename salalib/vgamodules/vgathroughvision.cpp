@@ -17,7 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "salalib/vgamodules/vgathroughvision.h"
-#include "salalib/nagent.h"
+#include "salalib/agents/agenthelpers.h"
 
 #include "genlib/stringutils.h"
 

@@ -270,6 +270,7 @@ public:
     void OnVGALinksFileImport();
     void OnFileImport();
 	void OnFileExport();
+    void OnFileExportMapGeometry();
     void OnFileExportLinks();
     void OnAxialConnectionsExportAsDot();
     void OnAxialConnectionsExportAsPairCSV();

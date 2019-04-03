@@ -495,7 +495,6 @@ namespace dm_runmethods
         // note, trails currently per run, but output per engine
         if (agentP.recordTrailsForAgents() == 0) {
             eng.m_record_trails = true;
-            eng.m_trail_count = MAX_TRAILS;
         }
         else if (agentP.recordTrailsForAgents() > 0) {
                 eng.m_record_trails = true;
@@ -534,7 +533,9 @@ namespace dm_runmethods
                 case AgentParser::OutputType::TRAILS:
                 {
                     std::ofstream trailStream(cmdP.getOuputFile().c_str());
-                    DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+                    ShapeMap trailMap("Agent Trails");
+                    eng.insertTrailsInMap(trailMap);
+                    DO_TIMED("Writing trails", mgraph->writeMapShapesAsCat(trailMap, trailStream))
                     break;
                 }
             }
@@ -559,7 +560,9 @@ namespace dm_runmethods
             if(std::find(resultTypes.begin(), resultTypes.end(), AgentParser::OutputType::TRAILS) != resultTypes.end()) {
                 std::string outFile = cmdP.getOuputFile() + "_trails.cat";
                 std::ofstream trailStream(outFile.c_str());
-                 DO_TIMED("Writing trails", eng.outputTrails(trailStream))
+                ShapeMap trailMap("Agent Trails");
+                eng.insertTrailsInMap(trailMap);
+                DO_TIMED("Writing trails", mgraph->writeMapShapesAsCat(trailMap, trailStream))
             }
         }
     }

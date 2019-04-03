@@ -219,19 +219,22 @@ void QGraphDoc::OnLayerNew()
       if (dlg.m_layer_type == 0) {
           int ref = m_meta_graph->addShapeMap(dlg.m_name.toStdString());
           m_meta_graph->setDisplayedDataMapRef(ref);
-         map = &(m_meta_graph->getDataMaps()[ref]);
+          map = &(m_meta_graph->getDataMaps()[ref]);
       }
       else if (dlg.m_layer_type == 1) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::CONVEXMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 2) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::AXIALMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
       else if (dlg.m_layer_type == 3) {
-         int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
-         map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
+          int ref = m_meta_graph->addShapeGraph(dlg.m_name.toStdString(),ShapeMap::PESHMAP);
+          m_meta_graph->setDisplayedShapeGraphRef(ref);
+          map = m_meta_graph->getShapeGraphs()[size_t(ref)].get();
       }
 
       QtRegion r = m_meta_graph->getBoundingBox();
@@ -711,6 +714,79 @@ void QGraphDoc::OnFileExport()
          else if (mode == 2) {
             m_meta_graph->getDisplayedPointMap().outputMif(miffile,midfile);
         }
+    }
+}
+
+void QGraphDoc::OnFileExportMapGeometry() {
+    if (m_communicator) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as another process is running"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return; // Locked
+    }
+    if (m_meta_graph->viewingNone()) {
+        QMessageBox::warning(this, tr("Notice"), tr("Sorry, cannot export as there is no data to export"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return; // No graph to export
+    }
+
+    QString suffix;
+    int mode = -1;
+
+    int view_class = m_meta_graph->getViewClass();
+    if (view_class & MetaGraph::VIEWAXIAL) {
+        mode = 0;
+        suffix = m_meta_graph->getDisplayedShapeGraph().getName().c_str();
+    } else if (view_class & MetaGraph::VIEWDATA) {
+        mode = 1;
+        suffix = m_meta_graph->getDisplayedDataMap().getName().c_str();
+    }
+
+    if (mode == -1) {
+        QMessageBox::warning(this, tr("Notice"),
+                             tr("Sorry, depthmapX does not support saving the currently displayed layer"),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+    suffix.replace(' ', '_');
+
+    QFilePath path(m_opened_name);
+    QString defaultname = path.m_path + (path.m_name.isEmpty() ? windowTitle() : path.m_name) + tr("_") + suffix;
+
+    QString template_string = tr("Chiron and Alasdair Transfer Format file (*.cat)\n");
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString outfile =
+        QFileDialog::getSaveFileName(0, tr("Save Output As"), defaultname, template_string, &selectedFilter, options);
+    if (outfile.isEmpty()) {
+        return;
+    }
+
+    FILE *fp = fopen(outfile.toLatin1(), "wb");
+    fclose(fp);
+
+    QFilePath filepath(outfile);
+    QString ext = filepath.m_ext;
+
+    if (ext == "CAT") {
+        std::ofstream stream(outfile.toLatin1());
+        if (stream.fail() || stream.bad()) {
+            QMessageBox::warning(this, tr("Notice"), tr("Sorry, unable to open file for export"), QMessageBox::Ok,
+                                 QMessageBox::Ok);
+            mode = -1;
+        }
+
+        switch (mode) {
+        case 0:
+            m_meta_graph->writeMapShapesAsCat(m_meta_graph->getDisplayedShapeGraph(), stream);
+            break;
+        case 1:
+            m_meta_graph->writeMapShapesAsCat(m_meta_graph->getDisplayedDataMap(), stream);
+            break;
+        default:
+            break;
+        }
+        stream.close();
     }
 }
 

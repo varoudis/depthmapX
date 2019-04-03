@@ -17,38 +17,44 @@
 #pragma once
 
 #include "genlib/p2dpoly.h"
-#include <qopengl.h>
-#include <QVector>
-#include <QVector3D>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
 #include <QRgb>
+#include <QVector3D>
+#include <QVector>
+#include <qopengl.h>
 
 /**
- * @brief General triangles representation. All same colour
+ * @brief General triangles representation. Each triangle may have its own colour
  */
 
-class GLTrianglesUniform
-{
-public:
-    GLTrianglesUniform();
-    void loadTriangleData(const std::vector<Point2f>& points, const QRgb &polyColour);
+class GLTriangles {
+  public:
+    GLTriangles() : m_count(0), m_program(0) {}
+    void loadTriangleData(const std::vector<std::pair<std::vector<Point2f>, QRgb>> &triangleData);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
     void cleanup();
     void updateColour(const QRgb &polyColour);
     int vertexCount() const { return m_count / DATA_DIMENSIONS; }
-    GLTrianglesUniform( const GLTrianglesUniform& ) = delete;
-    GLTrianglesUniform& operator=(const GLTrianglesUniform& ) = delete;
+    GLTriangles(const GLTriangles &) = delete;
+    GLTriangles &operator=(const GLTriangles &) = delete;
 
-private:
-    const int DATA_DIMENSIONS = 3;
+  protected:
+    void init(int numTriangles) {
+        m_built = false;
+        m_count = 0;
+        m_data.resize(numTriangles * 3 * DATA_DIMENSIONS);
+    }
+    void add(const QVector3D &v, const QVector3D &c);
+
+  private:
+    const int DATA_DIMENSIONS = 6;
     void setupVertexAttribs();
     const GLfloat *constData() const { return m_data.constData(); }
-    void add(const QVector3D &v);
 
     QVector<GLfloat> m_data;
     int m_count;
@@ -60,5 +66,4 @@ private:
     QOpenGLShaderProgram *m_program;
     int m_projMatrixLoc;
     int m_mvMatrixLoc;
-    int m_colourVectorLoc;
 };

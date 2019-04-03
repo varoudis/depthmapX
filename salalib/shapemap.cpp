@@ -3461,7 +3461,9 @@ std::vector<SimpleLine> ShapeMap::getAllShapesAsLines() const {
 std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
     std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
     std::map<int,SalaShape>& allShapes = getAllShapes();
-    for (auto refShape: allShapes) {
+    int k = -1;
+    for (auto& refShape: allShapes) {
+        k++;
         SalaShape& shape = refShape.second;
         PafColor colour(dXreimpl::getDisplayColor(AttributeKey(refShape.first),
                                                   m_attributes->getRow(AttributeKey(refShape.first)),
@@ -3480,11 +3482,8 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
 
 std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
     std::map<std::vector<Point2f>, PafColor> colouredPolygons;
-    const AttributeTable &attributeTable = getAttributeTable();
     std::map<int,SalaShape>& allShapes = getAllShapes();
-    int k = -1;
-    for (auto refShape: allShapes) {
-        k++;
+    for (auto& refShape: allShapes) {
         SalaShape& shape = refShape.second;
         if (shape.isPolygon()) {
             std::vector<Point2f> vertices;
@@ -3499,4 +3498,19 @@ std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
         }
     }
     return colouredPolygons;
+}
+
+std::vector<std::pair<Point2f, PafColor> > ShapeMap::getAllPointsWithColour() {
+    std::vector<std::pair<Point2f, PafColor> > colouredPoints;
+    std::map<int,SalaShape>& allShapes = getAllShapes();
+    for (auto& refShape: allShapes) {
+        SalaShape& shape = refShape.second;
+        if (shape.isPoint()) {
+            PafColor colour(dXreimpl::getDisplayColor(AttributeKey(refShape.first),
+                                                      m_attributes->getRow(AttributeKey(refShape.first)),
+                                                      *m_attribHandle.get(), true));
+            colouredPoints.push_back(std::make_pair(shape.getCentroid(), colour));
+        }
+    }
+    return colouredPoints;
 }
