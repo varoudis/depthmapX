@@ -15,19 +15,21 @@
 
 #pragma once
 
-#include "salalib/mgraph.h"
 #include "salalib/importtypedefs.h"
+#include "salalib/mgraph.h"
 #include "salalib/parsers/dxfp.h"
-#include <vector>
 #include <map>
+#include <vector>
 
 namespace depthmapX {
-    bool importFile(MetaGraph &mgraph, std::istream &stream, Communicator *communicator, std::string name, ImportType mapType, ImportFileType fileType);
+    bool importFile(MetaGraph &mgraph, std::istream &stream, Communicator *communicator, std::string name,
+                    ImportType mapType, ImportFileType fileType);
     bool importTxt(ShapeMap &shapeMap, std::istream &stream, char delimiter);
     depthmapX::Table csvToTable(std::istream &stream, char delimiter);
     std::vector<Line> extractLines(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col);
-    std::map<int, Line> extractLinesWithRef(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col, ColumnData &refcol);
+    std::map<int, Line> extractLinesWithRef(ColumnData &x1col, ColumnData &y1col, ColumnData &x2col, ColumnData &y2col,
+                                            ColumnData &refcol);
     std::vector<Point2f> extractPoints(ColumnData &x, ColumnData &y);
     std::map<int, Point2f> extractPointsWithRefs(ColumnData &x, ColumnData &y, ColumnData &ref);
     bool importDxfLayer(const DxfLayer &dxfLayer, ShapeMap &shapeMap);
-}
+} // namespace depthmapX
