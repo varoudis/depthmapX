@@ -31,70 +31,7 @@ AgentProgram::AgentProgram() {
     m_los_sqrd = false;
 }
 
-/*
-AgentProgram::AgentProgram()
-{
-   // random program for evolution:
-   // m_sel_type = SEL_LENGTH + (pafrand() % 4);
-   m_sel_type = SEL_OPTIC_FLOW2;
-
-   // non-evolutionary standard agent program
-   // note m_steps defaults to 0 for use with evolutionary (reevaulate goal every step)
-   m_steps = 0;
-   // also note evolutionary does actually use bins when not following other rules:
-   m_vbin = (pafrand() % 7) + 1;
-
-   // optic flow 2
-   //m_vahead = (pafrand() % m_vbin);
-   //m_ahead_threshold = prandom() * 19.0 + 1.0;
-   //m_feeler_threshold = prandom() * 4.0 + 1.0;
-   //m_feeler_probability = prandom();
-
-   // rule order relies on putting rules into slots:
-   for (int i = 0; i < 4; i++) {
-      m_rule_order[i] = -1;
-   }
-   for (int j = 0; j < 4; j++) {
-      int choice = pafrand() % (4 - j);
-      for (int k = 0; k < choice + 1; k++) {
-         if (m_rule_order[k] != -1) {
-            choice++;
-         }
-      }
-      m_rule_order[choice] = j;
-   }
-   for (i = 0; i < 4; i++) {
-      m_rule_threshold[i] = prandom() * 100.0;
-      m_rule_probability[i] = prandom();
-   }
-
-   m_fitness = 0.0;
-
-   m_destination_guided = false;
-   m_los_sqrd = false;
-}
-*/
-
 void AgentProgram::mutate() {
-    // don't mutate program type
-    /*
-       if (pafrand() % 20 == 0) {
-          m_vbin = (pafrand() % 7) + 1;
-       }
-       if (pafrand() % 20 == 0) {
-          m_vahead = (pafrand() % m_vbin);
-       }
-       if (pafrand() % 20 == 0) {
-          m_ahead_threshold = prandom() * 19.0 + 1.0;
-       }
-       if (pafrand() % 20 == 0) {
-          m_feeler_threshold = prandom() * 4.0 + 1.0;
-       }
-       if (pafrand() % 20 == 0) {
-          m_feeler_probability = prandom();
-       }
-    */
-
     // do mutate rule order occassionally:
     if (pafrand() % 20 == 0) {
         // rule order relies on putting rules into slots:
@@ -124,38 +61,6 @@ void AgentProgram::mutate() {
 
 AgentProgram crossover(const AgentProgram &prog_a, const AgentProgram &prog_b) {
     AgentProgram child;
-    // either one sel type or the other:
-    /*
-     if (pafrand() % 2) {
-        child.m_sel_type = prog_a.m_sel_type;
-     }
-     else {
-        child.m_sel_type = prog_b.m_sel_type;
-     }
-     */
-    /*
-    // either one bin radius or the other
-    if (pafrand() % 2)
-       child.m_vbin = prog_a.m_vbin;
-    else
-       child.m_vbin = prog_b.m_vbin;
-    if (pafrand() % 2)
-       child.m_vahead = prog_a.m_vahead;
-    else
-       child.m_vahead = prog_b.m_vahead;
-    if (pafrand() % 2)
-       child.m_ahead_threshold = prog_a.m_ahead_threshold;
-    else
-       child.m_ahead_threshold = prog_b.m_ahead_threshold;
-    if (pafrand() % 2)
-       child.m_feeler_threshold = prog_a.m_feeler_threshold;
-    else
-       child.m_feeler_threshold = prog_b.m_feeler_threshold;
-    if (pafrand() % 2)
-       child.m_feeler_probability = prog_a.m_feeler_probability;
-    else
-       child.m_feeler_probability = prog_b.m_feeler_probability;
- */
 
     // either one rule priority order or the other (don't try to mix!)
     if (pafrand() % 2) {
@@ -212,12 +117,6 @@ void AgentProgram::save(const std::string &filename) {
 
     file << "Steps: " << m_steps << std::endl;
     file << "Bins: " << ((m_vbin == -1) ? 32 : m_vbin * 2 + 1) << std::endl;
-    /*
-    file << "Ahead bins: " << m_vahead * 2 + 1 << std::endl;
-    file << "Ahead threshold: " << m_ahead_threshold << std::endl;
-    file << "Feeler threshold: " << m_feeler_threshold << std::endl;
-    file << "Feeler probability: " << m_feeler_probability << std::endl;
- */
     file << "Rule order: " << m_rule_order[0] << " " << m_rule_order[1] << " " << m_rule_order[2] << " "
          << m_rule_order[3] << std::endl;
 

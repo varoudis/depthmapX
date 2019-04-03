@@ -34,7 +34,7 @@ struct ProgramPopulation {
     AgentProgram m_population[POPSIZE];
 
   public:
-    ProgramPopulation() { ; }
+    ProgramPopulation() {}
     AgentProgram *makeChild();
     void sort();
 };
