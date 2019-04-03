@@ -1372,7 +1372,7 @@ bool PointMap::unmake(bool removeLinks) {
         m_merge_lines.clear();
     }
 
-    m_attributes.clear();
+    m_attributes->clear();
 
     m_processed = false;
     m_boundarygraph = false;
