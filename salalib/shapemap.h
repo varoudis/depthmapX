@@ -579,6 +579,7 @@ public:
    std::vector<SimpleLine> getAllShapesAsLines() const;
    std::vector<std::pair<SimpleLine, PafColor>> getAllLinesWithColour();
    std::map<std::vector<Point2f>, PafColor> getAllPolygonsWithColour();
+   std::vector<std::pair<Point2f, PafColor> > getAllPointsWithColour();
    bool importLines(const std::vector<Line> &lines, const depthmapX::Table &data);
    bool importLinesWithRefs(const std::map<int, Line> &lines, const depthmapX::Table &data);
    bool importPoints(const std::vector<Point2f> &points, const depthmapX::Table &data);
