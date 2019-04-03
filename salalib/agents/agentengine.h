@@ -28,10 +28,10 @@ class AgentEngine {
 
   public:
     bool m_record_trails;
-    int m_trail_count;
+    int m_trail_count = 50;
 
   public:
     AgentEngine();
     void run(Communicator *comm, PointMap *pointmap);
-    void outputTrails(std::ostream &trailsFile);
+    ShapeMap getTrailsAsMap(std::string mapName = "Agent Trails");
 };

@@ -25,7 +25,6 @@ AgentEngine::AgentEngine() {
     m_timesteps = 5000;
     m_gatelayer = -1;
     m_record_trails = false;
-    m_trail_count = MAX_TRAILS;
 }
 
 void AgentEngine::run(Communicator *comm, PointMap *pointmap) {
@@ -48,20 +47,13 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap) {
         output_mode |= Agent::OUTPUT_GATE_COUNTS;
     }
 
-    // remove any agent trails that are left from a previous run
-    for (auto &agentSet : agentSets) {
-        for (int k = 0; k < MAX_TRAILS; k++) {
-            agentSet.g_trails[k].clear();
-        }
-    }
-
     int trail_num = -1;
     if (m_record_trails) {
         if (m_trail_count < 1) {
             m_trail_count = 1;
         }
-        if (m_trail_count > MAX_TRAILS) {
-            m_trail_count = MAX_TRAILS;
+        for (auto& agentSet: agentSets) {
+            agentSet.m_trails = std::vector<std::vector<Event2f>>(m_trail_count);
         }
         trail_num = 0;
     }
@@ -107,27 +99,19 @@ void AgentEngine::run(Communicator *comm, PointMap *pointmap) {
         }
     }
 
-    // output agent trails to file:
-    if (m_record_trails) {
-        // just dump in local file...
-        std::ofstream trails("trails.cat");
-        outputTrails(trails);
-    }
-
-    // actually, no, do this from the
     pointmap->overrideDisplayedAttribute(-2);
     pointmap->setDisplayedAttribute(displaycol);
 }
 
-void AgentEngine::outputTrails(std::ostream &trailsFile) {
-    trailsFile << "CAT" << std::endl;
+ShapeMap AgentEngine::getTrailsAsMap(std::string mapName) {
+    ShapeMap trailsMap(mapName, ShapeMap::DATAMAP);
     for (auto &agentSet : agentSets) {
-        for (int i = 0; i < m_trail_count; i++) {
-            trailsFile << "Begin Polyline" << std::endl;
-            for (size_t j = 0; j < agentSet.g_trails[i].size(); j++) {
-                trailsFile << agentSet.g_trails[i][j].x << " " << agentSet.g_trails[i][j].y << std::endl;
-            }
-            trailsFile << "End Polyline" << std::endl;
+        // there is currently only one AgentSet. If at any point there are more then
+        // this could be amended to put the AgentSet id as a property of the trail
+        for (auto &trail : agentSet.m_trails) {
+            std::vector<Point2f> trailGeometry(trail.begin(), trail.end());
+            trailsMap.makePolyShape(trailGeometry, true, false);
         }
     }
+    return (trailsMap);
 }

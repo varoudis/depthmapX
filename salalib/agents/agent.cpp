@@ -142,7 +142,7 @@ void Agent::onStep() {
         m_loc = nextloc;
     }
     if (!m_stopped && m_trail_num != -1) {
-        m_program->g_trails[m_trail_num].push_back(m_loc);
+        m_program->m_trails[m_trail_num].push_back(Event2f(m_loc, m_program->m_steps));
     }
 }
 bool Agent::diagonalStep() {

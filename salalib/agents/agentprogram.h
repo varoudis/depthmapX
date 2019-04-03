@@ -22,8 +22,6 @@
 
 #include <string>
 
-const int MAX_TRAILS = 50;
-
 struct AgentProgram {
     // comparative is comparative with current heading
     enum {
@@ -77,6 +75,5 @@ struct AgentProgram {
     // to reload later:
     void save(const std::string &filename);
     bool open(const std::string &filename);
-
-    std::vector<Point2f> g_trails[MAX_TRAILS];
+    std::vector<std::vector<Event2f>> m_trails;
 };
