@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "genlib/paftl.h"
 #include "genlib/p2dpoly.h"
 
 // linear regression
@@ -37,17 +36,6 @@ template <class T> struct LinReg
    LinReg()
    {
       S_x = 0; S_y = 0; S_xx = 0; S_yy = 0; S_xy = 0; n = 0; cached = false;
-   }
-   LinReg(const pvector<T>& X, const pvector<T>& Y)
-   {
-      S_x = 0; S_y = 0; S_xx = 0; S_yy = 0; S_xy = 0;
-      n = __min(X.size(),Y.size());
-      for (int i = 0; i < n; i++) {
-         S_x += double(X[i]); S_y += double(Y[i]);
-         S_xx += sqr(double(X[i])); S_yy += sqr(double(Y[i]));
-         S_xy += double(X[i]) * double(Y[i]);
-      }
-      cached = false;
    }
    void clear()
    {

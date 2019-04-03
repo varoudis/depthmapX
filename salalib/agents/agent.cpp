@@ -19,8 +19,6 @@
 #include "agent.h"
 #include "agenthelpers.h"
 
-#include "genlib/paftl.h"
-
 Agent::Agent(AgentProgram *program, PointMap *pointmap, int output_mode) {
     m_program = program;
     m_pointmap = pointmap;
@@ -296,7 +294,7 @@ Point2f Agent::onWeightedLook(bool wholeisovist) {
     }
     int aheadbin = binfromvec(m_vector);
     int directionbin = 32 + binfromvec(m_vector) - vbin;
-    prefvec<wpair> weightmap;
+    std::vector<wpair> weightmap;
     double weight = 0.0;
     // reset for getting list, check in range:
     vbin = vbin * 2 + 1;
@@ -395,7 +393,7 @@ Point2f Agent::onOcclusionLook(bool wholeisovist, int looktype) {
         } else if (looktype == AgentProgram::SEL_OCC_BIN60) {
             subset = 5;
         }
-        prefvec<wpair> weightmap;
+        std::vector<wpair> weightmap;
         double weight = 0.0;
         Node &node = m_pointmap->getPoint(m_node).getNode();
         for (int i = 0; i < vbin; i += subset) {
@@ -480,7 +478,7 @@ Point2f Agent::onLoSLook(bool wholeisovist, int look_type) {
         vbin = 16;
     }
     int directionbin = 32 + binfromvec(m_vector) - vbin;
-    prefvec<wpair> weightmap;
+    std::vector<wpair> weightmap;
     double weight = 0.0;
     // reset for getting list, check in range:
     vbin = vbin * 2 + 1;
@@ -534,7 +532,7 @@ Point2f Agent::onDirectedLoSLook(bool wholeisovist, int look_type) {
         vbin = 16;
     }
     int directionbin = 32 + binfromvec(vec2) - vbin;
-    prefvec<wpair> weightmap;
+    std::vector<wpair> weightmap;
     double weight = 0.0;
     // reset for getting list, check in range:
     vbin = vbin * 2 + 1;

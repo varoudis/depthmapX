@@ -2,7 +2,6 @@
 #include "salalib/tidylines.h"
 
 #include "genlib/exceptions.h"
-#include "genlib/paftl.h"
 
 #include <numeric>
 
@@ -212,7 +211,6 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
                                                                  const std::vector<SpacePixelFile> &drawingFiles)
 {
    QtRegion region;
-   pvecint polygon_refs;
 
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
    int conn_col = usermap->getAttributeTable().insertOrResetLockedColumn("Connectivity");
@@ -251,12 +249,10 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToConvex(Communicator *c
 std::unique_ptr<ShapeGraph> MapConverter::convertDataToConvex(Communicator *comm, const std::string& name,
                                                               ShapeMap& shapemap, bool copydata)
 {
-   pvecint polygon_refs;
-
    std::unique_ptr<ShapeGraph> usermap(new ShapeGraph(name,ShapeMap::CONVEXMAP));
    int conn_col = usermap->getAttributeTable().insertOrResetLockedColumn("Connectivity");
 
-   pvecint lookup;
+   std::vector<int> lookup;
    auto refShapes = shapemap.getAllShapes();
    std::map<int,float> extraAttr;
    std::vector<int> attrCols;

@@ -45,7 +45,7 @@ class CColourScaleDlg : public QDialog, public Ui::CColourScaleDlg {
     bool m_show_lines;
     bool m_show_fill;
     bool m_show_centroids;
-    pvecint m_color_type_map;
+    std::vector<int> m_color_type_map;
     void UpdateData(bool value);
     void showEvent(QShowEvent *event);
     void OnFocusGraph(QGraphDoc *pDoc, int lParam);

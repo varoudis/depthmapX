@@ -141,9 +141,9 @@ public:
    // use to initialise mannequintemplate:
    CMannequinTemplate m_male_template;
    CMannequinTemplate m_female_template;
-   prefvec<QMannequin> m_mannequins;
-   prefvec<Agent> m_agents;
-   prefvec<Trace> m_traces;
+   std::vector<QMannequin> m_mannequins;
+   std::vector<Agent> m_agents;
+   std::vector<Trace> m_traces;
    AgentProgram m_agent_program;
    //
    // used to keep track of internal time for all agents

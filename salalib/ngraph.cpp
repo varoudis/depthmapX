@@ -22,7 +22,6 @@
 #include <salalib/spacepix.h>
 #include <salalib/pointdata.h>
 #include <salalib/ngraph.h>
-#include "genlib/legacyconverters.h"
 #include "genlib/containerutils.h"
 
 void Node::make(const PixelRef pix, PixelRefVector *bins, float *bin_far_dists, int q_octants)
@@ -203,9 +202,7 @@ std::istream& Node::read(std::istream& stream, int version)
    }
 
    for (i = 0; i < 32; i++) {
-      pvector<PixelRef> tempPvector;
-      tempPvector.read(stream);
-      m_occlusion_bins[i] = genshim::toSTLVector(tempPvector);
+      dXreadwrite::readIntoVector(stream, m_occlusion_bins[i]);
    }
 
    return stream;
@@ -219,8 +216,7 @@ std::ofstream& Node::write(std::ofstream& stream, int version)
    }
 
    for (i = 0; i < 32; i++) {
-      pvector<PixelRef> tempPvector = genshim::toPVector(m_occlusion_bins[i]);
-      tempPvector.write(stream);
+      dXreadwrite::writeVector(stream, m_occlusion_bins[i]);
    }
    return stream;
 }

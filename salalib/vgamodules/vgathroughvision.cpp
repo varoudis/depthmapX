@@ -20,7 +20,6 @@
 #include "salalib/agents/agenthelpers.h"
 
 #include "genlib/stringutils.h"
-#include "genlib/paftl.h"
 
 // This is a slow algorithm, but should give the correct answer
 // for demonstrative purposes
@@ -47,7 +46,7 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
     int count = 0;
     for (size_t i = 0; i < map.getCols(); i++) {
         for (size_t j = 0; j < map.getRows(); j++) {
-            pvecint seengates;
+            std::vector<int> seengates;
             PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
             Point &p = map.getPoint(curs);
             if (map.getPoint(curs).filled()) {
@@ -60,14 +59,16 @@ bool VGAThroughVision::run(Communicator *comm, const Options &, PointMap &map, b
                         map.getPoint(key).m_misc += 1;
 
                         // TODO: Undocumented functionality. Shows how many times a gate is passed?
-
-                        if(hasGateColumn) {
+                        if (hasGateColumn) {
                             auto iter = attributes.find(AttributeKey(key));
-                            if(iter != attributes.end()) {
+                            if (iter != attributes.end()) {
                                 int gate = static_cast<int>(iter->getRow().getValue(g_col_gate));
-                                if (gate != -1 && seengates.searchindex(gate) == paftl::npos) {
-                                    iter->getRow().incrValue(g_col_gate_counts);
-                                    seengates.add(gate, paftl::ADD_HERE);
+                                if (gate != -1) {
+                                    auto gateIter = depthmapX::findBinary(seengates, gate);
+                                    if (gateIter == seengates.end()) {
+                                        iter->getRow().incrValue(g_col_gate_counts);
+                                        seengates.insert(gateIter, int(gate));
+                                    }
                                 }
                             }
                         }

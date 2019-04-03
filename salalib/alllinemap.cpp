@@ -62,7 +62,7 @@ AllLineMap::AllLineMap(Communicator *comm,
    // okay, we've got as far as finding a seed corner, now the real fun begins...
    // test outwards from corner, add other corners to
    // test set...
-   prefvec<Line> axiallines;
+   std::vector<Line> axiallines;
    KeyVertices preaxialdata;
    // also poly_connections used in fewest line axial map construction:
    m_poly_connections.clear();
@@ -115,7 +115,7 @@ AllLineMap::AllLineMap(Communicator *comm,
                 preaxialdata[j].insert(preaxiali);
             }
             preaxialdata.erase(preaxialdata.begin() + int(k));
-            axiallines.remove_at(k);
+            axiallines.erase(axiallines.begin() + int(k));
             removed++;
          }
       }
@@ -237,7 +237,7 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
 
    AxialMinimiser minimiser(*this, ax_seg_cuts.size(), radialsegs.size());
 
-   prefvec<Line> lines_s, lines_m;
+   std::vector<Line> lines_s, lines_m;
 
    minimiser.removeSubsets(ax_seg_cuts, radialsegs, radialdivisions, m_radial_lines, keyvertexconns, keyvertexcounts);
 
@@ -283,7 +283,7 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    return std::make_tuple(std::move(fewestlinemap_subsets), std::move(fewestlinemap_minimal));
 }
 
-void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, const std::vector<RadialLine> &radiallines,
+void AllLineMap::makeDivisions(const std::vector<PolyConnector>& polyconnections, const std::vector<RadialLine> &radiallines,
                                std::map<RadialKey,std::set<int> >& radialdivisions, std::map<int, std::set<int> > &axialdividers,
                                Communicator *comm)
 {
@@ -295,7 +295,7 @@ void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
 
    for (size_t i = 0; i < polyconnections.size(); i++) {
       PixelRefVector pixels = pixelateLine(polyconnections[i].line);
-      pvecint testedshapes;
+      std::vector<int> testedshapes;
       auto connIter = radialdivisions.find(polyconnections[i].key);
       size_t connindex = std::distance(radialdivisions.begin(), connIter);
       double tolerance = sqrt(TOLERANCE_A);// * polyconnections[i].line.length();
@@ -304,10 +304,11 @@ void AllLineMap::makeDivisions(const prefvec<PolyConnector>& polyconnections, co
          auto& shapes = m_pixel_shapes(static_cast<size_t>(pix.y),
                                        static_cast<size_t>(pix.x));
          for (const ShapeRef& shape: shapes) {
-            if (testedshapes.searchindex(shape.m_shape_ref) != paftl::npos) {
+            auto iter = depthmapX::findBinary( testedshapes, shape.m_shape_ref );
+            if (iter != testedshapes.end()) {
                continue;
             }
-            testedshapes.add(shape.m_shape_ref);
+            testedshapes.insert(iter, int(shape.m_shape_ref));
             const Line& line = m_shapes.find(shape.m_shape_ref)->second.getLine();
             //
             if (intersect_region(line, polyconnections[i].line, tolerance * line.length()) ) {

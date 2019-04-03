@@ -19,7 +19,6 @@
 
 #include "genlib/containerutils.h"
 #include "genlib/readwritehelpers.h"
-#include "genlib/legacyconverters.h"
 #include "genlib/comm.h" // for communicator
 
 #include <math.h>

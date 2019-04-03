@@ -251,7 +251,7 @@ private:
     QVector<QIcon> m_tree_icon;
     std::map<int, std::string> m_view_map_entries;
 
-    pvector<bool> m_attribute_locked;
+    std::vector<bool> m_attribute_locked;
     std::map<QTreeWidgetItem*, ItemTreeEntry> m_treegraphmap;
     std::map<QTreeWidgetItem*, ItemTreeEntry> m_treedrawingmap;
     QTreeWidgetItem* m_topgraph;

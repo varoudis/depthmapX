@@ -13,15 +13,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "../genlib/legacyconverters.h"
-
-TEST_CASE("vector conversion")
-{
-    std::vector<int> vec{1,4,5};
-    pvector<int> result = genshim::toPVector(vec);
-    REQUIRE(result.size() == 3);
-    REQUIRE(result[0] == 1);
-    REQUIRE(result[1] == 4);
-    REQUIRE(result[2] == 5);
-}

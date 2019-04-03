@@ -1838,7 +1838,7 @@ void QDepthmapView::OutputEPS( std::ofstream& stream, QGraphDoc *pDoc, bool incl
 
       for (size_t i = 0; i < pDoc->m_evolved_paths.size(); i++) {
 
-         const prefvec<Point2f>& path = pDoc->m_evolved_paths[i];
+         const std::vector<Point2f>& path = pDoc->m_evolved_paths[i];
 
          if (path.size() > 1) {
 

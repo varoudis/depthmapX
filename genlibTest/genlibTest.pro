@@ -5,7 +5,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 INCLUDEPATH += ../ThirdParty/Catch
 
-SOURCES += convertertest.cpp \
+SOURCES += \
     main.cpp \
     teststringutils.cpp \
     testbspnode.cpp \
