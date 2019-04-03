@@ -107,9 +107,7 @@ namespace depthmapX {
                     *communicator >> dp;
                 } catch (Communicator::CancelledException) {
                     return 0;
-                } catch (std::invalid_argument &) {
-                    return -1;
-                } catch (std::out_of_range &) {
+                } catch (std::logic_error &) {
                     return -1;
                 }
 
