@@ -46,6 +46,7 @@
 #include "salalib/vgamodules/vgaangular.h"
 #include "salalib/vgamodules/vgaangulardepth.h"
 #include "salalib/vgamodules/vgathroughvision.h"
+#include "salalib/agents/agenthelpers.h"
 
 #include "mgraph440/mgraph.h"
 
@@ -1983,7 +1984,9 @@ void MetaGraph::runAgentEngine(Communicator *comm)
            mapName = "Agent Trails " + std::to_string(count);
            count++;
        }
-       m_dataMaps.push_back(m_agent_engine.getTrailsAsMap(mapName));
+       m_dataMaps.emplace_back(mapName);
+       m_agent_engine.insertTrailsInMap(m_dataMaps.back());
+
        m_state |= DATAMAPS;
    }
 

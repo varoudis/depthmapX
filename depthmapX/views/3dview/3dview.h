@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "depthmapX/GraphDoc.h"
-#include "salalib/nagent.h"
+#include "salalib/agents/agentprogram.h"
 
 #include <QOpenGLWidget>
 #include <QRect>
@@ -73,6 +73,14 @@ struct QMannequin
    float m_points[150];
    int m_pointstart;
    int m_pointcount;
+};
+
+
+struct Trace
+{
+   double starttime;
+   double endtime;
+   std::vector<Event2f> events;
 };
 
 struct C3DPixelData

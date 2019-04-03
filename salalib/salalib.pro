@@ -8,6 +8,7 @@ include(vgamodules/vgamodules.pri)
 include(axialmodules/axialmodules.pri)
 include(segmmodules/segmmodules.pri)
 include(parsers/parsers.pri)
+include(agents/agents.pri)
 
 QT       -= qt
 CONFIG   -= qt
@@ -24,7 +25,6 @@ SOURCES += \
     connector.cpp \
     isovist.cpp \
     mgraph.cpp \
-    nagent.cpp \
     ngraph.cpp \
     pointdata.cpp \
     salaprogram.cpp \
@@ -55,7 +55,6 @@ HEADERS += \
     fileproperties.h \
     isovist.h \
     mgraph.h \
-    nagent.h \
     ngraph.h \
     pointdata.h \
     salaprogram.h \
