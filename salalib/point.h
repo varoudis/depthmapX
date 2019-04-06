@@ -168,7 +168,7 @@ public:
    float getBinDistance(int i);
 public:
    std::istream &read(std::istream &stream, int version, int attr_count);
-   std::ofstream& write(std::ofstream& stream, int version);
+   std::ostream& write(std::ostream &stream, int version);
    //
 protected:
    // for user processing, set their own data on the point:

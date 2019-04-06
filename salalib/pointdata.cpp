@@ -1164,7 +1164,7 @@ bool PointMap::read(std::istream& stream, int version )
    return true;
 }
 
-bool PointMap::write( std::ofstream& stream, int version )
+bool PointMap::write( std::ostream& stream, int version )
 {
    dXstring::writeString(stream, m_name);
 

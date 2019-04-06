@@ -341,7 +341,7 @@ public:
    PixelRef pickPixel(double value) const;
 public:
    bool read(std::istream &stream, int version );
-   bool write(std::ofstream& stream, int version );
+   bool write(std::ostream &stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
    void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
    void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
