@@ -1664,6 +1664,36 @@ void QGraphDoc::OnToolsMakeGraph()
    m_thread.render(this);
 }
 
+void QGraphDoc::OnToolsUnmakeGraph()
+{
+    int state = m_meta_graph->getState();
+    if (m_communicator) {
+       QMessageBox::warning(this, tr("Notice"), tr("Please wait, another task is running"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    if (~state & MetaGraph::POINTMAPS) {
+       QMessageBox::warning(this, tr("Notice"), tr("Please make grid before filling"), QMessageBox::Ok, QMessageBox::Ok);
+       return;
+    }
+    if (m_meta_graph->viewingProcessed()) {
+       if ( QMessageBox::Yes != QMessageBox::question(this, tr("Notice"),
+                                                      tr("This will clear existing data and attributes. Do you want to continue?"),
+                                                      QMessageBox::Yes|QMessageBox::No, QMessageBox::No) )
+        return;
+    }
+    bool removeLinks = false;
+    if(m_meta_graph->getDisplayedPointMap().getMergedPixelPairs().size() > 0) {
+        removeLinks = QMessageBox::Yes == QMessageBox::question(this, tr("Notice"),
+                                                                     tr("Would you also like to clear the links?"),
+                                                                     QMessageBox::Yes|QMessageBox::No, QMessageBox::No);
+    }
+    bool ok = m_meta_graph->unmakeGraph(removeLinks);
+    if (ok) {
+       SetUpdateFlag(QGraphDoc::NEW_DATA);
+    }
+    SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void QGraphDoc::OnToolsRun() 

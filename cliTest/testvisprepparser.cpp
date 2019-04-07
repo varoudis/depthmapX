@@ -60,18 +60,18 @@ TEST_CASE("VisPrepParserFail", "Error cases")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Failed to load file foo.csv, error"));
     }
 
-    SECTION("Neiter points nor point file provided")
+    SECTION("Neither points nor point file provided")
     {
         VisPrepParser parser;
-        ArgumentHolder ah{"prog", "-pg", "0.1"};
+        ArgumentHolder ah{"prog", "-pg", "0.1", "-pm"};
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Either -pp or -pf must be given"));
     }
 
-    SECTION("No grid")
+    SECTION("Nothing to do")
     {
         VisPrepParser parser;
-        ArgumentHolder ah{"prog", "-pp", "0.1,1"};
-        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Use -pg to define grid"));
+        ArgumentHolder ah{"prog"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Nothing to do"));
     }
 
     SECTION("Points and pointfile provided")
@@ -136,9 +136,22 @@ TEST_CASE("VisPrepParserFail", "Error cases")
         REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("Restricted visibility of '0.0' makes no sense, use a positive number or -1 for unrestricted"));
     }
 
+    SECTION("Make and unmake")
+    {
+        VisPrepParser parser;
+        ArgumentHolder ah{"prog", "-pm", "-pu"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-pu cannot be used together with -pm"));
+    }
+
+    SECTION("Grid and unmake")
+    {
+        VisPrepParser parser;
+        ArgumentHolder ah{"prog", "-pg", "1", "-pu"};
+        REQUIRE_THROWS_WITH(parser.parse(ah.argc(), ah.argv()), Catch::Contains("-pu can not be used with any other option apart from -pl"));
+    }
 }
 
-TEST_CASE("VisprepParserSuccess", "Read successfully")
+TEST_CASE("VisprepParserMakeSuccess", "Read successfully - Make")
 {
     VisPrepParser parser;
     double x1 = 1.0;
@@ -156,9 +169,12 @@ TEST_CASE("VisprepParserSuccess", "Read successfully")
         std::stringstream p2;
         p2 << x2 << "," << y2 << std::flush;
 
-        ArgumentHolder ah{"prog", "-pg", gstring.str(), "-pp", p1.str(), "-pp", p2.str(), "-pb", "-pr", "2.1"};
+        ArgumentHolder ah{"prog", "-pg", gstring.str(), "-pp", p1.str(), "-pp", p2.str(), "-pb", "-pr", "2.1", "-pm"};
         parser.parse(ah.argc(), ah.argv());
         REQUIRE(parser.getBoundaryGraph());
+        REQUIRE(parser.getMakeGraph());
+        REQUIRE_FALSE(parser.getUnmakeGraph());
+        REQUIRE_FALSE(parser.getRemoveLinksWhenUnmaking());
         REQUIRE(parser.getMaxVisibility() == Approx(2.1));
     }
 
@@ -173,6 +189,9 @@ TEST_CASE("VisprepParserSuccess", "Read successfully")
         ArgumentHolder ah{"prog", "-pg", gstring.str(), "-pf", scf.Filename()};
         parser.parse(ah.argc(), ah.argv() );
         REQUIRE_FALSE(parser.getBoundaryGraph());
+        REQUIRE_FALSE(parser.getMakeGraph());
+        REQUIRE_FALSE(parser.getUnmakeGraph());
+        REQUIRE_FALSE(parser.getRemoveLinksWhenUnmaking());
         REQUIRE(parser.getMaxVisibility() == Approx(-1.0));
     }
 
@@ -183,4 +202,15 @@ TEST_CASE("VisprepParserSuccess", "Read successfully")
     REQUIRE(points[0].y == Approx(y1));
     REQUIRE(points[1].x == Approx(x2));
     REQUIRE(points[1].y == Approx(y2));
+}
+
+TEST_CASE("VisprepParserUnmakeSuccess", "Read successfully - Unmake")
+{
+    VisPrepParser parser;
+    ArgumentHolder ah{"prog", "-pu", "-pl"};
+    parser.parse(ah.argc(), ah.argv());
+    REQUIRE_FALSE(parser.getBoundaryGraph());
+    REQUIRE_FALSE(parser.getMakeGraph());
+    REQUIRE(parser.getUnmakeGraph());
+    REQUIRE(parser.getRemoveLinksWhenUnmaking());
 }

@@ -389,6 +389,9 @@ bool PointMap::fillPoint(const Point2f& p, bool add)
    else if (!add && (pt.m_state & Point::FILLED)) {
       m_filled_point_count--;
       pt.set( Point::EMPTY, ++m_undocounter );
+      if (pt.m_merge != NoPixel) {
+          unmergePixel(pix);
+      }
    }
    return true;
 }
@@ -1161,7 +1164,7 @@ bool PointMap::read(std::istream& stream, int version )
    return true;
 }
 
-bool PointMap::write( std::ofstream& stream, int version )
+bool PointMap::write( std::ostream& stream, int version )
 {
    dXstring::writeString(stream, m_name);
 
@@ -1344,6 +1347,39 @@ bool PointMap::sparkGraph2( Communicator *comm, bool boundarygraph, double maxdi
    setDisplayedAttribute(connectivity_col);
 
    return true;
+}
+
+bool PointMap::unmake(bool removeLinks) {
+    for (size_t i = 0; i < m_cols; i++) {
+        for (size_t j = 0; j < m_rows; j++) {
+            PixelRef curs = PixelRef(static_cast<short>(i), static_cast<short>(j));
+            Point &pnt = getPoint(curs);
+            if (pnt.filled()) {
+                if(removeLinks) {
+                    pnt.m_merge = NoPixel;
+                }
+                pnt.m_grid_connections = 0;
+                pnt.m_node = nullptr;
+                pnt.m_lines.clear();
+                pnt.setBlock(false);
+            }
+        }
+    }
+
+    m_blockedlines = false;
+
+    if(removeLinks) {
+        m_merge_lines.clear();
+    }
+
+    m_attributes->clear();
+
+    m_processed = false;
+    m_boundarygraph = false;
+
+    m_displayed_attribute = -2;
+
+    return true;
 }
 
 // 'make' construct types are: 
@@ -1608,23 +1644,28 @@ bool PointMap::unmergePoints()
    }
    for (auto& sel: m_selection_set) {
       PixelRef a = sel;
-      mergePixels(a,a);
+      unmergePixel(a);
    }
    clearSel();
    return true;
+}
+
+// Either of the pixels can be given here and the other will also be unmerged
+bool PointMap::unmergePixel(PixelRef a) {
+    PixelRef c = getPoint(a).m_merge;
+    depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
+    getPoint(c).m_merge = NoPixel;
+    getPoint(c).m_state &= ~Point::MERGED;
+    getPoint(a).m_merge = NoPixel;
+    getPoint(a).m_state &= ~Point::MERGED;
+    return true;
 }
 
 bool PointMap::mergePixels(PixelRef a, PixelRef b)
 {
    bool altered = false;
    if (a == b && !getPoint(a).m_merge.empty()) {
-      PixelRef c = getPoint(a).m_merge;
-      depthmapX::findAndErase(m_merge_lines, PixelRefPair(a,c));
-      getPoint(c).m_merge = NoPixel;
-      getPoint(c).m_state &= ~Point::MERGED;
-      getPoint(a).m_merge = NoPixel;
-      getPoint(a).m_state &= ~Point::MERGED;
-      altered = true;
+       altered = unmergePixel(a);
    }
    if (a != b && getPoint(a).m_merge != b) {
       if (!getPoint(a).m_merge.empty()) {

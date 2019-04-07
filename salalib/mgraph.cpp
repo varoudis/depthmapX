@@ -283,6 +283,17 @@ bool MetaGraph::makeGraph( Communicator *communicator, int algorithm, double max
    return retvar;
 }
 
+bool MetaGraph::unmakeGraph(bool removeLinks)
+{
+   bool retvar = getDisplayedPointMap().unmake(removeLinks);
+
+   if (retvar) {
+      setViewClass(SHOWVGATOP);
+   }
+
+   return retvar;
+}
+
 bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool simple_version )   // <- options copied to keep thread safe
 {
    bool retvar = false;

@@ -48,7 +48,7 @@ std::istream& Point::read(std::istream& stream, int version, int attr_count)
    return stream;
 }
 
-std::ofstream& Point::write(std::ofstream& stream, int version)
+std::ostream &Point::write(std::ostream& stream, int version)
 {
    stream.write( (char *) &m_state, sizeof(m_state) );
    // block is the same size as m_noderef used to be for ease of replacement:

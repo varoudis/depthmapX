@@ -248,6 +248,9 @@ namespace dm_runmethods
             double gridSize, const std::vector<Point2f> &fillPoints,
             double maxVisibility,
             bool boundaryGraph,
+            bool makeGraph,
+            bool unmakeGraph,
+            bool removeLinksWhenUnmaking,
             IPerformanceSink &perfWriter)
     {
         auto mGraph = loadGraph(clp.getFileName().c_str(),perfWriter);
@@ -258,32 +261,47 @@ namespace dm_runmethods
         {
             throw depthmapX::RuntimeException("Graph must have line data before preparing VGA");
         }
-        // set grid
-        QtRegion r = mGraph->getRegion();
+        if(gridSize > 0) {
+            // Create a new pointmap and set tha grid
+            QtRegion r = mGraph->getRegion();
 
-        GridProperties gp(__max(r.width(), r.height()));
-        if ( gridSize > gp.getMax() ||  gridSize < gp.getMin())
-        {
+            GridProperties gp(__max(r.width(), r.height()));
+            if ( gridSize > gp.getMax() ||  gridSize < gp.getMin())
+            {
+                std::stringstream message;
+                message << "Chosen grid spacing " << gridSize << " is outside of the expected interval of "
+                        << gp.getMin() << " <= spacing <= " << gp.getMax() << std::flush;
+                throw depthmapX::RuntimeException(message.str());
+            }
+
+            std::cout << "ok\nSetting up grid... " << std::flush;
+            mGraph->addNewPointMap();
+            DO_TIMED("Setting grid", mGraph->setGrid(gridSize, Point2f(0.0, 0.0)))
+        } else if(mGraph->getPointMaps().empty()) {
             std::stringstream message;
-            message << "Chosen grid spacing " << gridSize << " is outside of the expected interval of "
-                    << gp.getMin() << " <= spacing <= " << gp.getMax() << std::flush;
+            message << "No map exists to use. Please create a new one by providing a grid size" << std::flush;
             throw depthmapX::RuntimeException(message.str());
         }
 
-        std::cout << "ok\nSetting up grid... " << std::flush;
-        if (mGraph->getPointMaps().empty() || mGraph->getDisplayedPointMap().isProcessed()) {
-           // this can happen if there are no displayed maps -- so flag new map required:
-            mGraph->addNewPointMap();
+        if(unmakeGraph) {
+            if(!mGraph->getDisplayedPointMap().isProcessed()) {
+                std::stringstream message;
+                message << "Current map has not had its graph made so there's nothing to unmake" << std::flush;
+                throw depthmapX::RuntimeException(message.str());
+            }
+            DO_TIMED("Unmaking graph", mGraph->getDisplayedPointMap().unmake(removeLinksWhenUnmaking))
+        } else {
+            if(fillPoints.size() > 0) {
+                std::cout << "ok\nFilling grid... " << std::flush;
+                DO_TIMED("Filling grid",
+                         for_each(fillPoints.begin(), fillPoints.end(), [&mGraph](const Point2f &point)->void{fillGraph(*mGraph, point);}))
+            }
+            if(makeGraph) {
+                std::cout << "ok\nMaking graph... " << std::flush;
+                DO_TIMED("Making graph", mGraph->makeGraph(0, boundaryGraph ? 1 : 0, maxVisibility))
+            }
         }
-        DO_TIMED("Setting grid", mGraph->setGrid(gridSize, Point2f(0.0, 0.0)))
 
-        std::cout << "ok\nFilling grid... " << std::flush;
-        DO_TIMED("Filling grid",
-                 for_each(fillPoints.begin(), fillPoints.end(), [&mGraph](const Point2f &point)->void{fillGraph(*mGraph, point);}))
-
-
-        std::cout << "ok\nCalculating connectivity... " << std::flush;
-        DO_TIMED("Calculate Connectivity", mGraph->makeGraph(0, boundaryGraph ? 1 : 0, maxVisibility))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
                 std::cout << " ok" << std::endl;

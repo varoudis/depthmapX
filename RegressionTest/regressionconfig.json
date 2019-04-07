@@ -568,15 +568,6 @@
                 "-sr": "n"
             }
         }],
-        "vis_prep_dense_pointmap":[{
-            "infile": "../../../testdata/rect1x1.graph",
-            "outfile": "out.graph",
-            "mode": "VISPREP",
-            "extraArgs": {
-                "-pg": "0.02",
-                "-pp": "0.5,0.5"
-            }
-        }],
         "convert_drawing_axial":[{
             "infile": "../../../testdata/barnsbury_drawing.graph",
             "outfile": "out.graph",
@@ -816,6 +807,103 @@
             "extraArgs": {
                 "-co": "drawing",
                 "-con": "Drawing Map Test"
+            }
+        }],
+        "pointmap_create_fill_make_one_operation": [{
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pg": "0.04",
+               "-pp": "1.32,7.24,4.88,5.24",
+               "-pm": ""
+            }
+        }],
+        "dense_pointmap_create_fill_make":[{
+            "infile": "../../../testdata/rect1x1.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+                "-pg": "0.02",
+                "-pp": "0.5,0.5"
+            }
+        }],
+        "pointmap_create_fill_make_unmake": [{
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pg": "0.04"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pp": "1.32,7.24,4.88,5.24"
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pm": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pu": ""
+            }
+        }],
+        "pointmap_create_fill_make_link_unmake": [{
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pg": "0.04",
+               "-pp": "1.32,7.24,4.88,5.24",
+               "-pm": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lnk": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pu": ""
+            }
+        }],
+        "pointmap_create_fill_make_link_unmake_unlink": [{
+            "infile": "../../../testdata/gallery_empty.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pg": "0.04",
+               "-pp": "1.32,7.24,4.88,5.24",
+               "-pm": ""
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "LINK",
+            "extraArgs": {
+               "-lnk": ["1.32,7.24,4.88,5.24","1.16,5.28,3.28,7.12"]
+            }
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "VISPREP",
+            "extraArgs": {
+               "-pu": "",
+               "-pl": ""
             }
         }]
     }

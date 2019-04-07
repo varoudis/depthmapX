@@ -168,6 +168,7 @@ public:
    void outputMergeLines(std::ostream& stream, char delim);
    int  tagState(bool settag, bool sparkgraph = false);
    bool sparkGraph2(Communicator *comm, bool boundarygraph, double maxdist );
+   bool unmake(bool removeLinks);
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
    bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
@@ -175,6 +176,7 @@ public:
    bool binDisplay(Communicator *comm);
    bool mergePoints(const Point2f& p);
    bool unmergePoints();
+   bool unmergePixel(PixelRef a);
    bool mergePixels(PixelRef a, PixelRef b);
    void mergeFromShapeMap(const ShapeMap& shapemap);
    bool isPixelMerged(const PixelRef &a);
@@ -339,7 +341,7 @@ public:
    PixelRef pickPixel(double value) const;
 public:
    bool read(std::istream &stream, int version );
-   bool write(std::ofstream& stream, int version );
+   bool write(std::ostream &stream, int version );
    void addGridConnections(); // adds grid connections where graph does not include them
    void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
    void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
