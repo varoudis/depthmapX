@@ -57,6 +57,26 @@ void StepDepthParser::parse(int argc, char ** argv)
             ENFORCE_ARGUMENT("-sdf", i)
             pointFile = argv[i];
         }
+        else if ( std::strcmp ("-sdt", argv[i]) == 0)
+        {
+            ENFORCE_ARGUMENT("-sdt", i)
+            if ( std::strcmp(argv[i], "angular") == 0 )
+            {
+                m_stepType = StepType::ANGULAR;
+            }
+            else if ( std::strcmp(argv[i], "metric") == 0 )
+            {
+                m_stepType = StepType::METRIC;
+            }
+            else if ( std::strcmp(argv[i], "visual") == 0 )
+            {
+                m_stepType = StepType::VISUAL;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid step type: ") + argv[i]);
+            }
+        }
     }
 
     if (pointFile.empty() && points.empty())
@@ -88,11 +108,15 @@ void StepDepthParser::parse(int argc, char ** argv)
         }
         std::vector<Point2f> parsed = EntityParsing::parsePoints(pointsStream, ',');
         m_stepDepthPoints.insert(std::end(m_stepDepthPoints), std::begin(parsed), std::end(parsed));
+    }
 
+    if (m_stepType == StepType::NONE)
+    {
+        throw CommandLineException("Step depth type (-sdt) must be provided");
     }
 }
 
 void StepDepthParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
-    dm_runmethods::runStepDepth(clp, m_stepDepthPoints, perfWriter);
+    dm_runmethods::runStepDepth(clp, m_stepType, m_stepDepthPoints, perfWriter);
 }

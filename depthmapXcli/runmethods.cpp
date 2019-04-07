@@ -663,6 +663,7 @@ namespace dm_runmethods
 
     void runStepDepth(
             const CommandLineParser &clp,
+            const StepDepthParser::StepType &stepType,
             const std::vector<Point2f> &stepDepthPoints,
             IPerformanceSink &perfWriter)
     {
@@ -684,7 +685,19 @@ namespace dm_runmethods
 
         Options options;
         options.global = 0;
-        options.point_depth_selection = 1;
+
+        switch (stepType) {
+            case StepDepthParser::StepType::ANGULAR:
+                options.point_depth_selection = 3;
+                break;
+            case StepDepthParser::StepType::METRIC:
+                options.point_depth_selection = 2;
+                break;
+            case StepDepthParser::StepType::VISUAL:
+                options.point_depth_selection = 1;
+                break;
+            default: { throw depthmapX::SetupCheckException("Error, unsupported step type"); }
+        }
 
         std::unique_ptr<Communicator> comm(new ICommunicator());
 
