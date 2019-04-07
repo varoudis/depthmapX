@@ -26,6 +26,24 @@ using namespace depthmapX;
 void VisPrepParser::parse(int argc, char ** argv)
 {
 
+    // All options:
+    // Create grid (m_grid > 0)
+    // Fill grid (pointFile or points not empty)
+    // Make graph
+    // Unmake graph
+
+    // All possible combinations:
+    // Create Grid + Fill Grid
+    // Create Grid + Fill Grid + Make graph
+    // Fill Grid
+    // Fill Grid + Make graph
+    // Make Graph
+    // Unmake Graph
+
+    // Bad combinations:
+    // Create Grid + Make graph = Creates empty graph
+    // Unmake graph + Anything else = Pointless action
+
     std::vector<std::string> points;
     std::string pointFile;
     for ( int i = 1; i < argc; ++i )
@@ -85,15 +103,36 @@ void VisPrepParser::parse(int argc, char ** argv)
         {
             m_boundaryGraph = true;
         }
-    }
-    if (m_grid < 0)
-    {
-        throw CommandLineException("Use -pg to define grid");
+        else if ( std::strcmp("-pm", argv[i]) == 0 )
+        {
+            if (getUnmakeGraph())
+            {
+                throw CommandLineException("-pm cannot be used together with -pu");
+            }
+            m_makeGraph = true;
+        }
+        else if ( std::strcmp("-pu", argv[i]) == 0 )
+        {
+            if (getMakeGraph())
+            {
+                throw CommandLineException("-pu cannot be used together with -pm");
+            }
+            m_unmakeGraph = true;
+        }
+        else if ( std::strcmp("-pl", argv[i]) == 0 )
+        {
+            m_removeLinksWhenUnmaking = true;
+        }
     }
 
-    if (pointFile.empty() && points.empty())
+    if(!getMakeGraph() && !getUnmakeGraph() && m_grid <= 0 && pointFile.empty() && points.empty())
     {
-        throw CommandLineException("Either -pp or -pf must be given");
+        throw CommandLineException("Nothing to do");
+    }
+
+    if(m_grid > 0 && getMakeGraph() && pointFile.empty() && points.empty()) {
+        throw CommandLineException("Creating a graph for an unfilled grid is not possible. " \
+                                   "Either -pp or -pf must be given");
     }
 
     if(!pointFile.empty())
@@ -122,9 +161,17 @@ void VisPrepParser::parse(int argc, char ** argv)
         m_fillPoints.insert(std::end(m_fillPoints), std::begin(parsed), std::end(parsed));
 
     }
+
+    if(getUnmakeGraph() && (m_grid > 0 || !m_fillPoints.empty())) {
+        throw CommandLineException("-pu can not be used with any other option apart from -pl");
+    }
+
+    if(m_removeLinksWhenUnmaking && !m_unmakeGraph) {
+        throw CommandLineException("-pl can only be used together with -pu");
+    }
 }
 
 void VisPrepParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
 {
-    dm_runmethods::runVisualPrep(clp, m_grid, m_fillPoints, m_maxVisibility, m_boundaryGraph, perfWriter);
+    dm_runmethods::runVisualPrep(clp, m_grid, m_fillPoints, m_maxVisibility, m_boundaryGraph, m_makeGraph, m_unmakeGraph, m_removeLinksWhenUnmaking, perfWriter);
 }
