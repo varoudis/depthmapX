@@ -20,10 +20,9 @@ LIBS += -ldepthmapX -lsalalib -lmgraph440 -lgenlib
 
 !win32:!macx:LIBS += -lGL -lGLU
 
-win32 {
-    msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
-    gcc:LIBS += -LOpenGl32 -lglu32 -lgdi32
-}
+win32-msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
+win32-g++:LIBS += -lopengl32 -lglu32 -lgdi32
+
 
 HEADERS += \
     coreapplication.h
@@ -38,3 +37,4 @@ mac {
 FORMS += \
     ../depthmapX/UI/ColourScaleDlg.ui
 
+CONFIG +=  c++11

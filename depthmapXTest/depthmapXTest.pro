@@ -22,9 +22,7 @@ LIBS += -ldepthmapX -lsalalib -lgenlib
 !win32:!macx:LIBS += -lGL -lGLU
 
 
-win32 {
-    msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
-    gcc:LIBS += -LOpenGl32 -lglu32 -lgdi32
-}
+win32-msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
+win32-g++:LIBS += -lopengl32 -lglu32 -lgdi32
 
-
+CONFIG += c++11

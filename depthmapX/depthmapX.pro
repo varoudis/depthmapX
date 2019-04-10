@@ -5,7 +5,7 @@ include(views/views.pri)
 QT            += core gui opengl widgets
 DEFINES       += _DEPTHMAP
 TEMPLATE      = lib
-CONFIG        += staticlib
+CONFIG        += staticlib c++11
 TARGET        = depthmapX
 HEADERS       += GraphDoc.h \
                 indexWidget.h \
@@ -68,6 +68,5 @@ FORMS += \
 win32: system(make_version_header.bat)
 !win32: system(sh ./make_version_header.sh)
 
-win32 {
-    gcc:LIBS += -LOpenGl32 -lglu32 -lgdi32
-}
+win32-msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
+win32-g++:LIBS += -lopengl32 -lglu32 -lgdi32
