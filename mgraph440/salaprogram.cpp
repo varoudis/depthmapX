@@ -1229,7 +1229,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
             case SalaObj::S_ASSIGN:
                data = evaluate(pointer,p_obj);  // reverse order
                evaluate(pointer,p_obj);
-               if ((unsigned long)p_obj > 1) {
+               if (p_obj != nullptr) {
                   *p_obj = data;
                }
                else {
