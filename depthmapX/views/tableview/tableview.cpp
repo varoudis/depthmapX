@@ -19,7 +19,7 @@
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QLayout>
-#include <Qt3DInput/QKeyEvent>
+#include <QKeyEvent>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTableWidgetItem>
