@@ -20,8 +20,7 @@ LIBS += -ldepthmapX -lsalalib -lmgraph440 -lgenlib
 
 !win32:!macx:LIBS += -lGL -lGLU
 
-win32-msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
-win32-g++:LIBS += -lopengl32 -lglu32 -lgdi32
+win32:LIBS += -lopengl32 -lglu32 -lgdi32
 
 
 HEADERS += \

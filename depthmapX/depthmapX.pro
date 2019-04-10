@@ -68,5 +68,4 @@ FORMS += \
 win32: system(make_version_header.bat)
 !win32: system(sh ./make_version_header.sh)
 
-win32-msvc:LIBS += -lOpenGl32 -lglu32 -lgdi32
-win32-g++:LIBS += -lopengl32 -lglu32 -lgdi32
+win32:LIBS += -lopengl32 -lglu32 -lgdi32
