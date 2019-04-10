@@ -67,3 +67,7 @@ FORMS += \
 
 win32: system(make_version_header.bat)
 !win32: system(sh ./make_version_header.sh)
+
+win32 {
+    gcc:LIBS += -LOpenGl32 -lglu32 -lgdi32
+}
