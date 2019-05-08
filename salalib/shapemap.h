@@ -560,7 +560,7 @@ private:
     double getLocationValue(const Point2f &point) const;
 
     // Quick mod - TV
-#if !defined(_WIN32)
+#if !defined(_MSC_VER)
 #define __max(x, y) ((x < y) ? y : x)
 #define __min(x, y) ((x < y) ? x : y)
 #endif

@@ -317,7 +317,7 @@ void Q3DView::DrawScene()
 
    glFlush();
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
    SwapBuffers(wglGetCurrentDC());
 #else
     ;
