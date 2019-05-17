@@ -53,7 +53,7 @@ namespace dm_runmethods
         return mgraph;
     }
 
-    void importFiles(const CommandLineParser &cmdP, const std::vector<std::string> &filesToImport, IPerformanceSink &perfWriter)
+    void importFiles(const CommandLineParser &cmdP, const ImportParser &parser, IPerformanceSink &perfWriter)
     {
         std::ifstream mainFileStream(cmdP.getFileName().c_str());
         if(!mainFileStream.good()) {
@@ -92,6 +92,26 @@ namespace dm_runmethods
                                   cmdP.getFileName(),
                                   depthmapX::ImportType::DRAWINGMAP,
                                   importFileType);
+        } else if ( result == MetaGraph::OK) {
+            if(parser.toImportAsAttrbiutes()) {
+
+                if(mgraph->getDisplayedMapType() == ShapeMap::EMPTYMAP) {
+                    throw depthmapX::RuntimeException("No map displayed to attach attributes to");
+                }
+
+                std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 4, cmdP.getFileName().length() - 1);
+                std::ifstream file(cmdP.getFileName());
+                depthmapX::ImportFileType importFileType = depthmapX::ImportFileType::TSV;
+                if(dXstring::toLower(ext) == ".csv") {
+                    importFileType = depthmapX::ImportFileType::CSV;
+                } else if (dXstring::toLower(ext) == ".dxf") {
+                    importFileType = depthmapX::ImportFileType::DXF;
+                }
+
+                depthmapX::importAttributes(mgraph->getDisplayedMapAttributes(),
+                                            file,
+                                            importFileType);
+            }
         }
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
     }
