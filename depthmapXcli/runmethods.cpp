@@ -101,7 +101,7 @@ namespace dm_runmethods
 
                 std::vector<std::string> fileNames = parser.getFilesToImport();
                 for(std::string fileName: fileNames) {
-                    std::string ext = cmdP.getFileName().substr(fileName.length() - 4, fileName.length() - 1);
+                    std::string ext = fileName.substr(fileName.length() - 4, fileName.length() - 1);
                     std::ifstream file(fileName);
                     char delimiter = '\t';
                     if(dXstring::toLower(ext) == ".csv") {
