@@ -444,7 +444,7 @@ namespace depthmapX {
         if(refcol == -1) {
             throw RuntimeException("The \"Ref\" column is reqired");
         }
-        if(outColumns.size() < 2) {
+        if(outColumns.size() < 1) {
             throw RuntimeException("No data found to join");
         }
         std::vector<AttributeRow*> inRows;

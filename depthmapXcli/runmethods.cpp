@@ -99,18 +99,19 @@ namespace dm_runmethods
                     throw depthmapX::RuntimeException("No map displayed to attach attributes to");
                 }
 
-                std::string ext = cmdP.getFileName().substr(cmdP.getFileName().length() - 4, cmdP.getFileName().length() - 1);
-                std::ifstream file(cmdP.getFileName());
-                depthmapX::ImportFileType importFileType = depthmapX::ImportFileType::TSV;
-                if(dXstring::toLower(ext) == ".csv") {
-                    importFileType = depthmapX::ImportFileType::CSV;
-                } else if (dXstring::toLower(ext) == ".dxf") {
-                    importFileType = depthmapX::ImportFileType::DXF;
-                }
+                std::vector<std::string> fileNames = parser.getFilesToImport();
+                for(std::string fileName: fileNames) {
+                    std::string ext = cmdP.getFileName().substr(fileName.length() - 4, fileName.length() - 1);
+                    std::ifstream file(fileName);
+                    char delimiter = '\t';
+                    if(dXstring::toLower(ext) == ".csv") {
+                        delimiter = ',';
+                    }
 
-                depthmapX::importAttributes(mgraph->getDisplayedMapAttributes(),
-                                            file,
-                                            importFileType);
+                    depthmapX::importAttributes(mgraph->getDisplayedMapAttributes(),
+                                                file,
+                                                delimiter);
+                }
             }
         }
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false);)
