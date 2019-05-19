@@ -75,9 +75,14 @@ qt5_add_resources(DM_RSRC resource.qrc dialogs/settings/settingsdialog.qrc)
 if (MSVC)
         add_executable(${depthmapX} ${depthmapX_SRCS} ${UI_HDRS} ${UI_SRCS} ${DM_RSRC} icons.rc)
 endif(MSVC)
-if(UNIX)
+if(UNIX AND NOT APPLE)
         add_executable(${depthmapX} ${depthmapX_SRCS} ${UI_HDRS} ${UI_SRCS} ${DM_RSRC})
-endif(UNIX)
+endif()
+if(APPLE)
+        add_executable(${depthmapX} MACOSX_BUNDLE ${depthmapX_SRCS} ${UI_HDRS} ${UI_SRCS} ${DM_RSRC})
+        set_target_properties(${depthmapX} PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist)
+endif(APPLE)
 
 find_package(OpenGL REQUIRED)
 
