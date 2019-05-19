@@ -235,11 +235,6 @@ void MainWindow::OnFilePrintSetup()
 
 }
 
-void MainWindow::OnFileExit()
-{
-
-}
-
 void MainWindow::OnEditUndo()
 {
     QGraphDoc* m_p = activeMapDoc();
@@ -2940,7 +2935,7 @@ void MainWindow::createActions()
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setStatusTip(tr("Quit the application; prompts to save documents\nExit"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(OnFileExit()));
+    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
     //Edit Menu Actions
     undoAct = new QAction(tr("&Undo"), this);
