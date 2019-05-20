@@ -17,6 +17,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "salalib/segmmodules/segmangular.h"
+#include "salalib/options.h"
 
 #include "genlib/stringutils.h"
 

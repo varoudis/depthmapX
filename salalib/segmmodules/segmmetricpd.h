@@ -21,7 +21,6 @@
 #include "salalib/segmmodules/segmhelpers.h"
 
 #include "salalib/isegment.h"
-#include "salalib/options.h"
 
 class SegmentMetricPD : ISegment {
   public:

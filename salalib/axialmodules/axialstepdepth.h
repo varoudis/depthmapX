@@ -19,7 +19,6 @@
 #pragma once
 
 #include "salalib/iaxial.h"
-#include "salalib/options.h"
 
 class AxialStepDepth : IAxial
 {

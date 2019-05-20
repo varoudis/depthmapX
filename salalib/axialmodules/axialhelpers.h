@@ -19,6 +19,7 @@
 #pragma once
 
 #include "genlib/stringutils.h"
+#include "salalib/options.h"
 
 #include <vector>
 

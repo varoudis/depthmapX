@@ -18,7 +18,6 @@
 // Interface to handle different kinds of VGA analysis
 
 #include "salalib/mgraph.h"
-#include "salalib/options.h"
 #include "salalib/pointdata.h"
 
 #include "genlib/comm.h"

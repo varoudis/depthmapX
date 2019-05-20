@@ -19,7 +19,6 @@
 #pragma once
 
 #include "salalib/isegment.h"
-#include "salalib/options.h"
 
 class SegmentAngular : ISegment {
   private:

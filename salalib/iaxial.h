@@ -18,7 +18,6 @@
 // Interface to handle different kinds of Axial analysis
 
 #include "salalib/axialmap.h"
-#include "salalib/options.h"
 
 #include "genlib/comm.h"
 
