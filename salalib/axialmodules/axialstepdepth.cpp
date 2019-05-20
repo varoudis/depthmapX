@@ -22,7 +22,7 @@
 #include "genlib/pflipper.h"
 #include "genlib/stringutils.h"
 
-bool AxialStepDepth::run(Communicator *, const Options &, ShapeGraph &map, bool) {
+bool AxialStepDepth::run(Communicator *, ShapeGraph &map, bool) {
 
     AttributeTable &attributes = map.getAttributeTable();
 

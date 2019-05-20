@@ -315,7 +315,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
          }
          else if (m_view_class & VIEWAXIAL) {
             if (!getDisplayedShapeGraph().isSegmentMap()) {
-                retvar = AxialStepDepth().run(communicator, options, getDisplayedShapeGraph(), false);
+                retvar = AxialStepDepth().run(communicator, getDisplayedShapeGraph(), false);
             }
             else {
                 retvar = SegmentTulipDepth().run(communicator, getDisplayedShapeGraph(), false);
@@ -1278,7 +1278,9 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    bool retvar = false;
 
    try {
-      AxialIntegration().run(communicator, options, getDisplayedShapeGraph(), false);
+       AxialIntegration(options.radius_set, options.weighted_measure_col, options.choice, options.fulloutput,
+                        options.local)
+           .run(communicator, getDisplayedShapeGraph(), false);
    } 
    catch (Communicator::CancelledException) {
       retvar = false;
