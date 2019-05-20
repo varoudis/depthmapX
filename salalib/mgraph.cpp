@@ -318,7 +318,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
                 retvar = AxialStepDepth().run(communicator, options, getDisplayedShapeGraph(), false);
             }
             else {
-                retvar = SegmentTulipDepth().run(communicator, options, getDisplayedShapeGraph(), false);
+                retvar = SegmentTulipDepth().run(communicator, getDisplayedShapeGraph(), false);
             }
          }
          // REPLACES:
@@ -329,7 +329,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
              retvar = VGAMetricDepth().run(communicator, getDisplayedPointMap(), false);
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
-             retvar = SegmentMetricPD().run(communicator, options, getDisplayedShapeGraph(), false);
+             retvar = SegmentMetricPD().run(communicator, getDisplayedShapeGraph(), false);
          }
       }
       else if (options.point_depth_selection == 3) {
@@ -340,7 +340,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
             getDisplayedPointMap().binDisplay( communicator );
          }
          else if (m_view_class & VIEWAXIAL && getDisplayedShapeGraph().isSegmentMap()) {
-             retvar = SegmentTopologicalPD().run(communicator, options, getDisplayedShapeGraph(), false);
+             retvar = SegmentTopologicalPD().run(communicator, getDisplayedShapeGraph(), false);
          }
       }
       else if (options.output_type == Options::OUTPUT_ISOVIST) {
@@ -1296,7 +1296,9 @@ bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options option
    bool retvar = false;
 
    try {
-       SegmentTulip().run(communicator, options, getDisplayedShapeGraph(), false);
+       SegmentTulip(options.radius_set, options.sel_only, options.tulip_bins, options.weighted_measure_col,
+                    options.radius_type, options.choice)
+           .run(communicator, getDisplayedShapeGraph(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1314,7 +1316,7 @@ bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options opti
    bool retvar = false;
 
    try {
-       SegmentAngular().run(communicator, options, getDisplayedShapeGraph(), false);
+       SegmentAngular(options.radius_set).run(communicator, getDisplayedShapeGraph(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
@@ -1335,10 +1337,10 @@ bool MetaGraph::analyseTopoMetMultipleRadii( Communicator *communicator, Options
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
       for(double radius: options.radius_set) {
           if(options.output_type == 0) {
-              if(!SegmentTopological().run(communicator, options, getDisplayedShapeGraph(), false))
+              if(!SegmentTopological(options.radius, options.sel_only).run(communicator, getDisplayedShapeGraph(), false))
                   retvar = false;
           } else {
-              if(!SegmentMetric().run(communicator, options, getDisplayedShapeGraph(), false))
+              if(!SegmentMetric(options.radius, options.sel_only).run(communicator, getDisplayedShapeGraph(), false))
                   retvar = false;
           }
       }
@@ -1361,9 +1363,9 @@ bool MetaGraph::analyseTopoMet( Communicator *communicator, Options options ) //
    try {
       // note: "output_type" reused for analysis type (either 0 = topological or 1 = metric)
        if(options.output_type == 0) {
-           retvar = SegmentTopological().run(communicator, options, getDisplayedShapeGraph(), false);
+           retvar = SegmentTopological(options.radius, options.sel_only).run(communicator, getDisplayedShapeGraph(), false);
        } else {
-           retvar = SegmentMetric().run(communicator, options, getDisplayedShapeGraph(), false);
+           retvar = SegmentMetric(options.radius, options.sel_only).run(communicator, getDisplayedShapeGraph(), false);
        }
    } 
    catch (Communicator::CancelledException) {

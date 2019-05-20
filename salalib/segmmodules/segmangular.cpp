@@ -20,7 +20,7 @@
 
 #include "genlib/stringutils.h"
 
-bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) {
+bool SegmentAngular::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
 
     if (map.getMapType() != ShapeMap::SEGMENTMAP) {
         return false;
@@ -38,7 +38,7 @@ bool SegmentAngular::run(Communicator *comm, const Options &options, ShapeGraph 
     // ...to ensure no mess ups, we'll re-sort here:
     bool radius_n = false;
     std::vector<double> radii;
-    for (double radius : options.radius_set) {
+    for (double radius : m_radius_set) {
         if (radius < 0) {
             radius_n = true;
         } else {

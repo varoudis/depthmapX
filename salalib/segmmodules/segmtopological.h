@@ -24,7 +24,12 @@
 #include "salalib/options.h"
 
 class SegmentTopological : ISegment {
+  private:
+    double m_radius;
+    bool m_sel_only;
+
   public:
     std::string getAnalysisName() const override { return "Topological Analysis"; }
-    bool run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    SegmentTopological(double radius, bool sel_only) : m_radius(radius), m_sel_only(sel_only) {}
 };
