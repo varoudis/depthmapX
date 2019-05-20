@@ -26,5 +26,5 @@
 class VGAThroughVision : IVGA {
   public:
     std::string getAnalysisName() const override { return "Through Vision Analysis"; }
-    bool run(Communicator *comm, const Options &, PointMap &map, bool) override;
+    bool run(Communicator *comm, PointMap &map, bool) override;
 };

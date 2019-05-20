@@ -26,5 +26,5 @@
 class VGAAngularDepth : IVGA {
   public:
     std::string getAnalysisName() const override { return "Angular Depth"; }
-    bool run(Communicator *comm, const Options &options, PointMap &map, bool) override;
+    bool run(Communicator *comm, PointMap &map, bool) override;
 };
