@@ -19,12 +19,11 @@
 #pragma once
 
 #include "salalib/ivga.h"
-#include "salalib/options.h"
 #include "salalib/pixelref.h"
 #include "salalib/pointdata.h"
 
 class VGAMetricDepth : IVGA {
   public:
     std::string getAnalysisName() const override { return "Metric Depth"; }
-    bool run(Communicator *comm, const Options &options, PointMap &map, bool) override;
+    bool run(Communicator *comm, PointMap &map, bool) override;
 };

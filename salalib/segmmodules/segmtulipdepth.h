@@ -19,7 +19,6 @@
 #pragma once
 
 #include "salalib/isegment.h"
-#include "salalib/options.h"
 
 class SegmentTulipDepth : ISegment
 {
@@ -27,5 +26,5 @@ public:
     std::string getAnalysisName() const override {
         return "Tulip Analysis";
     }
-    bool run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
 };

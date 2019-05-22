@@ -19,10 +19,13 @@
 #pragma once
 
 #include "salalib/isegment.h"
-#include "salalib/options.h"
 
 class SegmentAngular : ISegment {
+  private:
+    std::set<double> m_radius_set;
+
   public:
     std::string getAnalysisName() const override { return "Angular Analysis"; }
-    bool run(Communicator *comm, const Options &options, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    SegmentAngular(std::set<double> radius_set) : m_radius_set(radius_set) {}
 };
