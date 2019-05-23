@@ -108,9 +108,9 @@ namespace dm_runmethods
                         delimiter = ',';
                     }
 
-                    depthmapX::importAttributes(mgraph->getDisplayedMapAttributes(),
-                                                file,
-                                                delimiter);
+                    DO_TIMED("Importing attributes", depthmapX::importAttributes(mgraph->getDisplayedMapAttributes(),
+                                                                                 file,
+                                                                                 delimiter);)
                 }
             }
         }
