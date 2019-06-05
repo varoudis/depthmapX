@@ -24,8 +24,7 @@ set(depthmapX_SRCS
     settingsimpl.cpp
 	compatibilitydefines.h
 	mainwindow.h
-	settings.h
-	version.h
+        settings.h
 	GraphDoc.h
 	mainwindowfactory.h
 	settingsimpl.h
