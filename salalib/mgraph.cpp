@@ -1278,7 +1278,7 @@ bool MetaGraph::analyseAxial( Communicator *communicator, Options options, bool 
    bool retvar = false;
 
    try {
-       AxialIntegration(options.radius_set, options.weighted_measure_col, options.choice, options.fulloutput,
+       retvar = AxialIntegration(options.radius_set, options.weighted_measure_col, options.choice, options.fulloutput,
                         options.local)
            .run(communicator, getDisplayedShapeGraph(), false);
    } 
@@ -1298,7 +1298,7 @@ bool MetaGraph::analyseSegmentsTulip( Communicator *communicator, Options option
    bool retvar = false;
 
    try {
-       SegmentTulip(options.radius_set, options.sel_only, options.tulip_bins, options.weighted_measure_col,
+       retvar = SegmentTulip(options.radius_set, options.sel_only, options.tulip_bins, options.weighted_measure_col,
                     options.radius_type, options.choice)
            .run(communicator, getDisplayedShapeGraph(), false);
    }
@@ -1318,7 +1318,7 @@ bool MetaGraph::analyseSegmentsAngular( Communicator *communicator, Options opti
    bool retvar = false;
 
    try {
-       SegmentAngular(options.radius_set).run(communicator, getDisplayedShapeGraph(), false);
+       retvar = SegmentAngular(options.radius_set).run(communicator, getDisplayedShapeGraph(), false);
    }
    catch (Communicator::CancelledException) {
       retvar = false;
