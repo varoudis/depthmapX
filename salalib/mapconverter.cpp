@@ -367,7 +367,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
    }
 
    // make it!
-   usermap->makeNewSegMap();
+   usermap->makeNewSegMap(comm);
 
    return usermap;
 }
@@ -486,7 +486,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
    }
 
    // make it!
-   usermap->makeNewSegMap();
+   usermap->makeNewSegMap(comm);
 
    return usermap;
 }

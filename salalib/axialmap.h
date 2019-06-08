@@ -67,7 +67,7 @@ public:
    void makeConnections(const KeyVertices &keyvertices = KeyVertices());
    bool stepdepth(Communicator *comm = NULL);
    // lineset and connectionset are filled in by segment map
-   void makeNewSegMap();
+   void makeNewSegMap(Communicator *comm);
    void makeSegmentMap(std::vector<Line> &lines, std::vector<Connector> &connectors, double stubremoval);
    void initialiseAttributesSegment();
    void makeSegmentConnections(std::vector<Connector> &connectionset);
