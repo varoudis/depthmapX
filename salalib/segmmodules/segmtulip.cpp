@@ -727,5 +727,5 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
     } else {
         map.setDisplayedAttribute(td_col.back());
     }
-    return processed_rows;
+    return processed_rows > 0;
 }
