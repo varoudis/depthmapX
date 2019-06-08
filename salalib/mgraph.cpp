@@ -2033,7 +2033,7 @@ void MetaGraph::runAgentEngine(Communicator *comm)
 // TODO: Undocumented functionality
 bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
 {
-   bool retvar = false;
+   bool analysisCompleted = false;
 
    AttributeTable& table = getDisplayedPointMap().getAttributeTable();
 
@@ -2049,17 +2049,17 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
    }
 
    try {
-       retvar = VGAThroughVision().run(comm, getDisplayedPointMap(), false);
+       analysisCompleted = VGAThroughVision().run(comm, getDisplayedPointMap(), false);
    }
    catch (Communicator::CancelledException) {
-      retvar = false;
+      analysisCompleted = false;
    }
 
    // note after the analysis, the column order might have changed... retrieve:
    colgates = table.getColumnIndex(g_col_gate);
    colcounts = table.getColumnIndex(g_col_gate_counts);
 
-   if (retvar && gatelayer != -1) {
+   if (analysisCompleted && gatelayer != -1) {
       AttributeTable& tableout = m_dataMaps[gatelayer].getAttributeTable();
       int targetcol = tableout.insertOrResetColumn("Thru Vision Counts");
       pushValuesToLayer(VIEWVGA,getDisplayedPointMapRef(),
@@ -2071,7 +2071,7 @@ bool MetaGraph::analyseThruVision(Communicator *comm, int gatelayer)
    table.removeColumn(colcounts);
    table.removeColumn(colgates);
 
-   return retvar;
+   return analysisCompleted;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
