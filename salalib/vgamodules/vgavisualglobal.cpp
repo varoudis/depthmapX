@@ -189,15 +189,14 @@ bool VGAVisualGlobal::run(Communicator *comm, PointMap &map, bool simple_version
                         row.setValue(rel_entropy_col, (float)-1);
                     }
                 }
-            }
-
-            count++; // <- increment count
-            if (comm) {
-                if (qtimer(atime, 500)) {
-                    if (comm->IsCancelled()) {
-                        throw Communicator::CancelledException();
+                count++; // <- increment count
+                if (comm) {
+                    if (qtimer(atime, 500)) {
+                        if (comm->IsCancelled()) {
+                            throw Communicator::CancelledException();
+                        }
+                        comm->CommPostMessage(Communicator::CURRENT_RECORD, count);
                     }
-                    comm->CommPostMessage(Communicator::CURRENT_RECORD, count);
                 }
             }
         }
