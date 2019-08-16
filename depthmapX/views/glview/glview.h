@@ -133,6 +133,7 @@ private:
 
     void highlightHoveredItems(const QtRegion &region);
     void highlightHoveredPixels(const PointMap &map, const QtRegion &region);
+    void highlightHoveredPixels(const PointMap &map, const std::set<PixelRef> &refs);
     void highlightHoveredShapes(const ShapeMap &map, const QtRegion &region);
 
     void loadAxes();

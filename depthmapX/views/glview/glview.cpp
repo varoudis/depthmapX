@@ -497,7 +497,9 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 
     Point2f worldPoint = getWorldPoint(event->pos());
 
-    if(m_mouseDragRect.isNull()) {
+    if(m_mouseDragRect.isNull() &&
+            !((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT &&
+              m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA)) {
         highlightHoveredItems(QtRegion(worldPoint, worldPoint));
     }
 
@@ -527,6 +529,20 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
     if((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT)
     {
         m_tempSecondPoint = worldPoint;
+        if(m_highlightOnHover && m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
+            PointMap &map = m_pDoc.m_meta_graph->getDisplayedPointMap();
+            QtRegion selectionBounds = map.getSelBounds();
+            PixelRef worldPixel = map.pixelate(worldPoint, true);
+            PixelRef boundsPixel = map.pixelate(Point2f(selectionBounds.top_right.x,
+                                                        selectionBounds.bottom_left.y), true);
+            std::set<int> &selection = map.getSelSet();
+            std::set<PixelRef> offsetSelection;
+            for(int ref: selection) {
+                PixelRef pixelRef = PixelRef(ref) + worldPixel - boundsPixel;
+                offsetSelection.insert(pixelRef);
+            }
+            highlightHoveredPixels(map, offsetSelection);
+        }
         update();
     }
     m_mouseLastPos = event->pos();
@@ -616,6 +632,51 @@ void GLView::highlightHoveredPixels(const PointMap &map, const QtRegion &region)
                }
            }
        }
+    }
+
+    if(!points.empty()) {
+        // do not redo the whole thing if we are still hovering the same pixel
+        if(points.size() == 1 && hoverPixel == m_lastHoverPixel) return;
+        std::vector<SimpleLine> lines;
+        int i = 0;
+        for (Point point: points) {
+            const Point2f &loc = point.getLocation();
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            i++;
+        }
+        m_hoveredPixels.loadLineData(lines, qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = true;
+    } else if (m_hoverHasShapes) {
+        m_hoveredPixels.loadLineData(std::vector<SimpleLine>(), qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = false;
+    }
+
+    if (m_hoverStoreInvalid) {
+        update();
+    }
+}
+
+void GLView::highlightHoveredPixels(const PointMap &map, const std::set<PixelRef> &refs) {
+    // n.b., assumes constrain set to true (for if you start the selection off the grid)
+    std::vector<Point> points;
+    PixelRef hoverPixel = -1;
+    for (PixelRef ref: refs) {
+        if(map.includes(ref)) {
+            const Point &p = map.getPoint(ref);
+            if(p.filled()) {
+                points.push_back(p);
+                hoverPixel = ref;
+            }
+        }
     }
 
     if(!points.empty()) {
