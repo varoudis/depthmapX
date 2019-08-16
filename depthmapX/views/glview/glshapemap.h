@@ -48,6 +48,10 @@ public:
         m_polygons.paintGL(m_mProj, m_mView, m_mModel);
         m_points.paintGL(m_mProj, m_mView, m_mModel);
     }
+    void loadGLObjects(const std::vector<std::pair<SimpleLine, PafColor>> &colouredLines,
+                       const std::vector<std::pair<std::vector<Point2f>, PafColor>> &colouredPolygons,
+                       const std::vector<std::pair<Point2f, PafColor>> &colouredPoints,
+                       const int pointSides, const float pointRadius);
     void loadGLObjects(ShapeMap &shapeMap);
 private:
     GLLines m_lines;

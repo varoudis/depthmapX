@@ -22,7 +22,7 @@
  * This class is an OpenGL representation of multiple polygons of different colour
  */
 
-void GLPolygons::loadPolygonData(const std::map<std::vector<Point2f>, PafColor>& colouredPolygons)
+void GLPolygons::loadPolygonData(const std::vector<std::pair<std::vector<Point2f>, PafColor>>& colouredPolygons)
 {
     m_polygons.clear();
     for (auto& colouredPolygon: colouredPolygons)
