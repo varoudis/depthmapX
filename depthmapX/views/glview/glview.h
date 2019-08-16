@@ -101,6 +101,7 @@ private:
     GLPointMap m_visiblePointMap;
     GLShapeMap m_visibleDataMap;
 
+    bool m_highlightOnHover = true;
     bool m_hoverHasShapes = false;
     bool m_hoverStoreInvalid = false;
     GLShapeMap m_hoveredShapes;

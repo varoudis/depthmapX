@@ -26,9 +26,13 @@ InterfacePage::InterfacePage(Settings &settings, QWidget *parent)
     QCheckBox *legacyMapCheckBox = new QCheckBox(tr("Legacy map window as default"));
     legacyMapCheckBox->setChecked(m_defaultMapWindowIsLegacy);
     connect(legacyMapCheckBox, &QCheckBox::stateChanged, [=] () {m_defaultMapWindowIsLegacy = !m_defaultMapWindowIsLegacy;});
+    QCheckBox *hoverCheckBox = new QCheckBox(tr("Allow highlighting shapes on hover"));
+    hoverCheckBox->setChecked(m_highlightOnHover);
+    connect(hoverCheckBox, &QCheckBox::stateChanged, [=] () {m_highlightOnHover = !m_highlightOnHover;});
 
     QVBoxLayout *generalLayout = new QVBoxLayout;
     generalLayout->addWidget(legacyMapCheckBox);
+    generalLayout->addWidget(hoverCheckBox);
     generalGroup->setLayout(generalLayout);
 
     QGroupBox *interfaceColoursGroup = new QGroupBox(tr("Interface colours"));

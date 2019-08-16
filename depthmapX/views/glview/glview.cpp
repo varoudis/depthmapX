@@ -41,6 +41,7 @@ GLView::GLView(QGraphDoc &pDoc,
     m_background = settings.readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
     m_initialSize = m_settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
     m_antialiasingSamples = settings.readSetting(SettingTag::antialiasingSamples, 0).toInt();
+    m_highlightOnHover = settings.readSetting(SettingTag::highlightOnHover, true).toBool();
 
     if(m_antialiasingSamples) {
         QSurfaceFormat format;
@@ -585,6 +586,7 @@ bool GLView::eventFilter(QObject *object, QEvent *e)
 }
 
 void GLView::highlightHoveredItems(const QtRegion &region) {
+    if (!m_highlightOnHover) return;
     if (m_pDoc.m_meta_graph->viewingProcessedPoints()) {
        highlightHoveredPixels(m_pDoc.m_meta_graph->getDisplayedPointMap(), region);
     }
