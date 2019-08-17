@@ -33,8 +33,10 @@ public:
 	int m_row_count;
 	int m_from;
 	int m_curr_row;
+    QWidget *m_mainWindow;
 	QGraphDoc* pDoc;
 	bool m_protect_edit;
+    void RedoTable();
 
 private slots:
 	void itemChanged ( QTableWidgetItem * item );
@@ -46,7 +48,6 @@ protected:
 	virtual void scrollContentsBy ( int dx, int dy );
 
 private:
-	void RedoTable();
     void PrepareCache(int to);
 
     bool m_custom;

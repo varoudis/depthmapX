@@ -90,6 +90,8 @@ public:
     void updateGLWindows(bool datasetChanged, bool recentreView);
     void loadFile(QString fileName);
 
+    void chooseAttributeOnIndex(int attributeIdx);
+
 protected:
     QGraphDoc* m_treeDoc;
     void closeEvent(QCloseEvent *event);

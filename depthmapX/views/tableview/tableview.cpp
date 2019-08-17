@@ -37,6 +37,7 @@ TableView::TableView(Settings &settings, QWidget *parent,
                      QGraphDoc* p)
     : QTableWidget(parent)
 {
+    m_mainWindow = parent;
 	pDoc = p;
 	m_from = m_curr_row = 0;
 
@@ -200,7 +201,8 @@ void TableView::colum_Sort(int col_id)
 {
 	if (col_id - 1 != pDoc->m_meta_graph->getDisplayedAttribute())
 	{
-		pDoc->m_meta_graph->setDisplayedAttribute(col_id - 1);
+        pDoc->m_meta_graph->setDisplayedAttribute(col_id - 1);
+        ((MainWindow *) m_mainWindow)->chooseAttributeOnIndex(col_id);
 		clearContents();
         PrepareCache(m_curr_row);
 		return;
