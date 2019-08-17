@@ -959,6 +959,9 @@ void MainWindow::updateActiveWindows()
         thirdViewToolBar->hide();
         plotToolBar->hide();
         current_view_type = QGraphDoc::VIEW_TABLE;
+        QGraphDoc* m_p = activeMapDoc();
+        OnFocusGraph(m_p, QGraphDoc::CONTROLS_LOADALL);
+        m_p->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_FOCUS );
         return;
     }
     else if(p = qobject_cast<Q3DView *>(activeSubWindow->widget()))
