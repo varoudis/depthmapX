@@ -20,13 +20,13 @@
 class QEvent;
 class QTableWidgetItem;
 
-class tableView : public QTableWidget
+class TableView : public QTableWidget
 {
     Q_OBJECT
 
 public:
-    tableView(QWidget *parent = 0, QGraphDoc * p = 0);
-    ~tableView();
+    TableView(QWidget *parent = 0, QGraphDoc * p = 0);
+    ~TableView();
     QSize sizeHint() const;
 
 	int m_column_count;

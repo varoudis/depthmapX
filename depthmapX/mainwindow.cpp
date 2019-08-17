@@ -756,7 +756,7 @@ void MainWindow::updateSubWindowTitles(QString newTitle) {
             if(p) subWindow->setWindowTitle(newTitle +":Map View");
             p = qobject_cast<QPlotView *>(subWindow->widget());
             if(p) subWindow->setWindowTitle(newTitle +":Scatter Plot");
-            p = qobject_cast<tableView *>(subWindow->widget());
+            p = qobject_cast<TableView *>(subWindow->widget());
             if(p) subWindow->setWindowTitle(newTitle +":Table View");
             p = qobject_cast<Q3DView *>(subWindow->widget());
             if(p) subWindow->setWindowTitle(newTitle +":3D View");
@@ -805,8 +805,8 @@ MapView *MainWindow::activeMapView()
         }
         if(!p)
         {
-            p = qobject_cast<tableView *>(activeSubWindow->widget());
-            if(p) return (MapView *)(((tableView*)p)->pDoc->m_view[1]);
+            p = qobject_cast<TableView *>(activeSubWindow->widget());
+            if(p) return (MapView *)(((TableView*)p)->pDoc->m_view[1]);
         }
         if(!p)
         {
@@ -827,8 +827,8 @@ QGraphDoc *MainWindow::activeMapDoc()
         if(p) return ((MapView *)p)->getGraphDoc();
         p = qobject_cast<QPlotView *>(activeSubWindow->widget());
         if(p) return ((QPlotView *)p)->pDoc;
-        p = qobject_cast<tableView *>(activeSubWindow->widget());
-        if(p) return ((tableView *)p)->pDoc;
+        p = qobject_cast<TableView *>(activeSubWindow->widget());
+        if(p) return ((TableView *)p)->pDoc;
         p = qobject_cast<Q3DView *>(activeSubWindow->widget());
         if(p) return ((Q3DView *)p)->pDoc;
     }
@@ -866,7 +866,7 @@ void MainWindow::OnViewTable()
     {
         if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE])
             return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE]);
-        tableView *child = new tableView(this, m_p->getGraphDoc());
+        TableView *child = new TableView(this, m_p->getGraphDoc());
         child->pDoc = m_p->getGraphDoc();
         mdiArea->addSubWindow(child);
         child->show();
@@ -953,7 +953,7 @@ void MainWindow::updateActiveWindows()
         if(((QPlotView*)p)->m_view_rsquared) Rtwo->setChecked(true);
         else Rtwo->setChecked(false);
     }
-    else if(qobject_cast<tableView *>(activeSubWindow->widget()))
+    else if(qobject_cast<TableView *>(activeSubWindow->widget()))
     {
         editToolBar->hide();
         thirdViewToolBar->hide();

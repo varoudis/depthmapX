@@ -33,7 +33,7 @@
 
 static bool in_update = 0;
 
-tableView::tableView(QWidget *parent, QGraphDoc* p)
+TableView::TableView(QWidget *parent, QGraphDoc* p)
     : QTableWidget(parent)
 {
 	pDoc = p;
@@ -54,12 +54,12 @@ tableView::tableView(QWidget *parent, QGraphDoc* p)
 	m_protect_edit = false;
 }
 
-tableView::~tableView()
+TableView::~TableView()
 {
     // nothing todo
 }
 
-void tableView::RedoTable()
+void TableView::RedoTable()
 {
    clear();
 
@@ -89,7 +89,7 @@ void tableView::RedoTable()
    }
 }
 
-void tableView::scrollContentsBy(int dx, int dy)
+void TableView::scrollContentsBy(int dx, int dy)
 {
 	if(!dy){
 		QTableWidget::scrollContentsBy(dx, 0);
@@ -100,12 +100,12 @@ void tableView::scrollContentsBy(int dx, int dy)
 	QTableWidget::scrollContentsBy(dx, dy);
 }
 
-QSize tableView::sizeHint() const
+QSize TableView::sizeHint() const
 {
 	return QSize(2000, 2000);
 }
 
-void tableView::PrepareCache(int to)
+void TableView::PrepareCache(int to)
 {
 	in_update = 1;
     QTableWidgetItem *Item;
@@ -150,7 +150,7 @@ void tableView::PrepareCache(int to)
 	in_update = 0;
 }
 
-void tableView::itemChanged(QTableWidgetItem * item)
+void TableView::itemChanged(QTableWidgetItem * item)
 {
 	if(in_update) return;
 	int row = item->row();
@@ -193,7 +193,7 @@ void tableView::itemChanged(QTableWidgetItem * item)
 	}
 }
 
-void tableView::colum_Sort(int col_id)
+void TableView::colum_Sort(int col_id)
 {
 	if (col_id - 1 != pDoc->m_meta_graph->getDisplayedAttribute())
 	{
@@ -206,7 +206,7 @@ void tableView::colum_Sort(int col_id)
 	}
 }
 
-void tableView::itemEditChanged(QTableWidgetItem* item)
+void TableView::itemEditChanged(QTableWidgetItem* item)
 {
 	int row = item->row();
 	int col = item->column();
@@ -219,7 +219,7 @@ void tableView::itemEditChanged(QTableWidgetItem* item)
 	}
 }
 
-void tableView::closeEvent(QCloseEvent *event)
+void TableView::closeEvent(QCloseEvent *event)
 {
    pDoc->m_view[QGraphDoc::VIEW_TABLE] = NULL;
    if (!pDoc->OnCloseDocument(QGraphDoc::VIEW_TABLE))
@@ -229,7 +229,7 @@ void tableView::closeEvent(QCloseEvent *event)
    }
 }
 
-void tableView::resizeEvent(QResizeEvent *event)
+void TableView::resizeEvent(QResizeEvent *event)
 {
    pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
 }
