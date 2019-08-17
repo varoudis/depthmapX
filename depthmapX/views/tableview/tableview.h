@@ -25,7 +25,7 @@ class TableView : public QTableWidget
     Q_OBJECT
 
 public:
-    TableView(QWidget *parent = 0, QGraphDoc * p = 0);
+    TableView(Settings &settings, QWidget *parent = 0, QGraphDoc * p = 0);
     ~TableView();
     QSize sizeHint() const;
 
@@ -50,4 +50,5 @@ private:
     void PrepareCache(int to);
 
     bool m_custom;
+    QSize m_initialSize;
 };

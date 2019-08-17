@@ -33,7 +33,8 @@
 
 static bool in_update = 0;
 
-TableView::TableView(QWidget *parent, QGraphDoc* p)
+TableView::TableView(Settings &settings, QWidget *parent,
+                     QGraphDoc* p)
     : QTableWidget(parent)
 {
 	pDoc = p;
@@ -52,6 +53,8 @@ TableView::TableView(QWidget *parent, QGraphDoc* p)
     setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
 
 	m_protect_edit = false;
+
+    m_initialSize = settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 }
 
 TableView::~TableView()
@@ -102,7 +105,7 @@ void TableView::scrollContentsBy(int dx, int dy)
 
 QSize TableView::sizeHint() const
 {
-	return QSize(2000, 2000);
+    return m_initialSize;
 }
 
 void TableView::PrepareCache(int to)
@@ -231,5 +234,6 @@ void TableView::closeEvent(QCloseEvent *event)
 
 void TableView::resizeEvent(QResizeEvent *event)
 {
+    QTableView::resizeEvent(event);
    pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
 }

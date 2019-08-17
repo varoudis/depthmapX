@@ -866,7 +866,7 @@ void MainWindow::OnViewTable()
     {
         if(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE])
             return setActiveSubWindow(m_p->getGraphDoc()->m_view[QGraphDoc::VIEW_TABLE]);
-        TableView *child = new TableView(this, m_p->getGraphDoc());
+        TableView *child = new TableView(mSettings, this, m_p->getGraphDoc());
         child->pDoc = m_p->getGraphDoc();
         mdiArea->addSubWindow(child);
         child->show();
