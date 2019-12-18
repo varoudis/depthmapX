@@ -31,7 +31,7 @@ class SegmentTulip : ISegment {
 
   public:
     std::string getAnalysisName() const override { return "Tulip Analysis"; }
-    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool) override;
     SegmentTulip(std::set<double> radius_set, bool sel_only, int tulip_bins, int weighted_measure_col, int radius_type,
                  bool choice)
         : m_radius_set(radius_set), m_sel_only(sel_only), m_tulip_bins(tulip_bins),

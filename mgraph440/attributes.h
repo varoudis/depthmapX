@@ -275,11 +275,11 @@ public:
    bool isVisible(int row) const
       { return (m_visible_layers & (at(row).m_layers)) != 0; }
    void setDisplayColumn(int col, bool override = false) const;
-   const int getDisplayColumn() const
+   int getDisplayColumn() const
       { return m_display_column; }
    void setDisplayInfo(int row, ValuePair vp) const
       { at(row).m_display_info = vp; if (at(row).m_selected) addSelValue((double)vp.value); }
-   const DisplayParams& getDisplayParams(int col) const
+   const DisplayParams& getDisplayParams() const
       { return m_display_params; }
    void clear()  // <- totally destroy, not just clear values
    { m_columns.clear(); pqmap<int,AttributeRow>::clear(); }

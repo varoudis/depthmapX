@@ -125,8 +125,8 @@ private:
        m_pointMaps.erase(m_pointMaps.begin() + i);
    }
 
-   bool readPointMaps(std::istream &stream, int version );
-   bool writePointMaps( std::ofstream& stream, int version, bool displayedmaponly = false );
+   bool readPointMaps(std::istream &stream);
+   bool writePointMaps(std::ofstream& stream, bool displayedmaponly = false );
 
    std::recursive_mutex mLock;
 public:
@@ -180,14 +180,14 @@ public:
    bool convertDataToAxial(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
    bool convertDrawingToSegment(Communicator *comm, std::string layer_name);
    bool convertDataToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues);
-   bool convertToData(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata);
-   bool convertToDrawing(Communicator *comm, std::string layer_name, bool fromDisplayedDataMap);
+   bool convertToData(Communicator *, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata);
+   bool convertToDrawing(Communicator *, std::string layer_name, bool fromDisplayedDataMap);
    bool convertToConvex(Communicator *comm, std::string layer_name, bool keeporiginal, int shapeMapType, bool copydata);
    bool convertAxialToSegment(Communicator *comm, std::string layer_name, bool keeporiginal, bool pushvalues, double stubremoval);
    int loadMifMap(Communicator *comm, std::istream& miffile, std::istream& midfile);
    bool makeAllLineMap( Communicator *communicator, const Point2f& seed );
    bool makeFewestLineMap( Communicator *communicator, int replace );
-   bool analyseAxial( Communicator *communicator, Options options, bool simple_version ); // <- options copied to keep thread safe
+   bool analyseAxial(Communicator *communicator, Options options, bool); // <- options copied to keep thread safe
    bool analyseSegmentsTulip( Communicator *communicator, Options options ); // <- options copied to keep thread safe
    bool analyseSegmentsAngular( Communicator *communicator, Options options ); // <- options copied to keep thread safe
    bool analyseTopoMetMultipleRadii( Communicator *communicator, Options options ); // <- options copied to keep thread safe
@@ -225,12 +225,12 @@ public:
    size_t getDisplayedDataMapRef() const
    { return m_displayed_datamap; }
 
-   void removeDataMap(int i)
+   void removeDataMap(size_t i)
    { if (m_displayed_datamap >= i) m_displayed_datamap--; m_dataMaps.erase(m_dataMaps.begin() + i); }
 
    void setDisplayedDataMapRef(size_t map)
    {
-      if (m_displayed_datamap != -1 && m_displayed_datamap != map)
+      if (static_cast<int>(m_displayed_datamap) != -1 && m_displayed_datamap != map)
          m_dataMaps[m_displayed_datamap].clearSel();
       m_displayed_datamap = map;
    }
@@ -268,14 +268,14 @@ public:
        m_shapeGraphs.erase(m_shapeGraphs.begin() + i);
    }
 
-   bool readShapeGraphs(std::istream &stream, int version );
-   bool writeShapeGraphs( std::ofstream& stream, int version, bool displayedmaponly = false );
+   bool readShapeGraphs(std::istream &stream);
+   bool writeShapeGraphs(std::ofstream& stream, bool displayedmaponly = false );
 
    std::vector<ShapeMap>& getDataMaps()
    { return m_dataMaps; }
 
-   bool readDataMaps(std::istream &stream, int version );
-   bool writeDataMaps( std::ofstream& stream, int version, bool displayedmaponly = false );
+   bool readDataMaps(std::istream &stream);
+   bool writeDataMaps(std::ofstream& stream, bool displayedmaponly = false );
 
    //
    int getDisplayedMapType();

@@ -20,7 +20,7 @@
 
 #include "genlib/stringutils.h"
 
-bool SegmentTopologicalPD::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
+bool SegmentTopologicalPD::run(Communicator *, ShapeGraph &map, bool) {
 
     AttributeTable &attributes = map.getAttributeTable();
 

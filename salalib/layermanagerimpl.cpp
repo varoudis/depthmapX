@@ -96,7 +96,7 @@ void LayerManagerImpl::read(std::istream &stream)
     stream.read((char *)&m_visibleLayers, sizeof(m_visibleLayers));
     int count;
     stream.read((char *)&count, sizeof(int));
-    for( size_t i = 0; i < count; ++i)
+    for( int i = 0; i < count; ++i)
     {
         stream.read((char *)&dummy, sizeof(dummy));
         m_layers.push_back(dXstring::readString(stream));
@@ -119,7 +119,7 @@ void LayerManagerImpl::write(std::ostream &stream) const
     // attributes table is in place the original solution is used here as found
     // in AttributeTable::selectionToLayer():
 
-    int64_t availableLayers = 0xffffffff << 32 + 0xfffffffe;
+    int64_t availableLayers = 0xffffffff << (32 + 0xfffffffe);
     // should have been:
     // int64_t availableLayers = (int64_t(0xffffffff) << 32) + 0xfffffffe;
 
@@ -144,7 +144,7 @@ void LayerManagerImpl::write(std::ostream &stream) const
     int size_as_int = (int)m_layers.size();
     stream.write((const char *)&size_as_int, sizeof(int));
 
-    availableLayers = 0xffffffff << 32 + 0xfffffffe;
+    availableLayers = 0xffffffff << (32 + 0xfffffffe);
     int64_t newlayer = 0x1;
     stream.write((const char *)&newlayer, sizeof(KeyType));
     dXstring::writeString(stream, m_layers[0]);

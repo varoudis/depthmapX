@@ -107,6 +107,7 @@ private:
 public:
    PointMap(const QtRegion& parentRegion, const std::vector<SpacePixelFile>& drawingFiles,
             const std::string& name = std::string("VGA Map"));
+   virtual ~PointMap() {}
    void copy(const PointMap& other);
    const std::string& getName() const
    { return m_name; }
@@ -166,14 +167,14 @@ public:
       { return !m_processed && m_undocounter != 0; }
    void outputPoints(std::ostream& stream, char delim );
    void outputMergeLines(std::ostream& stream, char delim);
-   int  tagState(bool settag, bool sparkgraph = false);
+   int  tagState(bool settag);
    bool sparkGraph2(Communicator *comm, bool boundarygraph, double maxdist );
    bool unmake(bool removeLinks);
    bool sparkPixel2(PixelRef curs, int make, double maxdist = -1.0);
    bool sieve2(sparkSieve2& sieve, std::vector<PixelRef>& addlist, int q, int depth, PixelRef curs);
    // bool makeGraph( Graph& graph, int optimization_level = 0, Communicator *comm = NULL);
    //
-   bool binDisplay(Communicator *comm);
+   bool binDisplay(Communicator *);
    bool mergePoints(const Point2f& p);
    bool unmergePoints();
    bool unmergePixel(PixelRef a);
@@ -340,8 +341,8 @@ public:
    // this is an odd helper function, value in range 0 to 1
    PixelRef pickPixel(double value) const;
 public:
-   bool read(std::istream &stream, int version );
-   bool write(std::ostream &stream, int version );
+   bool read(std::istream &stream);
+   bool write(std::ostream &stream);
    void addGridConnections(); // adds grid connections where graph does not include them
    void outputConnectionsAsCSV(std::ostream &myout, std::string delim = ",");
    void outputLinksAsCSV(std::ostream &myout, std::string delim = ",");
@@ -598,14 +599,15 @@ inline int flagoctant(int bin)
 
 inline int q_opposite(int bin)
 {
-   int q = -1;
    int opposing_bin = (16 + bin) % 32;
 
-            //      \ 6 | 7 /
-            //      0 \ | / 1
-            //      - -   - -
-            //      2 / | \ 3
-            //      / 4 | 5 \
+   /*
+    *       \ 6 | 7 /
+    *      0 \ | / 1
+    *      - -   - -
+    *      2 / | \ 3
+    *      / 4 | 5 \
+    */
 
    return flagoctant(opposing_bin);
 }

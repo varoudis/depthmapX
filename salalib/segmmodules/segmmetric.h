@@ -29,6 +29,6 @@ class SegmentMetric : ISegment {
 
   public:
     std::string getAnalysisName() const override { return "Metric Analysis"; }
-    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool) override;
     SegmentMetric(double radius, bool sel_only) : m_radius(radius), m_sel_only(sel_only) {}
 };

@@ -32,6 +32,10 @@ include_directories("../ThirdParty/Catch")
 
 set(LINK_LIBS salalib genlib mgraph440)
 
+if(APPLE)
+        add_definitions(-DGL_SILENCE_DEPRECATION)
+endif(APPLE)
+
 add_executable(${depthmapXTest} ${depthmapXTest_SRCS})
 
 find_package(OpenGL REQUIRED)

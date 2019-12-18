@@ -3,6 +3,5 @@ target_sources(salalib
         axialintegration.cpp
         axialstepdepth.cpp
     PUBLIC
-        axialhelpers.h
         axialintegration.h
         axialstepdepth.h)

@@ -21,7 +21,7 @@
 
 #include "genlib/stringutils.h"
 
-bool SegmentAngular::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
+bool SegmentAngular::run(Communicator *comm, ShapeGraph &map, bool) {
 
     if (map.getMapType() != ShapeMap::SEGMENTMAP) {
         return false;
@@ -102,7 +102,7 @@ bool SegmentAngular::run(Communicator *comm, ShapeGraph &map, bool simple_versio
                     for (auto &segconn : line.m_forward_segconns) {
                         if (!covered[segconn.first.ref]) {
                             double angle = depth_to_line + segconn.second;
-                            int rbin = lineindex.coverage;
+                            size_t rbin = lineindex.coverage;
                             while (rbin != radii.size() && radii[rbin] != -1 && angle > radii[rbin]) {
                                 rbin++;
                             }
@@ -118,7 +118,7 @@ bool SegmentAngular::run(Communicator *comm, ShapeGraph &map, bool simple_versio
                     for (auto &segconn : line.m_back_segconns) {
                         if (!covered[segconn.first.ref]) {
                             double angle = depth_to_line + segconn.second;
-                            int rbin = lineindex.coverage;
+                            size_t rbin = lineindex.coverage;
                             while (rbin != radii.size() && radii[rbin] != -1 && angle > radii[rbin]) {
                                 rbin++;
                             }

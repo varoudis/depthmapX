@@ -25,5 +25,5 @@
 class SegmentMetricPD : ISegment {
   public:
     std::string getAnalysisName() const override { return "Metric Analysis"; }
-    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *, ShapeGraph &map, bool) override;
 };

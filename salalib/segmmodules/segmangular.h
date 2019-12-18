@@ -26,6 +26,6 @@ class SegmentAngular : ISegment {
 
   public:
     std::string getAnalysisName() const override { return "Angular Analysis"; }
-    bool run(Communicator *comm, ShapeGraph &map, bool simple_version) override;
+    bool run(Communicator *comm, ShapeGraph &map, bool) override;
     SegmentAngular(std::set<double> radius_set) : m_radius_set(radius_set) {}
 };

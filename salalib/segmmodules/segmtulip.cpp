@@ -20,7 +20,7 @@
 
 #include "genlib/stringutils.h"
 
-bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
+bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool) {
 
     if (map.getMapType() != ShapeMap::SEGMENTMAP) {
         return false;
@@ -115,7 +115,6 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
     size_t r;
     for (r = 0; r < radius_unconverted.size(); r++) {
         std::string radius_text = makeRadiusText(m_radius_type, radius_unconverted[r]);
-        int choice_col = -1, n_choice_col = -1, w_choice_col = -1, nw_choice_col = -1;
         if (m_choice) {
             // EF routeweight *
             if (routeweight_col != -1) {
@@ -369,9 +368,6 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
 
         double rootseglength = row.getValue(length_col);
         double rootweight = (m_weighted_measure_col != -1) ? weights[cursor] : 0.0;
-        // EFEF
-        double rootweight2 = (weighting_col2 != -1) ? weights2[cursor] : 0.0;
-        // EFEF
 
         // setup: direction 0 (both ways), segment i, previous -1, segdepth (step depth) 0, metricdepth 0.5 *
         // rootseglength, bin 0
@@ -383,9 +379,6 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
         // this version below is only designed to be used temporarily --
         // could be on an option?
         // bins[0].push_back(SegmentData(0,rowid,SegmentRef(),0,0.0,radiusmask));
-        Connector &thisline = map.getConnections()[cursor];
-        std::vector<int> node_count;
-        double weight = 0.0;
         int depthlevel = 0;
         int opencount = 1;
         size_t currentbin = 0;
@@ -393,7 +386,7 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
             while (!bins[currentbin].size()) {
                 depthlevel++;
                 currentbin++;
-                if (currentbin == tulip_bins) {
+                if (currentbin == static_cast<size_t>(tulip_bins)) {
                     currentbin = 0;
                 }
             }
@@ -406,7 +399,7 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
             int dir = (lineindex.dir == 1) ? 0 : 1;
             int coverage = lineindex.coverage & uncovered[ref][dir];
             if (coverage != 0) {
-                register int rbin = 0;
+                int rbin = 0;
                 int rbinbase;
                 if (lineindex.previous.ref != -1) {
                     uncovered[ref][dir] &= ~coverage;
@@ -429,7 +422,7 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
                 }
                 Connector &line = map.getConnections()[ref];
                 float seglength;
-                register int extradepth;
+                int extradepth;
                 if (lineindex.dir != -1) {
                     for (auto &segconn : line.m_forward_segconns) {
                         rbin = rbinbase;
@@ -559,13 +552,13 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool simple_version)
                         // note, graph may be directed (e.g., for one way streets), so both ways must be included from
                         // now on:
                         SegmentRef here = SegmentRef(dir == 0 ? 1 : -1, j);
-                        if (here.ref != cursor) {
+                        if (here.ref != static_cast<int>(cursor)) {
                             int choicecount = 0;
                             double choiceweight = 0.0;
                             // EFEF*
                             double choiceweight2 = 0.0;
                             //*EFEF
-                            while (here.ref != cursor) { // not rowid means not the current root for the path
+                            while (here.ref != static_cast<int>(cursor)) { // not rowid means not the current root for the path
                                 int heredir = (here.dir == 1) ? 0 : 1;
                                 // each node has the existing choicecount and choiceweight from previously encountered
                                 // nodes added to it

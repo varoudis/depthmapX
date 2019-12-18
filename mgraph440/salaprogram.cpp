@@ -40,6 +40,7 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
+#include <cmath>
 
 namespace mgraph440 {
 
@@ -293,12 +294,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
-            // Quick mod - TV
-#if defined(_MSC_VER)
-            if (!_finite(v)) {
-#else
-            if (!finite(v)) {
-#endif
+            if (!std::isfinite(v)) {
                v = -1.0f;
             }
             table->changeValue(pointmap ? table->getRowid(row) : row,m_col,v);
@@ -316,12 +312,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
-            // Quick mod - TV
-#if defined(_MSC_VER)
-            if (!_finite(v)) {
-#else
-            if (!finite(v)) {
-#endif
+            if (!std::isfinite(v)) {
                v = -1.0f;
             }
             table->changeValue(i,m_col,v);
@@ -1139,7 +1130,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
    if (pointer < 0) {
       throw SalaError("Missing argument",m_line);
    }
-   register SalaObj data = m_eval_stack[pointer];
+   SalaObj data = m_eval_stack[pointer];
    pointer--;
    if (data.type == SalaObj::S_FUNCTION) {
       SalaObj::Func func = data.data.func;
@@ -1254,6 +1245,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   else
                      throw SalaError("Cannot be applied to " + data.getTypeIndefArt() + data.getTypeStr(),m_line);
                }
+               break;
+            default:
                break;
             }
          }
@@ -1372,6 +1365,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
            }
 #endif
                break;
+            default:
+               break;
             }
          }
          catch (SalaError e)
@@ -1455,6 +1450,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                break;
             case SalaObj::S_ATAN:
                data = atan(evaluate(pointer,p_obj).toDouble());
+               break;
+            default:
                break;
             }
          }

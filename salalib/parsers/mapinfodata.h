@@ -63,10 +63,10 @@ public:
    bool exportPolygons(std::ostream& miffile, std::ostream& midfile, const std::vector<std::vector<Point2f> > &polygons, const QtRegion& region);
    //
    bool readheader(std::istream& miffile);
-   bool readcolumnheaders(std::istream& miffile, std::istream& midfile, std::vector<std::string>& columnheads);
+   bool readcolumnheaders(std::istream& miffile, std::vector<std::string>& columnheads);
    void writeheader(std::ostream& miffile);
    void writetable(std::ostream& miffile, std::ostream& midfile, const AttributeTable& attributes, const LayerManagerImpl layers);
    //
-   std::istream& read(std::istream& stream, int version);
+   std::istream& read(std::istream& stream);
    std::ostream& write(std::ostream& stream);
 };

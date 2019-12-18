@@ -382,8 +382,6 @@ namespace dm_runmethods
     {
         auto mGraph = loadGraph(clp.getFileName().c_str(), perfWriter);
 
-        auto state = mGraph->getState();
-
         std::cout << "Running segment analysis... " << std::flush;
         Options options;
         const std::vector<double>& radii = sp.getRadii();
@@ -395,7 +393,7 @@ namespace dm_runmethods
         if(!sp.getAttribute().empty()) {
             const ShapeGraph& map = mGraph->getDisplayedShapeGraph();
             const AttributeTable& table = map.getAttributeTable();
-            for (int i = 0; i < table.getNumColumns(); i++) {
+            for (size_t i = 0; i < table.getNumColumns(); i++) {
                 if(sp.getAttribute() == table.getColumnName(i).c_str()) {
                     options.weighted_measure_col = i;
                 }

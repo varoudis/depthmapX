@@ -17,7 +17,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "salalib/axialmodules/axialintegration.h"
-#include "salalib/axialmodules/axialhelpers.h"
 
 #include "genlib/pflipper.h"
 #include "genlib/stringutils.h"
@@ -210,7 +209,7 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
             td_col.push_back(attributes.getColumnIndex(td_col_text.c_str()));
         }
     }
-    int control_col, controllability_col;
+    int control_col = -1, controllability_col = -1;
     if (m_local) {
         if (!simple_version) {
             control_col = attributes.getColumnIndex("Control");
@@ -279,7 +278,8 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
 
         std::vector<int> depthcounts;
         depthcounts.push_back(0);
-        pflipper<IntPairVector> foundlist;
+
+        pflipper<std::vector<std::pair<int, int>>> foundlist;
         foundlist.a().push_back(std::pair<int, int>(i, -1));
         covered[i] = true;
         int total_depth = 0, depth = 1, node_count = 1, pos = -1, previous = -1; // node_count includes this 1
@@ -289,7 +289,7 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
             // include this line in total weights (as per nodecount)
             total_weight += rootweight;
         }
-        register int index = -1;
+        int index = -1;
         int r = 0;
         for (int radius : radii) {
             while (foundlist.a().size()) {
@@ -316,7 +316,7 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
                         if (m_choice && previous != -1) {
                             // both directional paths are now recorded for choice
                             // (coincidentally fixes choice problem which was completely wrong)
-                            int here = index;   // note: start counting from index as actually looking ahead here
+                            size_t here = index;   // note: start counting from index as actually looking ahead here
                             while (here != i) { // not i means not the current root for the path
                                 audittrail[here][r].choice += 1;
                                 audittrail[here][r].weighted_choice += weight * rootweight;
@@ -478,13 +478,12 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
             i++;
             AttributeRow &row = iter.getRow();
             double total_choice = 0.0, w_total_choice = 0.0;
-            int r = 0;
-            for (int radius : radii) {
+            for (size_t r = 0; r < radii.size(); r++) {
                 total_choice += audittrail[i][r].choice;
                 w_total_choice += audittrail[i][r].weighted_choice;
                 // n.b., normalise choice according to (n-1)(n-2)/2 (maximum possible through routes)
                 double node_count = row.getValue(count_col[r]);
-                double total_weight;
+                double total_weight = 0;
                 if (m_weighted_measure_col != -1) {
                     total_weight = row.getValue(total_weight_col[r]);
                 }
@@ -503,7 +502,6 @@ bool AxialIntegration::run(Communicator *comm, ShapeGraph &map, bool simple_vers
                         row.setValue(nw_choice_col[r], -1);
                     }
                 }
-                ++r;
             }
         }
         for (size_t i = 0; i < map.getShapeCount(); i++) {

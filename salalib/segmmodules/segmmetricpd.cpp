@@ -20,7 +20,7 @@
 
 #include "genlib/stringutils.h"
 
-bool SegmentMetricPD::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
+bool SegmentMetricPD::run(Communicator *, ShapeGraph &map, bool) {
 
     AttributeTable &attributes = map.getAttributeTable();
 
@@ -107,7 +107,6 @@ bool SegmentMetricPD::run(Communicator *comm, ShapeGraph &map, bool simple_versi
             connected_cursor = iter->first.ref;
             if (seen[connected_cursor] > segdepth) {
                 float length = seglengths[connected_cursor];
-                int axialref = axialrefs[connected_cursor];
                 seen[connected_cursor] = segdepth;
                 audittrail[connected_cursor] =
                     TopoMetSegmentRef(connected_cursor, here.dir, here.dist + length, here.ref);

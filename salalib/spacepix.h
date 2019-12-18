@@ -45,7 +45,8 @@ class PixelBase {
     PixelRefVector pixelateLine(Line l, int scalefactor = 1) const;
     PixelRefVector pixelateLineTouching(Line l, double tolerance) const;
     PixelRefVector quickPixelateLine(PixelRef p, PixelRef q);
-    bool includes(const PixelRef pix) const { return (pix.x >= 0 && pix.x < m_cols && pix.y >= 0 && pix.y < m_rows); }
+    bool includes(const PixelRef pix) const { return (pix.x >= 0 && pix.x < static_cast<short>(m_cols) &&
+                                                      pix.y >= 0 && pix.y < static_cast<short>(m_rows)); }
     size_t getCols() const { return m_cols; }
     size_t getRows() const { return m_rows; }
     const QtRegion &getRegion() const { return m_region; }
@@ -153,19 +154,7 @@ class SpacePixel : public PixelBase {
     bool isEditable() const { return m_edit; }
 
   public:
-    // for screen drawing:
-    PafColor getLineColor(bool in_color = true) const { return m_color; }
-    int getLineStyle() const { return m_style; }
-    const bool getLineSelected() const {
-        return false;
-    } // selection not enabled as yet for non-axial lines -- note: major change around when it happens
-    void setColor(const PafColor &color) { m_color = color; }
-    void setStyle(const int style) { m_style = style; }
-    // just to know...
-    int getLineCount() const { return (int)m_lines.size(); }
-
-  public:
-    virtual bool read(std::istream &stream, int version);
+    virtual bool read(std::istream &stream);
     virtual bool write(std::ofstream &stream);
     friend bool operator==(const SpacePixel &a, const SpacePixel &b);
 };

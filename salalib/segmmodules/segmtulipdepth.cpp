@@ -22,7 +22,7 @@
 
 // revised to use tulip bins for faster analysis of large spaces
 
-bool SegmentTulipDepth::run(Communicator *comm, ShapeGraph &map, bool simple_version) {
+bool SegmentTulipDepth::run(Communicator *, ShapeGraph &map, bool) {
 
     AttributeTable &attributes = map.getAttributeTable();
 
@@ -81,12 +81,11 @@ bool SegmentTulipDepth::run(Communicator *comm, ShapeGraph &map, bool simple_ver
           // (note the -1)
           double depth_to_line = depthlevel / ((tulip_bins - 1) * 0.5);
           map.getAttributeRowFromShapeIndex(lineindex.ref).setValue(stepdepth_col,depth_to_line);
-          register int extradepth;
+          int extradepth;
           if (lineindex.dir != -1) {
              for (auto& segconn: line.m_forward_segconns) {
                 if (!covered[segconn.first.ref]) {
                    extradepth = (int) floor(segconn.second * tulip_bins * 0.5);
-                   auto currIter = binIter;
                    bins[(currentbin + tulip_bins + extradepth) % tulip_bins].push_back(
                        SegmentData(segconn.first,lineindex.ref,lineindex.segdepth+1,0.0,0));
                    opencount++;

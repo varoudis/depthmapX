@@ -139,7 +139,6 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const st
 {
    m_vertex_possibles.clear();
    m_vertex_polys.clear();
-   int currpoly = -1;
 
    size_t i = 0;
 
@@ -221,8 +220,6 @@ void AxialPolygons::makeVertexPossibles(const std::vector<Line>& lines, const st
 
 void AxialPolygons::makePixelPolys()
 {
-   int i = 0;
-
    // record all of this onto the pixel polygons
 
    m_pixel_polys = depthmapX::ColumnMatrix<std::vector<int>>(m_rows, m_cols);
@@ -285,10 +282,10 @@ AxialVertexKey AxialPolygons::seedVertex(const Point2f& seed)
          if (seedref.y < 0) {
             allboundaries |= 0x02; seedref.y = 0;
          }
-         if (seedref.x >= m_cols) {
+         if (seedref.x >= static_cast<short>(m_cols)) {
             allboundaries |= 0x04; seedref.x = m_cols - 1;
          }
-         if (seedref.y >= m_rows) {
+         if (seedref.y >= static_cast<short>(m_rows)) {
             allboundaries |= 0x08; seedref.y = m_rows - 1;
          }
          if (allboundaries == 0x0f) {

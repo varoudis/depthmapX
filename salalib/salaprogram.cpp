@@ -42,6 +42,7 @@
 #include <float.h>
 #include <time.h>
 #include <cstring>
+#include <cmath>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -284,12 +285,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
-            // Quick mod - TV
-#if defined(_MSC_VER)            
-            if (!_finite(v)) {
-#else
-            if (!finite(v)) {
-#endif            
+            if (!std::isfinite(v)) {
                v = -1.0f;
             }
             table->getRow(AttributeKey(sel)).setValue(m_col,v);
@@ -307,12 +303,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
          try {
             SalaObj val = evaluate();
             float v = (float) val.toDouble();   // note, toDouble will type check and throw if there's a problem
-            // Quick mod - TV
-#if defined(_MSC_VER)            
-            if (!_finite(v)) {
-#else
-            if (!finite(v)) {
-#endif            
+            if (!std::isfinite(v)) {
                v = -1.0f;
             }
             iter->getRow().setValue(m_col,v);
@@ -333,8 +324,7 @@ bool SalaProgram::runupdate(int col, const std::set<int> &selset)
 bool SalaProgram::runselect(std::vector<int> &selsetout, const std::set<int>& selsetin)
 {
    AttributeTable *table = m_thisobj.getTable();
-   bool pointmap = (m_thisobj.type & SalaObj::S_POINTMAP) ? true : false;
-   //
+
    if (selsetin.size()) {
       for (auto& key: selsetin) {
          try {
@@ -407,7 +397,6 @@ int SalaCommand::parse(std::istream& program, int line)
    int last = SP_FUNCTION;
    bool endloop = false;
    bool overridecache = false;
-   bool firstword = true;
    SalaBuffer buffer;
    char cache = ' ';
    //
@@ -1130,7 +1119,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
    if (pointer < 0) {
       throw SalaError("Missing argument",m_line);
    }
-   register SalaObj data = m_eval_stack[pointer];
+   SalaObj data = m_eval_stack[pointer];
    pointer--;
    if (data.type == SalaObj::S_FUNCTION) {
       SalaObj::Func func = data.data.func;
@@ -1246,6 +1235,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                      throw SalaError("Cannot be applied to " + data.getTypeIndefArt() + data.getTypeStr(),m_line);
                }
                break;
+            default:
+                break;
             }
          }
          catch (SalaError e)
@@ -1257,7 +1248,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   break;
                }
             }
-            e.lineno = m_line; throw e;
+            e.lineno = m_line; throw std::move(e);
          }
       }
       else if (group == SalaObj::S_LOGICAL_OPS) {
@@ -1363,6 +1354,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
 	       }
 #endif               
                break;
+            default:
+                break;
             }
          }
          catch (SalaError e)
@@ -1380,7 +1373,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   break;
                }
             }
-            e.lineno = m_line; throw e;
+            e.lineno = m_line; throw std::move(e);
          }
       }
       else if (group == SalaObj::S_GLOBAL_FUNCS) {
@@ -1447,6 +1440,8 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
             case SalaObj::S_ATAN:
                data = atan(evaluate(pointer,p_obj).toDouble());
                break;
+            default:
+                break;
             }
          }
          catch (SalaError e)
@@ -1458,7 +1453,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   break;
                }
             }
-            e.lineno = m_line; throw e;
+            e.lineno = m_line; throw std::move(e);
          }
       }
       else if (group == SalaObj::S_MEMBER_FUNCS) {
@@ -1586,7 +1581,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
                   break;
                }
             }
-            e.lineno = m_line; throw e;
+            e.lineno = m_line; throw std::move(e);
          }
       }
    }
