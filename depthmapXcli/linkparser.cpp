@@ -113,6 +113,10 @@ void LinkParser::parse(int argc, char *argv[])
     {
         throw CommandLineException("one of -lf or -lnk must be provided");
     }
+    if (m_mapTypeGroup == MapTypeGroup::POINTMAPS && m_linkMode == LinkMode::UNLINK)
+    {
+        throw CommandLineException("unlinking is not supported for pointmaps");
+    }
 }
 
 void LinkParser::run(const CommandLineParser &clp, IPerformanceSink &perfWriter) const
