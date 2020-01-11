@@ -81,7 +81,6 @@ protected:
    mutable int m_curvec;
    mutable PixelRef m_curpix;
 public:
-   void contents(PixelRefVector& hood);
    void first() const;
    void next() const;
    bool is_tail() const;
