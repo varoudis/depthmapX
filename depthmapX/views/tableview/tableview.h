@@ -52,4 +52,5 @@ class TableView : public QTableWidget {
 
     bool m_custom;
     QSize m_initialSize;
+    bool m_updating = false;
 };

@@ -31,8 +31,6 @@
 #define ROW_HEIGHT 20
 #define PG_COUNT 40
 
-static bool in_update = 0;
-
 TableView::TableView(Settings &settings, QWidget *parent, QGraphDoc *p) : QTableWidget(parent) {
     m_mainWindow = parent;
     pDoc = p;
@@ -93,7 +91,7 @@ void TableView::scrollContentsBy(int dx, int dy) {
 QSize TableView::sizeHint() const { return m_initialSize; }
 
 void TableView::PrepareCache(int to) {
-    in_update = 1;
+    m_updating = true;
     QTableWidgetItem *Item;
     const AttributeTableHandle &tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
     auto &index = tableHandle.getTableIndex();
@@ -129,11 +127,11 @@ void TableView::PrepareCache(int to) {
             }
         }
     }
-    in_update = 0;
+    m_updating = false;
 }
 
 void TableView::itemChanged(QTableWidgetItem *item) {
-    if (in_update)
+    if (m_updating)
         return;
     int row = item->row();
     int col = item->column();
