@@ -1784,7 +1784,7 @@ void MainWindow::SetAttributeChecks()
 
 void MainWindow::chooseAttributeOnIndex(int attributeIdx) {
     SetAttributeChecks();
-    m_attrWindow->item(attributeIdx)->setSelected(true);
+    m_attrWindow->setCurrentRow(attributeIdx);
 }
 
 void MainWindow::OninvertColor()
