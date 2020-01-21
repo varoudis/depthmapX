@@ -53,10 +53,6 @@ TableView::TableView(Settings &settings, QWidget *parent, QGraphDoc *p) : QTable
     m_initialSize = settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 }
 
-TableView::~TableView() {
-    // nothing todo
-}
-
 void TableView::RedoTable() {
     clear();
 

@@ -26,7 +26,6 @@ class TableView : public QTableWidget {
 
   public:
     TableView(Settings &settings, QWidget *parent = 0, QGraphDoc *p = 0);
-    ~TableView();
     QSize sizeHint() const;
 
     int m_column_count;
