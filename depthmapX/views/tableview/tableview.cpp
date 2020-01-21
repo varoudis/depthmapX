@@ -58,8 +58,6 @@ void TableView::RedoTable() {
 
     if (pDoc->m_meta_graph->viewingProcessed()) {
         const AttributeTable &table = pDoc->m_meta_graph->getAttributeTable();
-        int col = pDoc->m_meta_graph->getDisplayedAttribute();
-        int i;
 
         m_column_count = table.getNumColumns();
         setColumnCount(m_column_count + 1);
@@ -70,7 +68,7 @@ void TableView::RedoTable() {
         Item->setTextAlignment(Qt::AlignLeft);
         setHorizontalHeaderItem(0, Item);
 
-        for (i = 0; i < m_column_count; i++) {
+        for (int i = 0; i < m_column_count; i++) {
             QTableWidgetItem *Item = new QTableWidgetItem(QString("%1").arg(table.getColumnName(i).c_str()));
             Item->setTextAlignment(Qt::AlignLeft);
             setHorizontalHeaderItem(i + 1, Item);
