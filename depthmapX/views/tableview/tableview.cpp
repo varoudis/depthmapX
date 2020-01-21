@@ -79,12 +79,10 @@ void TableView::RedoTable() {
 }
 
 void TableView::scrollContentsBy(int dx, int dy) {
-    if (!dy) {
-        QTableWidget::scrollContentsBy(dx, 0);
-        return;
+    if (dy != 0) {
+        PrepareCache(m_curr_row - dy);
+        m_curr_row -= dy;
     }
-    PrepareCache(m_curr_row - dy);
-    m_curr_row -= dy;
     QTableWidget::scrollContentsBy(dx, dy);
 }
 
