@@ -1,4 +1,5 @@
 // Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2019, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,223 +14,202 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#include <QtCore/QEvent>
-#include <QtCore/QDebug>
-
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QLayout>
-#include <QKeyEvent>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QTableWidgetItem>
-#include <QtGui/QFocusEvent>
+#include "tableview.h"
 
 #include "mainwindow.h"
-#include "tableview.h"
+
+#include <QKeyEvent>
+#include <QtCore/QDebug>
+#include <QtCore/QEvent>
+#include <QtGui/QFocusEvent>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLayout>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QTableWidgetItem>
 
 #define ROW_HEIGHT 20
 #define PG_COUNT 40
 
-static bool in_update = 0;
+TableView::TableView(Settings &settings, QWidget *parent, QGraphDoc *p) : QTableWidget(parent) {
+    m_mainWindow = parent;
+    pDoc = p;
+    m_from = m_curr_row = 0;
 
-tableView::tableView(QWidget *parent, QGraphDoc* p)
-    : QTableWidget(parent)
-{
-	pDoc = p;
-	m_from = m_curr_row = 0;
+    connect(this, SIGNAL(itemChanged(QTableWidgetItem *)), this, SLOT(itemChanged(QTableWidgetItem *)));
 
-    connect(this, SIGNAL(itemChanged(QTableWidgetItem*)), this,
-        SLOT(itemChanged(QTableWidgetItem*)));
+    connect(this, SIGNAL(itemDoubleClicked(QTableWidgetItem *)), this, SLOT(itemEditChanged(QTableWidgetItem *)));
 
-    connect(this, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this,
-        SLOT(itemEditChanged(QTableWidgetItem*)));
-
-	RedoTable();
+    RedoTable();
     setWindowIcon(QIcon(tr(":/images/cur/icon-1-5.png")));
-    setWindowTitle(pDoc->m_base_title+":Table View");
+    setWindowTitle(pDoc->m_base_title + ":Table View");
 
     setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
 
-	m_protect_edit = false;
+    m_protect_edit = false;
+
+    m_initialSize = settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 }
 
-tableView::~tableView()
-{
-    // nothing todo
+void TableView::focusInEvent(QFocusEvent *e) {
+    RedoTable();
+    pDoc->SetRedrawFlag(QGraphDoc::VIEW_TABLE, QGraphDoc::REDRAW_DONE);
+    QTableWidget::focusInEvent(e);
 }
 
-void tableView::RedoTable()
-{
-   clear();
+void TableView::RedoTable() {
+    clear();
 
-   if (pDoc->m_meta_graph->viewingProcessed()) {
-      const AttributeTable& table = pDoc->m_meta_graph->getAttributeTable();
-      int col = pDoc->m_meta_graph->getDisplayedAttribute();
-	  int i;
+    if (pDoc->m_meta_graph->viewingProcessed()) {
+        const AttributeTable &table = pDoc->m_meta_graph->getAttributeTable();
 
-      m_column_count = table.getNumColumns();
-	  setColumnCount(m_column_count+1);
-      connect(horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(colum_Sort(int)));
-	  verticalHeader()->hide();
+        m_column_count = table.getNumColumns();
+        setColumnCount(m_column_count + 1);
+        connect(horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(colum_Sort(int)));
+        verticalHeader()->hide();
 
-	  QTableWidgetItem *Item = new QTableWidgetItem("Ref Number");
-	  Item->setTextAlignment(Qt::AlignLeft);
-	  setHorizontalHeaderItem(0, Item);
+        QTableWidgetItem *Item = new QTableWidgetItem("Ref Number");
+        Item->setTextAlignment(Qt::AlignLeft);
+        setHorizontalHeaderItem(0, Item);
 
-	  for (i = 0; i < m_column_count; i++) {
-         QTableWidgetItem *Item = new QTableWidgetItem(QString("%1").arg(table.getColumnName(i).c_str()));
-		 Item->setTextAlignment(Qt::AlignLeft);
-		 setHorizontalHeaderItem(i+1, Item);
-      }
+        for (int i = 0; i < m_column_count; i++) {
+            QTableWidgetItem *Item = new QTableWidgetItem(QString("%1").arg(table.getColumnName(i).c_str()));
+            Item->setTextAlignment(Qt::AlignLeft);
+            setHorizontalHeaderItem(i + 1, Item);
+        }
 
-      m_row_count = table.getNumRows();
-	  setRowCount(m_row_count);
-      PrepareCache(m_curr_row);
-   }
+        m_row_count = table.getNumRows();
+        setRowCount(m_row_count);
+        PrepareCache(m_curr_row);
+    }
 }
 
-void tableView::scrollContentsBy(int dx, int dy)
-{
-	if(!dy){
-		QTableWidget::scrollContentsBy(dx, 0);
-		return;
-	}
-    PrepareCache(m_curr_row - dy);
-	m_curr_row -= dy;
-	QTableWidget::scrollContentsBy(dx, dy);
+void TableView::scrollContentsBy(int dx, int dy) {
+    if (dy != 0) {
+        PrepareCache(m_curr_row - dy);
+        m_curr_row -= dy;
+    }
+    QTableWidget::scrollContentsBy(dx, dy);
 }
 
-QSize tableView::sizeHint() const
-{
-	return QSize(2000, 2000);
-}
+QSize TableView::sizeHint() const { return m_initialSize; }
 
-void tableView::PrepareCache(int to)
-{
-	in_update = 1;
+void TableView::PrepareCache(int to) {
+    m_updating = true;
     QTableWidgetItem *Item;
-    const AttributeTableHandle& tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
-    auto& index = tableHandle.getTableIndex();
+    const AttributeTableHandle &tableHandle = pDoc->m_meta_graph->getAttributeTableHandle();
+    auto &index = tableHandle.getTableIndex();
 
     int diff = PG_COUNT;
-    if(to+PG_COUNT >= m_row_count)
-    {
+    if (to + PG_COUNT >= m_row_count) {
         diff = m_row_count - to;
     }
-    for (int i = 0; i < diff; i++)
-	{
-        auto& indexItem = index[to+i];
-		for (int j = 0; j < m_column_count+1; j++)
-		{
-			if(!j)
-			{
-                Item = item(to+i, j);
-                if(Item)
-				{
-                    if(indexItem.row->isSelected()) Item->setCheckState(Qt::Checked);
-					else Item->setCheckState(Qt::Unchecked);
-				}
-				else
-				{
+    for (int i = 0; i < diff; i++) {
+        auto &indexItem = index[to + i];
+        for (int j = 0; j < m_column_count + 1; j++) {
+            if (!j) {
+                Item = item(to + i, j);
+                if (Item) {
+                    if (indexItem.row->isSelected())
+                        Item->setCheckState(Qt::Checked);
+                    else
+                        Item->setCheckState(Qt::Unchecked);
+                } else {
                     Item = new QTableWidgetItem(QString("%1").arg(indexItem.key.value));
-                    if(indexItem.row->isSelected()) Item->setCheckState(Qt::Checked);
-					else Item->setCheckState(Qt::Unchecked);
-					setItem(to+i, 0, Item);
-					continue;
-				}
-			}
-			if(!item(to+i, j))
-			{
-                Item = new QTableWidgetItem(QString("%1").arg(indexItem.row->getValue(j-1)));
-				setRowHeight(to+i, ROW_HEIGHT);
-				setItem(to+i, j, Item);
-			}
-		}
-	}
-	in_update = 0;
+                    if (indexItem.row->isSelected())
+                        Item->setCheckState(Qt::Checked);
+                    else
+                        Item->setCheckState(Qt::Unchecked);
+                    setItem(to + i, 0, Item);
+                    continue;
+                }
+            }
+            if (!item(to + i, j)) {
+                Item = new QTableWidgetItem(QString("%1").arg(indexItem.row->getValue(j - 1)));
+                setRowHeight(to + i, ROW_HEIGHT);
+                setItem(to + i, j, Item);
+            }
+        }
+    }
+    m_updating = false;
 }
 
-void tableView::itemChanged(QTableWidgetItem * item)
-{
-	if(in_update) return;
-	int row = item->row();
-	int col = item->column();
+void TableView::itemChanged(QTableWidgetItem *item) {
+    if (m_updating)
+        return;
+    int row = item->row();
+    int col = item->column();
     MetaGraph *graph = pDoc->m_meta_graph;
-    AttributeTable& table = graph->getAttributeTable();
-    AttributeTableHandle& tableHandle = graph->getAttributeTableHandle();
-    auto& index = tableHandle.getTableIndex();
-	if(col == 0)
-	{
+    AttributeTable &table = graph->getAttributeTable();
+    AttributeTableHandle &tableHandle = graph->getAttributeTableHandle();
+    auto &index = tableHandle.getTableIndex();
+    if (col == 0) {
         std::vector<int> x;
         x.push_back(index[row].key.value);
-		pDoc->m_meta_graph->setSelSet(x);
-		pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL,QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION, this);
+        pDoc->m_meta_graph->setSelSet(x);
+        pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION, this);
         PrepareCache(m_curr_row);
-	}
-	else
-	{
-         wchar_t *endptr;
-         // first reset contents:
-         double value = wcstod((wchar_t*)item->text().utf16(), &endptr); // AT: Unicode conversion -- this doesn't look safe -- edittext is a CString!
-         if (endptr == (wchar_t*)item->text().utf16()) {
-			QMessageBox::warning(this, tr("Warning"), tr("Cannot convert text to number"), QMessageBox::Ok, QMessageBox::Ok);
+    } else {
+        wchar_t *endptr;
+        // first reset contents:
+        double value = wcstod((wchar_t *)item->text().utf16(),
+                              &endptr); // AT: Unicode conversion -- this doesn't look safe -- edittext is a CString!
+        if (endptr == (wchar_t *)item->text().utf16()) {
+            QMessageBox::warning(this, tr("Warning"), tr("Cannot convert text to number"), QMessageBox::Ok,
+                                 QMessageBox::Ok);
             return;
-         }
+        }
 
-         if (graph && graph->viewingProcessed()) {
+        if (graph && graph->viewingProcessed()) {
             // go for the change:
-            double value2 = index[row].row->getValue(col-1);
+            double value2 = index[row].row->getValue(col - 1);
             if (value2 == 0 || fabs((value / value2) - 1.0) > 1e-5) {
-               index[row].mutable_row->setValue(col-1, value);
-               pDoc->modifiedFlag = true;
+                index[row].mutable_row->setValue(col - 1, value);
+                pDoc->modifiedFlag = true;
             }
 
-			RedoTable();
+            RedoTable();
             // note: this as caller will prevent us from redrawing ourself:
             // could be either new data or new selection, just go for a big redraw:
-            pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA,this);
-		}
-	}
+            pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA, this);
+        }
+    }
 }
 
-void tableView::colum_Sort(int col_id)
-{
-	if (col_id - 1 != pDoc->m_meta_graph->getDisplayedAttribute())
-	{
-		pDoc->m_meta_graph->setDisplayedAttribute(col_id - 1);
-		clearContents();
+void TableView::colum_Sort(int col_id) {
+    if (col_id - 1 != pDoc->m_meta_graph->getDisplayedAttribute()) {
+        pDoc->m_meta_graph->setDisplayedAttribute(col_id - 1);
+        ((MainWindow *)m_mainWindow)->chooseAttributeOnIndex(col_id);
+        clearContents();
         PrepareCache(m_curr_row);
-		return;
+        return;
 
-		RedoTable();
-	}
+        RedoTable();
+    }
 }
 
-void tableView::itemEditChanged(QTableWidgetItem* item)
-{
-	int row = item->row();
-	int col = item->column();
+void TableView::itemEditChanged(QTableWidgetItem *item) {
+    int row = item->row();
+    int col = item->column();
 
     if (col > 0 && col < pDoc->m_meta_graph->getAttributeTable().getNumColumns() + 1) {
-	// don't let them edit a locked attribute
-        if (pDoc->m_meta_graph->getAttributeTable().getColumn(col-1).isLocked()) {
-		   QMessageBox::warning(this, tr("Warning"), tr("This column is locked and cannot be edited"), QMessageBox::Ok, QMessageBox::Ok);
-		}
-	}
+        // don't let them edit a locked attribute
+        if (pDoc->m_meta_graph->getAttributeTable().getColumn(col - 1).isLocked()) {
+            QMessageBox::warning(this, tr("Warning"), tr("This column is locked and cannot be edited"),
+                                 QMessageBox::Ok, QMessageBox::Ok);
+        }
+    }
 }
 
-void tableView::closeEvent(QCloseEvent *event)
-{
-   pDoc->m_view[QGraphDoc::VIEW_TABLE] = NULL;
-   if (!pDoc->OnCloseDocument(QGraphDoc::VIEW_TABLE))
-   {
-	   pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
-	   event->ignore();
-   }
+void TableView::closeEvent(QCloseEvent *event) {
+    pDoc->m_view[QGraphDoc::VIEW_TABLE] = NULL;
+    if (!pDoc->OnCloseDocument(QGraphDoc::VIEW_TABLE)) {
+        pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
+        event->ignore();
+    }
 }
 
-void tableView::resizeEvent(QResizeEvent *event)
-{
-   pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
+void TableView::resizeEvent(QResizeEvent *event) {
+    QTableView::resizeEvent(event);
+    pDoc->m_view[QGraphDoc::VIEW_TABLE] = this;
 }
