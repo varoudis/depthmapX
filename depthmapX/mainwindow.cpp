@@ -1278,15 +1278,6 @@ void MainWindow::OnSelchangingList()
       MetaGraph *graph = m_treeDoc->m_meta_graph;
       if (graph->viewingProcessed()) {
          graph->setDisplayedAttribute(row - 1);
-
-         QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-         for (int i = 0; i < windows.size(); ++i) {
-             TableView *child = qobject_cast<TableView*>(windows.at(i)->widget());
-             if(!child) continue;
-             if(child->pDoc != m_treeDoc) continue;
-             child->RedoTable();
-         }
-
       }
       m_treeDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_FOCUS );
       SetAttributeChecks();

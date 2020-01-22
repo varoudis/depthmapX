@@ -51,6 +51,12 @@ TableView::TableView(Settings &settings, QWidget *parent, QGraphDoc *p) : QTable
     m_initialSize = settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
 }
 
+void TableView::focusInEvent(QFocusEvent *e) {
+    RedoTable();
+    pDoc->SetRedrawFlag(QGraphDoc::VIEW_TABLE, QGraphDoc::REDRAW_DONE);
+    QTableWidget::focusInEvent(e);
+}
+
 void TableView::RedoTable() {
     clear();
 

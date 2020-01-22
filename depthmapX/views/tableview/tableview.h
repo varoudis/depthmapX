@@ -46,6 +46,7 @@ class TableView : public QTableWidget {
     virtual void closeEvent(QCloseEvent *event);
     virtual void resizeEvent(QResizeEvent *event);
     virtual void scrollContentsBy(int dx, int dy);
+    void focusInEvent(QFocusEvent* e);
 
   private:
     void PrepareCache(int to);
