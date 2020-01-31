@@ -72,7 +72,7 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
    removelist.clear();  // always clear this list, it's reused
 }
 
-void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
+void TidyLines::quicktidy(std::map<int, Line>& lines, std::map<int, int>& keys, const QtRegion& region)
 {
    m_region = region;
 
@@ -86,11 +86,14 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
    double tolerance = avglen * 10e-6;
 
    auto iter = lines.begin(), end = lines.end();
+   auto keyIter  = keys.begin();
    for(; iter != end; ) {
        if (iter->second.length() < tolerance) {
            iter = lines.erase(iter);
+           keyIter = keys.erase(keyIter);
        } else {
            ++iter;
+           ++keyIter;
        }
    }
 
@@ -119,6 +122,7 @@ void TidyLines::quicktidy(std::map<int,Line>& lines, const QtRegion& region)
    }
    for(int remove: removelist) {
        lines.erase(remove);
+       keys.erase(remove);
    }
    removelist.clear(); // always clear this list, it's reused}
 }

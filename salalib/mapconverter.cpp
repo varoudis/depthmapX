@@ -54,7 +54,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
 
     // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
     TidyLines tidier;
-    tidier.quicktidy(lines, region);
+    tidier.quicktidy(lines, layers, region);
     if (lines.size() == 0) {
         throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
     }
@@ -125,7 +125,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, region);
+   tidier.quicktidy(lines, keys, region);
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
    }
@@ -336,7 +336,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, region);
+   tidier.quicktidy(lines, layers, region);
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
    }
@@ -405,7 +405,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, region);
+   tidier.quicktidy(lines, keys, region);
 
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
