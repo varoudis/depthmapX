@@ -2,28 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
 	<string>depthmapX</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>depthmapXApplication</string>
-	<key>CFBundleIconFile</key>
-	<string>depthmapX.icns</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleExecutable</key>
-	<string>depthmapX</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.spacegroupucl.depthmapX</string>
-	<key>LSApplicationCategoryType</key>
-	<string>public.app-category.business</string>
-	<key>CFBundleSupportedPlatforms</key>
-	<array>
-		<string>MacOSX</string>
-	</array>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -45,7 +27,36 @@
 			<string>GraphDocument</string>
 		</dict>
 	</array>
-    <key>UTExportedTypeDeclarations</key>
+	<key>CFBundleExecutable</key>
+	<string>depthmapX</string>
+	<key>CFBundleIconFile</key>
+	<string>depthmapX.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.spacegroupucl.depthmapX</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>depthmapX</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.business</string>
+	<key>LSHasLocalizedDisplayName</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>depthmapXApplication</string>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>
@@ -53,7 +64,7 @@
 			<key>UTTypeDescription</key>
 			<string>Graph File</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.spacegroupucl.depthmapX.graph</string>
+			<string>com.spacegroupucl.graph</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
