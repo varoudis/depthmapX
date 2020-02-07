@@ -16,10 +16,10 @@
 
 #include "catch.hpp"
 
-#include <../cliTest/selfcleaningfile.h>
-#include <../genlib/containerutils.h>
-#include <../genlib/readwritehelpers.h>
-#include <../mgraph440/paftl.h>
+#include "../cliTest/selfcleaningfile.h"
+#include "../genlib/containerutils.h"
+#include "../genlib/readwritehelpers.h"
+#include "../mgraph440/paftl.h"
 
 using namespace mgraph440;
 
