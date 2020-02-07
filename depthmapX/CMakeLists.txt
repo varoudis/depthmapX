@@ -75,8 +75,16 @@ if(UNIX AND NOT APPLE)
         add_executable(${depthmapX} ${depthmapX_SRCS} ${UI_HDRS} ${DM_RSRC})
 endif()
 if(APPLE)
+        set(MACOSX_BUNDLE_ICON_FILE depthmapX.icns)
+        set(depthmapX_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/depthmapX.icns)
+        set_source_files_properties(${depthmapX_ICON} PROPERTIES
+               MACOSX_PACKAGE_LOCATION "Resources")
+        set(graph_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/graph.icns)
+        set_source_files_properties(${graph_ICON} PROPERTIES
+               MACOSX_PACKAGE_LOCATION "Resources")
         add_definitions(-DGL_SILENCE_DEPRECATION)
-        add_executable(${depthmapX} MACOSX_BUNDLE ${depthmapX_SRCS} ${UI_HDRS} ${DM_RSRC})
+        add_executable(${depthmapX} MACOSX_BUNDLE ${depthmapX_ICON} ${graph_ICON}
+            ${depthmapX_SRCS} ${UI_HDRS} ${DM_RSRC})
         set_target_properties(${depthmapX} PROPERTIES
             MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist)
 endif(APPLE)
