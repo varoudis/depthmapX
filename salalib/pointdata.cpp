@@ -1633,7 +1633,10 @@ bool PointMap::unmergePoints()
    }
    for (auto& sel: m_selection_set) {
       PixelRef a = sel;
-      unmergePixel(a);
+      Point p = getPoint(a);
+      if(p.getMergePixel() != NoPixel) {
+        unmergePixel(a);
+      }
    }
    clearSel();
    return true;
