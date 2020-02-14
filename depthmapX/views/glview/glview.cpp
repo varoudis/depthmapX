@@ -41,6 +41,7 @@ GLView::GLView(QGraphDoc &pDoc,
     m_background = settings.readSetting(SettingTag::backgroundColour, qRgb(0,0,0)).toInt();
     m_initialSize = m_settings.readSetting(SettingTag::depthmapViewSize, QSize(2000, 2000)).toSize();
     m_antialiasingSamples = settings.readSetting(SettingTag::antialiasingSamples, 0).toInt();
+    m_highlightOnHover = settings.readSetting(SettingTag::highlightOnHover, true).toBool();
 
     if(m_antialiasingSamples) {
         QSurfaceFormat format;
@@ -84,6 +85,7 @@ GLView::~GLView()
     m_visiblePointMap.cleanup();
     m_visibleShapeGraph.cleanup();
     m_visibleDataMap.cleanup();
+    m_hoveredShapes.cleanup();
     doneCurrent();
     m_settings.writeSetting(SettingTag::depthmapViewSize, size());
 }
@@ -110,6 +112,8 @@ void GLView::initializeGL()
     m_visiblePointMap.initializeGL(m_core);
     m_visibleShapeGraph.initializeGL(m_core);
     m_visibleDataMap.initializeGL(m_core);
+    m_hoveredShapes.initializeGL(m_core);
+    m_hoveredPixels.initializeGL(m_core);
 
     if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
          m_visiblePointMap.loadGLObjectsRequiringGLContext(m_pDoc.m_meta_graph->getDisplayedPointMap());
@@ -153,6 +157,11 @@ void GLView::paintGL()
 
         m_datasetChanged = false;
     }
+    if(m_hoverStoreInvalid) {
+        m_hoveredShapes.updateGL(m_core);
+        m_hoveredPixels.updateGL(m_core);
+        m_hoverStoreInvalid = false;
+    }
 
     m_axes.paintGL(m_mProj, m_mView, m_mModel);
 
@@ -167,15 +176,24 @@ void GLView::paintGL()
 
     if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWDATA) {
         m_visibleDataMap.paintGL(m_mProj, m_mView, m_mModel);
+        glLineWidth(10);
+        m_hoveredShapes.paintGL(m_mProj, m_mView, m_mModel);
+        glLineWidth(1);
     }
 
     m_visibleDrawingLines.paintGL(m_mProj, m_mView, m_mModel);
 
     if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
         m_visiblePointMap.paintGLOverlay(m_mProj, m_mView, m_mModel);
+        glLineWidth(3);
+        m_hoveredPixels.paintGL(m_mProj, m_mView, m_mModel);
+        glLineWidth(1);
     }
     if(m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWAXIAL) {
         m_visibleShapeGraph.paintGLOverlay(m_mProj, m_mView, m_mModel);
+        glLineWidth(10);
+        m_hoveredShapes.paintGL(m_mProj, m_mView, m_mModel);
+        glLineWidth(1);
     }
 
 
@@ -255,6 +273,7 @@ void GLView::mouseReleaseEvent(QMouseEvent *event)
             Qt::KeyboardModifiers keyMods = QApplication::keyboardModifiers();
             m_pDoc.m_meta_graph->setCurSel( r, keyMods & Qt::ShiftModifier );
             ((MainWindow *) m_pDoc.m_mainFrame)->updateToolbar();
+            highlightHoveredItems(r);
             break;
         }
         case MOUSE_MODE_ZOOM_IN:
@@ -478,6 +497,12 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 
     Point2f worldPoint = getWorldPoint(event->pos());
 
+    if(m_mouseDragRect.isNull() &&
+            !((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT &&
+              m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA)) {
+        highlightHoveredItems(QtRegion(worldPoint, worldPoint));
+    }
+
     if (event->buttons() & Qt::RightButton
             || (event->buttons() & Qt::LeftButton && m_mouseMode == MOUSE_MODE_PAN)) {
         panBy(dx, dy);
@@ -489,13 +514,35 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
             m_mouseDragRect.setX(lastWorldPoint.x);
             m_mouseDragRect.setY(lastWorldPoint.y);
         }
+
         m_mouseDragRect.setWidth(worldPoint.x - m_mouseDragRect.x());
         m_mouseDragRect.setHeight(worldPoint.y - m_mouseDragRect.y());
+
+        QtRegion hoverRegion;
+        hoverRegion.bottom_left.x = std::min(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x());
+        hoverRegion.bottom_left.y = std::min(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y());
+        hoverRegion.top_right.x = std::max(m_mouseDragRect.bottomRight().x(),m_mouseDragRect.topLeft().x());
+        hoverRegion.top_right.y = std::max(m_mouseDragRect.bottomRight().y(),m_mouseDragRect.topLeft().y());
+        highlightHoveredItems(hoverRegion);
         update();
     }
     if((m_mouseMode & MOUSE_MODE_SECOND_POINT) == MOUSE_MODE_SECOND_POINT)
     {
         m_tempSecondPoint = worldPoint;
+        if(m_highlightOnHover && m_pDoc.m_meta_graph->getViewClass() & MetaGraph::VIEWVGA) {
+            PointMap &map = m_pDoc.m_meta_graph->getDisplayedPointMap();
+            QtRegion selectionBounds = map.getSelBounds();
+            PixelRef worldPixel = map.pixelate(worldPoint, true);
+            PixelRef boundsPixel = map.pixelate(Point2f(selectionBounds.top_right.x,
+                                                        selectionBounds.bottom_left.y), true);
+            std::set<int> &selection = map.getSelSet();
+            std::set<PixelRef> offsetSelection;
+            for(int ref: selection) {
+                PixelRef pixelRef = PixelRef(ref) + worldPixel - boundsPixel;
+                offsetSelection.insert(pixelRef);
+            }
+            highlightHoveredPixels(map, offsetSelection);
+        }
         update();
     }
     m_mouseLastPos = event->pos();
@@ -552,6 +599,172 @@ bool GLView::eventFilter(QObject *object, QEvent *e)
     }
 
     return QObject::eventFilter(object, e);
+}
+
+void GLView::highlightHoveredItems(const QtRegion &region) {
+    if (!m_highlightOnHover) return;
+    if (m_pDoc.m_meta_graph->viewingProcessedPoints()) {
+       highlightHoveredPixels(m_pDoc.m_meta_graph->getDisplayedPointMap(), region);
+    }
+    else if (m_pDoc.m_meta_graph->viewingProcessedLines()) {
+        highlightHoveredShapes(m_pDoc.m_meta_graph->getDisplayedShapeGraph(), region);
+    }
+    else if (m_pDoc.m_meta_graph->viewingProcessedShapes()) {
+        highlightHoveredShapes(m_pDoc.m_meta_graph->getDisplayedDataMap(), region);
+    }
+
+}
+
+void GLView::highlightHoveredPixels(const PointMap &map, const QtRegion &region) {
+    // n.b., assumes constrain set to true (for if you start the selection off the grid)
+    PixelRef s_bl = map.pixelate(region.bottom_left, true);
+    PixelRef s_tr = map.pixelate(region.top_right, true);
+    std::vector<Point> points;
+    PixelRef hoverPixel = -1;
+    for (short i = s_bl.x; i <= s_tr.x; i++) {
+       for (short j = s_bl.y; j <= s_tr.y; j++) {
+           PixelRef ref = PixelRef(i, j);
+           if(map.includes(ref)) {
+               const Point &p = map.getPoint(ref);
+               if(p.filled()) {
+                   points.push_back(p);
+                   hoverPixel = ref;
+               }
+           }
+       }
+    }
+
+    if(!points.empty()) {
+        // do not redo the whole thing if we are still hovering the same pixel
+        if(points.size() == 1 && hoverPixel == m_lastHoverPixel) return;
+        std::vector<SimpleLine> lines;
+        int i = 0;
+        for (Point point: points) {
+            const Point2f &loc = point.getLocation();
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            i++;
+        }
+        m_hoveredPixels.loadLineData(lines, qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = true;
+    } else if (m_hoverHasShapes) {
+        m_hoveredPixels.loadLineData(std::vector<SimpleLine>(), qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = false;
+    }
+
+    if (m_hoverStoreInvalid) {
+        update();
+    }
+}
+
+void GLView::highlightHoveredPixels(const PointMap &map, const std::set<PixelRef> &refs) {
+    // n.b., assumes constrain set to true (for if you start the selection off the grid)
+    std::vector<Point> points;
+    PixelRef hoverPixel = -1;
+    for (PixelRef ref: refs) {
+        if(map.includes(ref)) {
+            const Point &p = map.getPoint(ref);
+            if(p.filled()) {
+                points.push_back(p);
+                hoverPixel = ref;
+            }
+        }
+    }
+
+    if(!points.empty()) {
+        // do not redo the whole thing if we are still hovering the same pixel
+        if(points.size() == 1 && hoverPixel == m_lastHoverPixel) return;
+        std::vector<SimpleLine> lines;
+        int i = 0;
+        for (Point point: points) {
+            const Point2f &loc = point.getLocation();
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x - map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y + map.getSpacing()*0.5,
+                                       loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            lines.push_back(SimpleLine(loc.x + map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5,
+                                       loc.x - map.getSpacing()*0.5, loc.y - map.getSpacing()*0.5));
+            i++;
+        }
+        m_hoveredPixels.loadLineData(lines, qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = true;
+    } else if (m_hoverHasShapes) {
+        m_hoveredPixels.loadLineData(std::vector<SimpleLine>(), qRgb(255, 255, 0));
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = false;
+    }
+
+    if (m_hoverStoreInvalid) {
+        update();
+    }
+}
+
+void GLView::highlightHoveredShapes(const ShapeMap &map, const QtRegion &region) {
+
+    auto shapesInRegion = map.getShapesInRegion(region);
+    if(!shapesInRegion.empty()) {
+        std::vector<std::pair<SimpleLine, PafColor>> colouredLines;
+        std::vector<std::pair<std::vector<Point2f>, PafColor>> colouredPolygons;
+        std::vector<std::pair<Point2f, PafColor>> colouredPoints;
+        for (auto keyShape: shapesInRegion) {
+            AttributeKey key = AttributeKey(keyShape.first);
+            const SalaShape& shape = keyShape.second;
+
+            const AttributeRow &row = map.getAttributeTable().getRow(key);
+            PafColor colour = dXreimpl::getDisplayColor(key, row, map.getAttributeTableHandle(), true);
+
+
+            if (shape.isLine()) {
+                colouredLines.push_back(std::make_pair(SimpleLine(shape.getLine()),
+                                                       colour));
+            } else if (shape.isPolyLine()) {
+                for (size_t n = 0; n < shape.m_points.size() - 1; n++) {
+                    colouredLines.push_back(std::make_pair(SimpleLine(shape.m_points[n],
+                                                                      shape.m_points[n + 1]),
+                                colour));
+                }
+            } else if (shape.isPolygon()) {
+                for (size_t n = 0; n < shape.m_points.size() - 1; n++) {
+                    colouredLines.push_back(std::make_pair(SimpleLine(shape.m_points[n],
+                                                                      shape.m_points[n + 1]),
+                                PafColor(1, 1, 0)));
+                }
+                colouredLines.push_back(std::make_pair(SimpleLine(shape.m_points.back(),
+                                                                  shape.m_points.front()),
+                            PafColor(1, 1, 0)));
+            } else {
+                if (shape.isPoint()) {
+                    colouredPoints.push_back(std::make_pair(shape.getCentroid(), PafColor(1, 0, 0)));
+                }
+            }
+        }
+        m_hoveredShapes.loadGLObjects(colouredLines, colouredPolygons, colouredPoints,
+                                      8, map.getSpacing()*0.1);
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = true;
+    } else if (m_hoverHasShapes) {
+        m_hoveredShapes.loadGLObjects(std::vector<std::pair<SimpleLine, PafColor>>(),
+                                      std::vector<std::pair<std::vector<Point2f>, PafColor>>(),
+                                      std::vector<std::pair<Point2f, PafColor>>(),
+                                      8, map.getSpacing()*0.1);
+        m_hoverStoreInvalid = true;
+        m_hoverHasShapes = false;
+    }
+
+    if (m_hoverStoreInvalid) {
+        update();
+    }
 }
 
 void GLView::zoomBy(float dzf, int mouseX, int mouseY)

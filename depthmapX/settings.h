@@ -36,6 +36,7 @@ namespace SettingTag
     const QString licenseAccepted = "licenseAccepted";
     const QString depthmapViewSize = "depthmapViewSize";
     const QString legacyMapWindow = "legacyMapWindow";
+    const QString highlightOnHover = "highlightOnHover";
 }
 
 /**

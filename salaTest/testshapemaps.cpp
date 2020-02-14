@@ -102,11 +102,11 @@ TEST_CASE("Testing ShapeMap::getAllShapes variants")
         shapeMap->overrideDisplayedAttribute(-2);
         shapeMap->setDisplayedAttribute(-1); // displayed attribute is shape_ref
 
-        std::map<std::vector<Point2f>, PafColor> colouredPolygons = shapeMap->getAllPolygonsWithColour();
+        std::vector<std::pair<std::vector<Point2f>, PafColor>> colouredPolygons = shapeMap->getAllPolygonsWithColour();
 
         REQUIRE(colouredPolygons.size() == 1);
 
-        std::map<std::vector<Point2f>, PafColor>::const_iterator iter = colouredPolygons.begin();
+        auto iter = colouredPolygons.begin();
         const std::vector<Point2f> vertices = iter->first;
         const PafColor colour = iter->second;
 

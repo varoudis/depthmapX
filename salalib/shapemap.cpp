@@ -2150,10 +2150,9 @@ double ShapeMap::getLocationValue(const Point2f &point) const {
     return (x == -1) ? -2.0 : val; // -2.0 is returned when point cannot be associated with a poly
 }
 
-bool ShapeMap::setCurSel(QtRegion &r, bool add) {
-    if (add == false) {
-        clearSel();
-    }
+const std::map<int, SalaShape> ShapeMap::getShapesInRegion(const QtRegion &r) const {
+
+    std::map<int, SalaShape> shapesInRegion;
 
     if (r.bottom_left == r.top_right) {
         // note: uses index not key
@@ -2163,13 +2162,7 @@ bool ShapeMap::setCurSel(QtRegion &r, bool add) {
             index = getClosestOpenGeom(r.bottom_left);
         }
         if (index != -1) {
-            auto shapeIter = getShapeRefFromIndex(index);
-            if (m_selection_set.insert(shapeIter->first).second) {
-                auto &row = m_attributes->getRow(AttributeKey(shapeIter->first));
-                row.setSelection(true);
-            }
-            shapeIter->second.m_selected = true;
-            m_selection = true;
+            shapesInRegion.insert(*getShapeRefFromIndex(index));
         }
     } else {
         PixelRef bl = pixelate(r.bottom_left);
@@ -2178,28 +2171,35 @@ bool ShapeMap::setCurSel(QtRegion &r, bool add) {
             for (int j = bl.y; j <= tr.y; j++) {
                 const std::vector<ShapeRef> &shapeRefs =
                     m_pixel_shapes(static_cast<size_t>(j), static_cast<size_t>(i));
-                for (const ShapeRef &shape : shapeRefs) {
+                for (const ShapeRef &shapeRef : shapeRefs) {
                     // relies on indices of shapes and attributes being aligned
-                    auto &shapeIter = m_shapes.at(shape.m_shape_ref);
-                    if (intersect_region(r, shapeIter.m_region)) {
-                        shapeIter.m_selected = true;
-                        m_selection = true;
+                    auto shape = m_shapes.find(shapeRef.m_shape_ref);
+                    if(shape != m_shapes.end()) {
+                        shapesInRegion.insert(*shape);
                     }
-                }
-            }
-        }
-        // actually probably often faster to set flag and later record list:
-        for (auto shape : m_shapes) {
-            if (shape.second.m_selected) {
-                if (m_selection_set.insert(shape.first).second) {
-                    auto &row = m_attributes->getRow(AttributeKey(shape.first));
-                    row.setSelection(true);
                 }
             }
         }
     }
 
-    return m_selection;
+    return shapesInRegion;
+}
+
+bool ShapeMap::setCurSel(QtRegion &r, bool add) {
+    if (add == false) {
+        clearSel();
+    }
+
+    std::map<int, SalaShape> shapesInRegion = getShapesInRegion(r);
+    for (auto shape: shapesInRegion) {
+        shape.second.m_selected = true;
+        if (m_selection_set.insert(shape.first).second) {
+            auto &row = m_attributes->getRow(AttributeKey(shape.first));
+            row.setSelection(true);
+        }
+    }
+
+    return !shapesInRegion.empty();
 }
 
 // this version is used by setSelSet in MetaGraph, ultimately called from CTableView and PlotView
@@ -3319,8 +3319,8 @@ std::vector<std::pair<SimpleLine, PafColor>> ShapeMap::getAllLinesWithColour() {
     return colouredLines;
 }
 
-std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
-    std::map<std::vector<Point2f>, PafColor> colouredPolygons;
+std::vector<std::pair<std::vector<Point2f>, PafColor>> ShapeMap::getAllPolygonsWithColour() {
+    std::vector<std::pair<std::vector<Point2f>, PafColor>> colouredPolygons;
     std::map<int, SalaShape> &allShapes = getAllShapes();
     for (auto &refShape : allShapes) {
         SalaShape &shape = refShape.second;
@@ -3333,7 +3333,7 @@ std::map<std::vector<Point2f>, PafColor> ShapeMap::getAllPolygonsWithColour() {
             PafColor colour(dXreimpl::getDisplayColor(AttributeKey(refShape.first),
                                                       m_attributes->getRow(AttributeKey(refShape.first)),
                                                       *m_attribHandle.get(), true));
-            colouredPolygons.insert(std::make_pair(vertices, colour));
+            colouredPolygons.push_back(std::make_pair(vertices, colour));
         }
     }
     return colouredPolygons;

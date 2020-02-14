@@ -166,6 +166,9 @@ public:
    char getGridConnections() const
       { return m_grid_connections; }
    float getBinDistance(int i);
+   const Point2f &getLocation() const {
+       return m_location;
+   }
 public:
    std::istream &read(std::istream &stream);
    std::ostream& write(std::ostream &stream);

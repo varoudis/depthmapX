@@ -38,7 +38,7 @@
 class GLPolygons
 {
 public:
-    void loadPolygonData(const std::map<std::vector<Point2f>, PafColor>& colouredPolygons);
+    void loadPolygonData(const std::vector<std::pair<std::vector<Point2f>, PafColor> > &colouredPolygons);
     void paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, const QMatrix4x4 &m_mModel);
     void initializeGL(bool m_core);
     void updateGL(bool m_core);
