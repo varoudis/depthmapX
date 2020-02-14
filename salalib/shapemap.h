@@ -566,7 +566,7 @@ private:
 #define __min(x, y) ((x < y) ? x : y)
 #endif
     //
-    const double getSpacing() const {
+    double getSpacing() const {
         return __max(m_region.width(), m_region.height()) / (10 * log((double)10 + m_shapes.size()));
     }
     //
