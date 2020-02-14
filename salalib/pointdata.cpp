@@ -666,16 +666,13 @@ void PointMap::outputConnectionsAsCSV(std::ostream& myout, std::string delim)
             {
                 PixelRef pix(i,j);
                 seenPix.insert(pix);
-                for (int b = 0; b < 32; b++)
+                PixelRefVector hood;
+                pnt.m_node->contents(hood);
+                for(PixelRef &p: hood)
                 {
-                    PixelRefVector hood;
-                    pnt.m_node->bin(b).contents(hood);
-                    for(size_t p = 0; p < hood.size(); p++)
+                    if(!(std::find(seenPix.begin(), seenPix.end(), p) != seenPix.end()) && getPoint(p).filled())
                     {
-                        if(!(std::find(seenPix.begin(), seenPix.end(), hood[p]) != seenPix.end()))
-                        {
-                            myout << std::endl << pix << delim << hood[p];
-                        }
+                        myout << std::endl << pix << delim << p;
                     }
                 }
             }
@@ -1406,7 +1403,7 @@ bool PointMap::sparkPixel2(PixelRef curs, int make, double maxdist)
       // from immediately around centre
       // note regionate border must be greater than tolerance squared used in interection testing later
       double border = m_spacing * 1e-10;
-      QtRegion viewport0 = regionate(curs, 1e-10); 
+      QtRegion viewport0 = regionate(curs, 1e-10);
       switch (q) {
       case 0:
          viewport0.top_right.x = centre0.x;

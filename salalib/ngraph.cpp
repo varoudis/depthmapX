@@ -389,15 +389,6 @@ bool Bin::containsPoint(const PixelRef p) const
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void Bin::contents(PixelRefVector& hood)
-{
-   first();
-   while (!is_tail()) {
-      depthmapX::addIfNotExists(hood, m_curpix);
-      next();
-   }
-}
-
 void Bin::first() const
 {
    m_curvec = 0;
