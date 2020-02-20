@@ -72,35 +72,32 @@ void TidyLines::tidy(std::vector<Line>& lines, const QtRegion& region)
    removelist.clear();  // always clear this list, it's reused
 }
 
-void TidyLines::quicktidy(std::map<int, Line>& lines, std::map<int, int>& keys, const QtRegion& region)
+void TidyLines::quicktidy(std::map<int, std::pair<Line, int>>& lines, const QtRegion& region)
 {
    m_region = region;
 
    double avglen = 0.0;
 
    for (auto line: lines) {
-      avglen += line.second.length();
+      avglen += line.second.first.length();
    }
    avglen /= lines.size();
 
    double tolerance = avglen * 10e-6;
 
    auto iter = lines.begin(), end = lines.end();
-   auto keyIter  = keys.begin();
    for(; iter != end; ) {
-       if (iter->second.length() < tolerance) {
+       if (iter->second.first.length() < tolerance) {
            iter = lines.erase(iter);
-           keyIter = keys.erase(keyIter);
        } else {
            ++iter;
-           ++keyIter;
        }
    }
 
    // now load up m_lines...
    initLines(lines.size(),m_region.bottom_left,m_region.top_right);
    for (auto line: lines) {
-      addLine(line.second);
+      addLine(line.second.first);
    }
    sortPixelLines();
 
@@ -109,7 +106,7 @@ void TidyLines::quicktidy(std::map<int, Line>& lines, std::map<int, int>& keys, 
    int i = -1;
    for (auto line: lines) {
       i++;
-      PixelRef start = pixelate(line.second.start());
+      PixelRef start = pixelate(line.second.first.start());
       auto& pixel_lines = m_pixel_lines(static_cast<size_t>(start.y), static_cast<size_t>(start.x));
       for (int k: pixel_lines) {
          if (k > int(i) && approxeq(m_lines[i].line.start(),m_lines[k].line.start(),tolerance)) {
@@ -122,7 +119,6 @@ void TidyLines::quicktidy(std::map<int, Line>& lines, std::map<int, int>& keys, 
    }
    for(int remove: removelist) {
        lines.erase(remove);
-       keys.erase(remove);
    }
    removelist.clear(); // always clear this list, it's reused}
 }

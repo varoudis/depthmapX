@@ -16,8 +16,8 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
     }
 
     QtRegion region;
-    std::map<int,Line> lines;  // map required for tidy lines, otherwise acts like vector
-    std::map<int,int> layers;  // this is used to say which layer it originated from
+    std::map<int, std::pair<Line, int>> lines;  // map required for tidy lines, otherwise acts like vector
+    // this is used to say which layer it originated from
 
     bool recordlayer = false;
 
@@ -35,8 +35,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
                 }
                 std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
                 for (const auto& line: newLines) {
-                    lines.insert(std::make_pair(count, Line(line.start(), line.end())));
-                    layers.insert(std::make_pair(count,j));
+                    lines.insert(std::make_pair(count, std::make_pair(Line(line.start(), line.end()), j)));
                     count ++;
                 }
                 pixel.setShow(false);
@@ -54,7 +53,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
 
     // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
     TidyLines tidier;
-    tidier.quicktidy(lines, layers, region);
+    tidier.quicktidy(lines, region);
     if (lines.size() == 0) {
         throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
     }
@@ -77,9 +76,9 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToAxial(Communicator *co
     for (auto & line: lines) {
         if (recordlayer)
         {
-            layerAttributes[layerCol] = float(layers.find(line.first)->second);
+            layerAttributes[layerCol] = float(line.second.second);
         }
-        usermap->makeLineShape(line.second, false, false, layerAttributes );
+        usermap->makeLineShape(line.second.first, false, false, layerAttributes );
     }
 
     usermap->makeConnections();
@@ -100,8 +99,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
 
    // add all visible layers to the set of polygon lines...
 
-   std::map<int,Line> lines;
-   std::map<int,int> keys;
+   std::map<int, std::pair<Line, int>> lines;
 
    //m_region = shapemap.getRegion();
    QtRegion region = shapemap.getRegion();
@@ -114,8 +112,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
 
       std::vector<Line> shapeLines = shape.second.getAsLines();
       for(Line line: shapeLines) {
-         lines.insert(std::make_pair(count,line));
-         keys.insert(std::make_pair(count,key));
+         lines.insert(std::make_pair(count, std::make_pair(line, key)));
          count++;
       }
    }
@@ -125,7 +122,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, keys, region);
+   tidier.quicktidy(lines, region);
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
    }
@@ -178,17 +175,15 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToAxial(Communicator *comm,
    int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
 
     AttributeTable& input = shapemap.getAttributeTable();
-    auto keyIter = keys.begin();
     for (auto& line: lines) {
         if (copydata){
-            auto& row = input.getRow(AttributeKey(keyIter->second));
+            auto& row = input.getRow(AttributeKey(line.second.second));
             for (auto inOutColumn: inOutColumns){
                 extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
             }
         }
-        extraAttr[dataMapShapeRefCol] = keyIter->second;
-        usermap->makeLineShape(line.second, false, false, extraAttr);
-        ++keyIter;
+        extraAttr[dataMapShapeRefCol] = line.second.second;
+        usermap->makeLineShape(line.second.first, false, false, extraAttr);
     }
 
    // n.b. make connections also initialises attributes
@@ -298,8 +293,9 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
       comm->CommPostMessage( Communicator::CURRENT_STEP, 1 );
    }
 
-   std::map<int,Line> lines;
-   std::map<int,int> layers;  // this is used to say which layer it originated from
+   // second number in internal pair is used to say which layer it originated from
+   std::map<int, std::pair<Line, int>> lines;
+
    bool recordlayer = false;
 
    QtRegion region;
@@ -318,8 +314,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
             }
             std::vector<SimpleLine> newLines = pixel.getAllShapesAsLines();
             for (const auto& line: newLines) {
-               lines.insert(std::make_pair(count, Line(line.start(), line.end())));
-               layers.insert(std::make_pair(count,j));
+               lines.insert(std::make_pair(count, std::make_pair(Line(line.start(), line.end()), j)));
                count++;
             }
             pixel.setShow(false);
@@ -336,7 +331,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, layers, region);
+   tidier.quicktidy(lines, region);
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
    }
@@ -359,9 +354,9 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDrawingToSegment(Communicator *
    for (auto & line: lines) {
       if (recordlayer)
       {
-          layerAttributes[layerCol] = float(layers.find(line.first)->second);
+          layerAttributes[layerCol] = float(line.second.second);
       }
-      usermap->makeLineShape(line.second, false, false, layerAttributes);
+      usermap->makeLineShape(line.second.first, false, false, layerAttributes);
    }
 
    // make it!
@@ -380,8 +375,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
       comm->CommPostMessage( Communicator::CURRENT_STEP, 1 );
    }
 
-   std::map<int,Line> lines;
-   std::map<int,int> keys;
+   std::map<int, std::pair<Line, int>> lines;
 
    // no longer requires m_region
    //m_region = shapemap.getRegion();
@@ -394,8 +388,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
       int key = shape.first;
       std::vector<Line> shapeLines = shape.second.getAsLines();
       for(Line line: shapeLines) {
-         lines.insert(std::make_pair(count,line));
-         keys.insert(std::make_pair(count,key));
+         lines.insert(std::make_pair(count, std::make_pair(line, key)));
          count++;
       }
    }
@@ -405,7 +398,7 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
 
    // quick tidy removes very short and duplicate lines, but does not merge overlapping lines
    TidyLines tidier;
-   tidier.quicktidy(lines, keys, region);
+   tidier.quicktidy(lines, region);
 
    if (lines.size() == 0) {
        throw depthmapX::RuntimeException("No lines found after removing short and duplicates");
@@ -464,17 +457,15 @@ std::unique_ptr<ShapeGraph> MapConverter::convertDataToSegment(Communicator *com
    int dataMapShapeRefCol = usermap->getAttributeTable().getOrInsertColumn("Data Map Ref");
 
     AttributeTable& input = shapemap.getAttributeTable();
-    auto keyIter = keys.begin();
     for (auto& line: lines) {
         if (copydata){
-            auto& row = input.getRow(AttributeKey(keyIter->second));
+            auto& row = input.getRow(AttributeKey(line.second.second));
             for (auto inOutColumn: inOutColumns){
                 extraAttr[inOutColumn.second] = row.getValue(inOutColumn.first);
             }
         }
-        extraAttr[dataMapShapeRefCol] = keyIter->second;
-        usermap->makeLineShape(line.second, false, false, extraAttr);
-        ++keyIter;
+        extraAttr[dataMapShapeRefCol] = line.second.second;
+        usermap->makeLineShape(line.second.first, false, false, extraAttr);
     }
 
    // start to be a little bit more efficient about memory now we are hitting the limits

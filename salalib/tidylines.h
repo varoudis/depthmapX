@@ -10,5 +10,5 @@ class TidyLines : public SpacePixel
 {
 public:
    void tidy(std::vector<Line> &lines, const QtRegion& region);
-   void quicktidy(std::map<int, Line> &lines, std::map<int, int> &keys, const QtRegion& region);
+   void quicktidy(std::map<int, std::pair<Line, int> > &lines, const QtRegion& region);
 };
