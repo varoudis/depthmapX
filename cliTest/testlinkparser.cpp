@@ -54,11 +54,6 @@ TEST_CASE("LINK args invalid", "")
         LinkParser p;
         REQUIRE_THROWS_WITH(p.parse(ah.argc(), ah.argv()), Catch::Contains("Invalid link provided"));
     }
-    {
-        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8", "-lm", "unlink", "-lmt", "pointmaps"};
-        LinkParser p;
-        REQUIRE_THROWS_WITH(p.parse(int(ah.argc()), ah.argv()), Catch::Contains("unlinking is not supported for pointmaps"));
-    }
 }
 
 TEST_CASE("LINK args valid", "valid")
@@ -73,6 +68,7 @@ TEST_CASE("LINK args valid", "valid")
         cmdP.parse(int(ah.argc()), ah.argv());
         REQUIRE(cmdP.getManualLinks().size() == 1);
         REQUIRE(cmdP.getManualLinks()[0] == "1.2,3.4,5.6,7.8");
+        REQUIRE(cmdP.getLinkMode() == cmdP.LinkMode::LINK);
     }
 
     {
@@ -82,6 +78,17 @@ TEST_CASE("LINK args valid", "valid")
         REQUIRE(cmdP.getManualLinks().size() == 2);
         REQUIRE(cmdP.getManualLinks()[0] == "1.2,3.4,5.6,7.8");
         REQUIRE(cmdP.getManualLinks()[1] == "0.1,0.2,0.3,0.4");
+        REQUIRE(cmdP.getLinkMode() == cmdP.LinkMode::LINK);
     }
 
+    {
+        ArgumentHolder ah{"prog", "-f", "infile", "-o", "outfile", "-m", "LINK", "-lnk", "1.2,3.4,5.6,7.8", "-lnk", "0.1,0.2,0.3,0.4",
+                          "-lm", "unlink", "-lmt", "pointmaps"};
+        LinkParser cmdP;
+        cmdP.parse(ah.argc(), ah.argv());
+        REQUIRE(cmdP.getManualLinks().size() == 2);
+        REQUIRE(cmdP.getManualLinks()[0] == "1.2,3.4,5.6,7.8");
+        REQUIRE(cmdP.getManualLinks()[1] == "0.1,0.2,0.3,0.4");
+        REQUIRE(cmdP.getLinkMode() == cmdP.LinkMode::UNLINK);
+    }
 }
