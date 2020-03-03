@@ -1069,68 +1069,84 @@ void MainWindow::updateActiveWindows()
         {
         case ID_MAPBAR_ITEM_SELECT:
             SelectButton->setChecked(true);
+            activeMapView()->OnEditSelect();
             break;
         case ID_MAPBAR_ITEM_MOVE:
             DragButton->setChecked(true);
+            activeMapView()->OnViewPan();
             break;
         case ID_MAPBAR_ITEM_ZOOM_IN:
             zoomToolButton->setIcon(QIcon(":/images/win/b-5-3.png"));
             zoomToolButton->setChecked(true);
             zoomInAct->setChecked(true);
+            activeMapView()->OnViewZoomIn();
             break;
         case ID_MAPBAR_ITEM_ZOOM_OUT:
             zoomToolButton->setIcon(QIcon(":/images/win/b-5-4.png"));
             zoomToolButton->setChecked(true);
             zoomOutAct->setChecked(true);
+            activeMapView()->OnViewZoomOut();
             break;
         case ID_MAPBAR_ITEM_FILL:
             fillColorToolButton->setChecked(true);
+            activeMapView()->OnEditFill();
             break;
         case ID_MAPBAR_ITEM_SEMIFILL:
             fillColorToolButton->setChecked(true);
+            activeMapView()->OnEditSemiFill();
             break;
         case ID_MAPBAR_ITEM_AUGMENT_FILL: // AV TV
             fillColorToolButton->setChecked(true);
+            activeMapView()->OnEditAugmentFill();
             break;
         case ID_MAPBAR_ITEM_PENCIL:
             SelectPenButton->setChecked(true);
+            activeMapView()->OnEditPencil();
             break;
         case ID_MAPBAR_ITEM_LINETOOL:
             lineToolButton->setIcon(QIcon(":/images/win/b-5-10.png"));
             lineToolButton->setChecked(true);
             SelectLineAct->setChecked(true);
+            activeMapView()->OnEditLineTool();
             break;
         case ID_MAPBAR_ITEM_POLYGON:
             lineToolButton->setIcon(QIcon(":/images/win/b-5-11.png"));
             lineToolButton->setChecked(true);
             SelectPolyLineAct->setChecked(true);
+            activeMapView()->OnEditPolygonTool();
             break;
         case ID_MAPBAR_ITEM_ISOVIST:
             newisoToolButton->setIcon(QIcon(":/images/win/b-5-12.png"));
             newisoToolButton->setChecked(true);
             MakeIosAct->setChecked(true);
+            activeMapView()->OnModeIsovist();
             break;
         case ID_MAPBAR_ITEM_HALFISOVIST:
             newisoToolButton->setIcon(QIcon(":/images/win/b-5-13.png"));
             newisoToolButton->setChecked(true);
             PartialMakeIosAct->setChecked(true);
+            activeMapView()->OnModeTargetedIsovist();
             break;
         case ID_MAPBAR_ITEM_AL2:
             AxialMapButton->setChecked(true);
+            activeMapView()->OnModeSeedAxial();
             break;
         case ID_MAPBAR_ITEM_JOIN:
             JoinToolButton->setIcon(QIcon(":/images/win/b-5-16.png"));
             JoinToolButton->setChecked(true);
             JoinAct->setChecked(true);
+            activeMapView()->OnModeJoin();
             break;
         case ID_MAPBAR_ITEM_UNJOIN:
             JoinToolButton->setIcon(QIcon(":/images/win/b-5-17.png"));
             JoinToolButton->setChecked(true);
             JoinUnlinkAct->setChecked(true);
+            activeMapView()->OnModeUnjoin();
             break;
         default:
             SelectButton->setChecked(true);
             SelectButton->setChecked(false);
+            activeMapView()->OnEditSelect();
             break;
         }
         QGraphDoc* m_p = activeMapDoc();
