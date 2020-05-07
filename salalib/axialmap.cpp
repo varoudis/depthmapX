@@ -424,75 +424,116 @@ void ShapeGraph::unlinkFromShapeMap(const ShapeMap& shapemap)
 
 // Method 1: direct linkage of endpoints where they touch
 
-void ShapeGraph::makeNewSegMap()
-{
-   // now make a connection set from the ends of lines:
-   std::vector<Connector> connectionset;
-   std::map<int,Line> lineset;
-   for (auto shape: m_shapes) {
-      if (shape.second.isLine()) {
-         connectionset.push_back(Connector());
-         lineset[shape.first] = shape.second.getLine();
-      }
-   }
+void ShapeGraph::makeNewSegMap(Communicator *comm) {
+    // now make a connection set from the ends of lines:
+    struct LineConnector {
+        const Line &m_line;
+        Connector &m_connector;
+        int m_index;
+        LineConnector(const Line &line, Connector &connector, int index)
+            : m_line(line), m_connector(connector), m_index(index) {}
+    };
 
-   double maxdim = __max(m_region.width(),m_region.height());
+    std::vector<Connector> connectionset;
+    for (auto &shape : m_shapes) {
+        if (shape.second.isLine()) {
+            connectionset.emplace_back();
+        }
+    }
+    std::map<size_t, LineConnector> lineConnectors;
+    auto connectionIter = connectionset.begin();
+    int connectionIdx = 0;
+    for (auto &shape : m_shapes) {
+        if (shape.second.isLine()) {
+            lineConnectors.insert(std::make_pair(
+                shape.first, LineConnector(shape.second.getLine(), *connectionIter, connectionIdx)));
+            connectionIter++;
+            connectionIdx++;
+        }
+    }
 
-   int seg_a = -1;
-   for (auto seg_a_line: lineset) {
-       seg_a++;
-      // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
-      PixelRef pix1 = pixelate(seg_a_line.second.t_start());
-      std::vector<ShapeRef> &shapes1 = m_pixel_shapes(static_cast<size_t>(pix1.y),
-                                                      static_cast<size_t>(pix1.x));
-      for (auto& shape: shapes1) {
-         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
-         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
-         if (seg_b_iter != lineset.end() && seg_a < seg_b) {
-            Point2f alpha = seg_a_line.second.vector();
-            Point2f beta  = seg_b_iter->second.vector();
-            alpha.normalise();
-            beta.normalise();
-            if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
-               float x = float(2.0 * acos(__min(__max(-dot(alpha,beta),-1.0),1.0)) / M_PI);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_back_segconns, SegmentRef(1,seg_b), x);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(1,seg_a), x);
-            }
-            if (approxeq(seg_a_line.second.t_start(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
-               float x = float(2.0 * acos(__min(__max(-dot(alpha,-beta),-1.0),1.0)) / M_PI);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_back_segconns, SegmentRef(-1,seg_b), x);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_forward_segconns, SegmentRef(1,seg_a), x);
-            }
-         }
-      }
+    time_t atime = 0;
+    if (comm) {
+        qtimer(atime, 0);
+        comm->CommPostMessage(Communicator::NUM_RECORDS, lineConnectors.size());
+    }
 
-      PixelRef pix2 = pixelate(seg_a_line.second.t_end());
-      std::vector<ShapeRef> &shapes2 = m_pixel_shapes(static_cast<size_t>(pix2.y),
-                                                      static_cast<size_t>(pix2.x));
-      for (auto& shape: shapes2) {
-         auto seg_b_iter = lineset.find(int(shape.m_shape_ref));
-         int seg_b = int(std::distance(lineset.begin(), seg_b_iter));
-         if (seg_b_iter != lineset.end() && seg_a < seg_b) {
-            Point2f alpha = seg_a_line.second.vector();
-            Point2f beta  = seg_b_iter->second.vector();
-            alpha.normalise();
-            beta.normalise();
-            if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_start(),(maxdim*TOLERANCE_B))) {
-               float x = float(2.0 * acos(__min(__max(-dot(-alpha,beta),-1.0),1.0)) / M_PI);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(1,seg_b), x);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_back_segconns, SegmentRef(-1,seg_a), x);
-            }
-            if (approxeq(seg_a_line.second.t_end(),seg_b_iter->second.t_end(),(maxdim*TOLERANCE_B))) {
-               float x = float(2.0 * acos(__min(__max(-dot(-alpha,-beta),-1.0),1.0)) / M_PI);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_a)].m_forward_segconns, SegmentRef(-1,seg_b), x);
-               depthmapX::addIfNotExists(connectionset[size_t(seg_b)].m_forward_segconns, SegmentRef(-1,seg_a), x);
-            }
-         }
-      }
-   }
+    double maxdim = __max(m_region.width(), m_region.height());
 
-   // initialise attributes now separated from making the connections
-   makeSegmentConnections(connectionset);
+    int count = 0;
+    for (auto &lineConnector_a : lineConnectors) {
+        Connector &connectionset_a = lineConnector_a.second.m_connector;
+        const Line &line_a = lineConnector_a.second.m_line;
+        int idx_a = lineConnector_a.second.m_index;
+        // n.b., vector() is based on t_start and t_end, so we must use t_start and t_end here and throughout
+        PixelRef pix1 = pixelate(line_a.t_start());
+        std::vector<ShapeRef> &shapes1 = m_pixel_shapes(static_cast<size_t>(pix1.y), static_cast<size_t>(pix1.x));
+        for (auto &shape : shapes1) {
+            auto lineConnector_b = lineConnectors.find(shape.m_shape_ref);
+            if (lineConnector_b != lineConnectors.end() && idx_a < lineConnector_b->second.m_index) {
+
+                Connector &connectionset_b = lineConnector_b->second.m_connector;
+                const Line &line_b = lineConnector_b->second.m_line;
+                int idx_b = lineConnector_b->second.m_index;
+
+                Point2f alpha = line_a.vector();
+                Point2f beta = line_b.vector();
+                alpha.normalise();
+                beta.normalise();
+                if (approxeq(line_a.t_start(), line_b.t_start(), (maxdim * TOLERANCE_B))) {
+                    float x = float(2.0 * acos(__min(__max(-dot(alpha, beta), -1.0), 1.0)) / M_PI);
+                    depthmapX::addIfNotExists(connectionset_a.m_back_segconns, SegmentRef(1, idx_b), x);
+                    depthmapX::addIfNotExists(connectionset_b.m_back_segconns, SegmentRef(1, idx_a), x);
+                }
+                if (approxeq(line_a.t_start(), line_b.t_end(), (maxdim * TOLERANCE_B))) {
+                    float x = float(2.0 * acos(__min(__max(-dot(alpha, -beta), -1.0), 1.0)) / M_PI);
+                    depthmapX::addIfNotExists(connectionset_a.m_back_segconns, SegmentRef(-1, idx_b), x);
+                    depthmapX::addIfNotExists(connectionset_b.m_forward_segconns, SegmentRef(1, idx_a), x);
+                }
+            }
+        }
+
+        PixelRef pix2 = pixelate(line_a.t_end());
+        std::vector<ShapeRef> &shapes2 = m_pixel_shapes(static_cast<size_t>(pix2.y), static_cast<size_t>(pix2.x));
+        for (auto &shape : shapes2) {
+            auto lineConnector_b = lineConnectors.find(shape.m_shape_ref);
+            if (lineConnector_b != lineConnectors.end() && idx_a < lineConnector_b->second.m_index) {
+
+                Connector &connectionset_b = lineConnector_b->second.m_connector;
+                const Line &line_b = lineConnector_b->second.m_line;
+                int idx_b = lineConnector_b->second.m_index;
+
+                Point2f alpha = line_a.vector();
+                Point2f beta = line_b.vector();
+
+                alpha.normalise();
+                beta.normalise();
+                if (approxeq(line_a.t_end(), line_b.t_start(), (maxdim * TOLERANCE_B))) {
+                    float x = float(2.0 * acos(__min(__max(-dot(-alpha, beta), -1.0), 1.0)) / M_PI);
+                    depthmapX::addIfNotExists(connectionset_a.m_forward_segconns, SegmentRef(1, idx_b), x);
+                    depthmapX::addIfNotExists(connectionset_b.m_back_segconns, SegmentRef(-1, idx_a), x);
+                }
+                if (approxeq(line_a.t_end(), line_b.t_end(), (maxdim * TOLERANCE_B))) {
+                    float x = float(2.0 * acos(__min(__max(-dot(-alpha, -beta), -1.0), 1.0)) / M_PI);
+                    depthmapX::addIfNotExists(connectionset_a.m_forward_segconns, SegmentRef(-1, idx_b), x);
+                    depthmapX::addIfNotExists(connectionset_b.m_forward_segconns, SegmentRef(-1, idx_a), x);
+                }
+            }
+        }
+
+        if (comm) {
+            if (qtimer(atime, 500)) {
+                if (comm->IsCancelled()) {
+                    throw Communicator::CancelledException();
+                }
+                comm->CommPostMessage(Communicator::CURRENT_RECORD, count);
+            }
+        }
+        count++;
+    }
+
+    // initialise attributes now separated from making the connections
+    makeSegmentConnections(connectionset);
 }
 
 // Method 2: Making a segment map (in two stages)
