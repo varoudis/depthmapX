@@ -27,9 +27,9 @@ bool SegmentTulip::run(Communicator *comm, ShapeGraph &map, bool) {
     }
 
     // TODO: Understand what these parameters do. They were never truly provided in the original function
-    int weighting_col2 = -1;
-    int routeweight_col = -1;
-    bool interactive = true;
+    int weighting_col2 = m_weighted_measure_col2;
+    int routeweight_col = m_routeweight_col;
+    bool interactive = m_interactive;
 
     AttributeTable &attributes = map.getAttributeTable();
 
