@@ -160,10 +160,7 @@ private:
 class KeyColumn : public AttributeColumnImpl
 {
 public:
-    KeyColumn() : AttributeColumnImpl(), m_name("Ref")
-    {}
-private:
-    std::string m_name;
+    KeyColumn() : AttributeColumnImpl() { setName("Ref"); }
 };
 
 
