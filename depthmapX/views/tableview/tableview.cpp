@@ -150,11 +150,10 @@ void TableView::itemChanged(QTableWidgetItem *item) {
         pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_POINTS, QGraphDoc::NEW_SELECTION, this);
         PrepareCache(m_curr_row);
     } else {
-        wchar_t *endptr;
-        // first reset contents:
-        double value = wcstod((wchar_t *)item->text().utf16(),
-                              &endptr); // AT: Unicode conversion -- this doesn't look safe -- edittext is a CString!
-        if (endptr == (wchar_t *)item->text().utf16()) {
+        double value = -1;
+        try {
+            value = std::stod(item->text().toStdString());
+        } catch (std::invalid_argument) {
             QMessageBox::warning(this, tr("Warning"), tr("Cannot convert text to number"), QMessageBox::Ok,
                                  QMessageBox::Ok);
             return;
