@@ -302,7 +302,7 @@ bool MetaGraph::analyseGraph( Communicator *communicator, Options options , bool
       if (m_view_class & VIEWVGA && !getDisplayedPointMap().isSelected()) {
          return false;
       }
-      else if (m_view_class & VIEWAXIAL && !getDisplayedShapeGraph().isSelected()) {
+      else if (m_view_class & VIEWAXIAL && !getDisplayedShapeGraph().hasSelectedElements()) {
          return false;
       }
    }
@@ -553,7 +553,7 @@ int MetaGraph::makeIsovistPath(Communicator *communicator, double fov, bool simp
    }
 
    // must have a selection: the selected shapes will form the set from which to create the isovist paths
-   if (!map->isSelected()) {
+   if (!map->hasSelectedElements()) {
       return 0;
    }
 

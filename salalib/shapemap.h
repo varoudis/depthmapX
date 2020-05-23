@@ -511,11 +511,10 @@ private:
   protected:
     mutable bool m_show; // used when shape map is a drawing layer
     bool m_editable;
-    bool m_selection;
     std::set<int> m_selection_set; // note: uses keys
   public:
     // Selection
-    bool isSelected() const { return m_selection; }
+    bool hasSelectedElements() const { return !m_selection_set.empty(); }
     const std::map<int, SalaShape> getShapesInRegion(const QtRegion &r) const;
     bool setCurSel(QtRegion &r, bool add = false);
     bool setCurSel(const std::vector<int> &selset, bool add = false);
