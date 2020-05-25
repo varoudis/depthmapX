@@ -182,7 +182,6 @@ bool ShapeGraph::read(std::istream &stream)
 {
    m_attributes->clear();
    m_connectors.clear();
-   m_selection = false;
    m_map_type = ShapeMap::EMPTYMAP;
 
    // note that keyvertexcount and keyvertices are different things! (length keyvertices not the same as keyvertexcount!)
