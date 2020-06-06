@@ -929,10 +929,6 @@ void ShapeMap::removeShape(int shaperef, bool undoing) {
             false; // <- this m_selected really shouldn't be used -- should use attributes, but for some reason it is!
     }
 
-    if (shapeIter != m_shapes.end()) {
-        shapeIter = m_shapes.erase(shapeIter);
-    }
-
     if (m_hasgraph) {
         // note that the connections have no key for speed when processing,
         // we rely on the index order matching the index order of the shapes
@@ -983,6 +979,9 @@ void ShapeMap::removeShape(int shaperef, bool undoing) {
         }
     }
 
+    if (shapeIter != m_shapes.end()) {
+        shapeIter = m_shapes.erase(shapeIter);
+    }
     // n.b., shaperef should have been used to create the row in the first place:
     const AttributeKey shapeRefKey(shaperef);
     m_attributes->removeRow(shapeRefKey);
