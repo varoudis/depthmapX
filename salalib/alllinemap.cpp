@@ -172,9 +172,9 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    // a little further setting up is still required...
    std::map<RadialKey,RadialSegment> radialsegs;
 
-   if(m_radial_lines.size() > 0) {
+   auto iter = m_radial_lines.begin();
+   if (iter != m_radial_lines.end()) {
        // now make radial segments from the radial lines... (note, start at 1)
-       auto iter = m_radial_lines.begin();
        auto prevIter = m_radial_lines.begin();
        ++iter;
        for (;iter != m_radial_lines.end();) {
@@ -191,8 +191,8 @@ std::tuple<std::unique_ptr<ShapeGraph>, std::unique_ptr<ShapeGraph>> AllLineMap:
    auto axIter = ax_radial_cuts.begin();
    auto axSeg = ax_seg_cuts.begin();
    for (i = 0; i < getAllShapes().size(); i++) {
-      if(axIter->second.size() > 0) {
-          auto axRadCutIter = axIter->second.begin();
+       auto axRadCutIter = axIter->second.begin();
+       if(axRadCutIter != axIter->second.end()) {
           auto axRadCutIterPrev = axIter->second.begin();
           ++axRadCutIter;
           for (size_t j = 1; j < axIter->second.size(); ++j) {
