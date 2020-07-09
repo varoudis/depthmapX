@@ -148,8 +148,6 @@ ShapeMap::ShapeMap(const std::string &name, int type)
     // data (MUST be set before use)
     m_tolerance = 0.0;
 
-    m_selection = false;
-
     // note show is
     m_show = true;
     m_editable = false;
@@ -908,7 +906,6 @@ bool ShapeMap::removeSelected() {
         removeShape(shapeRef);
     }
     m_selection_set.clear();
-    m_selection = false;
 
     invalidateDisplayedAttribute();
     setDisplayedAttribute(m_displayed_attribute);
@@ -2213,9 +2210,8 @@ bool ShapeMap::setCurSel(const std::vector<int> &selset, bool add) {
             row.setSelection(true);
         }
         m_shapes.at(shapeRef).m_selected = true;
-        m_selection = true;
     }
-    return m_selection;
+    return !m_selection_set.empty();
 }
 
 // this version is used when setting a selection set via the scripting language
@@ -2230,9 +2226,8 @@ bool ShapeMap::setCurSelDirect(const std::vector<int> &selset, bool add) {
             row.setSelection(true);
         }
         m_shapes.at(shapeRef).m_selected = true;
-        m_selection = true;
     }
-    return m_selection;
+    return !m_selection_set.empty();
 }
 
 float ShapeMap::getDisplayedSelectedAvg() { return (m_attributes->getSelAvg(m_displayed_attribute)); }
@@ -2241,7 +2236,6 @@ bool ShapeMap::clearSel() {
     // note, only clear if need be, as m_attributes->deselectAll is slow
     if (m_selection_set.size()) {
         m_attributes->deselectAllRows();
-        m_selection = false;
         for (auto &shapeRef : m_selection_set) {
             m_shapes.at(shapeRef).m_selected = false;
         }
@@ -2276,7 +2270,6 @@ bool ShapeMap::selectionToLayer(const std::string &name) {
 
 bool ShapeMap::read(std::istream &stream) {
     // turn off selection / editable etc
-    m_selection = false;
     m_editable = false;
     m_show = true; // <- by default show
     m_map_type = ShapeMap::EMPTYMAP;
