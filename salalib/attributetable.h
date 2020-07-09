@@ -26,6 +26,12 @@
 #include <salalib/displayparams.h>
 #include <salalib/mgraph_consts.h>
 
+///
+/// Namespace to hold known attributes
+///
+namespace AttributeName {
+    const char * const REF = "Ref";
+}
 
 ///
 /// Interface to an attribute row
@@ -160,7 +166,7 @@ private:
 class KeyColumn : public AttributeColumnImpl
 {
 public:
-    KeyColumn() : AttributeColumnImpl() { setName("Ref"); }
+    KeyColumn() : AttributeColumnImpl() { setName(AttributeName::REF); }
 };
 
 
