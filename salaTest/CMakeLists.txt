@@ -20,7 +20,8 @@ set(salaTest_SRCS
     testgeometrygenerators.cpp
     testmapinfodata.cpp
     testsalaprogram.cpp
-    testdxfp.cpp)
+    testdxfp.cpp
+    testmapconversion.cpp)
 
 include_directories("../ThirdParty/Catch" "../ThirdParty/FakeIt")
 

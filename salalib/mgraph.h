@@ -362,9 +362,9 @@ public:
    {  if (m_view_class & VIEWVGA) 
          return getDisplayedPointMap().isSelected();
       else if (m_view_class & VIEWAXIAL) 
-         return getDisplayedShapeGraph().isSelected();
+         return getDisplayedShapeGraph().hasSelectedElements();
       else if (m_view_class & VIEWDATA) 
-         return getDisplayedDataMap().isSelected();
+         return getDisplayedDataMap().hasSelectedElements();
       else 
          return false;
    }
