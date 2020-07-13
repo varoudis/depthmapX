@@ -1717,8 +1717,8 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
     }
     // check not an open shape (cannot be inside)
     else if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == 0) {
-        shapeIter = m_shapes.find(shape.m_shape_ref);
-        const SalaShape &poly = shapeIter->second;
+        auto tempShapeIter = m_shapes.find(shape.m_shape_ref);
+        const SalaShape &poly = tempShapeIter->second;
         if (poly.m_region.contains_touch(p)) {
             // next simplest, on the outside border:
             int alpha = 0;
@@ -1790,7 +1790,7 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
                     }
                 }
                 if (counter % 2 != 0 && alpha == 0) {
-                    shapeIter = m_shapes.find(shape.m_shape_ref);
+                    shapeIter = tempShapeIter;
                 }
             }
             // and now the pig -- it's somewhere in the middle of the poly:
@@ -1849,9 +1849,6 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
                     shapeIter = m_shapes.find(shape.m_shape_ref);
                 }
             }
-        } else {
-            // case where the point is outside the shape region
-            return -1;
         }
     }
     return (shapeIter == m_shapes.end()) ? -1 : std::distance(m_shapes.begin(), shapeIter); // note convert to -1
