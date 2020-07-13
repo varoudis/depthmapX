@@ -1849,6 +1849,9 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
                     shapeIter = m_shapes.find(shape.m_shape_ref);
                 }
             }
+        } else {
+            // case where the point is outside the shape region
+            return -1;
         }
     }
     return (shapeIter == m_shapes.end()) ? -1 : std::distance(m_shapes.begin(), shapeIter); // note convert to -1
