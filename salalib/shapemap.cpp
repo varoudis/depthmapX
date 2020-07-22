@@ -1717,8 +1717,8 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
     }
     // check not an open shape (cannot be inside)
     else if ((shape.m_tags & ShapeRef::SHAPE_OPEN) == 0) {
-        shapeIter = m_shapes.find(shape.m_shape_ref);
-        const SalaShape &poly = shapeIter->second;
+        auto tempShapeIter = m_shapes.find(shape.m_shape_ref);
+        const SalaShape &poly = tempShapeIter->second;
         if (poly.m_region.contains_touch(p)) {
             // next simplest, on the outside border:
             int alpha = 0;
@@ -1790,7 +1790,7 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
                     }
                 }
                 if (counter % 2 != 0 && alpha == 0) {
-                    shapeIter = m_shapes.find(shape.m_shape_ref);
+                    shapeIter = tempShapeIter;
                 }
             }
             // and now the pig -- it's somewhere in the middle of the poly:
@@ -1801,25 +1801,27 @@ int ShapeMap::testPointInPoly(const Point2f &p, const ShapeRef &shape) const {
                     depthmapX::addIfNotExists(testnodes, int(shape.m_polyrefs[j]));
                 }
                 PixelRef pix2 = pixelate(p);
-                const std::vector<ShapeRef> &pixelShapes =
-                    m_pixel_shapes(static_cast<size_t>(pix2.y), static_cast<size_t>(pix2.x));
-                // bit of code duplication like this, but easier on params to this function:
                 pix2.move(PixelRef::NEGVERTICAL); // move pix2 down, search for this shape...
-                auto iter = std::find(pixelShapes.begin(), pixelShapes.end(), shape.m_shape_ref);
-                while (iter != pixelShapes.end()) {
+                const std::vector<ShapeRef> *pixelShapes =
+                    &m_pixel_shapes(static_cast<size_t>(pix2.y), static_cast<size_t>(pix2.x));
+                // bit of code duplication like this, but easier on params to this function:
+                auto iter = std::find(pixelShapes->begin(), pixelShapes->end(), shape.m_shape_ref);
+                while (iter != pixelShapes->end()) {
                     for (size_t k = 0; k < iter->m_polyrefs.size(); k++) {
                         depthmapX::addIfNotExists(testnodes, int(iter->m_polyrefs[k]));
                     }
                     pix2.move(PixelRef::NEGVERTICAL); // move pix2 down, search for this shape...
+                    pixelShapes = &m_pixel_shapes(static_cast<size_t>(pix2.y), static_cast<size_t>(pix2.x));
                     if (includes(pix2)) {
-                        iter = std::find(pixelShapes.begin(), pixelShapes.end(), shape.m_shape_ref);
+                        iter = std::find(pixelShapes->begin(), pixelShapes->end(), shape.m_shape_ref);
                     } else {
-                        iter = pixelShapes.end();
+                        iter = pixelShapes->end();
                     }
                 }
                 int alpha = 0;
                 int counter = 0;
                 int parity = -1;
+
                 for (j = 0; j < testnodes.size(); j++) {
                     Line lineb =
                         Line(poly.m_points[testnodes[j]], poly.m_points[((testnodes[j] + 1) % poly.m_points.size())]);
