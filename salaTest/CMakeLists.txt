@@ -22,7 +22,8 @@ set(salaTest_SRCS
     testsalaprogram.cpp
     testdxfp.cpp
     testmapconversion.cpp
-    testpointinpoly.cpp)
+    testpointinpoly.cpp
+    ) # salaTest_SRCS
 
 include_directories("../ThirdParty/Catch" "../ThirdParty/FakeIt")
 
