@@ -82,6 +82,82 @@ TEST_CASE("MapInfo failing column attribute columns", "")
     REQUIRE_FALSE(mapinfodata.readcolumnheaders(mifstream, columnheads));
 }
 
+TEST_CASE("MapInfo MID file with empty column", "")
+{
+    const float EPSILON = 0.001;
+
+    // A typical MIF
+
+    std::string mifdata =
+            "Version 300\n" \
+            "Charset \"WindowsLatin1\"\n" \
+            "Delimiter \",\"\n" \
+            "Index 1,2,3,4\n" \
+            "CoordSys Earth Projection 8, 79, \"m\", -2, 49, 0.9996012717, 400000, -100000\n";
+
+    mifdata +=
+            "Columns 4\n" \
+            "  ID Integer\n" \
+            "  Length_m Float\n" \
+            "  Height_m Float\n" \
+            "  Width_m Float\n" \
+            "Data\n" \
+            "\n" \
+            "Line 534014.29 182533.33 535008.52 182764.11\n" \
+            "    Pen (1,2,0)\n" \
+            "Line 533798.68 183094.69 534365.48 183159.01\n" \
+            "    Pen (1,2,0)\n" \
+            "Point 534014.29 182533.33\n" \
+            "    Symbol (34,0,12)";
+
+
+    // A MID with empty columns
+
+    std::string middata =
+            "1,1017.81,,\n" \
+            "2,568.795,,\n" \
+            "3,216.026,,";
+
+    ShapeMap shapeMap("MapInfoTest");
+    MapInfoData mapinfodata;
+
+    std::stringstream mifstream(mifdata);
+    std::stringstream midstream(middata);
+    REQUIRE(mapinfodata.import(mifstream, midstream, shapeMap) == MINFO_OK);
+
+    AttributeTable& att = shapeMap.getAttributeTable();
+
+    REQUIRE(att.getNumColumns() == 4);
+    REQUIRE(att.getColumn(0).getName() == "Id");
+    REQUIRE(att.getColumn(1).getName() == "Length_M");
+    REQUIRE(att.getColumn(2).getName() == "Height_M");
+    REQUIRE(att.getColumn(3).getName() == "Width_M");
+
+    std::map<int, SalaShape> shapes = shapeMap.getAllShapes();
+    auto shapeRef0 = depthmapX::getMapAtIndex(shapes, 0);
+    auto shapeRef1 = depthmapX::getMapAtIndex(shapes, 1);
+    auto shapeRef2 = depthmapX::getMapAtIndex(shapes, 2);
+
+    REQUIRE(att.getNumRows() == 3);
+    auto &row0 = att.getRow(AttributeKey(shapeRef0->first));
+    auto &row1 = att.getRow(AttributeKey(shapeRef1->first));
+    auto &row2 = att.getRow(AttributeKey(shapeRef2->first));
+
+    REQUIRE(row0.getValue("Id") == 1);
+    REQUIRE(row1.getValue("Id") == 2);
+    REQUIRE(row2.getValue("Id") == 3);
+    REQUIRE(row0.getValue("Length_M") == Approx(1017.81).epsilon(EPSILON));
+    REQUIRE(row1.getValue("Length_M") == Approx(568.795).epsilon(EPSILON));
+    REQUIRE(row2.getValue("Length_M") == Approx(216.026).epsilon(EPSILON));
+    REQUIRE(row0.getValue("Height_M") == -1);
+    REQUIRE(row1.getValue("Height_M") == -1);
+    REQUIRE(row2.getValue("Height_M") == -1);
+    REQUIRE(row0.getValue("Width_M") == -1);
+    REQUIRE(row1.getValue("Width_M") == -1);
+    REQUIRE(row2.getValue("Width_M") == -1);
+
+}
+
 TEST_CASE("Complete proper MapInfo file", "")
 {
     const float EPSILON = 0.001;
