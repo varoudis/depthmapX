@@ -39,7 +39,7 @@ std::string AxialParser::getHelp() const
     return  "Mode options for Axial Analysis:\n"\
             "  -xl <x>,<y> Calculate all lines map from this seed point (can be used more than once)\n"
             "  -xf Calculate fewest lines map from all lines map\n"\
-            "  -xa run axial anlysis\n"\
+            "  -xa <radius/list of radii> run axial anlysis with specified radii\n"\
             " All modes expect to find the required input in the in graph\n"\
             " Any combination of flags above can be specified, they will always be run in the order -aa -af -au -ax\n"\
             " Further flags for axial analysis are:\n"\
