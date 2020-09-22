@@ -36,6 +36,7 @@ public:
     bool isValid() const { return m_valid; }
     bool printVersionMode() const { return m_printVersionMode; }
     bool simpleMode() const { return m_simpleMode; }
+    bool printProgress() const { return m_printProgress; }
     const IModeParser& modeOptions() const{ return *_modeParser;};
 
 
@@ -51,6 +52,7 @@ private:
     bool m_valid;
     bool m_printVersionMode;
     bool m_simpleMode;
+    bool m_printProgress;
 
     const IModeParserFactory &_parserFactory;
     IModeParser * _modeParser;
