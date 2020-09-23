@@ -25,7 +25,7 @@
 using namespace depthmapX;
 
 void CommandLineParser::printHelp(){
-    std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [-t] [-p] [mode options]\n"
+    std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [-t <times.csv>] [-p] [mode options]\n"
               << "       depthmapXcli -v prints the current version\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
