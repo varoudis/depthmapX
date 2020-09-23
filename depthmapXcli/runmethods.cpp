@@ -54,9 +54,9 @@ namespace dm_runmethods
         return mgraph;
     }
 
-    Communicator* getCommunicator(const CommandLineParser &clp) {
+    std::unique_ptr<Communicator> getCommunicator(const CommandLineParser &clp) {
         if (clp.printProgress()) {
-            return new PrintCommunicator();
+            return std::unique_ptr<Communicator>(new PrintCommunicator());
         }
         return nullptr;
     }
@@ -94,7 +94,7 @@ namespace dm_runmethods
 
             depthmapX::importFile(*mgraph,
                                   file,
-                                  getCommunicator(cmdP),
+                                  getCommunicator(cmdP).get(),
                                   cmdP.getFileName(),
                                   depthmapX::ImportType::DRAWINGMAP,
                                   importFileType);
@@ -270,7 +270,7 @@ namespace dm_runmethods
         }
         std::cout << " ok\nAnalysing graph..." << std::flush;
 
-        DO_TIMED("Run VGA", mgraph->analyseGraph(getCommunicator(cmdP), *options, cmdP.simpleMode() ))
+        DO_TIMED("Run VGA", mgraph->analyseGraph(getCommunicator(cmdP).get(), *options, cmdP.simpleMode() ))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mgraph->write(cmdP.getOuputFile().c_str(),METAGRAPH_VERSION, false))
         std::cout << " ok" << std::endl;
@@ -341,7 +341,7 @@ namespace dm_runmethods
             }
             if(makeGraph) {
                 std::cout << "ok\nMaking graph... " << std::flush;
-                DO_TIMED("Making graph", mGraph->makeGraph(getCommunicator(clp), boundaryGraph ? 1 : 0, maxVisibility))
+                DO_TIMED("Making graph", mGraph->makeGraph(getCommunicator(clp).get(), boundaryGraph ? 1 : 0, maxVisibility))
             }
         }
 
@@ -363,7 +363,7 @@ namespace dm_runmethods
            }
            std::cout << "Making all line map... " << std::flush;
            DO_TIMED("Making all axes map", for_each (ap.getAllAxesRoots().begin(),ap.getAllAxesRoots().end(),
-                                                     [&mGraph, &clp](const Point2f &point)->void{mGraph->makeAllLineMap(getCommunicator(clp), point);} ))
+                                                     [&mGraph, &clp](const Point2f &point)->void{mGraph->makeAllLineMap(getCommunicator(clp).get(), point);} ))
            std::cout << "ok" << std::endl;
         }
 
@@ -378,7 +378,7 @@ namespace dm_runmethods
                 throw depthmapX::RuntimeException("All line map must be constructed before fewest lines can be constructed. Use -aa to do this");
             }
             std::cout << "Constructing fewest line map... " << std::flush;
-            DO_TIMED("Fewest line map", mGraph->makeFewestLineMap(getCommunicator(clp), 1))
+            DO_TIMED("Fewest line map", mGraph->makeFewestLineMap(getCommunicator(clp).get(), 1))
             std::cout << "ok" << std::endl;
         }
 
@@ -391,7 +391,7 @@ namespace dm_runmethods
             options.choice = ap.useChoice();
             options.local = ap.useLocal();
             options.fulloutput = ap.calculateRRA();
-            DO_TIMED("Axial analysis", mGraph->analyseAxial(getCommunicator(clp), options, clp.simpleMode()))
+            DO_TIMED("Axial analysis", mGraph->analyseAxial(getCommunicator(clp).get(), options, clp.simpleMode()))
             std::cout << "ok\n" << std::flush;
 
         }
@@ -447,21 +447,21 @@ namespace dm_runmethods
         }
         switch(sp.getAnalysisType()) {
             case SegmentParser::AnalysisType::ANGULAR_TULIP: {
-                DO_TIMED("Segment tulip analysis", mGraph->analyseSegmentsTulip(getCommunicator(clp), options))
+                DO_TIMED("Segment tulip analysis", mGraph->analyseSegmentsTulip(getCommunicator(clp).get(), options))
                 break;
             }
             case SegmentParser::AnalysisType::ANGULAR_FULL: {
-                DO_TIMED("Segment angular analysis", mGraph->analyseSegmentsAngular(getCommunicator(clp), options))
+                DO_TIMED("Segment angular analysis", mGraph->analyseSegmentsAngular(getCommunicator(clp).get(), options))
                 break;
             }
             case SegmentParser::AnalysisType::TOPOLOGICAL: {
                 options.output_type = 0;
-                DO_TIMED("Segment topological", mGraph->analyseTopoMetMultipleRadii(getCommunicator(clp), options))
+                DO_TIMED("Segment topological", mGraph->analyseTopoMetMultipleRadii(getCommunicator(clp).get(), options))
                 break;
             }
             case SegmentParser::AnalysisType::METRIC: {
                 options.output_type = 1;
-                DO_TIMED("Segment metric", mGraph->analyseTopoMetMultipleRadii(getCommunicator(clp), options))
+                DO_TIMED("Segment metric", mGraph->analyseTopoMetMultipleRadii(getCommunicator(clp).get(), options))
                 break;
             }
             case SegmentParser::AnalysisType::NONE:
@@ -562,7 +562,7 @@ namespace dm_runmethods
         }
 
         std::cout << "ok\nRunning agent analysis... " << std::flush;
-        DO_TIMED("Running agent analysis", eng.run(getCommunicator(cmdP), &currentMap))
+        DO_TIMED("Running agent analysis", eng.run(getCommunicator(cmdP).get(), &currentMap))
         std::cout << " ok\nWriting out result..." << std::flush;
         std::vector<AgentParser::OutputType> resultTypes = agentP.outputTypes();
         if(resultTypes.size() == 0)
@@ -634,7 +634,7 @@ namespace dm_runmethods
         std::cout << "Making " << isovists.size() << " isovists... "  << std::flush;
         DO_TIMED("Make isovists", std::for_each(isovists.begin(), isovists.end(),
             [&mGraph, &clp](const IsovistDefinition &isovist)->void{
-                mGraph->makeIsovist(getCommunicator(clp), isovist.getLocation(), isovist.getLeftAngle(), isovist.getRightAngle(), clp.simpleMode());
+                mGraph->makeIsovist(getCommunicator(clp).get(), isovist.getLocation(), isovist.getLeftAngle(), isovist.getRightAngle(), clp.simpleMode());
             }))
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
@@ -756,7 +756,7 @@ namespace dm_runmethods
             default: { throw depthmapX::SetupCheckException("Error, unsupported step type"); }
         }
 
-        DO_TIMED("Calculating step-depth", mGraph->analyseGraph( getCommunicator(clp), options, false))
+        DO_TIMED("Calculating step-depth", mGraph->analyseGraph( getCommunicator(clp).get(), options, false))
 
         std::cout << " ok\nWriting out result..." << std::flush;
         DO_TIMED("Writing graph", mGraph->write(clp.getOuputFile().c_str(),METAGRAPH_VERSION, false))
@@ -809,19 +809,19 @@ namespace dm_runmethods
         switch(mcp.outputMapType()) {
         case ShapeMap::DRAWINGMAP: {
             DO_TIMED("Converting to drawing",
-                     mGraph->convertToDrawing(getCommunicator(clp), mcp.outputMapName(), currentMapType == ShapeMap::DATAMAP));
+                     mGraph->convertToDrawing(getCommunicator(clp).get(), mcp.outputMapName(), currentMapType == ShapeMap::DATAMAP));
             break;
         }
         case ShapeMap::AXIALMAP: {
             switch(currentMapType) {
             case ShapeMap::DRAWINGMAP: {
                 DO_TIMED("Converting from drawing to axial",
-                         mGraph->convertDrawingToAxial(getCommunicator(clp), mcp.outputMapName()));
+                         mGraph->convertDrawingToAxial(getCommunicator(clp).get(), mcp.outputMapName()));
                 break;
             }
             case ShapeMap::DATAMAP: {
                 DO_TIMED("Converting from data to axial",
-                         mGraph->convertDataToAxial(getCommunicator(clp), mcp.outputMapName(),
+                         mGraph->convertDataToAxial(getCommunicator(clp).get(), mcp.outputMapName(),
                                                     !mcp.removeInputMap(), mcp.copyAttributes()));
                 break;
             }
@@ -835,18 +835,18 @@ namespace dm_runmethods
             switch(currentMapType) {
             case ShapeMap::DRAWINGMAP: {
                 DO_TIMED("Converting from drawing to segment",
-                         mGraph->convertDrawingToSegment(getCommunicator(clp), mcp.outputMapName()));
+                         mGraph->convertDrawingToSegment(getCommunicator(clp).get(), mcp.outputMapName()));
                 break;
             }
             case ShapeMap::AXIALMAP: {
                 DO_TIMED("Converting from axial to segment",
-                         mGraph->convertAxialToSegment(getCommunicator(clp), mcp.outputMapName(), !mcp.removeInputMap(),
+                         mGraph->convertAxialToSegment(getCommunicator(clp).get(), mcp.outputMapName(), !mcp.removeInputMap(),
                                                        mcp.copyAttributes(), mcp.removeStubLength() / 100.0));
                 break;
             }
             case ShapeMap::DATAMAP: {
                 DO_TIMED("Converting from data to segment",
-                         mGraph->convertDataToSegment(getCommunicator(clp), mcp.outputMapName(),
+                         mGraph->convertDataToSegment(getCommunicator(clp).get(), mcp.outputMapName(),
                                                       !mcp.removeInputMap(), mcp.copyAttributes()));
                 break;
             }
@@ -858,13 +858,13 @@ namespace dm_runmethods
         }
         case ShapeMap::DATAMAP: {
             DO_TIMED("Converting to data",
-                     mGraph->convertToData(getCommunicator(clp), mcp.outputMapName(),
+                     mGraph->convertToData(getCommunicator(clp).get(), mcp.outputMapName(),
                                            !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
         case ShapeMap::CONVEXMAP: {
             DO_TIMED("Converting to convex",
-                     mGraph->convertToConvex(getCommunicator(clp), mcp.outputMapName(),
+                     mGraph->convertToConvex(getCommunicator(clp).get(), mcp.outputMapName(),
                                              !mcp.removeInputMap(), currentMapType, mcp.copyAttributes()));
             break;
         }
