@@ -568,6 +568,26 @@
                 "-sr": "n"
             }
         }],
+        "import_dxf_to_drawing":[{
+            "infile": "../../../testdata/barnsbury_extended1.dxf",
+            "outfile": "out.graph",
+            "mode": "IMPORT",
+            "extraArgs": {}
+        }],
+        "import_csv_to_drawing":[{
+            "infile": "../../../testdata/barnsbury_extended1_axial.csv",
+            "outfile": "out.graph",
+            "mode": "IMPORT",
+            "extraArgs": {}
+        }],
+        "import_tsv_to_data":[{
+            "infile": "../../../testdata/barnsbury_extended1_axial.tsv",
+            "outfile": "out.graph",
+            "mode": "IMPORT",
+            "extraArgs": {
+                "-it": "data"
+            }
+        }],
         "convert_drawing_axial":[{
             "infile": "../../../testdata/barnsbury_drawing.graph",
             "outfile": "out.graph",
