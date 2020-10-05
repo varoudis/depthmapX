@@ -31,6 +31,21 @@ void ImportParser::parse(int argc, char *argv[])
         {
             ENFORCE_ARGUMENT("-if", i)
             m_filesToImport.push_back(argv[i]);
+        } else if ( std::strcmp ("-it", argv[i]) == 0)
+        {
+            ENFORCE_ARGUMENT("-it", i)
+            if ( std::strcmp(argv[i], "drawing") == 0 )
+            {
+                m_importMapType = depthmapX::ImportType::DRAWINGMAP;
+            }
+            else if ( std::strcmp(argv[i], "data") == 0 )
+            {
+                m_importMapType = depthmapX::ImportType::DATAMAP;
+            }
+            else
+            {
+                throw CommandLineException(std::string("Invalid map import (-it) type: ") + argv[i]);
+            }
         } else if ( strcmp ("-iaa", argv[i]) == 0)
         {
             m_importAsAttributes = true;

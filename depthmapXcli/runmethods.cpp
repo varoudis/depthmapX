@@ -90,7 +90,7 @@ namespace dm_runmethods
                                   file,
                                   0,
                                   cmdP.getFileName(),
-                                  depthmapX::ImportType::DRAWINGMAP,
+                                  parser.getImportMapType(),
                                   importFileType);
         } else if ( result == MetaGraph::OK) {
             if(parser.toImportAsAttrbiutes()) {

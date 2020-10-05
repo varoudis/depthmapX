@@ -17,6 +17,7 @@
 
 #include "imodeparser.h"
 #include "commandlineparser.h"
+#include "salalib/importtypedefs.h"
 #include <string>
 #include <vector>
 
@@ -34,6 +35,10 @@ public:
                 "   The file provided by -f here will be used as the base. If that file"\
                 "is not a graph, a new graph will be created and the file will be imported\n"\
                 "   -if <file(s) to import> one or more files to import\n"\
+                "   -it Import map type (to convert to)\n"\
+                "       Possible map types:\n"\
+                "         - drawing (default, does not preserve attributes, typically for dxf files)\n"\
+                "         - data (preserves attributes, typically for csv and tsv files)\n"\
                 "   -iaa will import and attach attributes to an existing map\n";
     }
 
@@ -43,8 +48,10 @@ public:
 
     const std::vector<std::string> & getFilesToImport() const { return m_filesToImport; }
     const bool toImportAsAttrbiutes() const { return m_importAsAttributes; }
+    const depthmapX::ImportType getImportMapType() const { return m_importMapType; }
 
 private:
+    depthmapX::ImportType m_importMapType = depthmapX::ImportType::DRAWINGMAP;
     std::vector<std::string> m_filesToImport;
     bool m_importAsAttributes = false;
 };
