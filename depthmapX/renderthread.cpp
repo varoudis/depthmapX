@@ -191,12 +191,9 @@ void RenderThread::run()
               pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
 
           } catch (EntityParsing::EntityParseException &e) {
-              std::stringstream message;
-              message << "Unable to parse text file\n\n";
-              message << fileName;
-              message << "\n\n Error: ";
-              message << e.what();
-              QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()), QMessageBox::Ok, QMessageBox::Ok);
+              emit showWarningMessage(tr("Warning"),
+                                      tr("depthmapX was unable to parse the isovists test file. Error: %1")
+                                          .arg(QString::fromStdString(e.what())));
           }
           break;
       }
