@@ -171,6 +171,36 @@ void RenderThread::run()
          pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA );
          break;
 
+      case CMSCommunicator::MAKEISOVISTSFROMFILE: {
+
+          try {
+              auto isovists = EntityParsing::parseIsovists(comm->GetInfile2(), ',');
+              comm->CommPostMessage(Communicator::NUM_STEPS, isovists.size());
+              int isovistIdx = 1;
+              for (IsovistDefinition &isovist : isovists) {
+                  comm->CommPostMessage(Communicator::CURRENT_STEP, isovistIdx);
+                  pDoc->m_meta_graph->makeIsovist(comm, isovist.getLocation(), isovist.getLeftAngle(),
+                                                  isovist.getRightAngle(), comm->simple_version);
+                  isovistIdx++;
+              }
+
+              pDoc->SetUpdateFlag(QGraphDoc::NEW_DATA);
+              // Tell the sidebar about the new map:
+              QApplication::postEvent(
+                  pMain, new QmyEvent((enum QEvent::Type)FOCUSGRAPH, (void *)pDoc, QGraphDoc::CONTROLS_LOADGRAPH));
+              pDoc->SetRedrawFlag(QGraphDoc::VIEW_ALL, QGraphDoc::REDRAW_GRAPH, QGraphDoc::NEW_DATA);
+
+          } catch (EntityParsing::EntityParseException &e) {
+              std::stringstream message;
+              message << "Unable to parse text file\n\n";
+              message << fileName;
+              message << "\n\n Error: ";
+              message << e.what();
+              QMessageBox::warning(this, tr("Warning"), tr(message.str().c_str()), QMessageBox::Ok, QMessageBox::Ok);
+          }
+          break;
+      }
+
       case CMSCommunicator::MAKEISOVISTPATH:
          // the graph is going to build this path from a selection in a data map:
          // a data map must be topmost with lines or polylines selected
