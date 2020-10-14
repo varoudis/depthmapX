@@ -95,9 +95,9 @@ TEST_CASE("Testing deleting shapes from axial maps") {
     AttributeTable &axialTable = axialMap->getAttributeTable();
 
     // check if shapes have connectivity attribute values that reflect the expected number of connections
-    for (auto iter = axialMap->getAllShapes().begin(); iter != axialMap->getAllShapes().end(); iter++) {
-        REQUIRE(axialTable.getRow(AttributeKey(iter->first)).getValue(axialConnectivityColIdx) ==
-                axialConnections[iter->first].size());
+    for (const auto& shape : axialMap->getAllShapes()) {
+        REQUIRE(axialTable.getRow(AttributeKey(shape.first)).getValue(axialConnectivityColIdx) ==
+                axialConnections[shape.first].size());
     }
 
     // check if the shape connectors have the expected internal sizes and are connected to the expected
