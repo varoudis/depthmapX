@@ -20,8 +20,6 @@
 #include <sstream>
 
 TEST_CASE("Testing deleting shapes from shapemaps") {
-    const float EPSILON = 0.001;
-
     std::unique_ptr<ShapeMap> shapeMap(new ShapeMap("Test ShapeMap"));
 
     // This is a hash (#) shape for simplicity
@@ -60,8 +58,6 @@ TEST_CASE("Testing deleting shapes from shapemaps") {
 }
 
 TEST_CASE("Testing deleting shapes from axial maps") {
-    const float EPSILON = 0.001;
-
     std::unique_ptr<ShapeMap> shapeMap(new ShapeMap("Test ShapeMap"));
 
     // This is a hash (#) shape for simplicity
@@ -196,8 +192,6 @@ TEST_CASE("Testing deleting shapes from axial maps") {
 }
 
 TEST_CASE("Testing deleting shapes from segment maps") {
-    const float EPSILON = 0.001;
-
     std::unique_ptr<ShapeMap> shapeMap(new ShapeMap("Test ShapeMap"));
 
     // This is a hash (#) shape for simplicity
