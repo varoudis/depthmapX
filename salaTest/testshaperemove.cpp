@@ -46,11 +46,11 @@ TEST_CASE("Testing deleting shapes from shapemaps") {
         }
     }
 
-    SECTION("Delete from simple shapemap randomly") {
+    SECTION("Delete from simple shapemap from the middle") {
         int shapeCount = shapeMap->getAllShapes().size();
         for (size_t idx = shapeCount; idx > 0; idx--) {
             int shapeRef =
-                depthmapX::getMapAtIndex(shapeMap->getAllShapes(), rand() % shapeMap->getAllShapes().size())->first;
+                depthmapX::getMapAtIndex(shapeMap->getAllShapes(), int(shapeMap->getAllShapes().size() / 2))->first;
             shapeMap->removeShape(shapeRef, false);
             REQUIRE(shapeMap->getAllShapes().size() == idx - 1);
         }
@@ -91,7 +91,7 @@ TEST_CASE("Testing deleting shapes from axial maps") {
     AttributeTable &axialTable = axialMap->getAttributeTable();
 
     // check if shapes have connectivity attribute values that reflect the expected number of connections
-    for (const auto& shape : axialMap->getAllShapes()) {
+    for (const auto &shape : axialMap->getAllShapes()) {
         REQUIRE(axialTable.getRow(AttributeKey(shape.first)).getValue(axialConnectivityColIdx) ==
                 axialConnections[shape.first].size());
     }
@@ -162,7 +162,7 @@ TEST_CASE("Testing deleting shapes from axial maps") {
         }
     }
 
-    SECTION("Delete from an axial map randomly") {
+    SECTION("Delete from an axial map from the middle") {
         std::map<int, int> connectivitiesAfterRemoval;
 
         for (auto iter = axialMap->getAllShapes().begin(); iter != axialMap->getAllShapes().end(); iter++) {
@@ -172,7 +172,7 @@ TEST_CASE("Testing deleting shapes from axial maps") {
         int shapeCount = axialMap->getAllShapes().size();
         for (size_t idx = shapeCount; idx > 0; idx--) {
             int shapeRef =
-                depthmapX::getMapAtIndex(axialMap->getAllShapes(), rand() % axialMap->getAllShapes().size())->first;
+                depthmapX::getMapAtIndex(axialMap->getAllShapes(), int(axialMap->getAllShapes().size() / 2))->first;
             axialMap->removeShape(shapeRef, false);
             REQUIRE(axialMap->getAllShapes().size() == idx - 1);
             REQUIRE(axialMap->getConnections().size() == idx - 1);
@@ -366,7 +366,7 @@ TEST_CASE("Testing deleting shapes from segment maps") {
         }
     }
 
-    SECTION("Delete from a segment map randomly") {
+    SECTION("Delete from a segment map from the middle") {
         std::map<int, int> connectivitiesAfterRemoval;
 
         for (auto iter = segmentMap->getAllShapes().begin(); iter != segmentMap->getAllShapes().end(); iter++) {
@@ -377,7 +377,7 @@ TEST_CASE("Testing deleting shapes from segment maps") {
         int shapeCount = segmentMap->getAllShapes().size();
         for (size_t idx = shapeCount; idx > 0; idx--) {
             int shapeRef =
-                depthmapX::getMapAtIndex(segmentMap->getAllShapes(), rand() % segmentMap->getAllShapes().size())
+                depthmapX::getMapAtIndex(segmentMap->getAllShapes(), int(segmentMap->getAllShapes().size() / 2))
                     ->first;
             segmentMap->removeShape(shapeRef, false);
             REQUIRE(segmentMap->getAllShapes().size() == idx - 1);
