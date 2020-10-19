@@ -19,12 +19,14 @@
 static const char *vertexShaderSourceCore =
     "#version 150\n"
     "in float vertexIndex;\n"
-    "int idxx = int(mod(vertexIndex,2.0));\n"
-    "int idxy = int(vertexIndex/2.0);\n"
+    "int idxx;\n"
+    "int idxy;\n"
     "uniform mat2 diagVertices2D;\n"
     "uniform mat4 projMatrix;\n"
     "uniform mat4 mvMatrix;\n"
     "void main() {\n"
+    "   idxx = int(mod(vertexIndex,2.0));\n"
+    "   idxy = int(vertexIndex/2.0);\n"
     "   gl_Position = projMatrix * mvMatrix * vec4(diagVertices2D[0][idxx],diagVertices2D[1][idxy],0,1);\n"
     "}\n";
 
@@ -38,17 +40,19 @@ static const char *fragmentShaderSourceCore =
 
 static const char *vertexShaderSource =
     "attribute float vertexIndex;\n"
-    "int idxx = int(mod(vertexIndex,2.0));\n"
-    "int idxy = int(vertexIndex/2.0);\n"
+    "int idxx;\n"
+    "int idxy;\n"
     "uniform mat2 diagVertices2D;\n"
     "uniform mat4 projMatrix;\n"
     "uniform mat4 mvMatrix;\n"
     "void main() {\n"
+    "   idxx = int(mod(vertexIndex,2.0));\n"
+    "   idxy = int(vertexIndex/2.0);\n"
     "   gl_Position = projMatrix * mvMatrix * vec4(diagVertices2D[0][idxx],diagVertices2D[1][idxy],0,1);\n"
     "}\n";
 
 static const char *fragmentShaderSource =
-    "uniform vec4 colourVector;\n"
+    "uniform highp vec4 colourVector;\n"
     "void main() {\n"
     "   gl_FragColor = colourVector;\n"
     "}\n";
@@ -153,10 +157,11 @@ void GLDynamicRect::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView
     m_program->setUniformValue(m_diagVertices2DLoc, m_selectionBounds);
 
     m_program->setUniformValue(m_colourVectorLoc, m_colour_fill);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount());
+    QOpenGLFunctions *glFuncs = QOpenGLContext::currentContext()->functions();
+    glFuncs->glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount());
 
     m_program->setUniformValue(m_colourVectorLoc, m_colour_stroke);
-    glDrawArrays(GL_LINE_LOOP, 0, vertexCount());
+    glFuncs->glDrawArrays(GL_LINE_LOOP, 0, vertexCount());
 
     m_program->release();
 }
