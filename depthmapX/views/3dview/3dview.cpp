@@ -224,6 +224,8 @@ void Q3DView::timerEvent(QTimerEvent *event)
 //void Q3DView::Init()
 void Q3DView::initializeGL()
 {
+   initializeOpenGLFunctions();
+
    m_oldRect = QRect(0, 0, width(), height());
 
    glClearDepth(1.0f);
