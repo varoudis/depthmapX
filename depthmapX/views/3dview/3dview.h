@@ -22,6 +22,8 @@
 #include <QPoint>
 #include <QSize>
 
+#include <QOpenGLFunctions>
+
 #define ID_ADD_AGENT                    32947
 #define ID_3D_PAN                       32948
 #define ID_3D_ZOOM                      32949
@@ -93,7 +95,7 @@ struct C3DPixelData
 
 /////////////////////////////////////////////////////////////////////////////
 
-class Q3DView : public QOpenGLWidget
+class Q3DView : public QOpenGLWidget, protected QOpenGLFunctions
 {
    Q_OBJECT
 
