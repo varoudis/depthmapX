@@ -43,7 +43,7 @@ static const char *vertexShaderSource =
     "}\n";
 
 static const char *fragmentShaderSource =
-    "uniform vec4 colourVector;\n"
+    "uniform highp vec4 colourVector;\n"
     "void main() {\n"
     "   gl_FragColor = colourVector;\n"
     "}\n";
@@ -157,7 +157,8 @@ void GLLinesUniform::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mVie
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
 
-    glDrawArrays(GL_LINES, 0, vertexCount());
+    QOpenGLFunctions *glFuncs = QOpenGLContext::currentContext()->functions();
+    glFuncs->glDrawArrays(GL_LINES, 0, vertexCount());
 
     m_program->release();
 }

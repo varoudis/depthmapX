@@ -21,6 +21,7 @@ set(salaTest_SRCS
     testmapinfodata.cpp
     testsalaprogram.cpp
     testdxfp.cpp
+    testshaperemove.cpp
     testmapconversion.cpp
     testpointinpoly.cpp
     testpushvalues.cpp
