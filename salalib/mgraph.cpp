@@ -673,8 +673,10 @@ bool MetaGraph::makeBSPtree(Communicator *communicator)
       m_bsp_root = new BSPNode();
 
       time_t atime = 0;
-      communicator->CommPostMessage( Communicator::NUM_RECORDS, partitionlines.size() );
-      qtimer( atime, 0 );
+      if (communicator) {
+          communicator->CommPostMessage( Communicator::NUM_RECORDS, partitionlines.size() );
+          qtimer( atime, 0 );
+      }
 
       try {
          BSPTree::make(communicator,atime,partitionlines,m_bsp_root);
