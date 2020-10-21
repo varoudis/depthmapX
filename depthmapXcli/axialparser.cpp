@@ -45,7 +45,7 @@ std::string AxialParser::getHelp() const
             " Further flags for axial analysis are:\n"\
             "   -xac Include choice (betweenness)\n"\
             "   -xal Include local measures\n"\
-            "   -xar Inlcude RA, RRA and total depth\n"\
+            "   -xar Include RA, RRA and total depth\n"\
             "   -xaw <map attribute name> perform weighted analysis using this attribute\n"\
             "\n";
 }
