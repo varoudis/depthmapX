@@ -502,6 +502,15 @@ void MainWindow::OnToolsImportVGALinks()
     }
 }
 
+void MainWindow::OnToolsGenerateIsovistsFromFile()
+{
+    QGraphDoc* m_p = activeMapDoc();
+    if(m_p)
+    {
+        m_p->OnGenerateIsovistsFromFile();
+    }
+}
+
 void MainWindow::OnToolsRun()
 {
     QGraphDoc* m_p = activeMapDoc();
@@ -3069,6 +3078,9 @@ void MainWindow::createActions()
     importVGALinksAct = new QAction(tr("Import VGA links from file..."), this);
     connect(importVGALinksAct, SIGNAL(triggered()), this, SLOT(OnToolsImportVGALinks()));
 
+    generateIsovistsAct = new QAction(tr("Generate isovists from file..."), this);
+    connect(generateIsovistsAct, SIGNAL(triggered()), this, SLOT(OnToolsGenerateIsovistsFromFile()));
+
     makeIsovistPathAct = new QAction(tr("Make &Isovist Path..."), this);
     connect(makeIsovistPathAct, SIGNAL(triggered()), this, SLOT(OnToolsIsovistpath()));
 
@@ -3579,6 +3591,7 @@ void MainWindow::createMenus()
     visibilitySubMenu->addAction(makeVisibilityGraphAct);
     visibilitySubMenu->addAction(unmakeVisibilityGraphAct);
     visibilitySubMenu->addAction(importVGALinksAct);
+    visibilitySubMenu->addAction(generateIsovistsAct);
     visibilitySubMenu->addAction(makeIsovistPathAct);
     visibilitySubMenu->addSeparator();
     visibilitySubMenu->addAction(runVisibilityGraphAnalysisAct);
