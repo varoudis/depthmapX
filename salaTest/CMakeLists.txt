@@ -24,6 +24,7 @@ set(salaTest_SRCS
     testshaperemove.cpp
     testmapconversion.cpp
     testpointinpoly.cpp
+    testpushvalues.cpp
     testisovist.cpp
 ) # salaTest_SRCS
 

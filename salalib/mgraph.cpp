@@ -1808,18 +1808,96 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
       }
    }
 
-   if (sourcetype & VIEWDATA) {
+   if (desttype == VIEWVGA && ((sourcetype & VIEWDATA) || (sourcetype & VIEWAXIAL))) {
+
+       // pushing from a shapemap (data/axial/segment/convex) requires a combination of
+       // finding points (VGA) in polygons (convex and data maps with polygons) and points
+       // that are on lines (axial, segment and data maps with lines). Thus, in this case
+       // a composite approach is implemented, which takes both options from the other parts
+       // of this conditional.
+
+       struct ValueCountRow {
+           double m_value = -1;
+           int m_count = 0;
+           AttributeRow &m_row;
+           ValueCountRow(AttributeRow &row) : m_row(row) {}
+       };
+
+       // prepare a temporary value table to store counts and values
+       std::map<AttributeKey, ValueCountRow> valCounts;
+
+       for (auto &row : table_out) {
+           valCounts.insert(std::make_pair(row.getKey(), ValueCountRow(row.getRow()))); // count set to zero for all
+       }
+
+       ShapeMap &sourceMap = sourcetype & VIEWDATA ? m_dataMaps[sourcelayer] : *m_shapeGraphs[sourcelayer].get();
+       PointMap &vgaMap = m_pointMaps[destlayer];
+
+       // first collect the lines by pixelating them using the vga map
+       std::map<int, SalaShape> &shapeMap = sourceMap.getAllShapes();
+       for (auto &shape : shapeMap) {
+           float thisval = table_in.getRow(AttributeKey(shape.first)).getValue(col_in);
+           if (shape.second.isLine()) {
+               PixelRefVector linePixels = vgaMap.pixelateLine(shape.second.getLine());
+               for (const PixelRef &pix : linePixels) {
+                   if (!vgaMap.getPoint(pix).filled())
+                       continue;
+                   auto valCount = valCounts.find(AttributeKey(pix));
+                   if(valCount != valCounts.end()) {
+                       pushValue(valCount->second.m_value, valCount->second.m_count, thisval, push_func);
+                   }
+               }
+           } else if (shape.second.isPolyLine()) {
+               std::set<PixelRef> polylinePixels;
+               for (size_t i = 1; i < shape.second.m_points.size(); i++) {
+                   Line li(shape.second.m_points[i - 1], shape.second.m_points[i]);
+                   PixelRefVector linePixels = vgaMap.pixelateLine(li);
+                   polylinePixels.insert(linePixels.begin(), linePixels.end());
+               }
+               for (const PixelRef &pix : polylinePixels) {
+                   if (!vgaMap.getPoint(pix).filled())
+                       continue;
+                   auto valCount = valCounts.find(AttributeKey(pix));
+                   if(valCount != valCounts.end()) {
+                       pushValue(valCount->second.m_value, valCount->second.m_count, thisval, push_func);
+                   }
+               }
+           }
+       }
+
+       // then collect the polygons and push to vga map
+       for (auto &valCount : valCounts) {
+           int key_out = valCount.first.value;
+           double &val = valCount.second.m_value;
+           int &count = valCount.second.m_count;
+           AttributeRow &row = valCount.second.m_row;
+           std::vector<int> gatelist;
+           if (!isObjectVisible(vgaMap.m_layers, row)) {
+               continue;
+           }
+           gatelist = sourceMap.pointInPolyList(vgaMap.getPoint(key_out).m_location);
+           for (int gate : gatelist) {
+               AttributeRow &row_in = sourceMap.getAttributeRowFromShapeIndex(gate);
+
+               if (isObjectVisible(sourceMap.getLayers(), row_in)) {
+                   double thisval = row_in.getValue(col_in);
+                   pushValue(val, count, thisval, push_func);
+               }
+           }
+           if (push_func == PUSH_FUNC_AVG && val != -1.0) {
+               val /= double(count);
+           }
+           row.setValue(col_out, float(val));
+           if (count_col) {
+               row.setValue(col_count, float(count));
+           }
+       }
+   } else if (sourcetype & VIEWDATA) {
 
       for (auto iter_out = table_out.begin(); iter_out != table_out.end(); iter_out++) {
          int key_out = iter_out->getKey().value;
          std::vector<int> gatelist;
-         if (desttype == VIEWVGA) {
-             if (!isObjectVisible(m_pointMaps[destlayer].m_layers, iter_out->getRow())) {
-                continue;
-             }
-            gatelist = m_dataMaps[sourcelayer].pointInPolyList(m_pointMaps[destlayer].getPoint(key_out).m_location);
-         }
-         else if (desttype == VIEWAXIAL) {
+         if (desttype == VIEWAXIAL) {
              if (!isObjectVisible(m_shapeGraphs[destlayer]->getLayers(), iter_out->getRow())) {
                 continue;
              }
@@ -1909,8 +1987,6 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
       else if (sourcetype & VIEWAXIAL) {
          // note, in the spirit of mapping fewer objects in the gate list, it is *usually* best to 
          // perform axial -> gate map in this direction
-         // however, "Axial" to VGA, likely to have more points than "axial" shapes, should probably be performed using the first 
-         // algorithm
          for (auto iter_in = table_in.begin(); iter_in != table_in.end(); iter_in++) {
             int key_in = iter_in->getKey().value;
             if (!isObjectVisible(m_shapeGraphs[size_t(sourcelayer)]->getLayers(),iter_in->getRow())) {
