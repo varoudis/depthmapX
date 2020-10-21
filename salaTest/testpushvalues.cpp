@@ -48,7 +48,7 @@ TEST_CASE("Push values from shapemaps to VGA", "") {
     // in fact it should not be a requirement to make all these maps through
     // the metagraph, but instead through a "map pusher" of some sorts
 
-    std::unique_ptr<MetaGraph> mgraph = std::unique_ptr<MetaGraph>(new MetaGraph);
+    std::unique_ptr<MetaGraph> mgraph(new MetaGraph);
     mgraph->m_drawingFiles.emplace_back("Drawing file");
     mgraph->m_drawingFiles.back().m_spacePixels.emplace_back("Drawing Map");
     ShapeMap &drawingMap = mgraph->m_drawingFiles.back().m_spacePixels.back();
