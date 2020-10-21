@@ -25,11 +25,12 @@
 using namespace depthmapX;
 
 void CommandLineParser::printHelp(){
-    std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [mode options]\n"
+    std::cout << "Usage: depthmapXcli -m <mode> -f <filename> -o <output file> [-s] [-t <times.csv>] [-p] [mode options]\n"
               << "       depthmapXcli -v prints the current version\n"
               << "       depthmapXcli -h prints this help text\n"
               << "-s enables simple mode\n"
               << "-t <times.csv> enables output of runtimes as csv file\n"
+              << "-p enables text progress printing\n"
 
               << "Possible modes are:\n";
               std::for_each(_parserFactory.getModeParsers().begin(), _parserFactory.getModeParsers().end(), [](const ModeParserVec::value_type &p)->void{ std::cout << "  " << p->getModeName() << "\n"; });
@@ -107,6 +108,10 @@ void CommandLineParser::parse(size_t argc, char *argv[])
         else if ( std::strcmp("-s", argv[i]) == 0)
         {
             m_simpleMode = true;
+        }
+        else if ( std::strcmp("-p", argv[i]) == 0)
+        {
+            m_printProgress = true;
         }
         ++i;
     }

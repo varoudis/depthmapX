@@ -1,6 +1,7 @@
 set(cliTest cliTest)
 set(cliTest_SRCS 
     main.cpp
+    ../depthmapXcli/printcommunicator.cpp
     ../depthmapXcli/commandlineparser.cpp
     testcommandlineparser.cpp
     testradiusconverter.cpp

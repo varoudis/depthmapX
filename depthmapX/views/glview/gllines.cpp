@@ -50,7 +50,7 @@ static const char *vertexShaderSource =
     "}\n";
 
 static const char *fragmentShaderSource =
-    "varying vec3 col;\n"
+    "varying highp vec3 col;\n"
     "void main() {\n"
     "   gl_FragColor = vec4(col, 1.0);\n"
     "}\n";
@@ -158,7 +158,8 @@ void GLLines::paintGL(const QMatrix4x4 &m_mProj, const QMatrix4x4 &m_mView, cons
     m_program->setUniformValue(m_projMatrixLoc, m_mProj);
     m_program->setUniformValue(m_mvMatrixLoc, m_mView * m_mModel);
 
-    glDrawArrays(GL_LINES, 0, vertexCount());
+    QOpenGLFunctions *glFuncs = QOpenGLContext::currentContext()->functions();
+    glFuncs->glDrawArrays(GL_LINES, 0, vertexCount());
 
     m_program->release();
 }

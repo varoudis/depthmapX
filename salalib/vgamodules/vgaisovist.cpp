@@ -23,14 +23,17 @@
 
 bool VGAIsovist::run(Communicator *comm, PointMap &map, bool simple_version) {
     map.m_hasIsovistAnalysis = false;
+
     // note, BSP tree plays with comm counting...
-    comm->CommPostMessage(Communicator::NUM_STEPS, 2);
-    comm->CommPostMessage(Communicator::CURRENT_STEP, 1);
+    if(comm) {
+        comm->CommPostMessage(Communicator::NUM_STEPS, 2);
+        comm->CommPostMessage(Communicator::CURRENT_STEP, 1);
+    }
     BSPNode bspRoot = makeBSPtree(comm, map.getDrawingFiles());
 
     AttributeTable &attributes = map.getAttributeTable();
 
-    comm->CommPostMessage(Communicator::CURRENT_STEP, 2);
+    if(comm) comm->CommPostMessage(Communicator::CURRENT_STEP, 2);
 
     time_t atime = 0;
     if (comm) {
@@ -114,8 +117,10 @@ BSPNode VGAIsovist::makeBSPtree(Communicator *communicator, const std::vector<Sp
     if (partitionlines.size()) {
 
         time_t atime = 0;
-        communicator->CommPostMessage(Communicator::NUM_RECORDS, static_cast<int>(partitionlines.size()));
-        qtimer(atime, 0);
+        if(communicator) {
+            communicator->CommPostMessage(Communicator::NUM_RECORDS, static_cast<int>(partitionlines.size()));
+            qtimer(atime, 0);
+        }
 
         BSPTree::make(communicator, atime, partitionlines, &bspRoot);
     }
