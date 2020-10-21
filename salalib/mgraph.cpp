@@ -1816,12 +1816,18 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
        // a composite approach is implemented, which takes both options from the other parts
        // of this conditional.
 
-       // prepare a temporary value table to store counts and values
-       std::vector<std::pair<double, int>> valCounts(table_out.getNumRows());
+       struct ValueCountRow {
+           double m_value = -1;
+           int m_count = 0;
+           AttributeRow &m_row;
+           ValueCountRow(AttributeRow &row) : m_row(row) {}
+       };
 
-       for (auto &valCount : valCounts) {
-           valCount.first = -1;
-           valCount.second = 0; // count set to zero for all
+       // prepare a temporary value table to store counts and values
+       std::map<AttributeKey, ValueCountRow> valCounts;
+
+       for (auto &row : table_out) {
+           valCounts.insert(std::make_pair(row.getKey(), ValueCountRow(row.getRow()))); // count set to zero for all
        }
 
        ShapeMap &sourceMap = sourcetype & VIEWDATA ? m_dataMaps[sourcelayer] : *m_shapeGraphs[sourcelayer].get();
@@ -1836,8 +1842,10 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                for (const PixelRef &pix : linePixels) {
                    if (!vgaMap.getPoint(pix).filled())
                        continue;
-                   auto &valCount = valCounts[std::distance(table_out.begin(), table_out.find(AttributeKey(pix)))];
-                   pushValue(valCount.first, valCount.second, thisval, push_func);
+                   auto valCount = valCounts.find(AttributeKey(pix));
+                   if(valCount != valCounts.end()) {
+                       pushValue(valCount->second.m_value, valCount->second.m_count, thisval, push_func);
+                   }
                }
            } else if (shape.second.isPolyLine()) {
                std::set<PixelRef> polylinePixels;
@@ -1849,21 +1857,22 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
                for (const PixelRef &pix : polylinePixels) {
                    if (!vgaMap.getPoint(pix).filled())
                        continue;
-                   auto &valCount = valCounts[std::distance(table_out.begin(), table_out.find(AttributeKey(pix)))];
-                   pushValue(valCount.first, valCount.second, thisval, push_func);
+                   auto valCount = valCounts.find(AttributeKey(pix));
+                   if(valCount != valCounts.end()) {
+                       pushValue(valCount->second.m_value, valCount->second.m_count, thisval, push_func);
+                   }
                }
            }
        }
 
        // then collect the polygons and push to vga map
-       auto valCountIter = valCounts.begin();
-       for (auto iter_out = table_out.begin(); iter_out != table_out.end(); iter_out++) {
-           double &val = valCountIter->first;
-           int &count = valCountIter->second;
-           int key_out = iter_out->getKey().value;
+       for (auto &valCount : valCounts) {
+           int key_out = valCount.first.value;
+           double &val = valCount.second.m_value;
+           int &count = valCount.second.m_count;
+           AttributeRow &row = valCount.second.m_row;
            std::vector<int> gatelist;
-           if (!isObjectVisible(vgaMap.m_layers, iter_out->getRow())) {
-               valCountIter++;
+           if (!isObjectVisible(vgaMap.m_layers, row)) {
                continue;
            }
            gatelist = sourceMap.pointInPolyList(vgaMap.getPoint(key_out).m_location);
@@ -1878,11 +1887,10 @@ bool MetaGraph::pushValuesToLayer(int sourcetype, int sourcelayer, int desttype,
            if (push_func == PUSH_FUNC_AVG && val != -1.0) {
                val /= double(count);
            }
-           iter_out->getRow().setValue(col_out, float(val));
+           row.setValue(col_out, float(val));
            if (count_col) {
-               iter_out->getRow().setValue(col_count, float(count));
+               row.setValue(col_count, float(count));
            }
-           valCountIter++;
        }
    } else if (sourcetype & VIEWDATA) {
 
