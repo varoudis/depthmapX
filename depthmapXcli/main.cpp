@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     }
     catch( std::exception &e)
     {
-        std::cout << e.what() << "\n";
-        args.printHelp();
+        std::cout << e.what() << "\n"
+                  << "Type 'depthmapXcli -h' for help" << std::endl;
         return -1;
     }
     return 0;
