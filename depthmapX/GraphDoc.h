@@ -75,7 +75,7 @@ class CMSCommunicator : public Communicator
 public:
    enum { IMPORT, IMPORTMIF, MAKEPOINTS, MAKEGRAPH, ANALYSEGRAPH, 
           POINTDEPTH, METRICPOINTDEPTH, ANGULARPOINTDEPTH, TOPOLOGICALPOINTDEPTH,
-          MAKEISOVIST, MAKEISOVISTPATH,
+          MAKEISOVIST, MAKEISOVISTPATH, MAKEISOVISTSFROMFILE,
           MAKEALLLINEMAP, MAKEFEWESTLINEMAP, MAKEDRAWING,
           MAKEUSERMAP, MAKEUSERMAPSHAPE, MAKEUSERSEGMAP, MAKEUSERSEGMAPSHAPE, MAKEGATESMAP, MAKEBOUNDARYMAP, MAKESEGMENTMAP,
           MAKECONVEXMAP, 
@@ -268,6 +268,7 @@ public:
 	int OnOpenDocument(char* lpszPathName);
     void OnToolsTPD();
     void OnVGALinksFileImport();
+    void OnGenerateIsovistsFromFile();
     void OnFileImport();
 	void OnFileExport();
     void OnFileExportMapGeometry();

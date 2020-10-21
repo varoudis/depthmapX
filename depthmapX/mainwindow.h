@@ -145,6 +145,7 @@ private slots:
     void OnToolsMakeGraph();
     void OnToolsUnmakeGraph();
     void OnToolsImportVGALinks();
+    void OnToolsGenerateIsovistsFromFile();
     void OnToolsIsovistpath();
     void OnToolsAgentLoadProgram();
     void OnToolsRunAxa();
@@ -362,6 +363,7 @@ private:
     QAction *makeVisibilityGraphAct;
     QAction *unmakeVisibilityGraphAct;
     QAction *importVGALinksAct;
+    QAction *generateIsovistsAct;
     QAction *makeIsovistPathAct;
     QAction *runVisibilityGraphAnalysisAct;
     QAction *visibilityStepAct;

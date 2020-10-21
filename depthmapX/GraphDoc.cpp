@@ -421,6 +421,44 @@ void QGraphDoc::OnVGALinksFileImport()
     }
 }
 
+void QGraphDoc::OnGenerateIsovistsFromFile() {
+    if (m_communicator) {
+        return; // Locked
+    }
+
+    QString template_string;
+    template_string += "Text files (*.txt *.csv)\n";
+    template_string += "All files (*.*)";
+
+    QFileDialog::Options options = 0;
+    QString selectedFilter;
+    QString infile =
+        QFileDialog::getOpenFileName(0, tr("Import Isovists File"), "", template_string, &selectedFilter, options);
+
+    if (!infile.size()) {
+        // no file selected
+        return;
+    }
+
+    std::string fileName = infile.toStdString();
+
+    std::ifstream fileStream(fileName);
+    if (fileStream.fail()) {
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("Unable to read text file.\nPlease check that another program is not using it."),
+                             QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    } else {
+        // communicator and wait dialog to prevent draw while this operation is in progress
+        // and also because the isovist generation requires both
+        m_communicator = new CMSCommunicator;
+        m_communicator->SetInfile2(qPrintable(infile));
+        CreateWaitDialog(tr("Generating isovists..."));
+        m_communicator->SetFunction(CMSCommunicator::MAKEISOVISTSFROMFILE);
+        m_thread.render(this);
+    }
+}
+
 void QGraphDoc::OnFileImport()
 {
    if (m_communicator) {
@@ -2060,8 +2098,7 @@ void QGraphDoc::OnPushToLayer()
       }
       for (i = 0; i < m_meta_graph->getPointMaps().size(); i++) {
          // note 1: no VGA graph can push to another VGA graph (point onto point transforms)
-         // note 2: I simply haven't written "axial" -> vga yet, not that it can't be possible (e.g., "axial" could actually be a convex map)
-         if (toplayerclass != MetaGraph::VIEWVGA && toplayerclass != MetaGraph::VIEWAXIAL) {
+         if (toplayerclass != MetaGraph::VIEWVGA) {
             names.insert(std::make_pair(std::pair<int, int>(MetaGraph::VIEWVGA,int(i)),std::string("Visibility Graphs: ") + m_meta_graph->getPointMaps()[i].getName()));
          }
       }
