@@ -343,6 +343,20 @@
                 "-xf": ""
             }
         }],
+        "axial_makelines_rooms": [{
+            "infile": "../../../testdata/rooms.dxf",
+            "outfile": "out.graph",
+            "mode": "IMPORT",
+            "extraArgs":{}
+        },{
+            "infile": "out.graph",
+            "outfile": "out.graph",
+            "mode": "AXIAL",
+            "extraArgs":{
+                "-xl": "7.5,7.5",
+                "-xf": ""
+            }
+        }],
         "axial_rn": [{
             "infile": "../../../testdata/simple_axlines.graph",
             "outfile": "out.graph",
