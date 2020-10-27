@@ -391,6 +391,21 @@ namespace dm_runmethods
             options.choice = ap.useChoice();
             options.local = ap.useLocal();
             options.fulloutput = ap.calculateRRA();
+            options.weighted_measure_col = -1;
+
+            if(!ap.getAttribute().empty()) {
+                const ShapeGraph& map = mGraph->getDisplayedShapeGraph();
+                const AttributeTable& table = map.getAttributeTable();
+                for (int i = 0; i < table.getNumColumns(); i++) {
+                    if(ap.getAttribute() == table.getColumnName(i).c_str()) {
+                        options.weighted_measure_col = i;
+                    }
+                }
+                if(options.weighted_measure_col == -1) {
+                    throw depthmapX::RuntimeException("Given attribute (" + ap.getAttribute() +
+                                                      ") does not exist in currently selected map");
+                }
+            }
             DO_TIMED("Axial analysis", mGraph->analyseAxial(getCommunicator(clp).get(), options, clp.simpleMode()))
             std::cout << "ok\n" << std::flush;
 

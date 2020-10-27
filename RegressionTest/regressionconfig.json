@@ -359,6 +359,15 @@
                 "-xa": "3"
             }
         }],
+        "axial_rn_length_weighted": [{
+            "infile": "../../../testdata/simple_axlines.graph",
+            "outfile": "out.graph",
+            "mode": "AXIAL",
+            "extraArgs": {
+                "-xa": "n",
+                "-xaw": "Line Length"
+            }
+        }],
         "axial_rn_rra": [{
             "infile": "../../../testdata/simple_axlines.graph",
             "outfile": "out.graph",

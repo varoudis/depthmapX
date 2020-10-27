@@ -61,6 +61,7 @@ public:
     bool calculateRRA() const { return m_rra; }
 
     const std::vector<double>& getRadii() const { return m_radii;}
+    const std::string getAttribute() const { return m_attribute;}
 
 private:
     std::vector<Point2f> m_allAxesRoots;
@@ -70,4 +71,5 @@ private:
     bool m_choice;
     bool m_local;
     bool m_rra;
+    std::string m_attribute;
 };
