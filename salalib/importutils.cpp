@@ -104,7 +104,7 @@ namespace depthmapX {
                 dp = DxfParser(communicator);
 
                 try {
-                    *communicator >> dp;
+                    stream >> dp;
                 } catch (Communicator::CancelledException) {
                     return 0;
                 } catch (std::logic_error &) {
