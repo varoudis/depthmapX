@@ -1,0 +1,76 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux
+            os: ubuntu-latest
+            cmake_args: ''
+          - name: macos
+            os: macos-latest
+            cmake_args: '-DCMAKE_PREFIX_PATH=/opt/homebrew/opt/qt@5'
+          - name: windows
+            os: windows-latest
+            cmake_args: ''
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Qt5 (linux)
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev libqt5opengl5-dev libgl1-mesa-dev
+
+      - name: Install Qt5 (macos)
+        if: matrix.name == 'macos'
+        run: brew install qt@5
+
+      - name: Install Qt5 (windows)
+        if: matrix.name == 'windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        shell: bash
+        env:
+          # The GUI-linked suites need a QPA plugin and there is no display on CI.
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          failed=""
+          for suite in genlibTest salaTest cliTest mgraph440Test moduleTest GuiUnitTest depthmapXTest; do
+            # single-config generators put the binary in build/<suite>/,
+            # multi-config (MSVC) in build/<suite>/Release/
+            binary=$(find "build/$suite" -maxdepth 2 -type f \
+                       \( -name "$suite" -o -name "$suite.exe" \) | head -1)
+            if [ -z "$binary" ]; then
+              echo "::error::could not find a binary for $suite"
+              failed="$failed $suite"
+              continue
+            fi
+            echo "--- $suite ---"
+            "$binary" || failed="$failed $suite"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::failing suites:$failed"
+            exit 1
+          fi
