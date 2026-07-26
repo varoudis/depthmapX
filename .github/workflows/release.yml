@@ -1,0 +1,197 @@
+name: release
+
+# Publishing is driven entirely by tags: push v0.9.0 and this builds, tests and
+# packages every platform, then opens a DRAFT release with the binaries attached.
+# The draft is deliberate - check the assets and write the notes before it goes
+# public. Deleting a tag and re-pushing it re-runs the whole thing, so it is safe
+# to iterate.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build (for rehearsing the release)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: package ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux64
+            os: ubuntu-22.04
+            suffix: linux64
+          # Two macOS builds: an arm64 one has to be native, and an Intel one
+          # keeps older Macs working. An arm64 binary will not run on Intel at
+          # all, so shipping only the native build would drop those users.
+          - name: macos-arm64
+            os: macos-latest
+            suffix: macos_arm64
+          - name: macos-intel
+            os: macos-15-intel
+            suffix: macos_intel
+          - name: win64
+            os: windows-latest
+            suffix: win64
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Work out the version
+        id: version
+        shell: bash
+        # v0.9.0 -> 0.9.0, matching the asset names used by earlier releases
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Qt5 (linux)
+        if: matrix.name == 'linux64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev libqt5opengl5-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Install Qt5 (macos)
+        if: startsWith(matrix.name, 'macos')
+        run: brew install qt@5
+
+      - name: Install Qt5 (windows)
+        if: matrix.name == 'win64'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: win64_msvc2019_64
+
+      - name: Configure
+        shell: bash
+        # Homebrew lives in /opt/homebrew on arm64 but /usr/local on Intel, so
+        # ask brew where Qt is rather than hardcoding either path.
+        run: |
+          args=""
+          case "${{ matrix.name }}" in
+            macos-*) args="-DCMAKE_PREFIX_PATH=$(brew --prefix qt@5)" ;;
+          esac
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release $args
+
+      - name: Build
+        run: cmake --build build --config Release --parallel 4
+
+      # Never ship a binary whose tests did not run.
+      - name: Test
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          failed=""
+          for suite in genlibTest salaTest cliTest mgraph440Test moduleTest GuiUnitTest depthmapXTest; do
+            binary=$(find "build/$suite" -maxdepth 2 -type f \
+                       \( -name "$suite" -o -name "$suite.exe" \) | head -1)
+            if [ -z "$binary" ]; then
+              echo "::error::could not find a binary for $suite"
+              failed="$failed $suite"
+              continue
+            fi
+            echo "--- $suite ---"
+            "$binary" || failed="$failed $suite"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::failing suites:$failed"
+            exit 1
+          fi
+
+      - name: Package (linux AppImage)
+        if: matrix.name == 'linux64'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          set -eu
+          mkdir -p dist appdir/usr/share/icons/depthmapX/128x128
+          cp build/depthmapX/depthmapX appdir/
+          cp tools/build-appimage/depthmapX.desktop appdir/
+          cp depthmapX/images/depthmapX-128x128.png appdir/usr/share/icons/depthmapX/128x128/depthmapX.png
+          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+          ./linuxdeployqt-continuous-x86_64.AppImage --appimage-extract-and-run appdir/depthmapX.desktop -appimage
+          mv depthmapX-*-x86_64.AppImage "dist/depthmapX-${VERSION}_${SUFFIX}.AppImage"
+          cp build/depthmapXcli/depthmapXcli "dist/depthmapXcli_${SUFFIX}"
+
+      - name: Package (macos)
+        if: startsWith(matrix.name, 'macos')
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          set -eu
+          mkdir -p dist
+          "$(brew --prefix qt@5)/bin/macdeployqt" build/depthmapX/depthmapX.app
+          # Fail loudly rather than shipping a bundle that still points at brew.
+          # Capture first so that set -e catches a failing otool: inside an `if`
+          # errexit is suspended, and a failed otool would feed grep nothing and
+          # look exactly like a clean bundle.
+          libs=$(otool -L build/depthmapX/depthmapX.app/Contents/MacOS/depthmapX)
+          if printf '%s\n' "$libs" | grep -q "$(brew --prefix)"; then
+            echo "::error::bundle still links against Homebrew, macdeployqt did not do its job"
+            printf '%s\n' "$libs" | grep "$(brew --prefix)"
+            exit 1
+          fi
+          ditto -c -k --keepParent build/depthmapX/depthmapX.app "dist/depthmapX-${VERSION}_${SUFFIX}.zip"
+          cp build/depthmapXcli/depthmapXcli "dist/depthmapXcli_${SUFFIX}"
+
+      - name: Package (windows)
+        if: matrix.name == 'win64'
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          set -eu
+          mkdir -p dist staging
+          gui=$(find build/depthmapX -maxdepth 2 -name depthmapX.exe | head -1)
+          cli=$(find build/depthmapXcli -maxdepth 2 -name depthmapXcli.exe | head -1)
+          cp "$gui" staging/
+          windeployqt --release staging/depthmapX.exe
+          powershell -Command "Compress-Archive -Path staging\\* -DestinationPath dist\\depthmapX-${VERSION}_${SUFFIX}.zip"
+          cp "$cli" "dist/depthmapXcli_${SUFFIX}.exe"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: depthmapX-${{ matrix.name }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: draft release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -eu
+          ls -la assets
+          # --draft so the assets and notes can be checked before anyone sees it
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --title "depthmapX $TAG" \
+            --draft \
+            --generate-notes \
+            assets/*
