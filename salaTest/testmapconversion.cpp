@@ -76,24 +76,22 @@ TEST_CASE("Test drawing to segment conversion", "") {
     SECTION("Single line") {
         drawingLayer.makeLineShape(line1);
 
-        // TODO: This fails because there's only 1 line in the drawing; the connectivity
-        // matrix ends up under-sized and is then indexed out of bounds. The exception
-        // that surfaces is platform-dependent -- libstdc++ fails the allocation with
-        // std::bad_alloc, libc++ trips BaseMatrix::access_check first -- so only assert
-        // that the conversion fails.
-        REQUIRE_THROWS(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles));
+        // The region the conversion derives for this drawing is degenerate, so no
+        // sensible grid exists for it. Rejected up front rather than overflowing
+        // the grid size (which used to attempt a ~51GB allocation).
+        REQUIRE_THROWS_WITH(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles),
+                            Catch::Contains("zero width"));
     }
 
     SECTION("Two lines") {
         drawingLayer.makeLineShape(line1);
         drawingLayer.makeLineShape(line2);
 
-        // TODO: This fails because there's only 2 lines in the drawing; the connectivity
-        // matrix ends up under-sized and is then indexed out of bounds. The exception
-        // that surfaces is platform-dependent -- libstdc++ fails the allocation with
-        // std::bad_alloc, libc++ trips BaseMatrix::access_check first -- so only assert
-        // that the conversion fails.
-        REQUIRE_THROWS(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles));
+        // The region the conversion derives for this drawing is degenerate, so no
+        // sensible grid exists for it. Rejected up front rather than overflowing
+        // the grid size (which used to attempt a ~51GB allocation).
+        REQUIRE_THROWS_WITH(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles),
+                            Catch::Contains("zero height"));
     }
 
     SECTION("Three lines") {
@@ -150,24 +148,22 @@ TEST_CASE("Test data to segment conversion", "") {
     SECTION("Single line with extra attributes") {
         dataMap.makeLineShape(lines[0], false, false, extraAttributes[0]);
 
-        // TODO: This fails because there's only 1 line in the data map; the connectivity
-        // matrix ends up under-sized and is then indexed out of bounds. The exception
-        // that surfaces is platform-dependent -- libstdc++ fails the allocation with
-        // std::bad_alloc, libc++ trips BaseMatrix::access_check first -- so only assert
-        // that the conversion fails.
-        REQUIRE_THROWS(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true));
+        // The region the conversion derives for this drawing is degenerate, so no
+        // sensible grid exists for it. Rejected up front rather than overflowing
+        // the grid size (which used to attempt a ~51GB allocation).
+        REQUIRE_THROWS_WITH(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true),
+                            Catch::Contains("zero width"));
     }
 
     SECTION("Two lines with extra attributes") {
         dataMap.makeLineShape(lines[0], false, false, extraAttributes[0]);
         dataMap.makeLineShape(lines[1], false, false, extraAttributes[1]);
 
-        // TODO: This fails because there's only 2 lines in the data map; the connectivity
-        // matrix ends up under-sized and is then indexed out of bounds. The exception
-        // that surfaces is platform-dependent -- libstdc++ fails the allocation with
-        // std::bad_alloc, libc++ trips BaseMatrix::access_check first -- so only assert
-        // that the conversion fails.
-        REQUIRE_THROWS(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true));
+        // The region the conversion derives for this drawing is degenerate, so no
+        // sensible grid exists for it. Rejected up front rather than overflowing
+        // the grid size (which used to attempt a ~51GB allocation).
+        REQUIRE_THROWS_WITH(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true),
+                            Catch::Contains("zero height"));
     }
 
     SECTION("Three lines") {

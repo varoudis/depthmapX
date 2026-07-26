@@ -1,5 +1,5 @@
 // sala - a component of the depthmapX - spatial network analysis platform
-// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2011-2026, Tasos Varoudis
 // Copyright (C) 2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -108,6 +108,10 @@ class SpacePixel : public PixelBase {
     //
     // for line testing
     mutable unsigned int m_test;
+    //
+    // the grid dimensions are derived from the region's aspect ratio, so a region
+    // with no width or no height would divide by zero and overflow the grid size
+    void checkRegionIsNotDegenerate() const;
     //
   public:
     SpacePixel(const std::string &name = std::string("Default"));

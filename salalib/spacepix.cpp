@@ -1,5 +1,5 @@
 // sala - a component of the depthmapX - spatial network analysis platform
-// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2011-2026, Tasos Varoudis
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "genlib/stringutils.h"
 #include "genlib/readwritehelpers.h"
 #include "genlib/containerutils.h"
+#include "genlib/exceptions.h"
 
 #include <float.h>
 #include <math.h>
@@ -411,6 +412,17 @@ const Line &SpacePixel::getNextLine() const {
     return m_lines.find(m_current)->second.line;
 }
 
+void SpacePixel::checkRegionIsNotDegenerate() const {
+    if (m_region.width() == 0.0 || m_region.height() == 0.0) {
+        throw depthmapX::RuntimeException(
+            "Cannot create a map from a region with zero " +
+            std::string(m_region.width() == 0.0 ? "width" : "height") +
+            ". This happens when every line lies on a single " +
+            std::string(m_region.width() == 0.0 ? "vertical" : "horizontal") +
+            " line, for example when the drawing contains only one line.");
+    }
+}
+
 void SpacePixel::initLines(int size, const Point2f &min, const Point2f &max, double density) {
     m_display_lines.clear();
     m_lines.clear();
@@ -419,6 +431,8 @@ void SpacePixel::initLines(int size, const Point2f &min, const Point2f &max, dou
 
     // work out extents...
     m_region = QtRegion(min, max);
+
+    checkRegionIsNotDegenerate();
 
     double wh_ratio = m_region.width() / m_region.height();
     double hw_ratio = m_region.height() / m_region.width();
@@ -440,6 +454,8 @@ void SpacePixel::initLines(int size, const Point2f &min, const Point2f &max, dou
 
 void SpacePixel::reinitLines(double density) {
     m_display_lines.clear();
+
+    checkRegionIsNotDegenerate();
 
     double wh_ratio = m_region.width() / m_region.height();
     double hw_ratio = m_region.height() / m_region.width();
