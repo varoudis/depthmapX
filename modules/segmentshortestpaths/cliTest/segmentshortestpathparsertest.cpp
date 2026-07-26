@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2020 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -17,6 +18,8 @@
 #include "cliTest/selfcleaningfile.h"
 #include "modules/segmentshortestpaths/cli/segmentshortestpathparser.h"
 #include <catch.hpp>
+
+#include <sstream>
 
 TEST_CASE("SegmentShortestPathParser", "Error cases") {
     SECTION("Missing argument to -sspo") {

@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2020 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -75,18 +76,20 @@ TEST_CASE("Test drawing to segment conversion", "") {
     SECTION("Single line") {
         drawingLayer.makeLineShape(line1);
 
-        // TODO: This fails with std::bad_alloc because there's only 1 line in the drawing
+        // TODO: This fails because there's only 1 line in the drawing; the connectivity
+        // matrix ends up under-sized and is then indexed out of bounds.
         REQUIRE_THROWS_WITH(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles),
-                            Catch::Contains("std::bad_alloc"));
+                            Catch::Contains("column out of range"));
     }
 
     SECTION("Two lines") {
         drawingLayer.makeLineShape(line1);
         drawingLayer.makeLineShape(line2);
 
-        // TODO: This fails with std::bad_alloc because there's only 2 lines in the drawing
+        // TODO: This fails because there's only 2 lines in the drawing; the connectivity
+        // matrix ends up under-sized and is then indexed out of bounds.
         REQUIRE_THROWS_WITH(MapConverter::convertDrawingToSegment(nullptr, "Segment map", drawingFiles),
-                            Catch::Contains("std::bad_alloc"));
+                            Catch::Contains("row out of range"));
     }
 
     SECTION("Three lines") {
@@ -143,18 +146,20 @@ TEST_CASE("Test data to segment conversion", "") {
     SECTION("Single line with extra attributes") {
         dataMap.makeLineShape(lines[0], false, false, extraAttributes[0]);
 
-        // TODO: This fails with std::bad_alloc because there's only 1 line in the data map
+        // TODO: This fails because there's only 1 line in the data map; the connectivity
+        // matrix ends up under-sized and is then indexed out of bounds.
         REQUIRE_THROWS_WITH(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true),
-                            Catch::Contains("std::bad_alloc"));
+                            Catch::Contains("column out of range"));
     }
 
     SECTION("Two lines with extra attributes") {
         dataMap.makeLineShape(lines[0], false, false, extraAttributes[0]);
         dataMap.makeLineShape(lines[1], false, false, extraAttributes[1]);
 
-        // TODO: This fails with std::bad_alloc because there's only 2 lines in the data map
+        // TODO: This fails because there's only 2 lines in the data map; the connectivity
+        // matrix ends up under-sized and is then indexed out of bounds.
         REQUIRE_THROWS_WITH(MapConverter::convertDataToSegment(nullptr, "Segment map", dataMap, true),
-                            Catch::Contains("std::bad_alloc"));
+                            Catch::Contains("row out of range"));
     }
 
     SECTION("Three lines") {

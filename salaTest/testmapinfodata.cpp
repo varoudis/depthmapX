@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017-2018 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,6 +17,8 @@
 #include "catch.hpp"
 #include "salalib/mgraph.h"
 #include "salalib/parsers/mapinfodata.h"
+
+#include <sstream>
 
 TEST_CASE("MapInfo failing header", "")
 {

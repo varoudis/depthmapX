@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017 Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
@@ -17,6 +18,8 @@
 #include "depthmapXcli/visprepparser.h"
 #include "argumentholder.h"
 #include "selfcleaningfile.h"
+
+#include <sstream>
 
 TEST_CASE("VisPrepParserFail", "Error cases")
 {

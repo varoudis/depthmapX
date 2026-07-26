@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -98,7 +99,10 @@ TEST_CASE("Trivial scripts") {
     SalaProgram program(context);
     program.parse(script);
     SalaObj result = program.evaluate();
-    REQUIRE(result == expected);
+    // SalaObj::operator== takes non-const references, so it cannot be called on the
+    // const references Catch's expression decomposition binds to. Compare up front.
+    const bool resultMatchesExpected = (result == expected);
+    REQUIRE(resultMatchesExpected);
 }
 
 TEST_CASE("Trivial errors") {
@@ -116,7 +120,8 @@ TEST_CASE("Trivial errors") {
     SalaObj context = SalaObj(SalaObj::S_POINTMAPOBJ, graph);
     SalaProgram program(context);
     program.parse(script);
-    REQUIRE_THROWS_WITH(program.evaluate(), "");
+    REQUIRE_THROWS_WITH(program.evaluate(),
+                        Catch::Contains("Cannot add an uninitialised variable to an integer"));
 
 
 }

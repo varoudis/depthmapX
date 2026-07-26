@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,3 +17,9 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+
+#include "salalib/salaprogram.h"
+
+// SalaError is not derived from std::exception, so without a translator Catch
+// reports it as "Unknown exception" and its message is lost.
+CATCH_TRANSLATE_EXCEPTION(const SalaError &ex) { return ex.message; }

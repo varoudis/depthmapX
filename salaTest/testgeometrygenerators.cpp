@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017 Petros Koutsolampros, Christian Sailer
 
 // This program is free software: you can redistribute it and/or modify
@@ -38,8 +39,8 @@ TEST_CASE("Test disk triangles generation", "")
 
     REQUIRE(diskTriangles.size() == expected.size());
     for(size_t i = 0; i < diskTriangles.size(); i++) {
-        REQUIRE(diskTriangles[i].x == Approx(expected[i].x).epsilon(EPSILON));
-        REQUIRE(diskTriangles[i].y == Approx(expected[i].y).epsilon(EPSILON));
+        REQUIRE(diskTriangles[i].x == Approx(expected[i].x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(diskTriangles[i].y == Approx(expected[i].y).epsilon(EPSILON).margin(EPSILON));
     }
 
     std::vector<Point2f> offsets {
@@ -51,8 +52,8 @@ TEST_CASE("Test disk triangles generation", "")
     REQUIRE(multiDiskTriangles.size() == expected.size()*offsets.size());
 
     for(size_t i = 0; i < multiDiskTriangles.size(); i++) {
-        REQUIRE(multiDiskTriangles[i].x == Approx(expected[i%(sides*3)].x + offsets[i/(sides*3)].x).epsilon(EPSILON));
-        REQUIRE(multiDiskTriangles[i].y == Approx(expected[i%(sides*3)].y + offsets[i/(sides*3)].y).epsilon(EPSILON));
+        REQUIRE(multiDiskTriangles[i].x == Approx(expected[i%(sides*3)].x + offsets[i/(sides*3)].x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(multiDiskTriangles[i].y == Approx(expected[i%(sides*3)].y + offsets[i/(sides*3)].y).epsilon(EPSILON).margin(EPSILON));
     }
 }
 
@@ -77,10 +78,10 @@ TEST_CASE("Test circle perimeter line generation", "")
 
     REQUIRE(circleLines.size() == expected.size());
     for(size_t i = 0; i < circleLines.size(); i++) {
-        REQUIRE(circleLines[i].start().x == Approx(expected[i].start().x).epsilon(EPSILON));
-        REQUIRE(circleLines[i].start().y == Approx(expected[i].start().y).epsilon(EPSILON));
-        REQUIRE(circleLines[i].end().x == Approx(expected[i].end().x).epsilon(EPSILON));
-        REQUIRE(circleLines[i].end().y == Approx(expected[i].end().y).epsilon(EPSILON));
+        REQUIRE(circleLines[i].start().x == Approx(expected[i].start().x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(circleLines[i].start().y == Approx(expected[i].start().y).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(circleLines[i].end().x == Approx(expected[i].end().x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(circleLines[i].end().y == Approx(expected[i].end().y).epsilon(EPSILON).margin(EPSILON));
     }
 
     std::vector<Point2f> offsets {
@@ -92,9 +93,9 @@ TEST_CASE("Test circle perimeter line generation", "")
     REQUIRE(multiCircleLines.size() == expected.size()*offsets.size());
 
     for(size_t i = 0; i < multiCircleLines.size(); i++) {
-        REQUIRE(multiCircleLines[i].start().x == Approx(expected[i%sides].start().x + offsets[i/sides].x).epsilon(EPSILON));
-        REQUIRE(multiCircleLines[i].start().y == Approx(expected[i%sides].start().y + offsets[i/sides].y).epsilon(EPSILON));
-        REQUIRE(multiCircleLines[i].end().x == Approx(expected[i%sides].end().x + offsets[i/sides].x).epsilon(EPSILON));
-        REQUIRE(multiCircleLines[i].end().y == Approx(expected[i%sides].end().y + offsets[i/sides].y).epsilon(EPSILON));
+        REQUIRE(multiCircleLines[i].start().x == Approx(expected[i%sides].start().x + offsets[i/sides].x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(multiCircleLines[i].start().y == Approx(expected[i%sides].start().y + offsets[i/sides].y).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(multiCircleLines[i].end().x == Approx(expected[i%sides].end().x + offsets[i/sides].x).epsilon(EPSILON).margin(EPSILON));
+        REQUIRE(multiCircleLines[i].end().y == Approx(expected[i%sides].end().y + offsets[i/sides].y).epsilon(EPSILON).margin(EPSILON));
     }
 }

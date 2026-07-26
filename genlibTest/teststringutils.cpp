@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017-2018 Christian Sailer
 // Copyright (C) 2017-2018 Petros Koutsolampros
 
@@ -18,6 +19,7 @@
 #include "../genlib/stringutils.h"
 #include "../cliTest/selfcleaningfile.h"
 #include <fstream>
+#include <sstream>
 
 TEST_CASE("Tests for split function", "")
 {

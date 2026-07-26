@@ -1,3 +1,4 @@
+// Copyright (C) 2026 Tasos Varoudis
 // Copyright (C) 2017 Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -18,6 +19,8 @@
 
 #include "genlib/comm.h"
 #include "genlib/p2dpoly.h"
+
+#include <sstream>
 
 TEST_CASE("DXF Parsing (lines)")
 {
