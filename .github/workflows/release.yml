@@ -117,15 +117,15 @@ jobs:
           SUFFIX: ${{ matrix.suffix }}
         run: |
           set -eu
-          mkdir -p dist appdir/usr/share/icons/depthmapX/128x128
+          mkdir -p release-assets appdir/usr/share/icons/depthmapX/128x128
           cp build/depthmapX/depthmapX appdir/
           cp tools/build-appimage/depthmapX.desktop appdir/
           cp depthmapX/images/depthmapX-128x128.png appdir/usr/share/icons/depthmapX/128x128/depthmapX.png
           wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
           ./linuxdeployqt-continuous-x86_64.AppImage --appimage-extract-and-run appdir/depthmapX.desktop -appimage
-          mv depthmapX-*-x86_64.AppImage "dist/depthmapX-${VERSION}_${SUFFIX}.AppImage"
-          cp build/depthmapXcli/depthmapXcli "dist/depthmapXcli_${SUFFIX}"
+          mv depthmapX-*-x86_64.AppImage "release-assets/depthmapX-${VERSION}_${SUFFIX}.AppImage"
+          cp build/depthmapXcli/depthmapXcli "release-assets/depthmapXcli_${SUFFIX}"
 
       - name: Package (macos)
         if: startsWith(matrix.name, 'macos')
@@ -134,7 +134,7 @@ jobs:
           SUFFIX: ${{ matrix.suffix }}
         run: |
           set -eu
-          mkdir -p dist
+          mkdir -p release-assets
           "$(brew --prefix qt@5)/bin/macdeployqt" build/depthmapX/depthmapX.app
           # Fail loudly rather than shipping a bundle that still points at brew.
           # Capture first so that set -e catches a failing otool: inside an `if`
@@ -146,8 +146,8 @@ jobs:
             printf '%s\n' "$libs" | grep "$(brew --prefix)"
             exit 1
           fi
-          ditto -c -k --keepParent build/depthmapX/depthmapX.app "dist/depthmapX-${VERSION}_${SUFFIX}.zip"
-          cp build/depthmapXcli/depthmapXcli "dist/depthmapXcli_${SUFFIX}"
+          ditto -c -k --keepParent build/depthmapX/depthmapX.app "release-assets/depthmapX-${VERSION}_${SUFFIX}.zip"
+          cp build/depthmapXcli/depthmapXcli "release-assets/depthmapXcli_${SUFFIX}"
 
       - name: Package (windows)
         if: matrix.name == 'win64'
@@ -157,18 +157,21 @@ jobs:
           SUFFIX: ${{ matrix.suffix }}
         run: |
           set -eu
-          mkdir -p dist staging
+          mkdir -p release-assets staging
           gui=$(find build/depthmapX -maxdepth 2 -name depthmapX.exe | head -1)
           cli=$(find build/depthmapXcli -maxdepth 2 -name depthmapXcli.exe | head -1)
           cp "$gui" staging/
           windeployqt --release staging/depthmapX.exe
-          powershell -Command "Compress-Archive -Path staging\\* -DestinationPath dist\\depthmapX-${VERSION}_${SUFFIX}.zip"
-          cp "$cli" "dist/depthmapXcli_${SUFFIX}.exe"
+          powershell -Command "Compress-Archive -Path staging\\* -DestinationPath release-assets\\depthmapX-${VERSION}_${SUFFIX}.zip"
+          cp "$cli" "release-assets/depthmapXcli_${SUFFIX}.exe"
 
+      # Staged in release-assets/ rather than dist/, because dist/ already
+      # exists in the repo and holds old checked-in beta builds - staging into
+      # it sweeps dist/beta/ into the artifact along with the real assets.
       - uses: actions/upload-artifact@v5
         with:
           name: depthmapX-${{ matrix.name }}
-          path: dist/*
+          path: release-assets/*
           if-no-files-found: error
 
   release:
@@ -187,11 +190,20 @@ jobs:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
           set -eu
-          ls -la assets
+          # Upload only regular files at the top level: gh cannot POST a
+          # directory, and a stray one would fail the release after every
+          # platform has already built.
+          files=()
+          while IFS= read -r f; do files+=("$f"); done < <(find assets -maxdepth 1 -type f | sort)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::no assets were downloaded"
+            exit 1
+          fi
+          printf 'uploading: %s\n' "${files[@]}"
           # --draft so the assets and notes can be checked before anyone sees it
           gh release create "$TAG" \
             --repo "${{ github.repository }}" \
             --title "depthmapX $TAG" \
             --draft \
             --generate-notes \
-            assets/*
+            "${files[@]}"
