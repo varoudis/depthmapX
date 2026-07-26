@@ -16,10 +16,10 @@ jobs:
         include:
           - name: linux
             os: ubuntu-latest
-            cmake_args: ''
+            cmake_args: '-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
           - name: macos
             os: macos-latest
-            cmake_args: '-DCMAKE_PREFIX_PATH=/opt/homebrew/opt/qt@5'
+            cmake_args: '-DCMAKE_PREFIX_PATH=/opt/homebrew/opt/qt@5 -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
           - name: windows
             os: windows-latest
             cmake_args: ''
@@ -44,11 +44,22 @@ jobs:
           version: '5.15.2'
           arch: win64_msvc2019_64
 
+      # MSBuild ignores CMAKE_<LANG>_COMPILER_LAUNCHER, so Windows is uncached
+      # until it moves to the Ninja generator.
+      - name: Set up ccache
+        if: matrix.name != 'windows'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.name }}
+          max-size: 500M
+
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }}
 
       - name: Build
-        run: cmake --build build --config Release --parallel
+        # An explicit job count matters: bare --parallel passes a bare -j to make,
+        # which is unlimited, and oversubscribes the runner badly.
+        run: cmake --build build --config Release --parallel 4
 
       - name: Test
         shell: bash
