@@ -120,8 +120,9 @@ TEST_CASE("Trivial errors") {
     SalaObj context = SalaObj(SalaObj::S_POINTMAPOBJ, graph);
     SalaProgram program(context);
     program.parse(script);
-    REQUIRE_THROWS_WITH(program.evaluate(),
-                        Catch::Contains("Cannot add an uninitialised variable to an integer"));
+    // The operand order in the message differs between MSVC and other compilers
+    // (see the S_ADD case in salaprogram.cpp), so match only the invariant part.
+    REQUIRE_THROWS_WITH(program.evaluate(), Catch::Contains("uninitialised variable"));
 
 
 }

@@ -1,5 +1,5 @@
 // sala - a component of the depthmapX - spatial network analysis platform
-// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2011-2026, Tasos Varoudis
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1147,7 +1147,7 @@ SalaObj SalaCommand::evaluate(int& pointer, SalaObj* &p_obj)
 	       {
 	    	    SalaObj tmp1 = evaluate(pointer,p_obj);
 	    	    SalaObj tmp2 = evaluate(pointer,p_obj);
-            	    data = tmp1 - tmp2;
+            	    data = tmp2 - tmp1;
                }
 #endif               
                break;
