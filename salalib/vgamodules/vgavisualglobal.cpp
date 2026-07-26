@@ -1,6 +1,6 @@
 // sala - a component of the depthmapX - spatial network analysis platform
 // Copyright (C) 2000-2010, University College London, Alasdair Turner
-// Copyright (C) 2011-2012, Tasos Varoudis
+// Copyright (C) 2011-2026, Tasos Varoudis
 // Copyright (C) 2017-2018, Petros Koutsolampros
 
 // This program is free software: you can redistribute it and/or modify
@@ -173,11 +173,11 @@ bool VGAVisualGlobal::run(Communicator *comm, PointMap &map, bool simple_version
                     for (size_t k = 1; k < distribution.size(); k++) {
                         if (distribution[k] > 0) {
                             double prob = double(distribution[k]) / double(total_nodes - 1);
-                            entropy -= prob * log2(prob);
+                            entropy -= prob * pafLog2(prob);
                             // Formula from Turner 2001, "Depthmap"
                             factorial *= double(k + 1);
                             double q = (pow(mean_depth, double(k)) / double(factorial)) * exp(-mean_depth);
-                            rel_entropy += (float)prob * log2(prob / q);
+                            rel_entropy += (float)prob * pafLog2(prob / q);
                         }
                     }
                     if (!simple_version) {
