@@ -135,7 +135,11 @@ jobs:
         run: |
           set -eu
           mkdir -p release-assets
-          "$(brew --prefix qt@5)/bin/macdeployqt" build/depthmapX/depthmapX.app
+          # -codesign=- re-signs ad-hoc after the frameworks are copied in.
+          # Without it the linker's signature is left invalidated by the
+          # install-name rewrites, and macOS refuses the app outright as
+          # "damaged" - which the user cannot override with right-click Open.
+          "$(brew --prefix qt@5)/bin/macdeployqt" build/depthmapX/depthmapX.app -codesign=-
           # Fail loudly rather than shipping a bundle that still points at brew.
           # Capture first so that set -e catches a failing otool: inside an `if`
           # errexit is suspended, and a failed otool would feed grep nothing and
@@ -144,6 +148,12 @@ jobs:
           if printf '%s\n' "$libs" | grep -q "$(brew --prefix)"; then
             echo "::error::bundle still links against Homebrew, macdeployqt did not do its job"
             printf '%s\n' "$libs" | grep "$(brew --prefix)"
+            exit 1
+          fi
+          # An invalid signature is worse than no signature: macOS calls the app
+          # "damaged" and offers only Move to Bin. Fail here rather than ship it.
+          if ! codesign --verify --deep --strict build/depthmapX/depthmapX.app; then
+            echo "::error::bundle signature does not validate, macOS would reject it as damaged"
             exit 1
           fi
           ditto -c -k --keepParent build/depthmapX/depthmapX.app "release-assets/depthmapX-${VERSION}_${SUFFIX}.zip"
