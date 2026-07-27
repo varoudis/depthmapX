@@ -210,10 +210,21 @@ jobs:
             exit 1
           fi
           printf 'uploading: %s\n' "${files[@]}"
-          # --draft so the assets and notes can be checked before anyone sees it
-          gh release create "$TAG" \
-            --repo "${{ github.repository }}" \
-            --title "depthmapX $TAG" \
-            --draft \
-            --generate-notes \
-            "${files[@]}"
+          # Re-running a release must not destroy hand-written notes, so replace
+          # the assets of an existing release rather than recreating it. Only
+          # create - with generated notes - when there is nothing there yet.
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "release $TAG already exists; replacing assets, keeping its notes"
+            gh release upload "$TAG" \
+              --repo "${{ github.repository }}" \
+              --clobber \
+              "${files[@]}"
+          else
+            # --draft so the assets and notes can be checked before anyone sees it
+            gh release create "$TAG" \
+              --repo "${{ github.repository }}" \
+              --title "depthmapX $TAG" \
+              --draft \
+              --generate-notes \
+              "${files[@]}"
+          fi
